@@ -11,6 +11,7 @@ export const SITE_PATCH = '<script>' + String.raw`
     try {
       var u = new URL(href, location.href);
       if (u.origin !== location.origin) return null;
+      if (u.pathname === '/experience-what-they-feel') return '/experience';
       for (var i = 0; i < OWN.length; i++) {
         if (u.pathname === OWN[i] || u.pathname.indexOf(OWN[i] + '/') === 0) return u.pathname + u.search;
       }

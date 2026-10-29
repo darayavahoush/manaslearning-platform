@@ -21,6 +21,7 @@ const SKIP_RES = ['content-encoding', 'content-length', 'transfer-encoding', 'co
 
 export async function proxy(req: NextRequest) {
   const {pathname, search, host, protocol} = req.nextUrl
+  if (pathname === '/experience-what-they-feel') return NextResponse.redirect(new URL('/experience', req.url), 307)
   if (owns(pathname)) return NextResponse.next()
 
   try {
@@ -50,6 +51,7 @@ export async function proxy(req: NextRequest) {
       let b = await r.text()
       if (type.includes('text/html')) { const inj = SITE_PATCH + (MILO_SNIPPET || ''); b = b.includes('</body>') ? b.replace('</body>', () => inj + '</body>') : b + inj }
       b = b.replace(BOOKING, '/consult')
+      b = b.replace(/(["'(])\/experience-what-they-feel(?![\w-])/g, '$1/experience')
       return new Response(b, {status: r.status, headers: out})
     }
     return new Response(r.body, {status: r.status, headers: out})

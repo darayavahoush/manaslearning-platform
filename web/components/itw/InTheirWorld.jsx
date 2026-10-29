@@ -537,69 +537,153 @@ function CardPreview({ moduleKey }) {
   );
 }
 
+const SOON_INTERACTIVE = [
+  { key: "dyscalculia", icon: "🔢", name: "Dyscalculia", sub: "Do the Math", blurb: "Work with numbers that shift, clocks that confuse and everyday math that feels harder.", meta: "3–4 min" },
+  { key: "dysgraphia", icon: "✏️", name: "Dysgraphia", sub: "Write It Down", blurb: "Try writing while the screen shakes, letters move or there's a delay between thought and output.", meta: "2–4 min" },
+  { key: "auditory", icon: "🎧", name: "Auditory Processing", sub: "Hear It Right", blurb: "Follow instructions in a noisy environment where important words are harder to catch.", meta: "3–4 min" },
+  { key: "executive", icon: "🗂️", name: "Executive Functioning", sub: "Where Do I Start?", blurb: "Plan, remember and complete a multi-step task while time and distractions get in the way.", meta: "4–5 min" },
+];
+
+const SOON_STORIES = [
+  { key: "downsyndrome", icon: "🌱", name: "Down Syndrome / Global Developmental Delay", sub: "Growing at My Own Pace", blurb: "A first-person story about growth, strengths and everyday milestones.", meta: "Story experience" },
+  { key: "dayineyes", icon: "🎒", name: "A Day Through My Eyes", sub: "A Composite Experience", blurb: "Follow a child through their school day and switch between different lenses based on their profile.", meta: "Interactive story" },
+];
+
+const HOW_STEPS = [
+  { n: 1, title: "Choose an experience", text: "Select a topic to explore." },
+  { n: 2, title: "Try the activity", text: "Step into a short, everyday scenario." },
+  { n: 3, title: "Understand what it may mean", text: "See key insights and ways to support." },
+];
+
+function SoonCard({ c }) {
+  return (
+    <div className="itw-mcard itw-soon" aria-disabled="true">
+      <div className="itw-mcard-body">
+        <div className="itw-mcard-top">
+          <div className="itw-mcard-icon" aria-hidden="true">{c.icon}</div>
+          <div className="itw-tag">Coming soon</div>
+        </div>
+        <h3>{c.name}</h3>
+        <div className="itw-soon-sub">{c.sub}</div>
+        <p>{c.blurb}</p>
+        <div className="itw-soon-meta">{c.meta}</div>
+      </div>
+    </div>
+  );
+}
+
 function Landing({ onSelect }) {
+  const pick = (keys) => keys.map((k) => MODULES.find((m) => m.key === k)).filter(Boolean);
+  const renderCard = (m) => (
+    <button key={m.key} className="itw-mcard" data-m={m.key} onClick={() => onSelect(m.key)}>
+      <div className="itw-mcard-body">
+        <div className="itw-mcard-top">
+          <div className="itw-mcard-icon">{MODULE_ICONS[m.key]}</div>
+          <div className="itw-tag">{m.tag}</div>
+        </div>
+        <h3>{m.name}</h3>
+        <p>{m.blurb}</p>
+        <div className="itw-cp-label">
+          How it plays <span className="itw-cp-live" />
+        </div>
+        <div className="itw-card-preview">
+          <CardPreview moduleKey={m.key} />
+        </div>
+        <div className="itw-mcard-bottom">
+          <div className="itw-stat">
+            <b>{m.statBig}</b>
+            <span>{m.statRest}</span>
+          </div>
+          <div className="itw-enter">
+            Try it
+            <svg viewBox="0 0 20 20" fill="none"><path d="M4 10h11M10 5l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </button>
+  );
+
   return (
     <section className="itw-view">
       <div className="itw-blob itw-blob-1" />
       <div className="itw-blob itw-blob-2" />
       <div className="itw-blob itw-blob-3" />
-      <div className="itw-masthead">
-        <div className="itw-eyebrow itw-rise itw-rise-1">Experience What They Feel</div>
-        <h1 className="itw-title itw-rise itw-rise-2">
-          Step into their <span className="itw-accent-word">world<svg className="itw-squiggle" viewBox="0 0 160 14" preserveAspectRatio="none"><path d="M2 9c14-10 26-10 40 0s26 10 40 0 26-10 40 0 26 10 36 2" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"/></svg></span>,<br />just for a few minutes.
-        </h1>
-        <p className="itw-lede itw-rise itw-rise-3">
-          Four short, hands-on experiences that simulate what focus, reading, sensory
-          input, and speaking out loud can feel like for kids with autism, ADHD, dyslexia,
-          or a speech difference — each one a small task you try yourself, paired with
-          real data and practical steps you can use right away.
-        </p>
-        <div className="itw-disclaimer itw-rise itw-rise-4">
-          <strong>Before you start:</strong> these are approximations for empathy, not diagnoses — every child's experience is their own.
+
+      <div className="itw-hero">
+        <div className="itw-masthead">
+          <div className="itw-eyebrow itw-rise itw-rise-1">Experience What They Feel</div>
+          <h1 className="itw-title itw-rise itw-rise-2">
+            Step into their <span className="itw-accent-word">world<svg className="itw-squiggle" viewBox="0 0 160 14" preserveAspectRatio="none"><path d="M2 9c14-10 26-10 40 0s26 10 40 0 26-10 40 0 26 10 36 2" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"/></svg></span>,<br />just for a few minutes.
+          </h1>
+          <p className="itw-lede itw-rise itw-rise-3">
+            Some learning differences are difficult to see from the outside. Short, hands-on
+            experiences let you feel a small part of what reading, focusing, sensory input and
+            speaking out loud can be like for some children — each one paired with real data
+            and practical steps you can use right away.
+          </p>
+          <div className="itw-hero-actions itw-rise itw-rise-4">
+            <button className="itw-cta itw-cta-dark" onClick={() => scrollToId("itw-choose")}>Start an Experience</button>
+          </div>
+          <div className="itw-disclaimer itw-rise itw-rise-4">
+            <strong>Before you start:</strong> these are approximations for empathy, not diagnoses — every child's experience is their own.
+          </div>
         </div>
+        <aside className="itw-hero-card itw-rise itw-rise-3" aria-hidden="true">
+          <img src="/decor/hero-illustration.webp" alt="" />
+          <p>Understanding is the first step towards meaningful support.</p>
+        </aside>
       </div>
 
-      <div className="itw-roadmap itw-rise itw-rise-5" aria-hidden="true">
-        <div className="itw-roadmap-path" />
-        {MODULES.map((m, i) => (
-          <div className="itw-roadmap-stop" key={m.key} style={{ "--stop-accent": `var(--itw-${m.key})` }}>
-            <span className="itw-roadmap-num">{String(i + 1).padStart(2, "0")}</span>
-            <span className="itw-roadmap-label">{m.name}</span>
-          </div>
-        ))}
-      </div>
-      <div className="itw-bento itw-rise itw-rise-5">
-        {MODULES.map((m, i) => (
-          <button key={m.key} className={`itw-mcard itw-bento-${i}`} data-m={m.key} onClick={() => onSelect(m.key)}>
-            <div className="itw-mcard-body">
-              <div className="itw-mcard-top">
-                <div className="itw-mcard-icon">{MODULE_ICONS[m.key]}</div>
-                <div className="itw-tag">{m.tag}</div>
-              </div>
-              <h3>{m.name}</h3>
-              <p>{m.blurb}</p>
-              <div className="itw-cp-label">
-                How it plays <span className="itw-cp-live" />
-              </div>
-              <div className="itw-card-preview">
-                <CardPreview moduleKey={m.key} />
-              </div>
-              <div className="itw-mcard-bottom">
-                <div className="itw-stat">
-                  <b>{m.statBig}</b>
-                  <span>{m.statRest}</span>
-                </div>
-                <div className="itw-enter">
-                  Try it
-                  <svg viewBox="0 0 20 20" fill="none"><path d="M4 10h11M10 5l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </div>
-              </div>
+      <section className="itw-sec itw-rise itw-rise-5" id="itw-choose">
+        <div className="itw-sec-head">
+          <h2>Choose an Experience</h2>
+          <p>Explore a short interactive activity and see an everyday task from a different perspective.</p>
+        </div>
+        <div className="itw-group-label">Interactive Experiences</div>
+        <div className="itw-cardgrid">
+          {pick(["autism", "adhd", "dyslexia"]).map(renderCard)}
+          {SOON_INTERACTIVE.map((c) => <SoonCard key={c.key} c={c} />)}
+        </div>
+        <div className="itw-group-label">Stories &amp; Perspectives</div>
+        <div className="itw-cardgrid">
+          {pick(["speech"]).map(renderCard)}
+          {SOON_STORIES.map((c) => <SoonCard key={c.key} c={c} />)}
+        </div>
+      </section>
+
+      <section className="itw-sec itw-rise itw-rise-5">
+        <div className="itw-sec-head"><h2>How It Works</h2></div>
+        <div className="itw-how">
+          {HOW_STEPS.map((s) => (
+            <div className="itw-how-step" key={s.n}>
+              <span className="itw-how-num">{s.n}</span>
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
             </div>
-          </button>
-        ))}
-      </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="itw-sec itw-why itw-rise itw-rise-5">
+        <h2>Why This Matters</h2>
+        <p>
+          Children are often judged by what adults can see. Understanding what may be happening
+          underneath the behaviour is the first step towards meaningful support, empathy and growth.
+        </p>
+      </section>
 
       <AboutBlock />
+
+      <section className="itw-sec itw-endcta">
+        <div>
+          <h2>Understanding is the first step.<br />Clarity comes next.</h2>
+          <p>Explore assessments and expert support at MANAS Learning.</p>
+        </div>
+        <div className="itw-hero-actions">
+          <a className="itw-cta itw-cta-dark" href="/assessments">Take an Assessment</a>
+          <a className="itw-cta itw-cta-line" href="/consult">Book an Expert Consultation</a>
+        </div>
+      </section>
 
       <div className="itw-foot-note">
         Built to build empathy, not to diagnose. Figures are approximate and drawn from the Dyslexia

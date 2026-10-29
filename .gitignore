@@ -13,3 +13,4 @@ web/data/
 .env.*
 !.env.example
 .vercel
+.env*

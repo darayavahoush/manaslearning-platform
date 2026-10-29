@@ -1,5 +1,6 @@
 import {NextRequest, NextResponse} from 'next/server'
 import {MILO_SNIPPET} from './lib/milo-snippet'
+import {SITE_PATCH} from './lib/site-patch'
 
 // One project, one domain: the live manaslearning.com is reverse-proxied for every path this app does not own,
 // with Milo injected and every booking link pointed at our /consult page.
@@ -47,7 +48,7 @@ export async function proxy(req: NextRequest) {
     const type = r.headers.get('content-type') || ''
     if (type.includes('text/html') || type.includes('text/x-component')) {
       let b = await r.text()
-      if (type.includes('text/html') && MILO_SNIPPET) b = b.includes('</body>') ? b.replace('</body>', () => MILO_SNIPPET + '</body>') : b + MILO_SNIPPET
+      if (type.includes('text/html')) { const inj = SITE_PATCH + (MILO_SNIPPET || ''); b = b.includes('</body>') ? b.replace('</body>', () => inj + '</body>') : b + inj }
       b = b.replace(BOOKING, '/consult')
       return new Response(b, {status: r.status, headers: out})
     }

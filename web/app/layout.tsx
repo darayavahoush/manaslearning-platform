@@ -18,7 +18,7 @@ const BASE = 'https://www.manaslearning.com'
 const LIVE = BASE
 const NAV: [string, string][] = [
   ['Home', '/'], ['About Us', '/#about'], ['Services', '/#services'], ['Experience', '/experience'],
-  ['Assessments', LIVE + '/assessments'], ['Blogs', LIVE + '/blogs'], ['Videos', LIVE + '/videos'], ['Contact Us', '/#contact'],
+  ['Assessments', LIVE + '/assessments'], ['Blogs', LIVE + '/blogs'], ['Videos', LIVE + '/videos'], ['Book a Consultation', '/consult'], ['Contact Us', '/#contact'],
 ]
 const SOCIAL = [
   {label: 'LinkedIn', Icon: FaLinkedinIn, href: 'https://www.linkedin.com/company/manaslearning/', bg: 'bg-[#0a66c2] hover:bg-[#084e96]'},

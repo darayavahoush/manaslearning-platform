@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+:root { --background: #fffaec; --foreground: #222; }
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: #f47522;
+  --color-brand-orange: #f5823d;
+  --color-amber: #f0a321;
+  --color-cream: #fdf8ee;
+  --color-cream-dark: #f5f0e1;
+  --color-text-brown: #76310a;
+  --color-brown-light: #96654a;
+  --color-muted-gray: #a3a39b;
+  --color-card-green: #05b076;
+  --color-accent-green: #b5ffa5;
+  --color-card-yellow: #ffb433;
+  --color-card-blue: #7bb2ff;
+  --color-card-red: #e71d2e;
+  --font-poppins: var(--font-poppins);
+  --font-patrick: var(--font-patrick);
+}
+
+body { background: var(--background); color: var(--foreground); font-family: var(--font-patrick), cursive, sans-serif; }
+
+input, textarea, button { font-family: inherit; }
+
+/* gentle leaf sway */
+@keyframes leaf-sway {
+  0%, 100% { transform: scaleX(var(--fx, 1)) rotate(var(--r, 0deg)); }
+  50% { transform: scaleX(var(--fx, 1)) rotate(calc(var(--r, 0deg) + 6deg)); }
+}
+.leaf-sway { transform-origin: bottom center; transform: scaleX(var(--fx, 1)) rotate(var(--r, 0deg)); animation: leaf-sway 6s ease-in-out infinite; }
+
+
+/* falling leaves */
+@keyframes leaf-fall {
+  0%   { transform: translate3d(0, -12vh, 0) rotate(0deg); opacity: 0; }
+  8%   { opacity: .9; }
+  25%  { transform: translate3d(var(--sway), 22vh, 0) rotate(calc(var(--spin) * .25)); }
+  50%  { transform: translate3d(calc(var(--sway) * -.6), 52vh, 0) rotate(calc(var(--spin) * .5)); }
+  75%  { transform: translate3d(calc(var(--sway) * .8), 80vh, 0) rotate(calc(var(--spin) * .75)); }
+  92%  { opacity: .9; }
+  100% { transform: translate3d(calc(var(--sway) * -.3), 112vh, 0) rotate(var(--spin)); opacity: 0; }
+}
+.leaf-fall { animation: leaf-fall linear infinite; will-change: transform; }
+@media (prefers-reduced-motion: reduce) { .leaf-fall { animation-duration: 30s !important; } }

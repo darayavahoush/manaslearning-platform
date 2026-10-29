@@ -1,6 +1,0 @@
-# Proxy Milo's chat to the vaakbot backend: no CORS needed, and the backend URL stays out of the browser bundle.
-[[redirects]]
-  from = "/api/milo/*"
-  to = "https://REPLACE-WITH-VAAKBOT-BACKEND-URL/api/:splat"
-  status = 200
-  force = true

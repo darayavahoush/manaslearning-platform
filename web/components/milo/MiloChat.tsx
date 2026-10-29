@@ -2,7 +2,7 @@
 import {useEffect, useRef, useState} from 'react'
 
 const API = process.env.NEXT_PUBLIC_MILO_API || '/api/milo'
-const HUMAN_URL = 'https://calendar.app.google/Exsr5Uj7nEH67iKC6' // swap for /consult once booking is live
+const HUMAN_URL = '/consult' 
 const STARTERS = ['What is stimming?', 'What is sensory integration?', 'When should I see a therapist?']
 
 type Src = {source: string; section: string; snippet: string; doc_url: string}

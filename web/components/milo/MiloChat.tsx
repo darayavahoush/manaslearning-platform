@@ -1,5 +1,6 @@
 'use client'
 import {useEffect, useRef, useState} from 'react'
+import ReactMarkdown from 'react-markdown'
 
 const API = process.env.NEXT_PUBLIC_MILO_API || '/api/milo'
 const HUMAN_URL = '/consult' 
@@ -51,7 +52,7 @@ export default function MiloChat() {
           <div key={i} className={`flex gap-2 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {m.role === 'milo' && <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-card-green/20 text-lg" aria-hidden>🦉</span>}
             <div className="max-w-[82%]">
-              <div className={`whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-base leading-snug shadow-sm ${m.role === 'user' ? 'rounded-br-md bg-primary text-white' : 'rounded-bl-md bg-white text-foreground'}`}>{m.text}</div>
+              <div className={`rounded-2xl px-4 py-2.5 text-base leading-snug shadow-sm ${m.role === 'user' ? 'whitespace-pre-wrap rounded-br-md bg-primary text-white' : 'rounded-bl-md bg-white text-foreground [&_p]:my-2 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_strong]:font-bold [&_h1]:font-bold [&_h2]:font-bold [&_h3]:font-bold [&_a]:text-primary [&_a]:underline'}`}>{m.role === 'user' ? m.text : <ReactMarkdown>{m.text}</ReactMarkdown>}</div>
               {m.sources && m.sources.length > 0 && (
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {m.sources.slice(0, 2).map((s, k) => (

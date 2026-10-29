@@ -51,6 +51,7 @@ export async function proxy(req: NextRequest) {
       let b = await r.text()
       if (type.includes('text/html')) { const inj = SITE_PATCH + (MILO_SNIPPET || ''); b = b.includes('</body>') ? b.replace('</body>', () => inj + '</body>') : b + inj }
       b = b.replace(BOOKING, '/consult')
+      if (type.includes('text/html')) b = b.replace('</body>', () => '<script src="/decor/apps-patch.js?v=1" defer></script></body>')
       b = b.replace(/(["'(])\/experience-what-they-feel(?![\w-])/g, '$1/experience')
       return new Response(b, {status: r.status, headers: out})
     }

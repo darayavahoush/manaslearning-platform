@@ -8,11 +8,16 @@ import {FallingLeaves} from './FallingLeaves'
 const poppins = Poppins({subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-poppins'})
 const patrick = Patrick_Hand({subsets: ['latin'], weight: '400', variable: '--font-patrick'})
 
-export const metadata: Metadata = {title: 'Book a Consultation - Manas Learning'}
+export const metadata: Metadata = {
+  title: {default: 'Manas Learning', template: '%s - Manas Learning'},
+  description: 'Learning, speech and sensory support for children, with free consultations, Milo our AI helper, and interactive experiences that show what a child feels.',
+}
 
 const BASE = 'https://www.manaslearning.com'
+const LIVE = BASE
 const NAV: [string, string][] = [
-  ['Home', '/'], ['About Us', '/about'], ['Services', '/services'], ['Blogs', '/blogs'], ['Videos', '/videos'], ['Contact Us', '/contact'],
+  ['Home', '/'], ['About Us', '/#about'], ['Services', '/#services'], ['Experience', '/experience'],
+  ['Blogs', LIVE + '/blogs'], ['Videos', LIVE + '/videos'], ['Contact Us', '/#contact'],
 ]
 const SOCIAL = [
   {label: 'LinkedIn', short: 'in', href: 'https://www.linkedin.com/company/manaslearning/', bg: 'bg-[#0a66c2] hover:bg-[#084e96]'},
@@ -28,18 +33,21 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         <FallingLeaves />
         <header className="sticky top-0 z-50 w-full bg-background px-[10px] py-2 md:py-4">
           <div className="container mx-auto flex items-center justify-between">
-            <a href={BASE} className="relative h-[50px] w-[50px] shrink-0">
+            <a href="/" className="relative h-[50px] w-[50px] shrink-0">
               <img src="/logo.png" alt="Manas Learning Logo" className="absolute inset-0 h-full w-full object-contain object-left lg:scale-150" />
             </a>
             <nav aria-label="Main" className="hidden flex-1 items-center justify-center gap-[36px] lg:flex">
               {NAV.map(([label, href]) => (
-                <a key={label} href={BASE + href} className="text-xl text-black transition-all duration-300 hover:text-2xl hover:text-primary">{label}</a>
+                <a key={label} href={href} className="text-xl text-black transition-colors duration-200 hover:text-primary">{label}</a>
               ))}
             </nav>
-            <a href="/consult" className="rounded-full bg-primary px-5 py-2 text-lg text-white shadow-sm transition hover:bg-brand-orange">Book a consultation</a>
+            <div className="flex items-center gap-3">
+              <a href="/milo" className="hidden rounded-full border-2 border-card-green px-4 py-1.5 text-lg text-black transition hover:bg-card-green/15 sm:inline-block">🦉 Ask Milo</a>
+              <a href="/consult" className="rounded-full bg-primary px-5 py-2 text-lg text-white shadow-sm transition hover:bg-brand-orange">Book a consultation</a>
+            </div>
           </div>
           <nav aria-label="Main mobile" className="container mx-auto mt-2 flex gap-5 overflow-x-auto text-lg lg:hidden">
-            {NAV.map(([label, href]) => <a key={label} href={BASE + href} className="shrink-0 text-black hover:text-primary">{label}</a>)}
+            {NAV.map(([label, href]) => <a key={label} href={href} className="shrink-0 text-black hover:text-primary">{label}</a>)}
           </nav>
         </header>
 
@@ -61,18 +69,27 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
                     <a className="hover:text-card-blue" href="tel:+919884031293">(+91) 988-403-1293</a></p>
                 </div>
               </div>
-              <nav aria-label="Footer navigation">
-                <ul className="space-y-3 text-xl text-black">
-                  {[['Assessments', '/assessments'], ['Know More', '/conditions'], ['About', '/about'], ['Services', '/services'], ['Blogs', '/blogs'], ['Videos', '/videos']].map(([l, h]) => (
-                    <li key={l}><a href={BASE + h} className="hover:text-card-blue">{l}</a></li>
-                  ))}
-                </ul>
-              </nav>
+              <div className="flex gap-16 md:gap-24">
+                <nav aria-label="Footer navigation">
+                  <ul className="space-y-3 text-xl text-black">
+                    {[['Assessments', LIVE + '/assessments'], ['Know More', LIVE + '/conditions'], ['About', '/#about'], ['Services', '/#services'], ['Experience', '/experience'], ['Blogs', LIVE + '/blogs'], ['Videos', LIVE + '/videos']].map(([l, h]) => (
+                      <li key={l}><a href={h} className="hover:text-card-blue">{l}</a></li>
+                    ))}
+                  </ul>
+                </nav>
+                <nav aria-label="Footer consultation">
+                  <ul className="space-y-3 text-xl text-black">
+                    {[['Free Consultation', '/consult'], ['Expert Consultation', '/consult'], ['Ask Milo', '/milo'], ['Join Community', 'https://chat.whatsapp.com/IeobE2Zx5HMBft0xQEK7Vh?mode=gi_t']].map(([l, h]) => (
+                      <li key={l}><a href={h} className="hover:text-card-blue">{l}</a></li>
+                    ))}
+                  </ul>
+                </nav>
+              </div>
             </div>
             <div className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-sm text-black/70">
               <span>© <Year /> Manas Learning. All rights reserved.</span>
-              {[['Terms of Service', '/terms-of-service'], ['Privacy Policy', '/privacy-policy'], ['Cancellation and Refund Policy', '/cancellation-refund-policy']].map(([l, h]) => (
-                <a key={l} href={BASE + h} className="underline hover:text-card-blue">{l}</a>
+              {[['Terms of Service', '/terms-of-service'], ['Privacy Policy', '/privacy-policy'], ['Cancellation and Refund Policy', '/cancellation-refund-policy'], ['Delete your account', '/delete-your-account']].map(([l, h]) => (
+                <a key={l} href={LIVE + h} className="underline hover:text-card-blue">{l}</a>
               ))}
             </div>
           </div>

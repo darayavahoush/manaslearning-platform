@@ -8,9 +8,11 @@ import os
 import uuid
 from typing import Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+import time
+from collections import defaultdict, deque
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from openai import AzureOpenAI
 from azure.search.documents import SearchClient
@@ -123,15 +125,15 @@ def retrieve(question: str):
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=os.environ.get("ALLOWED_ORIGINS", "https://www.manaslearning.com").split(","),
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
 
 
 class ChatRequest(BaseModel):
     session_id: Optional[str] = None
-    message: str
+    message: str = Field(min_length=1, max_length=500)
 
 
 class SourceInfo(BaseModel):
@@ -156,8 +158,18 @@ class FeedbackRequest(BaseModel):
     vote: str
 
 
+_hits = defaultdict(deque)
+def rate_limit(request: Request, limit=12, window=60):
+    ip = (request.headers.get("x-forwarded-for") or request.client.host or "?").split(",")[0].strip()
+    q = _hits[ip]; now = time.time()
+    while q and now - q[0] > window: q.popleft()
+    if len(q) >= limit: raise HTTPException(status_code=429, detail="Too many messages, please slow down.")
+    q.append(now)
+
+
 @app.post("/api/chat", response_model=ChatResponse)
-def chat(req: ChatRequest):
+def chat(req: ChatRequest, request: Request):
+    rate_limit(request)
     session_id = req.session_id or str(uuid.uuid4())
     history = get_session(session_id)
 

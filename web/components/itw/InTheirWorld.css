@@ -1043,3 +1043,12 @@ body:has(.itw-dark) .itw-leaf{--leaf-op:.38;filter:drop-shadow(0 0 6px currentCo
 @keyframes itw-leaf-sway{from{transform:rotate(-22deg) translateX(-14px);}to{transform:rotate(22deg) translateX(14px);}}
 @media (prefers-reduced-motion:reduce){.itw-leaves{display:none;}}
 @media print{.itw-leaves{display:none !important;}}
+
+/* ---- Homepage leaves on /experience: natural green in light mode, soft glowing mint in dark mode ---- */
+.itw-leafwrap{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:1;}
+.itw-leafimg{position:absolute;top:0;user-select:none;opacity:.8;}
+body:has(.itw-dark) .itw-leafimg{
+  filter:hue-rotate(35deg) saturate(.75) brightness(1.35) drop-shadow(0 0 8px rgba(150,230,190,.45));
+  opacity:.55;
+}
+@media print{.itw-leafwrap{display:none !important;}}

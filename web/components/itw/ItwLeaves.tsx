@@ -1,30 +1,33 @@
 'use client'
 
-// Fixed list (no random in render) so server and client always agree.
+// Same leaves as the homepage / consult page (app/FallingLeaves.tsx): same image, same fall animation.
+// Sits above the Experience background (which has its own paint) but pointer-events are off.
 const LEAVES = [
-  {l: 4,  s: 26, d: 17, o: 0,  c: 0}, {l: 11, s: 18, d: 22, o: 6,  c: 2},
-  {l: 18, s: 30, d: 19, o: 12, c: 1}, {l: 26, s: 20, d: 24, o: 3,  c: 3},
-  {l: 34, s: 24, d: 18, o: 9,  c: 0}, {l: 42, s: 16, d: 23, o: 15, c: 2},
-  {l: 50, s: 28, d: 20, o: 5,  c: 1}, {l: 58, s: 22, d: 25, o: 11, c: 3},
-  {l: 66, s: 26, d: 18, o: 2,  c: 0}, {l: 73, s: 18, d: 21, o: 14, c: 2},
-  {l: 81, s: 30, d: 19, o: 7,  c: 1}, {l: 88, s: 20, d: 24, o: 10, c: 3},
-  {l: 94, s: 24, d: 17, o: 4,  c: 0}, {l: 47, s: 14, d: 26, o: 18, c: 1},
+  {left: 4,  size: 34, dur: 14, delay: 0,  sway: 40,  spin: 280},
+  {left: 14, size: 26, dur: 18, delay: 5,  sway: -50, spin: -220},
+  {left: 25, size: 40, dur: 16, delay: 9,  sway: 60,  spin: 320},
+  {left: 38, size: 24, dur: 20, delay: 2,  sway: -35, spin: -260},
+  {left: 50, size: 32, dur: 15, delay: 12, sway: 45,  spin: 240},
+  {left: 62, size: 28, dur: 19, delay: 7,  sway: -55, spin: -300},
+  {left: 73, size: 38, dur: 17, delay: 3,  sway: 50,  spin: 360},
+  {left: 84, size: 26, dur: 21, delay: 10, sway: -40, spin: -240},
+  {left: 93, size: 34, dur: 16, delay: 6,  sway: 35,  spin: 300},
 ]
 
 export default function ItwLeaves() {
   return (
-    <div className="itw-leaves" aria-hidden="true">
-      {LEAVES.map((v, i) => (
-        <span
-          key={i}
-          className={`itw-leaf itw-leaf-c${v.c}`}
-          style={{left: `${v.l}%`, width: v.s, height: v.s, animationDuration: `${v.d}s`, animationDelay: `-${v.o}s`}}
-        >
-          <svg viewBox="0 0 24 24" width="100%" height="100%">
-            <path d="M12 1C5 7 4 15 12 23 20 15 19 7 12 1Z" fill="currentColor" />
-            <path d="M12 5v15" stroke="rgba(255,255,255,.45)" strokeWidth="1" fill="none" />
-          </svg>
-        </span>
+    <div aria-hidden="true" className="itw-leafwrap">
+      {LEAVES.map((l, i) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={i} src="/decor/leaf.webp" alt=""
+          className="leaf-fall itw-leafimg"
+          style={{
+            left: `${l.left}%`, width: l.size * 2.6, maxWidth: '22vw',
+            animationDuration: `${l.dur}s`, animationDelay: `-${l.delay}s`,
+            ['--sway' as string]: `${l.sway}px`, ['--spin' as string]: `${l.spin}deg`,
+          }}
+        />
       ))}
     </div>
   )

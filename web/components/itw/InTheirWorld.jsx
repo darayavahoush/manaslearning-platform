@@ -9,6 +9,10 @@ import React, {
   createContext,
 } from "react";
 import "./InTheirWorld.css";
+import "./media/media.css";
+import CueIcon from "./media/CueIcon";
+import EffectsToggle from "./media/EffectsToggle";
+import QuietCorner from "./media/QuietCorner";
 
 /* ============================================================
    In Their World
@@ -104,25 +108,25 @@ const SettingsContext = createContext({ soundOn: true });
 
 // Exact filename extension for each sound "kind", as uploaded to HF.
 const SOUND_FILE_EXT = {
-  announce: "flac",
+  announce: "mp3",
   argue: "mp3",
-  bell: "wav",
-  buzzphone: "wav",
-  call: "wav",
+  bell: "mp3",
+  buzzphone: "mp3",
+  call: "mp3",
   crash: "mp3",
-  flicker: "wav",
-  footsteps: "wav",
-  glare: "wav",
+  flicker: "mp3",
+  footsteps: "mp3",
+  glare: "mp3",
   hum: "mp3",
   laugh: "mp3",
   rustle: "mp3",
-  scrape: "wav",
+  scrape: "mp3",
   screech: "mp3",
-  shout: "flac",
-  slam: "wav",
-  tap: "wav",
-  tray: "m4a",
-  whir: "wav",
+  shout: "mp3",
+  slam: "mp3",
+  tap: "mp3",
+  tray: "mp3",
+  whir: "mp3",
 };
 
 /* ---------------- Audio engine (Web Audio API) ----------------
@@ -149,11 +153,21 @@ class AudioEngine {
       if (!Ctx) return null;
       this.ctx = new Ctx();
       this.master = this.ctx.createGain();
-      this.master.gain.value = 0.55;
+      this.master.gain.value = 0.12;
       this.master.connect(this.ctx.destination);
     }
     if (this.ctx.state === "suspended") this.ctx.resume();
     return this.ctx;
+  }
+
+  setMasterGain(val, rampSec = 0.18) {
+    const ctx = this.ensure();
+    if (!ctx || !this.master) return;
+    const now = ctx.currentTime;
+    const target = Math.max(0.0001, Math.min(0.55, val));
+    this.master.gain.cancelScheduledValues(now);
+    this.master.gain.setValueAtTime(this.master.gain.value, now);
+    this.master.gain.linearRampToValueAtTime(target, now + Math.max(0.15, rampSec));
   }
 
   // Fetches the real clip for this kind from the Hugging Face dataset
@@ -195,7 +209,9 @@ class AudioEngine {
     const src = ctx.createBufferSource();
     src.buffer = buffer;
     const g = ctx.createGain();
-    g.gain.value = Math.max(0.05, Math.min(1.5, gain)) * 0.7;
+    const target = Math.max(0.05, Math.min(1.0, gain)) * 0.7;
+    g.gain.setValueAtTime(0.0001, ctx.currentTime);
+    g.gain.linearRampToValueAtTime(target, ctx.currentTime + 0.16);
     src.connect(g);
     g.connect(this.master);
     src.start();
@@ -280,19 +296,35 @@ class AudioEngine {
     if (!d) return;
     const ctx = this.ctx;
     if (!ctx) return;
-    d.g.gain.linearRampToValueAtTime(Math.max(0.0001, value), ctx.currentTime + 0.15);
+    const now = ctx.currentTime;
+    d.g.gain.cancelScheduledValues(now);
+    d.g.gain.setValueAtTime(d.g.gain.value, now);
+    d.g.gain.linearRampToValueAtTime(Math.max(0.0001, value), now + 0.18);
   }
 
   stopDrone(id) {
     const d = this.drones.get(id);
     if (!d) return;
-    d.oscs.forEach((o) => {
-      try {
-        o.stop();
-      } catch (e) {
-        /* already stopped */
-      }
-    });
+    const ctx = this.ctx;
+    if (ctx) {
+      const now = ctx.currentTime;
+      d.g.gain.cancelScheduledValues(now);
+      d.g.gain.setValueAtTime(d.g.gain.value, now);
+      d.g.gain.linearRampToValueAtTime(0.0001, now + 0.18);
+      setTimeout(() => {
+        d.oscs.forEach((o) => {
+          try {
+            o.stop();
+          } catch (e) {}
+        });
+      }, 200);
+    } else {
+      d.oscs.forEach((o) => {
+        try {
+          o.stop();
+        } catch (e) {}
+      });
+    }
     this.drones.delete(id);
   }
 
@@ -1186,13 +1218,36 @@ const ROUND_TIME_LIMIT = (round) => Math.max(1.1, 2.8 - round * 0.22);
 
 function AutismSim() {
   const { soundOn } = useContext(SettingsContext);
+  const [effectsEnabled, setEffectsEnabled] = useState(true);
+  const [autismSoundOn, setAutismSoundOn] = useState(false);
+  const [autismVolume, setAutismVolume] = useState(0.08);
+  const effectiveSoundOn = soundOn && autismSoundOn;
   const [phase, setPhase] = useState("intro"); // intro | task | done
   const [filter, setFilter] = useState(10); // exploration-only, before the graded task starts
   const [scenario, setScenario] = useState("mall"); // mall | school | grocery
   const [perspective, setPerspective] = useState("central"); // central | peripheral
-  const [glare, setGlare] = useState(false);
+  const [flicker, setFlicker] = useState(false);
+  const flickerTimeoutRef = useRef(null);
+  const videoRef = useRef(null);
   const [videoIdx, setVideoIdx] = useState(0);
   const [videoFailCount, setVideoFailCount] = useState(0);
+
+  // Pause or resume background video based on effects switch
+  useEffect(() => {
+    if (!videoRef.current) return;
+    if (effectsEnabled) {
+      videoRef.current.play?.().catch(() => {});
+    } else {
+      videoRef.current.pause?.();
+    }
+  }, [effectsEnabled, videoIdx, scenario]);
+
+  // Master volume control with safe ramp
+  useEffect(() => {
+    if (effectiveSoundOn) {
+      audio.setMasterGain(autismVolume, 0.18);
+    }
+  }, [effectiveSoundOn, autismVolume]);
 
   // Cycle to the setting's next clip when the current one ends, looping
   // back to the first once the list is exhausted. Reset to clip 0 and
@@ -1243,7 +1298,6 @@ function AutismSim() {
   const cueIdRef = useRef(0);
   const cueTimeoutsRef = useRef([]);
   const intensityBucket = Math.round(intensity * 10);
-  const glareTimeoutRef = useRef(null);
 
   useEffect(() => {
     cueTimeoutsRef.current.forEach(clearTimeout);
@@ -1258,13 +1312,12 @@ function AutismSim() {
       const top = 8 + Math.random() * 74;
       const left = 4 + Math.random() * 76;
       setCues((prev) => [...prev.slice(-6), { id, ...evt, top, left }]);
-      if (soundOn) audio.cue(evt.kind, 0.4 + (intensityBucket / 10) * 0.9);
-      // A glare/flash event gets an actual bright flash across the whole
-      // scene, on top of its sound — this isn't meant to be subtle.
-      if (evt.kind === "glare") {
-        setGlare(true);
-        clearTimeout(glareTimeoutRef.current);
-        glareTimeoutRef.current = setTimeout(() => setGlare(false), 260);
+      if (effectiveSoundOn) audio.cue(evt.kind, 0.4 + (intensityBucket / 10) * 0.6);
+      // Gentle brightness flicker (0.94 to 1.0, max 2 per second, disabled when effects are off)
+      if (effectsEnabled && (evt.kind === "glare" || evt.kind === "flicker")) {
+        setFlicker(true);
+        clearTimeout(flickerTimeoutRef.current);
+        flickerTimeoutRef.current = setTimeout(() => setFlicker(false), 550);
       }
       const life = setTimeout(() => {
         setCues((prev) => prev.filter((c) => c.id !== id));
@@ -1281,20 +1334,20 @@ function AutismSim() {
       cueTimeoutsRef.current = [];
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, intensityBucket, soundOn, scenario]);
+  }, [phase, intensityBucket, effectiveSoundOn, scenario, effectsEnabled]);
 
   useEffect(() => {
-    if (!soundOn) {
+    if (!effectiveSoundOn) {
       audio.stopDrone("autism");
       return;
     }
     audio.startDrone("autism", { freqs: [98, 147, 201, 302], type: "sawtooth" });
     return () => audio.stopDrone("autism");
-  }, [soundOn]);
+  }, [effectiveSoundOn]);
 
   useEffect(() => {
-    audio.setDroneGain("autism", soundOn ? intensity * 0.055 : 0.0001);
-  }, [intensity, soundOn]);
+    audio.setDroneGain("autism", effectiveSoundOn ? intensity * autismVolume * 0.5 : 0.0001);
+  }, [intensity, effectiveSoundOn, autismVolume]);
 
   const sceneLabel = SCENARIOS[scenario].label.toLowerCase();
   const readout =
@@ -1391,7 +1444,7 @@ function AutismSim() {
         setTimeouts(timeoutsRef.current);
         missesRef.current += 1;
         setMisses(missesRef.current);
-        if (soundOn) audio.sweep({ from: 260, to: 90, duration: 0.3, type: "sawtooth", gain: 0.09 });
+        if (effectiveSoundOn) audio.sweep({ from: 260, to: 90, duration: 0.3, type: "sawtooth", gain: 0.08 });
         advanceRound(roundNum);
       } else {
         setTimeLeft(remaining);
@@ -1433,7 +1486,7 @@ function AutismSim() {
     const elapsed = (performance.now() - roundStartRef.current) / 1000;
     timeAccRef.current += elapsed;
     clearTimer();
-    if (soundOn) audio.tone({ freq: 700, type: "sine", duration: 0.16, gain: 0.13 });
+    if (effectiveSoundOn) audio.tone({ freq: 700, type: "sine", duration: 0.16, gain: 0.12 });
     advanceRound(round);
   };
 
@@ -1441,7 +1494,7 @@ function AutismSim() {
     if (phase !== "task") return;
     missesRef.current += 1;
     setMisses(missesRef.current);
-    if (soundOn) audio.sweep({ from: 500, to: 150, duration: 0.2, type: "sawtooth", gain: 0.1 });
+    if (effectiveSoundOn) audio.sweep({ from: 500, to: 150, duration: 0.2, type: "sawtooth", gain: 0.09 });
   };
 
   const retry = () => {
@@ -1454,7 +1507,7 @@ function AutismSim() {
   useEffect(() => {
     return () => {
       clearTimer();
-      clearTimeout(glareTimeoutRef.current);
+      clearTimeout(flickerTimeoutRef.current);
     };
   }, []);
 
@@ -1462,7 +1515,43 @@ function AutismSim() {
   const targetColor = camouflage > 0 ? `rgba(229,72,77,${(1 - camouflage * 0.75).toFixed(2)})` : undefined;
 
   return (
-    <div className="itw-sim">
+    <div className={`itw-sim${!effectsEnabled ? " itw-effects-off" : ""}`}>
+      {/* Media & Sensory Safety Controls Bar */}
+      <div className="itw-media-bar">
+        <div className="itw-media-bar-group">
+          <EffectsToggle
+            effectsEnabled={effectsEnabled}
+            onToggle={setEffectsEnabled}
+          />
+        </div>
+        <div className="itw-media-bar-group itw-volume-group">
+          <button
+            type="button"
+            className={`itw-btn-ghost${autismSoundOn ? " itw-active" : ""}`}
+            onClick={() => setAutismSoundOn((v) => !v)}
+            aria-pressed={autismSoundOn}
+          >
+            {autismSoundOn ? "🔊 Autism sound: On" : "🔇 Autism sound: Off"}
+          </button>
+          {autismSoundOn && (
+            <div className="itw-volume-slider-wrap">
+              <label htmlFor="itw-autism-vol" className="itw-mono" style={{ fontSize: 11 }}>Vol</label>
+              <input
+                id="itw-autism-vol"
+                type="range"
+                min="0.01"
+                max="0.12"
+                step="0.01"
+                value={autismVolume}
+                onChange={(e) => setAutismVolume(parseFloat(e.target.value))}
+                className="itw-volume-slider"
+              />
+              <span className="itw-volume-readout">{Math.round((autismVolume / 0.12) * 100)}%</span>
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="itw-sim-instructions">
         Pick a place and a way of looking, then find the one real dot among the decoys, {TOTAL_ROUNDS} rounds — it only gets louder from here.
       </div>
@@ -1522,18 +1611,20 @@ function AutismSim() {
       >
         {!videoBroken && (
           <video
+            ref={videoRef}
             key={`${scenario}-${videoIdx}`}
             className="itw-scene-video"
             src={sceneVideos[videoIdx]}
-            autoPlay
+            autoPlay={effectsEnabled}
             muted
             playsInline
+            preload="none"
             onEnded={advanceVideo}
             onError={handleVideoError}
           />
         )}
         {!videoBroken && <div className="itw-scene-video-overlay" aria-hidden="true" />}
-        <div className={`itw-glare-overlay${glare ? " itw-glare-flash" : ""}`} aria-hidden="true" />
+        <div className={`itw-glare-overlay${flicker && effectsEnabled ? " itw-gentle-flicker" : ""}`} aria-hidden="true" />
         {phase === "task" && (
           <div className="itw-round-timer">
             <div className="itw-round-timer-fill" style={{ width: `${timerPct}%` }} />
@@ -1581,7 +1672,9 @@ function AutismSim() {
             className="itw-sound-cue"
             style={{ top: `${c.top}%`, left: `${c.left}%` }}
           >
-            <span className="itw-cue-icon" aria-hidden="true">{c.icon}</span>
+            <span className="itw-cue-icon" aria-hidden="true">
+              <CueIcon name={c.kind} size={16} />
+            </span>
             <span className="itw-cue-text">{c.text}</span>
           </div>
         ))}
@@ -1666,13 +1759,14 @@ function AutismModule({ onBack, onNavigate }) {
       <section className="itw-block itw-help-block" id="autism-help">
         <div className="itw-help-head">
           <div className="itw-help-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7.5-4.6-10-9.3C.4 8 2 4.5 5.6 4a5 5 0 0 1 6.4 2 5 5 0 0 1 6.4-2C22 4.5 23.6 8 22 11.7 19.5 16.4 12 21 12 21Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>
+            <CueIcon name="headphones" size={20} />
           </div>
           <div>
             <div className="itw-help-eyebrow">What actually helps</div>
             <h3 className="itw-help-title">How you can help</h3>
           </div>
         </div>
+        <QuietCorner />
         <StrategyTabs
           home={[
             "Build in a low-stimulation space the child can retreat to before overload turns into a meltdown, not after.",

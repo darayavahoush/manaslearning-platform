@@ -16,6 +16,7 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { compressSounds, compressVideos } from "./compress-itw-assets.mjs";
 
 const BASE = "https://huggingface.co/datasets/anabaena/autism-profile-assets/resolve/main";
 
@@ -75,6 +76,9 @@ function main() {
       fetchTo(`${BASE}/videos/${scene}/${n}.mp4`, `public/videos/${scene}/${n}.mp4`);
     }
   }
+  console.log("[fetch-assets] compressing audio & video media...");
+  compressSounds();
+  compressVideos();
   console.log("[fetch-assets] done.");
 }
 

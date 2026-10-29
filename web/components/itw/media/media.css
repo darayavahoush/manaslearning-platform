@@ -1,0 +1,221 @@
+/* components/itw/media/media.css */
+
+/* --- Effects Toggle & Safety Controls --- */
+.itw-media-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--itw-card, #ffffff);
+  border: 1px solid var(--itw-border, #e5e8eb);
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+
+.itw-media-bar-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.itw-effects-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--itw-border, #d3d9de);
+  background: transparent;
+  color: var(--itw-ink, #1f2d3d);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.itw-effects-toggle-btn:hover {
+  background: var(--itw-hover, rgba(0, 0, 0, 0.04));
+}
+
+.itw-effects-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  transition: background 0.15s ease;
+}
+
+.itw-effects-status-dot.itw-dot-active {
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+}
+
+.itw-effects-status-dot.itw-dot-off {
+  background: #94a3b8;
+}
+
+.itw-effects-toggle-btn.itw-effects-disabled {
+  border-color: #cbd5e1;
+  color: var(--itw-muted, #64748b);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* --- Gentle Flicker (0.94 to 1.0, max 2/sec) --- */
+.itw-gentle-flicker {
+  animation: itw-flicker-gentle 0.58s ease-in-out;
+}
+
+@keyframes itw-flicker-gentle {
+  0% { filter: brightness(1); }
+  35% { filter: brightness(0.94); }
+  70% { filter: brightness(0.98); }
+  100% { filter: brightness(1); }
+}
+
+/* Reduced Motion & Effects Off Overrides */
+@media (prefers-reduced-motion: reduce) {
+  .itw-gentle-flicker,
+  .itw-sound-cue,
+  .itw-glare-overlay,
+  .itw-glare-flash {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+.itw-effects-off .itw-gentle-flicker,
+.itw-effects-off .itw-glare-overlay,
+.itw-effects-off .itw-glare-flash {
+  animation: none !important;
+  display: none !important;
+  filter: none !important;
+  opacity: 0 !important;
+}
+
+.itw-effects-off .itw-sound-cue {
+  animation: none !important;
+  opacity: 0.95;
+}
+
+/* --- Autism Volume & Sound Controls --- */
+.itw-volume-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.itw-volume-slider-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.itw-volume-slider {
+  width: 90px;
+  height: 6px;
+  accent-color: #2f9e6a;
+  cursor: pointer;
+}
+
+.itw-volume-readout {
+  font-family: var(--itw-font-mono, monospace);
+  font-size: 11px;
+  color: var(--itw-muted, #64748b);
+  min-width: 32px;
+}
+
+/* --- Cue SVG Icons --- */
+.itw-cue-svg {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.itw-sound-cue .itw-cue-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- Quiet Corner Sanctuary --- */
+.itw-quiet-corner {
+  margin: 24px 0 16px;
+  background: var(--itw-card, #ffffff);
+  border: 1px solid var(--itw-border, #dce4de);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.itw-quiet-corner-scene {
+  width: 100%;
+  background: #f4f7f4;
+  display: flex;
+  justify-content: center;
+}
+
+.itw-quiet-corner-svg {
+  width: 100%;
+  max-width: 680px;
+  height: auto;
+  display: block;
+}
+
+.itw-quiet-corner-bar {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--itw-border, #e5ebe6);
+  background: #fafbf9;
+}
+
+.itw-quiet-corner-info {
+  flex: 1 1 280px;
+}
+
+.itw-quiet-corner-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #274031;
+  margin-bottom: 3px;
+}
+
+.itw-quiet-corner-dek {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--itw-muted, #56695c);
+  margin: 0;
+}
+
+.itw-quiet-sound-btn {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #c8d8cd;
+  background: #ffffff;
+  color: #274031;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.itw-quiet-sound-btn:hover {
+  background: #eef5f0;
+  border-color: #a8c4b0;
+}
+
+.itw-quiet-sound-btn.itw-active {
+  background: #2f9e6a;
+  color: #ffffff;
+  border-color: #2f9e6a;
+}

@@ -5,13 +5,15 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import ffmpegStatic from "ffmpeg-static";
+const FFMPEG = ffmpegStatic || "ffmpeg";
 
 const SOUNDS_DIR = "public/sounds";
 const VIDEOS_DIR = "public/videos";
 
 function checkFfmpeg() {
   try {
-    execFileSync("ffmpeg", ["-version"], { stdio: "ignore" });
+    execFileSync(FFMPEG, ["-version"], { stdio: "ignore" });
     return true;
   } catch {
     return false;
@@ -39,7 +41,7 @@ export function compressSounds() {
     const finalDest = path.join(SOUNDS_DIR, `${baseName}.mp3`);
 
     try {
-      execFileSync("ffmpeg", ["-y", "-i", src, "-c:a", "libmp3lame", "-b:a", "96k", "-ar", "44100", tmpDest], { stdio: "ignore" });
+      execFileSync(FFMPEG, ["-y", "-i", src, "-c:a", "libmp3lame", "-b:a", "96k", "-ar", "44100", tmpDest], { stdio: "ignore" });
       if (src !== finalDest) fs.unlinkSync(src);
       fs.renameSync(tmpDest, finalDest);
       const after = fs.statSync(finalDest).size;
@@ -68,7 +70,7 @@ export function compressVideos() {
         console.log(`[compress] video ${vPath} is ${sizeMB.toFixed(1)}MB (> 3MB). Compressing...`);
         const tmp = path.join(sceneDir, `${v}.tmp.mp4`);
         try {
-          execFileSync("ffmpeg", [
+          execFileSync(FFMPEG, [
             "-y", "-i", vPath,
             "-c:v", "libx264", "-b:v", "320k", "-maxrate", "400k", "-bufsize", "600k",
             "-c:a", "aac", "-b:a", "48k",

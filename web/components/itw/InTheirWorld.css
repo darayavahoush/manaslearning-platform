@@ -1188,3 +1188,26 @@ body:has(.itw-dark) .itw-leafimg{
 .itw-flow-more-card span{color:var(--itw-muted);font-size:.9rem;}
 .itw-flow-more-card i{position:absolute;right:16px;bottom:14px;font-style:normal;}
 .itw-flow-more-card:hover{border-color:var(--itw-accent);}
+
+/* ---- fix: leaves behind content, hero card fills + readable caption ---- */
+.itw-leafwrap{z-index:1;}
+.itw-view{position:relative;z-index:2;}
+
+.itw-hero-card{position:relative;overflow:hidden;border-radius:28px;}
+.itw-hero-card img{display:block;width:100%;height:100%;min-height:340px;object-fit:cover;object-position:center 30%;}
+.itw-hero-card > :not(img){
+  position:absolute;left:0;right:0;bottom:0;margin:0;
+  padding:56px 24px 22px;color:#fff;
+  background:linear-gradient(to top,rgba(10,20,15,.82),rgba(10,20,15,0));
+  text-shadow:0 1px 6px rgba(0,0,0,.45);
+}
+
+/* leaves live inside .itw-root: above its background, below .itw-view */
+.itw-root > .itw-leafwrap{z-index:0;}
+
+/* dark mode: CTA "Take an Assessment" button text was invisible */
+body:has(.itw-dark) .itw-root a[href="/assessments"]{
+  background:#eef2ec !important;
+  color:#14201a !important;
+  font-weight:700;
+}

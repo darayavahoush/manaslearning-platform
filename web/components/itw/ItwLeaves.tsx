@@ -1,7 +1,11 @@
 'use client'
 
-// Same leaves as the homepage / consult page (app/FallingLeaves.tsx): same image, same fall animation.
-// Sits above the Experience background (which has its own paint) but pointer-events are off.
+import {useEffect, useState} from 'react'
+import {createPortal} from 'react-dom'
+
+// Same leaves as the homepage. They are rendered INSIDE .itw-root (via a portal) so they
+// sit above the Experience background but behind the content (.itw-view, z-index 2).
+// Outside .itw-root they could never go behind the text, because .itw-root is isolated.
 const LEAVES = [
   {left: 4,  size: 34, dur: 14, delay: 0,  sway: 40,  spin: 280},
   {left: 14, size: 26, dur: 18, delay: 5,  sway: -50, spin: -220},
@@ -15,7 +19,30 @@ const LEAVES = [
 ]
 
 export default function ItwLeaves() {
-  return (
+  const [host, setHost] = useState<Element | null>(null)
+
+  useEffect(() => {
+    const find = () => document.querySelector('.itw-root')
+    const el = find()
+    if (el) {
+      setHost(el)
+      return
+    }
+    // The Experience component loads lazily, so wait until its root exists.
+    const mo = new MutationObserver(() => {
+      const e = find()
+      if (e) {
+        setHost(e)
+        mo.disconnect()
+      }
+    })
+    mo.observe(document.body, {childList: true, subtree: true})
+    return () => mo.disconnect()
+  }, [])
+
+  if (!host) return null
+
+  return createPortal(
     <div aria-hidden="true" className="itw-leafwrap">
       {LEAVES.map((l, i) => (
         // eslint-disable-next-line @next/next/no-img-element
@@ -29,6 +56,7 @@ export default function ItwLeaves() {
           }}
         />
       ))}
-    </div>
+    </div>,
+    host,
   )
 }

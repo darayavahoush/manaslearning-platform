@@ -2273,64 +2273,431 @@ function DyslexiaSim() {
   );
 }
 
-function DyslexiaModule({ onBack, onNavigate }) {
+/* ================= Shared flow pieces (breadcrumb, stepper, radio questions) ================= */
+
+function FlowCrumbs({ name, onBack }) {
   return (
-    <ModuleShell
-      accent="dyslexia"
-      eyebrow="Dyslexia"
-      title="Smart, and still stuck on the sentence."
-      dek="Dyslexia isn't about seeing letters backwards — it's a difference in how the brain connects written symbols to sounds. Comprehension is usually fine. Decoding the words to get there is the hard part."
-      sections={[
-        { id: "dyslexia-try", label: "Try it" },
-        { id: "dyslexia-data", label: "The data" },
-        { id: "dyslexia-help", label: "How to help" },
-      ]}
-      onBack={onBack}
-      onNavigate={onNavigate}
-    >
-      <section className="itw-block" id="dyslexia-try">
-        <div className="itw-block-label">Try it — Reading Challenge</div>
-        <DyslexiaSim />
-      </section>
-      <section className="itw-block" id="dyslexia-data">
-        <div className="itw-block-label">The data</div>
-        <FactsGrid
-          facts={[
-            { num: "10–15%", label: "of Indian children are estimated to be dyslexic", src: "Dyslexia Association of India" },
-            { num: "6.2%", label: "pooled prevalence of dyslexia specifically, from a meta-analysis of Indian studies", src: "Indian systematic review & meta-analysis, 2022" },
-            { num: "~80%", label: "of specific learning disorders diagnosed in India are dyslexia, same as the global pattern", src: "Indian systematic review, 2023" },
-          ]}
-          note="A dyslexic child who reads slowly and understands nothing on a timed test may understand everything when given more time or the text read aloud. India's pooled estimate for all learning disabilities combined runs around 10.7% of school-age children — individual studies range from about 2% to over 30% depending on region and screening method."
-          onComplete={() => scrollToId("dyslexia-help")}
-        />
-      </section>
-      <section className="itw-block itw-help-block" id="dyslexia-help">
-        <div className="itw-help-head">
-          <div className="itw-help-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7.5-4.6-10-9.3C.4 8 2 4.5 5.6 4a5 5 0 0 1 6.4 2 5 5 0 0 1 6.4-2C22 4.5 23.6 8 22 11.7 19.5 16.4 12 21 12 21Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>
+    <nav className="itw-crumbs" aria-label="Breadcrumb">
+      <button type="button" className="itw-crumb-link" onClick={onBack}>Experience What They Feel</button>
+      <span aria-hidden="true">›</span>
+      <span aria-current="page">{name}</span>
+    </nav>
+  );
+}
+
+function FlowStepper({ steps, current }) {
+  return (
+    <ol className="itw-stepper" aria-label="Progress">
+      {steps.map((s, i) => (
+        <li
+          key={s.key}
+          className={`itw-step${i === current ? " itw-step-on" : ""}${i < current ? " itw-step-done" : ""}`}
+          aria-current={i === current ? "step" : undefined}
+        >
+          <span className="itw-step-dot">{i + 1}</span>
+          <span className="itw-step-label">{s.label}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function FlowQuestions({ questions, answers, onPick }) {
+  return (
+    <ol className="itw-flow-qs">
+      {questions.map((item, qi) => (
+        <li key={qi} className="itw-flow-q">
+          <p>{item.q}</p>
+          <div className="itw-flow-opts" role="radiogroup" aria-label={item.q}>
+            {item.options.map((opt, oi) => (
+              <label key={oi} className={`itw-flow-opt${answers[qi] === oi ? " itw-active" : ""}`}>
+                <input type="radio" name={`flow-q-${qi}`} checked={answers[qi] === oi} onChange={() => onPick(qi, oi)} />
+                <span>{opt}</span>
+              </label>
+            ))}
           </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/* ================= DYSLEXIA: 8-page flow ================= */
+
+const DYS_STEPS = [
+  { key: "instructions", label: "Instructions" },
+  { key: "read", label: "Read" },
+  { key: "questions", label: "Questions" },
+  { key: "learn", label: "Learn" },
+];
+const DYS_STEP_INDEX = { instructions: 0, read: 1, questions: 2, result: 3, explain: 3, support: 3, next: 3 };
+const READ_SECONDS = 45;
+
+const DYS_NOTICE = [
+  { icon: "🐢", text: "Slower reading speed" },
+  { icon: "✏️", text: "Difficulty with spelling" },
+  { icon: "📏", text: "Losing track of lines" },
+  { icon: "⏳", text: "Needing more time and support" },
+];
+
+const DYS_SUPPORT = [
+  "Structured, multisensory teaching approaches",
+  "Clear and consistent instructions",
+  "Extra time for reading and writing",
+  "Support with decoding and comprehension",
+  "Encouragement and a positive learning environment",
+];
+
+function DyslexiaModule({ onBack, onNavigate }) {
+  const { soundOn } = useContext(SettingsContext);
+  const [step, setStep] = useState("intro"); // intro | instructions | read | questions | result | explain | support | next
+  const [mode, setMode] = useState("simulated");
+  const [chars, setChars] = useState(() => READING_TEXT.split(""));
+  const [timeLeft, setTimeLeft] = useState(READ_SECONDS);
+  const [answers, setAnswers] = useState(() => Array(COMPREHENSION_QUESTIONS.length).fill(null));
+  const [lines, setLines] = useState([]);
+  const timesRef = useRef({ typical: null, simulated: null });
+  const lastRef = useRef(null);
+  const startRef = useRef(0);
+  const doneRef = useRef(false);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
+
+  const finishReading = () => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    const t = Math.min(READ_SECONDS, (performance.now() - startRef.current) / 1000);
+    timesRef.current[mode] = t;
+    lastRef.current = { mode, t };
+    if (soundOn) audio.tone({ freq: 480, type: "sine", duration: 0.2, gain: 0.1 });
+    setAnswers(Array(COMPREHENSION_QUESTIONS.length).fill(null));
+    setStep("questions");
+  };
+
+  useEffect(() => {
+    if (step !== "read") return undefined;
+    doneRef.current = false;
+    setTimeLeft(READ_SECONDS);
+    startRef.current = performance.now();
+    let swapId = null;
+    if (mode === "simulated") {
+      swapId = setInterval(() => {
+        let swapped = false;
+        setChars(
+          READING_TEXT.split("").map((orig) => {
+            const lower = orig.toLowerCase();
+            if (SWAP_PAIRS[lower] && Math.random() < 0.35) {
+              swapped = true;
+              const s = SWAP_PAIRS[lower];
+              return orig === lower ? s : s.toUpperCase();
+            }
+            return orig;
+          })
+        );
+        if (swapped && soundOn) audio.noiseBurst({ duration: 0.05, gain: 0.03, filterFreq: 3200 });
+      }, 700);
+    } else {
+      setChars(READING_TEXT.split(""));
+    }
+    const tickId = setInterval(() => {
+      const left = READ_SECONDS - (performance.now() - startRef.current) / 1000;
+      setTimeLeft(Math.max(0, Math.ceil(left)));
+      if (left <= 0) finishReading();
+    }, 250);
+    return () => {
+      clearInterval(swapId);
+      clearInterval(tickId);
+    };
+  }, [step, mode, soundOn]);
+
+  const pick = (qi, oi) => {
+    setAnswers((prev) => {
+      const copy = [...prev];
+      copy[qi] = oi;
+      return copy;
+    });
+  };
+
+  const submit = () => {
+    const total = COMPREHENSION_QUESTIONS.length;
+    const correct = answers.filter((a, i) => a === COMPREHENSION_QUESTIONS[i].correct).length;
+    const { mode: m, t } = lastRef.current;
+    const { typical, simulated } = timesRef.current;
+    const pct = Math.round((correct / total) * 100);
+    const out = [`You read the passage in ${t.toFixed(1)}s in the ${m} view and got ${correct} of ${total} questions right.`];
+    if (typical != null && simulated != null) {
+      const ratio = simulated / typical;
+      out.push(
+        `The simulated view took ${ratio.toFixed(1)}× as long as the typical one for you — a gap dyslexic readers live with on every page, not just this one passage.`
+      );
+      out.push(
+        pct === 100
+          ? "Full marks on comprehension, though — which is the real point: understanding was never the hard part, decoding speed was."
+          : "Reading speed and understanding are different skills — a slow, careful reader can still land every question."
+      );
+    } else {
+      out.push("Try the other view next, so the speed comparison actually means something.");
+    }
+    setLines(out);
+    if (soundOn) {
+      audio.tone({ freq: 523, type: "sine", duration: 0.16, gain: 0.1 });
+      audio.tone({ freq: 659, type: "sine", duration: 0.2, gain: 0.09, delay: 0.09 });
+    }
+    setStep("result");
+  };
+
+  const tryAgain = () => {
+    const { typical, simulated } = timesRef.current;
+    setMode(typical == null ? "typical" : simulated == null ? "simulated" : mode === "typical" ? "simulated" : "typical");
+    setStep("read");
+  };
+
+  const allAnswered = answers.every((a) => a !== null);
+  const stepIndex = DYS_STEP_INDEX[step];
+  const mmss = `00:${String(timeLeft).padStart(2, "0")}`;
+  const more = MODULES.filter((m) => m.key !== "dyslexia");
+
+  return (
+    <section className="itw-view itw-module itw-flow" data-accent="dyslexia">
+      <FlowCrumbs name="Dyslexia" onBack={onBack} />
+      {stepIndex !== undefined && <FlowStepper steps={DYS_STEPS} current={stepIndex} />}
+
+      {step === "intro" && (
+        <div className="itw-flow-page itw-flow-intro" key="intro">
           <div>
-            <div className="itw-help-eyebrow">What actually helps</div>
-            <h3 className="itw-help-title">How you can help</h3>
+            <h2 className="itw-flow-title">Dyslexia</h2>
+            <div className="itw-flow-sub">Read Like I Do</div>
+            <p className="itw-flow-lead">
+              Reading can sometimes be more effortful for children with dyslexia. Letters may look similar, words may
+              seem to move or blur, and it can be harder to keep track of lines while reading. This experience gives you
+              a small glimpse of what that might feel like.
+            </p>
+            <ul className="itw-flow-meta">
+              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
+              <li><span aria-hidden="true">🖱️</span> A simple interactive experience</li>
+              <li><span aria-hidden="true">ℹ️</span> Not a diagnostic tool</li>
+            </ul>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
+              Start the Experience →
+            </button>
+          </div>
+          <div className="itw-flow-letters" aria-hidden="true">
+            {["a", "b", "d", "p", "q", "n"].map((c, i) => (
+              <span key={i} style={{ animationDelay: `${i * 0.45}s` }}>{c}</span>
+            ))}
           </div>
         </div>
-        <StrategyTabs
-          home={[
-            "Read aloud together well past the age other kids stop needing it — it protects a love of stories while decoding catches up.",
-            "Use audiobooks and text-to-speech for content, so struggling to decode doesn't block access to ideas.",
-            "Praise effort and strategy, not speed — a slow, correct reader is not behind in intelligence.",
-            "Ask the school about a formal evaluation early; structured, phonics-based intervention works best the sooner it starts.",
-          ]}
-          classroom={[
-            "Give extended time on reading-heavy tests — the accommodation targets decoding speed, not comprehension.",
-            "Offer notes or slides in advance so class time can go to discussion instead of first-pass decoding.",
-            "Never ask a dyslexic student to read aloud cold, in front of the class, without warning.",
-            "Use structured literacy / explicit phonics instruction — it's the intervention with the strongest evidence behind it.",
-          ]}
-        />
-        <HelpFooter />
-      </section>
-    </ModuleShell>
+      )}
+
+      {step === "instructions" && (
+        <div className="itw-flow-page itw-flow-narrow" key="instructions">
+          <h2 className="itw-flow-title itw-center">Before you begin</h2>
+          <p className="itw-flow-lead itw-center">In the next screen, you will read a short passage and answer a few questions.</p>
+          <ul className="itw-flow-list">
+            <li><span aria-hidden="true">⏱️</span> You will have limited time.</li>
+            <li><span aria-hidden="true">🔀</span> Some words may look slightly different.</li>
+            <li><span aria-hidden="true">📏</span> It may be a little harder to keep track of the lines.</li>
+            <li><span aria-hidden="true">💛</span> Try to read and answer as best as you can.</li>
+          </ul>
+          <p className="itw-flow-note itw-center">
+            This is a simplified experience and not a diagnostic tool. Every child's experience with dyslexia is different.
+          </p>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("read")}>Start Reading</button>
+          </div>
+        </div>
+      )}
+
+      {step === "read" && (
+        <div className="itw-flow-page itw-flow-narrow" key="read">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Read the passage below</h2>
+            <div className="itw-timer" role="timer" aria-label="Time left">
+              <span>Time left</span>
+              <b>{mmss}</b>
+            </div>
+          </div>
+          <div className="itw-strat-tabs" style={{ padding: "6px 0 14px" }}>
+            <button className={`itw-btn-ghost${mode === "typical" ? " itw-active" : ""}`} onClick={() => setMode("typical")}>
+              Typical view
+            </button>
+            <button className={`itw-btn-ghost${mode === "simulated" ? " itw-active" : ""}`} onClick={() => setMode("simulated")}>
+              Simulated view
+            </button>
+          </div>
+          <Viewfinder
+            hud={{ left: mode === "simulated" ? "SIMULATED VIEW" : "TYPICAL VIEW", right: "" }}
+            stageStyle={{ minHeight: "auto", background: "var(--itw-panel)" }}
+          >
+            <div className={`itw-reading-passage${mode === "simulated" ? " itw-simulated" : ""}`}>
+              {chars.map((ch, i) => (
+                <span className="itw-ch" key={i} style={{ animationDelay: `${(i % 12) * 0.18}s` }}>
+                  {ch}
+                </span>
+              ))}
+            </div>
+          </Viewfinder>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("instructions")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={finishReading}>I've finished reading</button>
+          </div>
+        </div>
+      )}
+
+      {step === "questions" && (
+        <div className="itw-flow-page itw-flow-narrow" key="questions">
+          <h2 className="itw-flow-title">Answer the questions</h2>
+          <p className="itw-flow-note">The passage is hidden now — answer from what you remember, the way a real reader has to.</p>
+          <FlowQuestions questions={COMPREHENSION_QUESTIONS} answers={answers} onPick={pick} />
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("read")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" disabled={!allAnswered} onClick={submit}>Submit</button>
+          </div>
+        </div>
+      )}
+
+      {step === "result" && (
+        <div className="itw-flow-page itw-flow-narrow itw-center" key="result">
+          <div className="itw-flow-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 20V11M12 20V4M18 20v-6" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"/></svg>
+          </div>
+          <h2 className="itw-flow-title">You've completed the activity!</h2>
+          <p className="itw-flow-lead">
+            <b>How did that feel?</b><br />Many people find it more challenging than expected.
+          </p>
+          <div className="itw-flow-box">
+            <p>There are no right or wrong scores here. This experience is meant to help you understand, not to test you.</p>
+            <ul className="itw-flow-lines">
+              {lines.map((l, i) => <li key={i}>{l}</li>)}
+            </ul>
+          </div>
+          <div className="itw-flow-nav itw-flow-nav-center">
+            <button type="button" className="itw-cta itw-cta-line" onClick={tryAgain}>Try Again</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("explain")}>Continue</button>
+          </div>
+        </div>
+      )}
+
+      {step === "explain" && (
+        <div className="itw-flow-page" key="explain">
+          <div className="itw-flow-intro itw-flow-intro-tight">
+            <div>
+              <h2 className="itw-flow-title">What you just experienced</h2>
+              <p className="itw-flow-lead">
+                In the simulated view, letters like b, d, p and q kept trading places and the text shifted while you read.
+                These are some of the visual confusions that can make reading slow and tiring for children with dyslexia.
+                They are approximations for empathy, and every child's experience is different.
+              </p>
+            </div>
+            <div className="itw-flow-letters itw-flow-letters-sm" aria-hidden="true">
+              {["a", "b", "d", "p", "q", "n"].map((c, i) => (
+                <span key={i} style={{ animationDelay: `${i * 0.45}s` }}>{c}</span>
+              ))}
+            </div>
+          </div>
+          <div className="itw-flow-callout">
+            <b>Dyslexia is not simply seeing letters backwards.</b>
+            <p>
+              It is a language-processing difference that can affect reading fluency, decoding, spelling and even
+              confidence. Understanding is usually fine — decoding the words to get there is the hard part.
+            </p>
+          </div>
+          <h3 className="itw-flow-h3">You may also notice</h3>
+          <div className="itw-flow-notice">
+            {DYS_NOTICE.map((n) => (
+              <div key={n.text} className="itw-flow-notice-item">
+                <span aria-hidden="true">{n.icon}</span>
+                <p>{n.text}</p>
+              </div>
+            ))}
+          </div>
+          <h3 className="itw-flow-h3">The data</h3>
+          <FactsGrid
+            facts={[
+              { num: "10–15%", label: "of Indian children are estimated to be dyslexic", src: "Dyslexia Association of India" },
+              { num: "6.2%", label: "pooled prevalence of dyslexia specifically, from a meta-analysis of Indian studies", src: "Indian systematic review & meta-analysis, 2022" },
+              { num: "~80%", label: "of specific learning disorders diagnosed in India are dyslexia, same as the global pattern", src: "Indian systematic review, 2023" },
+            ]}
+            note="A dyslexic child who reads slowly and understands nothing on a timed test may understand everything when given more time or the text read aloud. India's pooled estimate for all learning disabilities combined runs around 10.7% of school-age children — individual studies range from about 2% to over 30% depending on region and screening method."
+            onComplete={() => {}}
+          />
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("result")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("support")}>Next</button>
+          </div>
+        </div>
+      )}
+
+      {step === "support" && (
+        <div className="itw-flow-page itw-flow-narrow" key="support">
+          <h2 className="itw-flow-title">What can help?</h2>
+          <p className="itw-flow-lead">
+            With the right support, children with dyslexia can learn, grow and thrive. Here are some strategies that can make a difference.
+          </p>
+          <ul className="itw-flow-support">
+            {DYS_SUPPORT.map((s) => <li key={s}>{s}</li>)}
+          </ul>
+          <section className="itw-block itw-help-block">
+            <div className="itw-help-head">
+              <div>
+                <div className="itw-help-eyebrow">What actually helps</div>
+                <h3 className="itw-help-title">At home and in the classroom</h3>
+              </div>
+            </div>
+            <StrategyTabs
+              home={[
+                "Read aloud together well past the age other kids stop needing it — it protects a love of stories while decoding catches up.",
+                "Use audiobooks and text-to-speech for content, so struggling to decode doesn't block access to ideas.",
+                "Praise effort and strategy, not speed — a slow, correct reader is not behind in intelligence.",
+                "Ask the school about a formal evaluation early; structured, phonics-based intervention works best the sooner it starts.",
+              ]}
+              classroom={[
+                "Give extended time on reading-heavy tests — the accommodation targets decoding speed, not comprehension.",
+                "Offer notes or slides in advance so class time can go to discussion instead of first-pass decoding.",
+                "Never ask a dyslexic student to read aloud cold, in front of the class, without warning.",
+                "Use structured literacy / explicit phonics instruction — it's the intervention with the strongest evidence behind it.",
+              ]}
+            />
+            <HelpFooter />
+          </section>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("explain")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("next")}>Next</button>
+          </div>
+        </div>
+      )}
+
+      {step === "next" && (
+        <div className="itw-flow-page itw-flow-narrow" key="next">
+          <h2 className="itw-flow-title">Understanding creates a kinder tomorrow</h2>
+          <p className="itw-flow-lead">
+            Every child learns differently. If you have concerns about your child's learning or would like professional
+            guidance, we're here to support you.
+          </p>
+          <div className="itw-flow-nav">
+            <a className="itw-cta itw-cta-dark" href="/assessments">Take an Assessment →</a>
+            <a className="itw-cta itw-cta-line" href="/consult">Book a Consultation →</a>
+          </div>
+          <h3 className="itw-flow-h3">Explore More Experiences</h3>
+          <div className="itw-flow-more">
+            {more.map((m) => (
+              <button type="button" key={m.key} className="itw-flow-more-card" data-m={m.key} onClick={() => onNavigate(m.key)}>
+                <b>{m.name}</b>
+                <span>{m.tag}</span>
+                <i aria-hidden="true">→</i>
+              </button>
+            ))}
+          </div>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("support")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-line" onClick={onBack}>All experiences</button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -2770,7 +3137,7 @@ export default function InTheirWorld() {
   useEffect(() => {
     window.localStorage.setItem("itw-dark-mode", darkMode ? "1" : "0");
     const prevBg = document.body.style.background;
-    document.body.style.background = darkMode ? "#14180f" : "#f5e2f0";
+    document.body.style.background = darkMode ? "#14180f" : "#fdf8ee";
     return () => {
       document.body.style.background = prevBg;
     };

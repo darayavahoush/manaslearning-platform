@@ -9,7 +9,7 @@ const LIVE = process.env.LIVE_ORIGIN || 'https://www.manaslearning.com'
 const OWN = [
   '/consult', '/milo', '/experience', '/confirm', '/team',
   '/api/types', '/api/availability', '/api/slots', '/api/book', '/api/confirm', '/api/team', '/api/milo',
-  '/web-static', '/logo.png', '/decor',
+  '/web-static', '/logo.png', '/decor', '/sounds', '/videos',
   '/_next/webpack-hmr', '/__nextjs',
 ]
 const owns = (p: string) => OWN.some((o) => p === o || p.startsWith(o + '/'))

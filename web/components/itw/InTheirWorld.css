@@ -16,20 +16,20 @@
 
 .itw-root{
   min-height:100vh;
-  --itw-bg:#f8e5f0;
-  --itw-bg-2:#eee0f5;
+  --itw-bg:#fdf8ee;
+  --itw-bg-2:#f3ecd6;
   --itw-panel:#ffffff;
-  --itw-panel-2:#f8f1f7;
-  --itw-border:#ecdcea;
+  --itw-panel-2:#faf5e8;
+  --itw-border:#eadfc6;
   --itw-text:#20281f;
   --itw-muted:#5b6657;
   --itw-muted-dim:#8a9384;
 
   --itw-paper:#ffffff;
-  --itw-paper-2:#f8f1f7;
+  --itw-paper-2:#faf5e8;
   --itw-paper-text:#20281f;
   --itw-paper-muted:#5b6657;
-  --itw-paper-border:#ecdcea;
+  --itw-paper-border:#eadfc6;
 
   --itw-autism:#2c8c72;
   --itw-autism-soft:rgba(44,140,114,.14);
@@ -49,7 +49,7 @@
 
   position:relative;
   background:
-    linear-gradient(135deg, #fbdce8 0%, #f5e2f0 45%, #e9dbf5 100%),
+    linear-gradient(135deg, #fdf8ee 0%, #fbf3df 50%, #f3f6e4 100%),
     var(--itw-bg);
   transition:background-color .35s ease, color .35s ease;
   color:var(--itw-text);
@@ -950,3 +950,96 @@
   background:var(--itw-autism-soft);
 }
 @media (max-width:600px){.itw-about{flex-direction:column;padding:26px 22px;}}
+
+/* Warm cream + sage/butter watercolour instead of pink (light mode) */
+.itw-view { --itw-bg:#fdf8ee; --itw-border:#eadfc6; }
+.itw-blob-1 { background: radial-gradient(closest-side, rgba(181,255,165,.45), rgba(181,255,165,0)) !important; }
+.itw-blob-2 { background: radial-gradient(closest-side, rgba(255,214,120,.42), rgba(255,214,120,0)) !important; }
+.itw-blob-3 { background: radial-gradient(closest-side, rgba(150,200,180,.35), rgba(150,200,180,0)) !important; }
+
+/* keep dark-mode blobs as originally designed (the light override above uses !important) */
+.itw-dark .itw-blob-1{background:radial-gradient(circle,rgba(86,210,177,.22),transparent 70%) !important;}
+.itw-dark .itw-blob-2{background:radial-gradient(circle,rgba(210,115,86,.2),transparent 70%) !important;}
+.itw-dark .itw-blob-3{background:radial-gradient(circle,rgba(210,160,86,.18),transparent 70%) !important;}
+
+/* ---- Site decor: same illustrations/brushes as the Manas Learning homepage ---- */
+.itw-root::before,
+.itw-root::after{content:"";position:absolute;pointer-events:none;z-index:-1;}
+
+/* hero illustration, top right, in the empty half next to the heading */
+.itw-root::before{
+  top:90px;right:2vw;width:min(30vw,440px);aspect-ratio:1/1;
+  background:url('/decor/hero-illustration.webp') center/contain no-repeat;
+  opacity:.95;
+}
+/* green brush on the left, yellow brush bottom right, leaves in two corners */
+.itw-root::after{
+  inset:0;
+  background-image:
+    url('/decor/brush-green.webp'),
+    url('/decor/brush-yellow.webp'),
+    url('/decor/leaf.webp'),
+    url('/decor/leaf.webp');
+  background-repeat:no-repeat;
+  background-position:-6vw 38%, calc(100% + 4vw) 96%, 1vw 98%, 99% 52%;
+  background-size:min(32vw,460px) auto, min(34vw,500px) auto, 110px auto, 90px auto;
+  opacity:.75;
+}
+/* dark mode: keep it present but quiet */
+.itw-dark.itw-root::before,.itw-dark .itw-root::before{opacity:.5;}
+.itw-dark.itw-root::after,.itw-dark .itw-root::after{opacity:.2;}
+/* narrow screens: the illustration would sit under the text */
+@media (max-width:1100px){.itw-root::before{display:none;}}
+@media print{.itw-root::before,.itw-root::after{display:none !important;}}
+
+/* ---- Falling leaves (colours switch with light / dark mode) ---- */
+.itw-leaves{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:2;}
+.itw-leaf{position:absolute;top:-8vh;display:block;opacity:0;animation:itw-leaf-fall linear infinite;will-change:transform;}
+.itw-leaf svg{display:block;animation:itw-leaf-sway 5s ease-in-out infinite alternate;transform-origin:50% 0;}
+.itw-leaf:nth-child(even) svg{animation-duration:6.5s;animation-direction:alternate-reverse;}
+
+/* light mode: sage, leaf green, amber, orange */
+.itw-leaf-c0{color:#6aa84f;} .itw-leaf-c1{color:#2c8c72;}
+.itw-leaf-c2{color:#f0a321;} .itw-leaf-c3{color:#f47522;}
+.itw-leaf{--leaf-op:.55;}
+
+/* dark mode: softer, glowing mint / gold / peach / sage */
+body:has(.itw-dark) .itw-leaf-c0{color:#9be3b0;} body:has(.itw-dark) .itw-leaf-c1{color:#86e3c8;}
+body:has(.itw-dark) .itw-leaf-c2{color:#e8c872;} body:has(.itw-dark) .itw-leaf-c3{color:#e8a07a;}
+body:has(.itw-dark) .itw-leaf{--leaf-op:.38;filter:drop-shadow(0 0 6px currentColor);}
+
+@keyframes itw-leaf-fall{
+  0%{transform:translate3d(0,-8vh,0) rotate(0deg);opacity:0;}
+  8%{opacity:var(--leaf-op);}
+  90%{opacity:var(--leaf-op);}
+  100%{transform:translate3d(6vw,112vh,0) rotate(300deg);opacity:0;}
+}
+@keyframes itw-leaf-sway{from{transform:rotate(-22deg) translateX(-14px);}to{transform:rotate(22deg) translateX(14px);}}
+@media (prefers-reduced-motion:reduce){.itw-leaves{display:none;}}
+@media print{.itw-leaves{display:none !important;}}
+
+/* ---- Falling leaves (colours switch with light / dark mode) ---- */
+.itw-leaves{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:2;}
+.itw-leaf{position:absolute;top:-8vh;display:block;opacity:0;animation:itw-leaf-fall linear infinite;will-change:transform;}
+.itw-leaf svg{display:block;animation:itw-leaf-sway 5s ease-in-out infinite alternate;transform-origin:50% 0;}
+.itw-leaf:nth-child(even) svg{animation-duration:6.5s;animation-direction:alternate-reverse;}
+
+/* light mode: sage, leaf green, amber, orange */
+.itw-leaf-c0{color:#6aa84f;} .itw-leaf-c1{color:#2c8c72;}
+.itw-leaf-c2{color:#f0a321;} .itw-leaf-c3{color:#f47522;}
+.itw-leaf{--leaf-op:.55;}
+
+/* dark mode: softer, glowing mint / gold / peach / sage */
+body:has(.itw-dark) .itw-leaf-c0{color:#9be3b0;} body:has(.itw-dark) .itw-leaf-c1{color:#86e3c8;}
+body:has(.itw-dark) .itw-leaf-c2{color:#e8c872;} body:has(.itw-dark) .itw-leaf-c3{color:#e8a07a;}
+body:has(.itw-dark) .itw-leaf{--leaf-op:.38;filter:drop-shadow(0 0 6px currentColor);}
+
+@keyframes itw-leaf-fall{
+  0%{transform:translate3d(0,-8vh,0) rotate(0deg);opacity:0;}
+  8%{opacity:var(--leaf-op);}
+  90%{opacity:var(--leaf-op);}
+  100%{transform:translate3d(6vw,112vh,0) rotate(300deg);opacity:0;}
+}
+@keyframes itw-leaf-sway{from{transform:rotate(-22deg) translateX(-14px);}to{transform:rotate(22deg) translateX(14px);}}
+@media (prefers-reduced-motion:reduce){.itw-leaves{display:none;}}
+@media print{.itw-leaves{display:none !important;}}

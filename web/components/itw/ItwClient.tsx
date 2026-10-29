@@ -1,4 +1,5 @@
 'use client'
+import ItwLeaves from './ItwLeaves'
 import {Component, useEffect, useState, type ComponentType, type ReactNode} from 'react'
 
 const ORIGINAL = 'https://intheirworld.vercel.app'
@@ -37,7 +38,7 @@ export default function ItwClient() {
     return () => { dead = true; clearTimeout(timer) }
   }, [])
 
-  if (Comp) return <Boundary><Comp /></Boundary>
+  if (Comp) return <><ItwLeaves /><Boundary><Comp /></Boundary></>
   if (err) return <Problem message={err} />
   return <p className="p-10 text-center text-xl">Loading the experience…</p>
 }

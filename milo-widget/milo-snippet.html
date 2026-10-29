@@ -1,0 +1,133 @@
+<script>
+(function () {
+  var API = 'https://vaakbot-api.nicestone-17f7dcba.eastus2.azurecontainerapps.io/api';
+  var HUMAN = 'https://calendar.app.google/Exsr5Uj7nEH67iKC6';
+  var STARTERS = ['What is stimming?', 'What is sensory integration?', 'When should I see a therapist?'];
+  var state = {msgs: [{r: 'milo', t: 'Hoo-hoo! I\u2019m Milo \uD83E\uDD89 Ask me anything about stimming, sensory needs and everyday speech and learning questions. I\u2019m here, no rush.'}], sid: null, busy: false};
+  try { state.sid = sessionStorage.getItem('milo-sid'); } catch (e) {}
+
+  var css = [
+    '.milo-root{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--color-background,#fffaec);font-family:var(--font-patrick),"Patrick Hand",cursive;color:#222}',
+    '.milo-list{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:10px}',
+    '.milo-row{display:flex;gap:8px;align-items:flex-start}.milo-row.u{justify-content:flex-end}',
+    '.milo-av{flex:none;width:32px;height:32px;border-radius:50%;background:rgba(5,176,118,.18);display:flex;align-items:center;justify-content:center;font-size:18px}',
+    '.milo-wrap{max-width:82%}',
+    '.milo-b{padding:9px 14px;border-radius:18px;font-size:16px;line-height:1.3;white-space:pre-wrap;box-shadow:0 1px 3px rgba(0,0,0,.08)}',
+    '.milo-b.m{background:#fff;border-bottom-left-radius:6px}.milo-b.u{background:var(--color-primary,#f47522);color:#fff;border-bottom-right-radius:6px}',
+    '.milo-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}',
+    '.milo-src{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;padding:2px 10px;border-radius:999px;background:rgba(5,176,118,.15);color:rgba(34,34,34,.75);text-decoration:none}',
+    '.milo-src:hover{background:rgba(5,176,118,.3)}',
+    '.milo-cta{display:inline-block;margin-top:8px;font-size:14px;padding:6px 14px;border-radius:999px;background:var(--color-primary,#f47522);color:#fff;text-decoration:none}',
+    '.milo-vote{display:flex;gap:4px;margin-top:4px}.milo-vote button{border:0;background:none;cursor:pointer;font-size:14px;padding:2px 8px;border-radius:999px;opacity:.6}',
+    '.milo-vote button:hover{background:rgba(5,176,118,.2)}.milo-vote button.on{background:rgba(5,176,118,.3);opacity:1}',
+    '.milo-start{display:flex;flex-wrap:wrap;gap:8px;padding-left:40px}',
+    '.milo-start button{border:1px solid rgba(5,176,118,.4);background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer}.milo-start button:hover{background:rgba(5,176,118,.15)}',
+    '.milo-dots{display:flex;gap:4px;background:#fff;padding:12px 16px;border-radius:18px;border-bottom-left-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.08)}',
+    '.milo-dots i{width:8px;height:8px;border-radius:50%;background:var(--color-card-green,#05b076);animation:milo-bounce 1s infinite}.milo-dots i:nth-child(2){animation-delay:.15s}.milo-dots i:nth-child(3){animation-delay:.3s}',
+    '@keyframes milo-bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}',
+    '.milo-form{border-top:1px solid rgba(0,0,0,.06);background:#fff;padding:10px 12px}',
+    '.milo-line{display:flex;gap:8px;align-items:center}',
+    '.milo-in{flex:1;min-width:0;border:1px solid rgba(0,0,0,.12);background:var(--color-background,#fffaec);border-radius:999px;padding:10px 16px;font:inherit;font-size:16px;outline:none}',
+    '.milo-in:focus{border-color:var(--color-card-green,#05b076);box-shadow:0 0 0 3px rgba(5,176,118,.2)}',
+    '.milo-send{flex:none;width:40px;height:40px;border:0;border-radius:50%;background:var(--color-card-green,#05b076);color:#fff;font-size:16px;cursor:pointer}.milo-send:disabled{opacity:.4;cursor:default}',
+    '.milo-note{margin:6px 0 0;text-align:center;font-size:11px;color:rgba(34,34,34,.5)}'
+  ].join('');
+  var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+
+  function mount(body) {
+    body.dataset.milo = '1';
+    var panel = body.parentElement;
+    panel.style.setProperty('width', 'min(390px, 100%)', 'important');
+    var S = {display: 'flex', 'flex-direction': 'column', 'align-items': 'stretch', 'justify-content': 'flex-start', padding: '0', gap: '0', 'text-align': 'left', height: 'min(470px, 62vh)'};
+    for (var k in S) body.style.setProperty(k, S[k], 'important');
+    while (body.firstChild) body.removeChild(body.firstChild);
+
+    var root = el('div', 'milo-root'), list = el('div', 'milo-list');
+    list.setAttribute('aria-live', 'polite');
+    var form = el('form', 'milo-form'), line = el('div', 'milo-line');
+    var input = el('input', 'milo-in'); input.maxLength = 500; input.placeholder = 'Ask Milo a question\u2026';
+    var send = el('button', 'milo-send', '\u27A4'); send.type = 'submit'; send.setAttribute('aria-label', 'Send');
+    line.appendChild(input); line.appendChild(send); form.appendChild(line);
+    form.appendChild(el('p', 'milo-note', 'Milo shares general guidance, not medical advice.'));
+    root.appendChild(list); root.appendChild(form); body.appendChild(root);
+
+    function render() {
+      list.textContent = '';
+      state.msgs.forEach(function (m, i) {
+        var row = el('div', 'milo-row' + (m.r === 'u' ? ' u' : ''));
+        if (m.r === 'm') row.appendChild(el('span', 'milo-av', '\uD83E\uDD89'));
+        var wrap = el('div', 'milo-wrap');
+        wrap.appendChild(el('div', 'milo-b ' + m.r, m.t));
+        if (m.src && m.src.length) {
+          var chips = el('div', 'milo-chips');
+          m.src.slice(0, 2).forEach(function (s) {
+            var a = el('a', 'milo-src', '\uD83D\uDCD6 ' + String(s.source).replace(/\.[a-z]+$/i, ''));
+            a.href = API + String(s.doc_url).replace(/^\/api/, ''); a.target = '_blank'; a.rel = 'noopener noreferrer';
+            chips.appendChild(a);
+          });
+          wrap.appendChild(chips);
+        }
+        if (m.declined) { var c = el('a', 'milo-cta', 'Talk to a human, book free counselling'); c.href = HUMAN; c.target = '_blank'; c.rel = 'noopener noreferrer'; wrap.appendChild(c); }
+        if (m.r === 'm' && m.logId) {
+          var v = el('div', 'milo-vote');
+          [['up', '\uD83D\uDC4D', 'Helpful'], ['down', '\uD83D\uDC4E', 'Not helpful']].forEach(function (x) {
+            var b = el('button', m.vote === x[0] ? 'on' : '', x[1]); b.type = 'button'; b.setAttribute('aria-label', x[2]);
+            b.onclick = function () { vote(i, x[0]); };
+            v.appendChild(b);
+          });
+          wrap.appendChild(v);
+        }
+        row.appendChild(wrap); list.appendChild(row);
+      });
+      if (state.msgs.length === 1 && !state.busy) {
+        var sb = el('div', 'milo-start');
+        STARTERS.forEach(function (s) { var b = el('button', '', s); b.type = 'button'; b.onclick = function () { ask(s); }; sb.appendChild(b); });
+        list.appendChild(sb);
+      }
+      if (state.busy) {
+        var r = el('div', 'milo-row'); r.appendChild(el('span', 'milo-av', '\uD83E\uDD89'));
+        var d = el('div', 'milo-dots'); d.setAttribute('aria-label', 'Milo is typing'); d.appendChild(el('i')); d.appendChild(el('i')); d.appendChild(el('i'));
+        r.appendChild(d); list.appendChild(r);
+      }
+      send.disabled = state.busy;
+      list.scrollTop = list.scrollHeight;
+    }
+
+    function vote(i, v) {
+      var m = state.msgs[i]; if (!m.logId || m.vote) return;
+      m.vote = v; render();
+      fetch(API + '/feedback', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({log_id: m.logId, tier: m.tier, vote: v})}).catch(function () {});
+    }
+
+    function ask(q) {
+      q = (q || '').trim(); if (!q || state.busy) return;
+      input.value = ''; state.busy = true; state.msgs.push({r: 'u', t: q}); render();
+      fetch(API + '/chat', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({session_id: state.sid, message: q})})
+        .then(function (r) { if (r.status === 429) throw new Error('slow'); if (!r.ok) throw new Error('fail'); return r.json(); })
+        .then(function (j) {
+          state.sid = j.session_id; try { sessionStorage.setItem('milo-sid', j.session_id); } catch (e) {}
+          state.msgs.push({r: 'm', t: j.reply, src: j.sources, logId: j.log_id, tier: j.tier, declined: j.tier === 'none'});
+        })
+        .catch(function (e) {
+          state.msgs.push({r: 'm', t: e.message === 'slow' ? 'Let me catch my breath for a moment. Please try again in a minute.' : 'Oh no, I couldn\u2019t reach my books just now. Please try again in a moment.'});
+        })
+        .then(function () { state.busy = false; render(); input.focus(); });
+    }
+
+    form.onsubmit = function (e) { e.preventDefault(); ask(input.value); };
+    render();
+  }
+
+  var queued = false;
+  function scan() {
+    queued = false;
+    var ps = document.querySelectorAll('p');
+    for (var i = 0; i < ps.length; i++) {
+      if (ps[i].textContent.trim() === 'Coming Soon' && ps[i].parentElement && !ps[i].parentElement.dataset.milo) { mount(ps[i].parentElement); return; }
+    }
+  }
+  new MutationObserver(function () { if (!queued) { queued = true; requestAnimationFrame(scan); } }).observe(document.body, {childList: true, subtree: true});
+})();
+</script>

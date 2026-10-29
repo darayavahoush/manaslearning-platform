@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "predev": "node scripts/fetch-itw-assets.mjs",
+    "prebuild": "node scripts/fetch-itw-assets.mjs"
   },
   "dependencies": {
     "@types/nodemailer": "^8.0.2",

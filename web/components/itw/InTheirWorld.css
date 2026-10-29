@@ -1,0 +1,952 @@
+/*
+  In Their World — styles
+  Design: a field-observer's case file. You step into a dark, immersive
+  "viewfinder" to run each simulation, then step back out into a warm
+  paper case-file for the data and strategies that follow. All selectors
+  are scoped under .itw-root and prefixed itw- so this drops into an
+  existing site without leaking styles. Fonts load via <link> in index.html.
+*/
+
+/* Global reset — the page has no other stylesheet, so without this the
+   browser's default 8px body margin shows as a white border around the
+   whole card, especially visible in dark mode. */
+
+
+
+
+.itw-root{
+  min-height:100vh;
+  --itw-bg:#f8e5f0;
+  --itw-bg-2:#eee0f5;
+  --itw-panel:#ffffff;
+  --itw-panel-2:#f8f1f7;
+  --itw-border:#ecdcea;
+  --itw-text:#20281f;
+  --itw-muted:#5b6657;
+  --itw-muted-dim:#8a9384;
+
+  --itw-paper:#ffffff;
+  --itw-paper-2:#f8f1f7;
+  --itw-paper-text:#20281f;
+  --itw-paper-muted:#5b6657;
+  --itw-paper-border:#ecdcea;
+
+  --itw-autism:#2c8c72;
+  --itw-autism-soft:rgba(44,140,114,.14);
+  --itw-adhd:#8c6520;
+  --itw-adhd-soft:rgba(140,101,32,.14);
+  --itw-dyslexia:#59288c;
+  --itw-dyslexia-soft:rgba(89,40,140,.14);
+  --itw-speech:#8c422c;
+  --itw-speech-soft:rgba(140,66,44,.14);
+
+  --itw-accent:var(--itw-autism);
+  --itw-accent-soft:var(--itw-autism-soft);
+
+  --font-display:'Nunito',sans-serif;
+  --font-body:'Libre Franklin',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+
+  position:relative;
+  background:
+    linear-gradient(135deg, #fbdce8 0%, #f5e2f0 45%, #e9dbf5 100%),
+    var(--itw-bg);
+  transition:background-color .35s ease, color .35s ease;
+  color:var(--itw-text);
+  font-family:var(--font-body);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+  isolation:isolate;
+}
+/* ---------- dark mode ----------
+   Nearly everything in this file reads color through the --itw-*
+   variables below, so overriding them here is enough to re-theme the
+   whole component — module accent colors get brighter/more saturated
+   variants so they still read clearly against a dark surface. */
+.itw-root.itw-dark{
+  --itw-bg:#14180f;
+  --itw-bg-2:#1a2015;
+  --itw-panel:#1e2519;
+  --itw-panel-2:#242c1e;
+  --itw-border:#39442f;
+  --itw-text:#eef1ea;
+  --itw-muted:#a7b19d;
+  --itw-muted-dim:#7c8672;
+
+  --itw-paper:#1e2519;
+  --itw-paper-2:#242c1e;
+  --itw-paper-text:#eef1ea;
+  --itw-paper-muted:#a7b19d;
+  --itw-paper-border:#39442f;
+
+  --itw-autism:#56d2b1;
+  --itw-autism-soft:rgba(86,210,177,.18);
+  --itw-adhd:#d2a056;
+  --itw-adhd-soft:rgba(210,160,86,.18);
+  --itw-dyslexia:#aa7edd;
+  --itw-dyslexia-soft:rgba(170,126,221,.18);
+  --itw-speech:#d27356;
+  --itw-speech-soft:rgba(210,115,86,.18);
+
+  background:
+    radial-gradient(1100px 640px at 90% -10%, rgba(86,210,177,.1), transparent 60%),
+    radial-gradient(900px 620px at -6% 105%, rgba(210,115,86,.09), transparent 60%),
+    radial-gradient(700px 500px at 45% 40%, rgba(210,160,86,.05), transparent 65%),
+    var(--itw-bg);
+}
+.itw-root *{box-sizing:border-box;}
+.itw-root ::selection{background:var(--itw-accent);color:#fff;}
+.itw-root a{color:inherit;}
+.itw-serif{font-family:var(--font-display);}
+.itw-mono{font-family:var(--font-mono);}
+
+.itw-root :focus-visible{outline:2px solid var(--itw-accent);outline-offset:3px;border-radius:3px;}
+
+/* ---------- ambient atmosphere ---------- */
+.itw-grain{display:none;}
+.itw-ambient{
+  position:absolute;inset:0;z-index:0;pointer-events:none;transition:background 700ms ease;
+  background:radial-gradient(900px 560px at 82% -8%, var(--itw-glow, transparent), transparent 62%);
+}
+
+/* ---------- shell ---------- */
+.itw-app{position:relative;z-index:1;max-width:1220px;margin:0 auto;padding:0 28px 96px;}
+
+/* ---------- view transitions ---------- */
+.itw-view{animation:itw-view-in 560ms cubic-bezier(.16,.8,.3,1) both;}
+@keyframes itw-view-in{
+  from{opacity:0;transform:translateY(10px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.itw-rise{opacity:0;animation:itw-rise-in 620ms cubic-bezier(.16,.8,.3,1) both;}
+@keyframes itw-rise-in{
+  from{opacity:0;transform:translateY(14px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.itw-rise-1{animation-delay:20ms;}
+.itw-rise-2{animation-delay:110ms;}
+.itw-rise-3{animation-delay:200ms;}
+.itw-rise-4{animation-delay:290ms;}
+.itw-rise-5{animation-delay:380ms;}
+
+/* ---------- landing ---------- */
+.itw-masthead{padding:60px 0 44px;border-bottom:1px solid var(--itw-border);position:relative;}
+.itw-leaf-accent{position:absolute;top:8px;right:0;width:52px;height:52px;pointer-events:none;transform:rotate(12deg);}
+.itw-eyebrow{
+  font-family:var(--font-body);font-weight:700;font-size:12.5px;letter-spacing:.03em;
+  color:#fff;display:inline-flex;align-items:center;gap:8px;
+  border:none;padding:8px 17px;border-radius:99px;
+  background:linear-gradient(120deg, var(--itw-autism), var(--itw-speech));
+  box-shadow:0 10px 24px -10px var(--itw-autism-soft), 0 0 0 1px rgba(255,255,255,.18) inset;
+}
+.itw-eyebrow::before{content:"✦";font-size:11px;color:#fff;}
+.itw-title{
+  font-family:var(--font-display);font-weight:900;font-size:clamp(40px,7.2vw,68px);
+  line-height:1.05;margin:22px 0 22px;letter-spacing:-.02em;
+}
+.itw-title em{font-style:normal;font-weight:900;color:var(--itw-accent);}
+.itw-lede{font-size:17.5px;color:var(--itw-muted);max-width:58ch;margin:0 0 8px;}
+.itw-disclaimer{
+  margin-top:22px;padding:13px 20px;background:var(--itw-panel-2);border:1.5px solid var(--itw-adhd);
+  border-radius:99px;font-size:13.5px;color:var(--itw-paper-muted);display:inline-flex;align-items:center;
+  gap:6px;max-width:100%;box-shadow:0 8px 20px -14px var(--itw-adhd-soft);
+}
+.itw-disclaimer strong{color:var(--itw-paper-text);font-weight:800;}
+
+/* A dashed path connecting the four modules like a journey, not a grid —
+   borrowed from Manas Learning's own "structured journey" roadmap graphic
+   on manaslearning.com, so this page reads as part of the same family. */
+.itw-roadmap{
+  position:relative;z-index:1;margin-top:52px;padding:0 6px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:0;align-items:end;
+}
+.itw-roadmap-path{
+  grid-column:1/-1;grid-row:1;width:100%;height:3px;display:block;margin-bottom:6px;border-radius:3px;
+  background:linear-gradient(90deg, var(--itw-autism), var(--itw-adhd), var(--itw-dyslexia), var(--itw-speech));
+  opacity:.35;
+}
+.itw-roadmap-stop{grid-row:2;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;}
+.itw-roadmap-num{
+  width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-weight:800;font-size:12px;
+  background:linear-gradient(135deg, var(--stop-accent), color-mix(in srgb, var(--stop-accent) 65%, #000 15%));
+  border:none;color:#fff;box-shadow:0 0 0 5px var(--itw-bg), 0 8px 18px -6px var(--stop-accent);
+}
+.itw-roadmap-label{
+  font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--itw-text);font-weight:700;
+}
+@media (max-width:760px){
+  .itw-roadmap{display:none;}
+}
+
+.itw-blob{position:absolute;border-radius:50%;filter:blur(58px);pointer-events:none;z-index:0;opacity:.9;}
+.itw-blob-1{width:540px;height:540px;background:radial-gradient(circle,rgba(44,140,114,.32),transparent 70%);top:-160px;right:-140px;}
+.itw-blob-2{width:480px;height:480px;background:radial-gradient(circle,rgba(140,66,44,.28),transparent 70%);top:420px;left:-180px;}
+.itw-blob-3{width:380px;height:380px;background:radial-gradient(circle,rgba(140,101,32,.26),transparent 70%);top:100px;left:38%;opacity:.7;}
+
+.itw-accent-word{position:relative;display:inline-block;font-style:normal;color:var(--itw-autism);text-shadow:0 0 34px var(--itw-autism-soft);}
+.itw-squiggle{position:absolute;left:0;bottom:-10px;width:100%;height:14px;color:var(--itw-adhd);filter:drop-shadow(0 2px 3px rgba(140,101,32,.3));}
+.itw-dark .itw-blob-1{background:radial-gradient(circle,rgba(86,210,177,.22),transparent 70%);}
+.itw-dark .itw-blob-2{background:radial-gradient(circle,rgba(210,115,86,.2),transparent 70%);}
+.itw-dark .itw-blob-3{background:radial-gradient(circle,rgba(210,160,86,.18),transparent 70%);}
+
+.itw-bento{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:18px;position:relative;z-index:1;}
+.itw-bento-0{grid-column:span 7;}
+.itw-bento-1{grid-column:span 5;}
+.itw-bento-2{grid-column:span 5;}
+.itw-bento-3{grid-column:span 7;}
+@media (max-width:760px){
+  .itw-bento-0,.itw-bento-1,.itw-bento-2,.itw-bento-3{grid-column:span 12;}
+}
+
+.itw-mcard{
+  position:relative;background:var(--itw-panel);border:1.5px solid var(--itw-border);border-radius:20px;
+  padding:26px 0 22px;cursor:pointer;text-align:left;overflow:hidden;width:100%;min-height:250px;
+  transition:transform .22s cubic-bezier(.2,.8,.3,1), border-color .2s ease, box-shadow .22s ease;
+  font-family:inherit;color:inherit;display:flex;flex-direction:column;
+  box-shadow:0 16px 34px -22px rgba(40,54,44,.3), 0 0 0 1px var(--card-accent-soft, transparent);
+  border-top:4px solid var(--card-accent, var(--itw-accent));
+}
+.itw-mcard:hover, .itw-mcard:focus-visible{
+  transform:translateY(-10px) scale(1.015);border-color:var(--card-accent);
+  border-top-color:var(--card-accent);
+  box-shadow:0 40px 70px -22px var(--card-accent-soft, rgba(40,54,44,.4)), 0 0 0 2px var(--card-accent-soft);
+}
+.itw-mcard::before{display:none;}
+.itw-mcard-blob{display:none;}
+
+/* ---------- mini demo preview (auto-playing loop on every card) ---------- */
+.itw-mcard-body{position:relative;z-index:1;padding:0 24px;display:flex;flex-direction:column;flex:1;}
+.itw-mcard-top{position:relative;z-index:1;display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.itw-mcard-icon{
+  width:46px;height:46px;border-radius:13px;
+  background:linear-gradient(135deg, var(--card-accent, var(--itw-accent)), color-mix(in srgb, var(--card-accent, var(--itw-accent)) 60%, #000 20%));
+  color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 10px 22px -8px var(--card-accent-soft, var(--itw-accent-soft));
+}
+.itw-mcard-icon svg{width:24px;height:24px;}
+.itw-mcard .itw-tag{font-family:var(--font-mono);font-weight:800;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--card-accent);}
+.itw-mcard h3{position:relative;z-index:1;font-family:var(--font-display);font-weight:900;font-size:26px;margin:0 0 8px;letter-spacing:-.015em;}
+.itw-mcard p{position:relative;z-index:1;font-size:14.5px;color:var(--itw-muted);margin:0 0 16px;line-height:1.55;}
+.itw-mcard-bottom{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:auto;}
+.itw-mcard .itw-stat{display:flex;flex-direction:column;gap:4px;max-width:60%;}
+.itw-mcard .itw-stat b{
+  font-family:var(--font-display);font-weight:900;font-size:19px;line-height:1;
+  color:#fff;background:linear-gradient(135deg, var(--card-accent), color-mix(in srgb, var(--card-accent) 65%, #000 15%));
+  display:inline-block;width:fit-content;
+  padding:5px 11px;border-radius:8px;letter-spacing:-.01em;box-shadow:0 6px 14px -6px var(--card-accent-soft);
+}
+.itw-mcard .itw-stat span{font-size:11.5px;color:var(--itw-muted-dim);line-height:1.3;}
+.itw-mcard .itw-enter{
+  display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:13px;color:#fff;
+  background:linear-gradient(120deg, var(--card-accent), color-mix(in srgb, var(--card-accent) 70%, #000 12%));
+  padding:10px 18px;border-radius:99px;white-space:nowrap;
+  box-shadow:0 12px 26px -10px var(--card-accent-soft);
+  transition:transform .18s ease, filter .18s ease, box-shadow .18s ease;
+}
+.itw-mcard .itw-enter svg{width:15px;height:15px;transition:transform .18s ease;}
+.itw-mcard:hover .itw-enter{filter:brightness(1.12);transform:translateY(-1px);box-shadow:0 16px 32px -8px var(--card-accent-soft);}
+.itw-mcard:hover .itw-enter svg{transform:translateX(3px);}
+.itw-mcard[data-m="autism"]{--card-accent:var(--itw-autism);--card-accent-soft:var(--itw-autism-soft);}
+.itw-mcard[data-m="adhd"]{--card-accent:var(--itw-adhd);--card-accent-soft:var(--itw-adhd-soft);}
+.itw-mcard[data-m="dyslexia"]{--card-accent:var(--itw-dyslexia);--card-accent-soft:var(--itw-dyslexia-soft);}
+.itw-mcard[data-m="speech"]{--card-accent:var(--itw-speech);--card-accent-soft:var(--itw-speech-soft);}
+
+.itw-cp-label{
+  position:relative;z-index:1;display:flex;align-items:center;gap:6px;margin:0 0 8px;
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--itw-muted-dim);
+}
+.itw-cp-live{width:6px;height:6px;border-radius:50%;background:var(--card-accent, var(--itw-accent));animation:itw-target-pulse 1.3s ease-in-out infinite;}
+.itw-card-preview{
+  position:relative;z-index:1;margin-bottom:16px;border-radius:14px;overflow:hidden;
+  background:#1a1610;box-shadow:inset 0 0 24px rgba(0,0,0,.3);
+}
+.itw-cp-stage{position:relative;height:76px;}
+.itw-cp-stage-text{display:flex;align-items:center;justify-content:center;padding:0 16px;text-align:center;}
+.itw-cp-dot{position:absolute;width:15px;height:15px;border-radius:50%;top:38%;left:26%;}
+.itw-cp-target{background:#e5484d;box-shadow:0 0 0 6px rgba(229,72,77,.2);animation:itw-target-pulse 1.2s ease-in-out infinite;}
+.itw-cp-decoy{background:#c95a4e;opacity:.65;animation:itw-decoy-flicker .85s steps(3) infinite;}
+.itw-cp-chip{
+  position:absolute;bottom:9px;right:10px;background:rgba(255,255,255,.12);color:#fff;
+  font-size:10.5px;font-family:var(--font-body);font-weight:700;padding:4px 10px;border-radius:99px;
+  animation:itw-cue-cycle 2.4s ease infinite;
+}
+.itw-cp-num{
+  position:absolute;top:50%;left:22%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;
+  background:var(--itw-panel-2);border:2px solid var(--itw-adhd);color:#fff;display:flex;align-items:center;
+  justify-content:center;font-family:var(--font-mono);font-weight:700;font-size:12px;
+  animation:itw-num-shake 2.4s ease-in-out infinite;
+}
+.itw-cp-num-2{left:auto;right:16%;top:62%;border-color:var(--itw-adhd);opacity:.7;animation-delay:.6s;}
+.itw-cp-bubble{
+  position:absolute;top:18%;right:9%;background:var(--itw-panel);color:var(--itw-text);font-size:10.5px;
+  font-weight:700;padding:5px 11px;border-radius:12px;animation:itw-cue-cycle 2.4s ease infinite;
+}
+.itw-cp-word{font-family:var(--font-display);color:#fff;font-size:15px;}
+.itw-cp-letter{display:inline-block;animation:itw-letter-jitter 1.6s ease-in-out infinite;}
+.itw-cp-blocked{color:var(--itw-speech);font-family:var(--font-mono);animation:itw-word-shake .16s ease-in-out infinite;}
+
+/* ---------- demo cursor: idle-state "how it's played" playback ---------- */
+.itw-cp-cursor{position:absolute;width:20px;height:20px;z-index:6;pointer-events:none;top:85%;left:85%;opacity:0;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55));}
+.itw-cp-cursor svg{width:100%;height:100%;display:block;}
+.itw-cp-click-ring{
+  position:absolute;top:-3px;left:-3px;width:26px;height:26px;border-radius:50%;
+  border:2px solid var(--card-accent, var(--itw-accent));opacity:0;
+}
+.itw-cp-cursor-autism{animation:itw-cursor-autism 3.6s cubic-bezier(.5,0,.3,1) infinite;}
+.itw-cp-cursor-autism .itw-cp-click-ring{animation:itw-click-ring 3.6s ease-out infinite;}
+@keyframes itw-cursor-autism{
+  0%,4%{top:85%;left:82%;opacity:0;}
+  10%{opacity:1;}
+  34%,50%{top:32%;left:20%;opacity:1;}
+  70%{top:60%;left:64%;opacity:1;}
+  92%,100%{top:85%;left:82%;opacity:0;}
+}
+
+.itw-cp-cursor-adhd{animation:itw-cursor-adhd 3.6s cubic-bezier(.5,0,.3,1) infinite;}
+.itw-cp-cursor-adhd .itw-cp-click-ring{animation:itw-click-ring-adhd 3.6s ease-out infinite;}
+@keyframes itw-cursor-adhd{
+  0%,4%{top:85%;left:8%;opacity:0;}
+  10%{opacity:1;}
+  34%,50%{top:44%;left:16%;opacity:1;}
+  70%{top:56%;left:72%;opacity:1;}
+  92%,100%{top:85%;left:8%;opacity:0;}
+}
+
+.itw-cp-cursor-dyslexia{animation:itw-cursor-dyslexia 3.6s cubic-bezier(.5,0,.3,1) infinite;}
+.itw-cp-cursor-dyslexia .itw-cp-click-ring{animation:itw-click-ring 3.6s ease-out infinite;}
+@keyframes itw-cursor-dyslexia{
+  0%,4%{top:90%;left:78%;opacity:0;}
+  10%{opacity:1;}
+  40%,56%{top:46%;left:44%;opacity:1;}
+  92%,100%{top:90%;left:78%;opacity:0;}
+}
+
+.itw-cp-cursor-speech{animation:itw-cursor-speech 3.6s cubic-bezier(.5,0,.3,1) infinite;}
+.itw-cp-cursor-speech .itw-cp-click-ring{animation:itw-click-ring 3.6s ease-out infinite;}
+@keyframes itw-cursor-speech{
+  0%,4%{top:88%;left:20%;opacity:0;}
+  10%{opacity:1;}
+  40%,56%{top:56%;left:50%;opacity:1;}
+  92%,100%{top:88%;left:20%;opacity:0;}
+}
+
+@keyframes itw-click-ring{
+  0%,32%{opacity:0;transform:scale(.4);}
+  38%{opacity:.85;transform:scale(.6);}
+  52%{opacity:0;transform:scale(1.7);}
+  100%{opacity:0;transform:scale(.4);}
+}
+@keyframes itw-click-ring-adhd{
+  0%,32%{opacity:0;transform:scale(.4);}
+  38%{opacity:.85;transform:scale(.6);}
+  52%{opacity:0;transform:scale(1.7);}
+  100%{opacity:0;transform:scale(.4);}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .itw-card-preview *{animation:none !important;}
+  .itw-viewfinder-stage::before{animation:none !important;}
+}
+
+.itw-foot-note{margin-top:52px;padding-top:20px;border-top:1px solid var(--itw-border);font-size:12.5px;color:var(--itw-muted-dim);}
+
+/* ---------- module shell ---------- */
+.itw-module{padding-top:36px;}
+.itw-module-top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.itw-back-btn{
+  background:none;border:1px solid var(--itw-border);color:var(--itw-muted);
+  font-family:var(--font-body);font-weight:600;font-size:13px;padding:9px 16px;border-radius:99px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:8px;transition:border-color .15s, color .15s;
+}
+.itw-back-btn:hover{border-color:var(--itw-accent);color:var(--itw-text);}
+
+.itw-switch{display:flex;gap:2px;}
+.itw-switch button{
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  border:none;background:none;padding:0;cursor:pointer;position:relative;
+}
+.itw-switch button::before{
+  content:"";width:9px;height:9px;border-radius:50%;border:1px solid var(--itw-border);background:none;
+  transition:transform .15s ease, background .15s ease, border-color .15s ease;
+}
+.itw-switch button:hover::before{transform:scale(1.3);border-color:var(--itw-accent);}
+.itw-switch button.itw-current::before{background:var(--itw-accent);border-color:var(--itw-accent);transform:scale(1.3);}
+.itw-switch button.itw-current{cursor:default;}
+
+.itw-module-head{margin:28px 0 6px;}
+.itw-module-head .itw-eyebrow{
+  color:#fff;border:none;
+  background:linear-gradient(120deg, var(--itw-accent), color-mix(in srgb, var(--itw-accent) 60%, #000 18%));
+  box-shadow:0 10px 24px -10px var(--itw-accent-soft);
+}
+.itw-module-head .itw-eyebrow::before{color:#fff;}
+.itw-mtitle{font-family:var(--font-display);font-weight:900;font-size:clamp(32px,5vw,46px);margin:16px 0 10px;letter-spacing:-.02em;}
+.itw-module-dek{color:var(--itw-muted);font-size:16.5px;max-width:62ch;margin-bottom:8px;}
+
+/* ---------- module table of contents: click any step to jump straight there ---------- */
+.itw-toc{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:22px 0 4px;}
+.itw-toc-label{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--itw-muted-dim);}
+.itw-toc-items{display:flex;gap:8px;flex-wrap:wrap;}
+.itw-toc-item{
+  display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:700;color:var(--itw-text);
+  background:var(--itw-panel);border:1px solid var(--itw-border);border-radius:99px;padding:7px 14px 7px 8px;
+  cursor:pointer;transition:transform .15s ease, border-color .15s ease, background .15s ease;
+}
+.itw-toc-item:hover{transform:translateY(-2px);border-color:var(--itw-accent);background:var(--itw-panel-2);}
+.itw-toc-num{
+  display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;
+  background:var(--itw-accent);color:#fff;font-family:var(--font-mono);font-size:10px;font-weight:700;flex-shrink:0;
+}
+
+/* Same live preview shown on the landing card, shown again the moment
+   you click into the module — the promise made on the card is kept
+   immediately, before you reach the real interactive task below. */
+.itw-mpreview{margin:26px 0 8px;}
+.itw-mpreview .itw-cp-label{margin-bottom:10px;}
+.itw-card-preview-lg{height:140px;border-radius:16px;}
+.itw-card-preview-lg .itw-cp-stage{height:140px;}
+
+.itw-block{margin-top:52px;scroll-margin-top:24px;}
+.itw-block-label{
+  font-family:var(--font-mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--itw-muted-dim);margin-bottom:16px;display:flex;align-items:center;gap:10px;
+}
+.itw-block-label::after{content:"";flex:1;height:1px;background:var(--itw-border);}
+
+/* ---------- "How you can help" — the payoff section: bolder & brighter
+   than the rest of the module, and where the facts conveyor auto-scrolls
+   to once it's cycled through everything ---------- */
+.itw-help-block{
+  position:relative;scroll-margin-top:24px;margin-top:60px;padding:34px 32px 38px;border-radius:28px;
+  background:linear-gradient(165deg, var(--itw-accent-soft), var(--itw-panel) 60%);
+  border:1.5px solid var(--itw-accent-soft);overflow:hidden;
+  box-shadow:0 34px 64px -34px var(--itw-accent-soft);
+}
+.itw-help-block::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:5px;
+  background:linear-gradient(90deg, var(--itw-accent), color-mix(in srgb, var(--itw-accent) 40%, #fff 30%), var(--itw-accent));
+}
+.itw-help-head{display:flex;align-items:center;gap:16px;margin-bottom:26px;}
+.itw-help-icon{
+  width:52px;height:52px;border-radius:16px;flex-shrink:0;
+  background:linear-gradient(135deg, var(--itw-accent), color-mix(in srgb, var(--itw-accent) 60%, #000 18%));
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 14px 28px -10px var(--itw-accent-soft);
+}
+.itw-help-icon svg{width:26px;height:26px;}
+.itw-help-eyebrow{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--itw-accent);font-weight:700;margin-bottom:4px;
+}
+.itw-help-title{font-family:var(--font-display);font-weight:900;font-size:24px;letter-spacing:-.015em;margin:0;color:var(--itw-text);}
+.itw-help-block .itw-strat-tabs{margin-bottom:18px;}
+.itw-help-block .itw-strat-list li{background:var(--itw-panel);border-color:var(--itw-accent-soft);}
+.itw-help-block .itw-strat-list li:hover{border-color:var(--itw-accent);}
+@media (max-width:680px){
+  .itw-help-block{padding:26px 20px 30px;}
+  .itw-help-title{font-size:21px;}
+}
+
+/* ---------- sim shell ---------- */
+.itw-sim{border:1.5px solid var(--itw-border);border-radius:24px;background:var(--itw-panel);overflow:hidden;box-shadow:0 24px 54px -30px rgba(32,40,31,.22);}
+.itw-sim-instructions{padding:18px 22px 12px;font-size:15.5px;font-weight:700;color:var(--itw-text);background:var(--itw-panel-2);}
+.itw-sim-instructions strong{color:var(--itw-text);font-family:var(--font-display);font-weight:800;}
+.itw-sim-controls{padding:20px 22px;border-top:1.5px solid var(--itw-border);background:var(--itw-panel);display:flex;flex-wrap:wrap;gap:16px;align-items:center;}
+.itw-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.itw-root input[type=range]{accent-color:var(--itw-accent);width:200px;height:20px;}
+.itw-btn-primary{
+  background:linear-gradient(120deg, var(--itw-accent), color-mix(in srgb, var(--itw-accent) 65%, #000 15%));
+  color:#fff;border:none;font-weight:800;font-size:14.5px;
+  padding:13px 26px;border-radius:99px;cursor:pointer;font-family:var(--font-body);
+  transition:filter .15s, transform .1s, box-shadow .15s;
+  box-shadow:0 14px 30px -10px var(--itw-accent-soft);
+}
+.itw-btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px);box-shadow:0 18px 36px -8px var(--itw-accent-soft);}
+.itw-btn-primary:active{transform:translateY(1px);}
+.itw-btn-primary:disabled{opacity:.5;cursor:default;box-shadow:none;}
+.itw-btn-ghost{
+  background:none;border:1.5px solid var(--itw-border);color:var(--itw-text);padding:8px 16px;border-radius:99px;
+  cursor:pointer;font-size:13px;font-family:var(--font-body);font-weight:700;transition:border-color .15s, color .15s, background .15s;
+}
+.itw-btn-ghost.itw-active{border-color:var(--itw-accent);color:#fff;background:var(--itw-accent);}
+.itw-readout{font-family:var(--font-mono);font-size:12.5px;color:var(--itw-muted);}
+
+/* ---------- viewfinder (signature element) ----------
+   You are looking through an instrument, not a widget: a scope with
+   bracket corners, a scanline sweep, a vignette, and a HUD readout
+   that glows in the module's accent color. */
+.itw-viewfinder{position:relative;}
+.itw-viewfinder-stage{
+  position:relative;min-height:500px;overflow:hidden;border-radius:14px;
+  background:
+    repeating-linear-gradient(rgba(255,255,255,.025) 0px, rgba(255,255,255,.025) 1px, transparent 1px, transparent 3px),
+    radial-gradient(120% 130% at 50% 0%, rgba(255,255,255,.05), transparent 60%),
+    #100e0b;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.06),
+    inset 0 0 90px rgba(0,0,0,.6),
+    0 30px 60px -30px rgba(0,0,0,.55),
+    0 0 0 6px var(--itw-bg),
+    0 0 0 7px var(--itw-border);
+}
+.itw-viewfinder-stage::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:12;
+  background:radial-gradient(120% 100% at 50% 45%, transparent 55%, rgba(0,0,0,.55) 100%);
+}
+.itw-viewfinder-stage::before{
+  content:"";position:absolute;left:0;right:0;height:120px;z-index:11;pointer-events:none;
+  background:linear-gradient(rgba(255,255,255,.09), transparent);
+  animation:itw-scan 5.5s linear infinite;
+}
+@keyframes itw-scan{0%{top:-140px;}100%{top:100%;}}
+.itw-viewfinder-hud{
+  position:absolute;top:16px;left:16px;right:16px;z-index:13;display:flex;justify-content:space-between;
+  align-items:center;pointer-events:none;font-family:var(--font-mono);font-weight:700;font-size:11px;
+  letter-spacing:.08em;text-transform:uppercase;
+}
+.itw-viewfinder-hud .itw-hud-rec{
+  display:flex;align-items:center;gap:7px;background:rgba(0,0,0,.45);color:#f2ede0;
+  padding:6px 13px;border-radius:5px;border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(2px);
+}
+.itw-viewfinder-hud .itw-hud-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--itw-accent);
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--itw-accent) 35%, transparent);
+  animation:itw-hud-blink 1.4s ease-in-out infinite;
+}
+.itw-viewfinder-hud > span:last-child{
+  background:rgba(0,0,0,.45);color:var(--itw-accent);padding:6px 13px;border-radius:5px;
+  border:1px solid rgba(255,255,255,.14);
+}
+@keyframes itw-hud-blink{0%,100%{opacity:1;}50%{opacity:.35;}}
+.itw-vf-corner{
+  position:absolute;z-index:13;width:26px;height:26px;pointer-events:none;
+  border:2.5px solid color-mix(in srgb, var(--itw-accent) 70%, #fff 10%);opacity:.85;
+}
+.itw-vf-tl{top:12px;left:12px;border-right:none;border-bottom:none;border-radius:6px 0 0 0;}
+.itw-vf-tr{top:12px;right:12px;border-left:none;border-bottom:none;border-radius:0 6px 0 0;}
+.itw-vf-bl{bottom:12px;left:12px;border-right:none;border-top:none;border-radius:0 0 0 6px;}
+.itw-vf-br{bottom:12px;right:12px;border-left:none;border-top:none;border-radius:0 0 6px 0;}
+
+/* alias so existing markup keeps working */
+.itw-sim-stage{position:relative;min-height:500px;overflow:hidden;border-radius:14px;}
+
+/* ---------- facts (paper index cards) ---------- */
+.itw-facts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+@media (max-width:680px){.itw-facts-grid{grid-template-columns:1fr;}}
+.itw-fact-card{
+  background:var(--itw-paper);border:1px solid var(--itw-paper-border);border-radius:16px;padding:20px 18px 18px;
+  transition:transform .15s ease, box-shadow .15s ease;color:var(--itw-paper-text);position:relative;
+  box-shadow:0 10px 22px -16px rgba(0,0,0,.5);
+}
+.itw-fact-card:nth-child(2){transform:rotate(.4deg);}
+.itw-fact-card:nth-child(3){transform:rotate(-.4deg);}
+.itw-fact-card:hover{transform:translateY(-3px) rotate(0deg);box-shadow:0 16px 30px -18px rgba(0,0,0,.55);}
+.itw-fact-card .itw-num{
+  font-family:var(--font-display);font-weight:900;font-size:22px;line-height:1;
+  color:#fff;background:var(--card-accent, var(--itw-accent));display:inline-block;
+  padding:6px 12px;border-radius:9px;letter-spacing:-.01em;
+}
+.itw-fact-card .itw-lbl{font-size:13.5px;color:var(--itw-paper-muted);margin-top:10px;line-height:1.45;}
+.itw-fact-card .itw-src{font-family:var(--font-mono);font-size:10px;color:var(--itw-paper-muted);margin-top:12px;letter-spacing:.02em;opacity:.8;border-top:1px dashed var(--itw-paper-border);padding-top:8px;}
+.itw-module[data-accent] .itw-fact-card{--card-accent:var(--itw-accent);}
+.itw-fact-note{margin-top:16px;font-size:14.5px;color:var(--itw-muted);border-left:2px solid var(--itw-accent);padding-left:14px;font-style:italic;}
+
+.itw-error-boundary{
+  max-width:480px;margin:60px auto;text-align:center;padding:40px 28px;
+  background:var(--itw-panel);border:1.5px solid var(--itw-border);border-radius:20px;
+}
+.itw-error-icon{font-size:34px;margin-bottom:10px;}
+.itw-error-boundary h2{font-family:var(--font-display);font-size:20px;margin:0 0 8px;color:var(--itw-text);}
+.itw-error-boundary p{color:var(--itw-muted);font-size:14.5px;line-height:1.6;margin:0 0 20px;}
+
+/* ---------- facts conveyor belt: one fact at a time, pops big & bright, slides off ---------- */
+.itw-conveyor{
+  position:relative;border-radius:20px;padding:38px 20px 26px;text-align:center;overflow:hidden;
+  background:radial-gradient(circle at 50% 0%, var(--itw-accent-soft), var(--itw-panel) 70%);
+  border:1.5px solid var(--itw-accent);min-height:210px;display:flex;flex-direction:column;justify-content:center;
+  box-shadow:0 24px 48px -30px var(--itw-accent-soft);
+}
+.itw-conveyor-track{position:relative;min-height:118px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.itw-conveyor-track:focus-visible{outline:2px solid var(--itw-accent);outline-offset:4px;border-radius:12px;}
+.itw-conveyor-paused-badge{
+  position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:11px;letter-spacing:.02em;
+  color:var(--itw-muted);background:var(--itw-panel);border:1px solid var(--itw-border);border-radius:999px;
+  padding:3px 10px;pointer-events:none;
+}
+.itw-conveyor-paused-badge svg{width:10px;height:10px;}
+.itw-conveyor-arrow{
+  position:absolute;top:56px;transform:translateY(-50%);z-index:3;
+  width:38px;height:38px;border-radius:50%;flex-shrink:0;
+  background:var(--itw-panel);border:1.5px solid var(--itw-border);color:var(--itw-accent);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:background .15s ease, border-color .15s ease, color .15s ease, transform .15s ease;
+  box-shadow:0 8px 18px -10px rgba(0,0,0,.3);
+}
+.itw-conveyor-arrow svg{width:17px;height:17px;}
+.itw-conveyor-arrow:hover{background:var(--itw-accent);border-color:var(--itw-accent);color:#fff;transform:translateY(-50%) scale(1.08);}
+.itw-conveyor-arrow-prev{left:10px;}
+.itw-conveyor-arrow-next{right:10px;}
+@media (max-width:560px){
+  .itw-conveyor-arrow{width:32px;height:32px;top:50px;}
+  .itw-conveyor-arrow-prev{left:4px;}
+  .itw-conveyor-arrow-next{right:4px;}
+  .itw-conveyor-track{padding:0 34px;}
+}
+.itw-conveyor-card{
+  display:flex;flex-direction:column;align-items:center;gap:10px;will-change:transform,opacity,filter;
+  animation:itw-conveyor-cycle 3.3s cubic-bezier(.22,1,.36,1) both;
+}
+.itw-conveyor-paused{animation-play-state:paused !important;}
+.itw-conveyor-num{
+  font-family:var(--font-display);font-weight:900;font-size:clamp(34px,6vw,54px);line-height:1;letter-spacing:-.02em;
+  color:#fff;background:linear-gradient(135deg, var(--itw-accent), color-mix(in srgb, var(--itw-accent) 60%, #000 18%));
+  padding:10px 22px;border-radius:16px;
+  box-shadow:0 20px 40px -12px var(--itw-accent-soft), 0 0 0 1px rgba(255,255,255,.15) inset;
+}
+.itw-conveyor-lbl{font-size:16.5px;font-weight:600;color:var(--itw-text);max-width:52ch;line-height:1.45;}
+.itw-conveyor-src{font-family:var(--font-mono);font-size:10.5px;color:var(--itw-muted-dim);letter-spacing:.03em;opacity:.85;}
+.itw-conveyor-dots{display:flex;justify-content:center;gap:8px;margin-top:22px;}
+.itw-conveyor-dots button{
+  width:8px;height:8px;border-radius:50%;border:none;padding:0;background:var(--itw-border);opacity:.7;
+  cursor:pointer;transition:transform .15s ease, background .15s ease;
+}
+.itw-conveyor-dots button.itw-active{background:var(--itw-accent);opacity:1;transform:scale(1.35);}
+.itw-conveyor-dots button:hover{transform:scale(1.2);}
+
+@keyframes itw-conveyor-cycle{
+  0%{transform:scale(.62) translateX(90px);opacity:0;filter:brightness(1.9) saturate(1.5);}
+  9%{transform:scale(1.14) translateX(0);opacity:1;filter:brightness(1.4) saturate(1.35);}
+  18%{transform:scale(1) translateX(0);opacity:1;filter:brightness(1) saturate(1);}
+  82%{transform:scale(1) translateX(0);opacity:1;filter:brightness(1) saturate(1);}
+  100%{transform:scale(.86) translateX(-100px);opacity:0;filter:brightness(.85);}
+}
+@media (prefers-reduced-motion: reduce){
+  .itw-conveyor-card{animation:none;opacity:1;}
+}
+
+/* ---------- strategies ---------- */
+.itw-strat-tabs{display:flex;gap:8px;margin-bottom:16px;}
+.itw-strat-list{list-style:none;margin:0;padding:0;display:grid;gap:10px;}
+.itw-strat-list li{
+  background:var(--itw-paper);border:1.5px solid var(--itw-paper-border);border-radius:16px;color:var(--itw-paper-text);
+  padding:15px 18px 15px 46px;position:relative;font-size:14.5px;transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+  box-shadow:0 10px 24px -18px rgba(20,26,18,.4);
+}
+.itw-strat-list li:hover{border-color:var(--itw-accent);transform:translateX(3px);box-shadow:0 14px 30px -16px var(--itw-accent-soft);}
+.itw-strat-list li::before{
+  content:"";position:absolute;left:16px;top:16px;width:18px;height:18px;border-radius:6px;
+  background:var(--itw-accent);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M4 10h11M10 5l5 5-5 5' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/70% no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M4 10h11M10 5l5 5-5 5' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/70% no-repeat;
+}
+.itw-strat-hidden{display:none;}
+
+.itw-help-footer{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  margin-top:24px;padding-top:20px;border-top:1px solid var(--itw-border);
+}
+.itw-print-btn{flex-shrink:0;}
+.itw-manas-cta{
+  flex:1 1 260px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  text-decoration:none;color:var(--itw-text);background:var(--itw-accent-soft);border:1px solid var(--itw-accent);
+  border-radius:14px;padding:12px 16px;font-size:13.5px;line-height:1.4;transition:background .15s ease;
+}
+.itw-manas-cta:hover{background:var(--itw-accent);color:#fff;}
+.itw-manas-cta-arrow{flex-shrink:0;font-weight:700;font-family:var(--font-display);white-space:nowrap;}
+
+@media print{
+  .itw-grain, .itw-ambient, .itw-settings-bar,
+  .itw-module-top, .itw-toc, .itw-mpreview,
+  .itw-viewfinder, .itw-sim-controls,
+  .itw-block:not(.itw-help-block),
+  .itw-print-hide{ display:none !important; }
+
+  .itw-strat-hidden{ display:block !important; }
+  .itw-strat-list{ margin-bottom:18px; }
+  .itw-strat-list::before{
+    content:attr(data-print-label); display:block; font-weight:700; font-size:13px;
+    text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; color:#000;
+  }
+
+  html, body, .itw-root, .itw-app, .itw-view, .itw-help-block{
+    background:#fff !important; color:#111 !important; box-shadow:none !important;
+  }
+  .itw-help-block{ border:none !important; padding:0 !important; }
+  .itw-help-block::before{ display:none !important; }
+  .itw-strat-list li{
+    background:#fff !important; border:1px solid #999 !important; box-shadow:none !important; color:#111 !important;
+  }
+  .itw-strat-list li::before{ background:#000 !important; }
+  .itw-module-head{ margin-bottom:20px; }
+  .itw-eyebrow{ color:#444 !important; }
+  .itw-mtitle{ color:#000 !important; }
+}
+
+/* ================= AUTISM sim ================= */
+.itw-sensory-target{position:absolute;z-index:5;text-align:center;transition:top .18s ease, left .18s ease;cursor:pointer;}
+.itw-sensory-target .itw-dot{width:46px;height:46px;border-radius:50%;background:#e5484d;margin:0 auto 8px;box-shadow:0 0 0 10px rgba(229,72,77,.15), 0 0 30px rgba(229,72,77,.35);animation:itw-target-pulse 1.6s ease-in-out infinite;}
+.itw-sensory-target p{font-size:13px;color:#f2ede0;background:rgba(20,16,10,.72);padding:3px 10px;border-radius:99px;margin:0;font-family:var(--font-mono);letter-spacing:.04em;display:inline-block;}
+@keyframes itw-target-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+.itw-decoy-target{position:absolute;z-index:5;text-align:center;cursor:pointer;}
+.itw-decoy-target .itw-dot{width:46px;height:46px;border-radius:50%;background:#c95a4e;margin:0 auto;box-shadow:0 0 0 10px rgba(201,90,78,.15), 0 0 30px rgba(201,90,78,.35);animation:itw-decoy-flicker 0.9s steps(3) infinite;}
+@keyframes itw-decoy-flicker{0%,100%{transform:scale(1);}33%{transform:scale(1.1);}66%{transform:scale(0.96);}}
+.itw-sound-cue{
+  position:absolute;display:flex;align-items:center;gap:8px;z-index:4;pointer-events:none;
+  background:rgba(20,16,10,.78);border:1px solid rgba(255,255,255,.16);color:#fff;
+  padding:7px 15px 7px 9px;border-radius:99px;font-family:var(--font-body);font-weight:700;
+  font-size:13.5px;white-space:nowrap;backdrop-filter:blur(3px);
+  box-shadow:0 10px 24px -10px rgba(0,0,0,.65);
+  animation:itw-cue-cycle 2s cubic-bezier(.2,.85,.3,1) both;
+}
+.itw-cue-icon{font-size:17px;line-height:1;}
+@keyframes itw-cue-cycle{
+  0%{opacity:0;transform:translateY(6px) scale(.75);}
+  14%{opacity:1;transform:translateY(0) scale(1);}
+  78%{opacity:1;transform:translateY(0) scale(1);}
+  100%{opacity:0;transform:translateY(-8px) scale(.92);}
+}
+.itw-round-pips{display:flex;gap:6px;}
+.itw-round-pips span{width:9px;height:9px;border-radius:50%;border:1px solid var(--itw-border);background:transparent;}
+.itw-round-pips span.itw-pip-done{background:var(--itw-accent);border-color:var(--itw-accent);}
+.itw-round-pips span.itw-pip-current{border-color:var(--itw-accent);box-shadow:0 0 0 3px var(--itw-accent-soft);}
+.itw-round-timer{position:absolute;top:0;left:0;right:0;height:5px;background:rgba(255,255,255,.12);z-index:11;}
+.itw-round-timer-fill{height:100%;background:var(--itw-autism);transition:width .06s linear;}
+
+/* setting + vision pickers, shown before the autism task starts */
+.itw-scenario-picker{padding:16px 22px 4px;background:var(--itw-panel-2);display:flex;flex-wrap:wrap;gap:24px;}
+.itw-picker-group{flex:1 1 240px;min-width:220px;}
+.itw-picker-label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--itw-muted);margin-bottom:8px;}
+.itw-picker-desc{margin:8px 0 0;font-size:13px;color:var(--itw-muted);line-height:1.4;}
+
+/* a sudden, genuinely bright flash across the whole scene — not a subtle cue */
+.itw-glare-overlay{position:absolute;inset:0;z-index:20;background:#fff;opacity:0;pointer-events:none;}
+.itw-glare-flash{animation:itw-glare-pulse .35s ease-out;}
+@keyframes itw-glare-pulse{0%{opacity:0;}12%{opacity:.97;}100%{opacity:0;}}
+
+/* real background footage per setting, looping behind the dots/decoys */
+.itw-scene-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;}
+.itw-scene-video-overlay{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.4));pointer-events:none;}
+
+/* peripheral vision: dots pushed to the edges (handled in JS) render
+   blurred and low-contrast, since detail out there is genuinely hard to
+   make out — the point isn't to hide them, it's to make them effortful. */
+.itw-peripheral-blur{filter:blur(1.6px);opacity:.6;}
+.itw-peripheral-blur:hover,.itw-peripheral-blur:focus-visible{filter:blur(.4px);opacity:.85;}
+
+/* ================= ADHD sim ================= */
+.itw-focus-field{position:relative;width:100%;height:500px;transition:filter .2s ease;}
+.itw-focus-field.itw-frozen{filter:saturate(.3) brightness(.85);}
+.itw-num-btn{
+  position:absolute;width:52px;height:52px;border-radius:50%;background:var(--itw-panel-2);
+  border:2px solid var(--itw-adhd);color:var(--itw-text);font-weight:700;font-size:17px;font-family:var(--font-mono);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:top .5s cubic-bezier(.2,.8,.3,1), left .5s cubic-bezier(.2,.8,.3,1), transform .1s, background .15s, border-color .2s;z-index:8;
+}
+.itw-num-btn:hover{transform:scale(1.08);}
+.itw-num-btn:disabled{cursor:default;opacity:.55;}
+.itw-num-btn.itw-done{background:var(--itw-adhd);color:#fff;border-color:var(--itw-adhd);opacity:.5;pointer-events:none;}
+.itw-num-btn.itw-miss{border-color:#e5484d;}
+.itw-num-btn.itw-restless{animation:itw-num-shake .5s ease-in-out;}
+@keyframes itw-num-shake{0%,100%{transform:scale(1);}30%{transform:scale(1.25);}60%{transform:scale(.9);}}
+.itw-distraction{
+  position:absolute;background:var(--itw-panel);border:1px solid var(--itw-adhd);color:var(--itw-text);
+  font-size:13.5px;font-weight:600;padding:8px 34px 8px 14px;border-radius:16px;font-family:var(--font-body);z-index:6;
+  transition:opacity .25s, transform .15s, border-color .2s;box-shadow:0 8px 18px -10px rgba(40,54,44,.3);
+  max-width:190px;
+}
+.itw-distraction.itw-urgent{border-color:#e5484d;animation:itw-distract-pulse .5s ease-in-out infinite;}
+@keyframes itw-distract-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.06);}}
+.itw-distraction-x{
+  position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;border:none;
+  background:var(--itw-panel-2);color:var(--itw-muted);font-size:15px;line-height:1;cursor:pointer;z-index:9;
+  display:flex;align-items:center;justify-content:center;transition:background .15s, color .15s;
+}
+.itw-distraction-x:hover{background:#e5484d;color:#fff;}
+.itw-frozen-banner{
+  position:absolute;bottom:14px;left:50%;transform:translateX(-50%);background:rgba(229,72,77,.92);color:#fff;
+  font-size:12.5px;font-weight:700;padding:7px 16px;border-radius:99px;z-index:12;white-space:nowrap;
+}
+
+/* ================= DYSLEXIA sim ================= */
+.itw-reading-passage{padding:36px 32px;font-size:22px;line-height:1.9;font-family:var(--font-body);font-weight:500;color:var(--itw-text);}
+.itw-passage-hidden{padding:60px 32px;text-align:center;color:var(--itw-muted);font-size:16px;font-style:normal;}
+.itw-passage-hidden p{max-width:38ch;margin:0 auto;}
+.itw-reading-passage .itw-ch{display:inline-block;white-space:pre;}
+.itw-reading-passage.itw-simulated .itw-ch{animation:itw-letter-jitter 2.6s ease-in-out infinite;letter-spacing:.01em;}
+.itw-reading-passage.itw-simulated{filter:blur(.25px);}
+@keyframes itw-letter-jitter{
+  0%,100%{transform:translateY(0) rotate(0deg);}
+  25%{transform:translateY(-1px) rotate(-1.5deg);}
+  50%{transform:translateY(1px) rotate(1deg);}
+  75%{transform:translateY(-.5px) rotate(-.5deg);}
+}
+.itw-quiz{margin:0 22px 20px;padding:20px 22px;background:var(--itw-panel-2);border:1px solid var(--itw-border);border-radius:18px;}
+.itw-quiz-label{font-weight:700;font-size:14px;color:var(--itw-text);margin-bottom:16px;}
+.itw-quiz-q{margin-bottom:18px;}
+.itw-quiz-q p{font-size:14.5px;color:var(--itw-text);margin:0 0 10px;}
+.itw-quiz-opts{display:flex;flex-direction:column;gap:8px;}
+.itw-quiz-opt{
+  text-align:left;background:var(--itw-panel);border:1px solid var(--itw-border);color:var(--itw-muted);
+  padding:10px 14px;border-radius:12px;font-size:13.5px;font-family:var(--font-body);cursor:pointer;
+  transition:border-color .15s ease, color .15s ease, background .15s ease;
+}
+.itw-quiz-opt:hover{border-color:var(--itw-accent);}
+.itw-quiz-opt.itw-active{border-color:var(--itw-accent);color:var(--itw-accent);background:var(--itw-accent-soft);}
+
+/* ================= SPEECH sim ================= */
+.itw-speech-scene{display:flex;flex-direction:column;align-items:center;justify-content:center;height:260px;gap:14px;}
+.itw-speech-scene .itw-scene-emoji{font-size:64px;letter-spacing:10px;}
+.itw-speech-face{font-size:52px;transition:transform .12s ease;}
+.itw-speech-face.itw-straining{animation:itw-face-strain .3s ease-in-out infinite;}
+@keyframes itw-face-strain{0%,100%{transform:translateX(0) rotate(0deg);}25%{transform:translateX(-3px) rotate(-2deg);}75%{transform:translateX(3px) rotate(2deg);}}
+.itw-speech-output{min-height:80px;font-family:var(--font-display);font-size:25px;padding:0 6px;line-height:1.6;}
+.itw-speech-output .itw-blocked{color:var(--itw-speech);font-family:var(--font-mono);font-size:21px;display:inline-block;animation:itw-word-shake .18s ease-in-out infinite;}
+@keyframes itw-word-shake{0%,100%{transform:translateX(0);}50%{transform:translateX(2px);}}
+.itw-convo-bubble{
+  background:var(--itw-panel);color:var(--itw-text);border:1px solid var(--itw-border);border-radius:18px 18px 18px 4px;
+  padding:14px 18px;font-size:15.5px;font-weight:600;max-width:420px;margin:16px auto 6px;box-shadow:0 8px 18px -12px rgba(40,54,44,.3);
+}
+.itw-convo-bubble.itw-convo-idle{color:var(--itw-muted);font-weight:500;}
+.itw-convo-bubble.itw-convo-impatient{border-color:#e5484d;animation:itw-bubble-nudge 1s ease-in-out infinite;}
+@keyframes itw-bubble-nudge{0%,100%{transform:translateX(0);}50%{transform:translateX(3px);}}
+.itw-convo-partner{
+  display:flex;flex-direction:column;align-items:center;gap:2px;font-size:22px;margin-bottom:4px;
+  transition:transform .15s ease;
+}
+.itw-convo-partner .itw-partner-label{font-size:11px;font-weight:700;color:var(--itw-muted-dim);letter-spacing:.02em;}
+.itw-convo-partner.itw-partner-waiting{animation:itw-partner-tap .6s ease-in-out infinite;}
+.itw-convo-partner.itw-partner-waiting .itw-partner-label{color:#e5484d;}
+@keyframes itw-partner-tap{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
+.itw-push-zone{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:6px;}
+.itw-push-word{font-family:var(--font-display);font-size:30px;font-weight:600;color:var(--itw-text);letter-spacing:.01em;}
+.itw-push-word-rest{color:var(--itw-muted-dim);}
+.itw-push-bar{width:240px;height:16px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;border:1px solid var(--itw-border);}
+.itw-push-bar-fill{height:100%;background:var(--itw-speech);border-radius:99px;transition:width .08s linear;}
+.itw-push-btn{
+  background:var(--itw-speech);color:#241611;border:none;font-weight:800;font-size:16px;letter-spacing:.02em;
+  padding:16px 40px;border-radius:99px;cursor:pointer;font-family:var(--font-body);
+  animation:itw-push-pulse 1s ease-in-out infinite;user-select:none;touch-action:manipulation;
+}
+.itw-push-btn:active{animation:itw-push-tap .08s ease;}
+@keyframes itw-push-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.04);}}
+@keyframes itw-push-tap{0%{transform:scale(.92);}100%{transform:scale(1);}}
+.itw-textin{
+  background:var(--itw-panel-2);border:1px solid var(--itw-border);color:var(--itw-text);padding:12px 16px;
+  border-radius:99px;font-family:var(--font-body);font-size:14px;flex:1;min-width:200px;
+  transition:border-color .15s ease;
+}
+.itw-textin:focus-visible{border-color:var(--itw-accent);}
+
+/* accent binding per module */
+.itw-module[data-accent="autism"]{--itw-accent:var(--itw-autism);--itw-accent-soft:var(--itw-autism-soft);}
+.itw-module[data-accent="adhd"]{--itw-accent:var(--itw-adhd);--itw-accent-soft:var(--itw-adhd-soft);}
+.itw-module[data-accent="dyslexia"]{--itw-accent:var(--itw-dyslexia);--itw-accent-soft:var(--itw-dyslexia-soft);}
+.itw-module[data-accent="speech"]{--itw-accent:var(--itw-speech);--itw-accent-soft:var(--itw-speech-soft);}
+
+@media (prefers-reduced-motion: reduce){
+  .itw-root *{animation-duration:.001ms !important;animation-iteration-count:1 !important;}
+  .itw-view, .itw-rise{opacity:1 !important;transform:none !important;}
+}
+
+/* ================= Settings bar ================= */
+.itw-settings-bar{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:10px;
+  padding:14px 0;margin-bottom:4px;
+}
+.itw-toggle-btn{
+  background:var(--itw-panel);border:1.5px solid var(--itw-border);color:var(--itw-text);
+  padding:8px 16px;border-radius:99px;font-size:12.5px;font-family:var(--font-body);font-weight:700;cursor:pointer;
+  transition:border-color .15s ease, color .15s ease, background .15s ease, box-shadow .15s ease;
+}
+.itw-toggle-btn.itw-active{border-color:var(--itw-accent);color:#fff;background:var(--itw-accent);box-shadow:0 8px 18px -8px var(--itw-accent-soft);}
+.itw-toggle-btn:not(.itw-active){color:var(--itw-muted);}
+
+/* ================= Rating card (reflection, not a grade) ================= */
+.itw-rating-card{
+  margin:0 18px 20px;padding:22px;padding-left:20px;border-radius:18px;
+  border:1px solid var(--itw-accent-soft);border-left:5px solid var(--card-accent, var(--itw-accent));
+  background:var(--card-accent-soft, var(--itw-accent-soft));color:var(--itw-paper-text);
+  animation:itw-rating-in .35s ease both;
+}
+@keyframes itw-rating-in{
+  from{opacity:0;transform:translateY(6px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.itw-rating-top{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.itw-rating-badge{
+  width:34px;height:34px;border-radius:50%;background:var(--card-accent, var(--itw-accent));color:#fff;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 2px 8px -2px rgba(0,0,0,.35);
+}
+.itw-rating-badge svg{width:18px;height:18px;}
+.itw-rating-title{font-family:var(--font-display);font-weight:800;font-size:16.5px;color:var(--itw-paper-text);}
+.itw-rating-lines{margin:0 0 14px;padding-left:18px;color:var(--itw-paper-text);font-size:14.5px;line-height:1.6;}
+.itw-rating-lines li{margin-bottom:6px;}
+.itw-rating-lines li:last-child{margin-bottom:0;}
+.itw-rating-retry{font-size:12.5px;padding:7px 14px;background:var(--itw-paper);border-color:transparent;color:var(--itw-paper-text);}
+.itw-rating-retry:hover{border-color:var(--itw-accent);color:var(--itw-accent);}
+
+/* ================= How-to strip (scannable, before every task) ================= */
+.itw-howto{
+  display:flex;gap:10px;flex-wrap:wrap;padding:0 18px 18px;background:var(--itw-panel-2);
+  border-bottom:1px solid var(--itw-border);
+}
+.itw-howto-step{
+  display:flex;align-items:center;gap:9px;background:var(--itw-paper);border:1px solid var(--itw-paper-border);
+  border-radius:99px;padding:7px 14px 7px 8px;font-size:13px;font-weight:600;color:var(--itw-text);
+}
+.itw-howto-num{
+  width:20px;height:20px;border-radius:50%;background:var(--itw-accent);color:#fff;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;font-weight:700;
+}
+
+/* ================= About block ================= */
+.itw-about{
+  position:relative;margin-top:44px;display:flex;gap:22px;align-items:flex-start;padding:32px;border-radius:26px;
+  background:linear-gradient(155deg, var(--itw-autism-soft), var(--itw-panel) 55%);
+  border:1.5px solid var(--itw-autism-soft);overflow:hidden;
+  box-shadow:0 30px 60px -34px var(--itw-autism-soft);
+}
+.itw-about::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:5px;
+  background:linear-gradient(90deg, var(--itw-autism), var(--itw-adhd), var(--itw-dyslexia), var(--itw-speech));
+}
+.itw-about-icon{
+  width:52px;height:52px;border-radius:16px;flex-shrink:0;
+  background:linear-gradient(135deg, var(--itw-autism), color-mix(in srgb, var(--itw-autism) 60%, #000 18%));
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 14px 28px -10px var(--itw-autism-soft);
+}
+.itw-about-icon svg{width:24px;height:24px;}
+.itw-about h3{font-family:var(--font-display);font-weight:900;font-size:22px;margin:2px 0 10px;letter-spacing:-.01em;}
+.itw-about p{font-size:14.5px;color:var(--itw-muted);line-height:1.65;margin:0 0 10px;max-width:64ch;}
+.itw-about p:last-child{margin-bottom:0;}
+.itw-about a{
+  color:#fff;font-weight:700;text-decoration:none;background:var(--itw-autism);padding:2px 10px;
+  border-radius:6px;box-shadow:0 4px 10px -4px var(--itw-autism-soft);
+}
+.itw-about-points{
+  list-style:none;margin:18px 0 6px;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+}
+.itw-about-points li{
+  background:var(--itw-panel);border:1px solid var(--itw-border);border-radius:12px;padding:12px 14px;
+  font-size:13px;color:var(--itw-muted);line-height:1.5;
+}
+.itw-about-points b{
+  display:block;font-family:var(--font-display);font-weight:800;font-size:13.5px;
+  color:var(--itw-text);margin-bottom:3px;
+}
+@media (max-width:680px){.itw-about-points{grid-template-columns:1fr;}}
+/* A nod to Manas Learning's own run-together headline style
+   ("EveryChildLearnsDifferently.") — used once, as a signature, not
+   as a body-text pattern, so it stays legible. */
+.itw-brand-echo{
+  display:inline-block;font-family:var(--font-display);font-weight:900;font-size:14.5px;letter-spacing:0;
+  color:var(--itw-autism);margin:2px 0 12px !important;padding:5px 12px;border-radius:99px;
+  background:var(--itw-autism-soft);
+}
+@media (max-width:600px){.itw-about{flex-direction:column;padding:26px 22px;}}

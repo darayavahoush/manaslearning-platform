@@ -48,6 +48,20 @@ const VIDEO_FILES = {
   grocery: [1],
 };
 
+function shouldFetchSound(kind, ext) {
+  const mp3Dest = `public/sounds/${kind}.mp3`;
+  const rawDest = `public/sounds/${kind}.${ext}`;
+  if (fs.existsSync(mp3Dest) && fs.statSync(mp3Dest).size > 0) return false;
+  if (fs.existsSync(rawDest) && fs.statSync(rawDest).size > 0) return false;
+  return true;
+}
+
+function shouldFetchVideo(scene, n) {
+  const videoDest = `public/videos/${scene}/${n}.mp4`;
+  if (fs.existsSync(videoDest) && fs.statSync(videoDest).size > 0) return false;
+  return true;
+}
+
 function fetchTo(url, dest) {
   console.log(`[fetch-assets] fetching ${url} ...`);
   fs.mkdirSync(path.dirname(dest), { recursive: true });
@@ -67,18 +81,30 @@ function fetchTo(url, dest) {
 }
 
 function main() {
-  console.log("[fetch-assets] pulling media from Hugging Face via curl...");
+  console.log("[fetch-assets] checking media assets (skipping already present files)...");
+  let newSounds = 0;
   for (const [kind, ext] of Object.entries(SOUND_FILES)) {
-    fetchTo(`${BASE}/sounds/${kind}.${ext}`, `public/sounds/${kind}.${ext}`);
-  }
-  for (const [scene, nums] of Object.entries(VIDEO_FILES)) {
-    for (const n of nums) {
-      fetchTo(`${BASE}/videos/${scene}/${n}.mp4`, `public/videos/${scene}/${n}.mp4`);
+    if (shouldFetchSound(kind, ext)) {
+      fetchTo(`${BASE}/sounds/${kind}.${ext}`, `public/sounds/${kind}.${ext}`);
+      newSounds++;
     }
   }
-  console.log("[fetch-assets] compressing audio & video media...");
-  compressSounds();
-  compressVideos();
+  let newVideos = 0;
+  for (const [scene, nums] of Object.entries(VIDEO_FILES)) {
+    for (const n of nums) {
+      if (shouldFetchVideo(scene, n)) {
+        fetchTo(`${BASE}/videos/${scene}/${n}.mp4`, `public/videos/${scene}/${n}.mp4`);
+        newVideos++;
+      }
+    }
+  }
+  if (newSounds > 0 || newVideos > 0) {
+    console.log("[fetch-assets] compressing newly fetched media...");
+    if (newSounds > 0) compressSounds();
+    if (newVideos > 0) compressVideos();
+  } else {
+    console.log("[fetch-assets] all 19 sounds and 6 videos are already present and verified.");
+  }
   console.log("[fetch-assets] done.");
 }
 

@@ -182,9 +182,22 @@
     ).observe(f);
   }
 
+  function unifyMiloLauncher() {
+    var btn = document.querySelector('button[aria-label*="Milo"], button[aria-label*="chat with Milo"], button[aria-label*="Milo the Owl"]');
+    if (!btn || btn.dataset.itwUnified) return;
+    btn.dataset.itwUnified = "1";
+    btn.style.setProperty("background", "#05b076", "important");
+    btn.style.setProperty("display", "flex", "important");
+    btn.style.setProperty("align-items", "center", "important");
+    btn.style.setProperty("justify-content", "center", "important");
+    btn.innerHTML = '<div style="width:44px;height:44px;border-radius:9999px;overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 4px rgba(0,0,0,0.15)"><img src="/decor/milo-owl.webp" alt="Milo the Owl" style="width:100%;height:100%;object-fit:cover;display:block" /></div>';
+  }
+
   function ensure() {
     addNavCss();
     watchFooter();
+    unifyMiloLauncher();
+    setInterval(unifyMiloLauncher, 500);
     var img = document.querySelector('img[alt*="Phonics"]');
     if (!img) return;
     var art = img.closest("article");

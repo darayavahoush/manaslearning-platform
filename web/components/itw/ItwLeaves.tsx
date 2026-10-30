@@ -22,22 +22,28 @@ export default function ItwLeaves() {
   const [host, setHost] = useState<Element | null>(null)
 
   useEffect(() => {
+    let unmounted = false
     const find = () => document.querySelector('.itw-root')
     const el = find()
     if (el) {
-      setHost(el)
-      return
+      queueMicrotask(() => {
+        if (!unmounted) setHost(el)
+      })
+      return () => { unmounted = true }
     }
     // The Experience component loads lazily, so wait until its root exists.
     const mo = new MutationObserver(() => {
       const e = find()
       if (e) {
-        setHost(e)
+        if (!unmounted) setHost(e)
         mo.disconnect()
       }
     })
     mo.observe(document.body, {childList: true, subtree: true})
-    return () => mo.disconnect()
+    return () => {
+      unmounted = true
+      mo.disconnect()
+    }
   }, [])
 
   if (!host) return null

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-html-link-for-pages, @next/next/no-img-element */
 import type {Metadata} from 'next'
 import {Poppins, Patrick_Hand} from 'next/font/google'
 import './globals.css'
@@ -12,6 +13,11 @@ const patrick = Patrick_Hand({subsets: ['latin'], weight: '400', variable: '--fo
 export const metadata: Metadata = {
   title: {default: 'Manas Learning', template: '%s - Manas Learning'},
   description: 'Learning, speech and sensory support for children, with free consultations, Milo our AI helper, and interactive experiences that show what a child feels.',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
 }
 
 const BASE = 'https://www.manaslearning.com'

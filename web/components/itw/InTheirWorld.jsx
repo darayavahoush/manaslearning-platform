@@ -1,4 +1,4 @@
-// @ts-nocheck
+/* eslint-disable react/no-unescaped-entities, @next/next/no-img-element */
 import React, {
   useState,
   useEffect,
@@ -27,8 +27,6 @@ import QuietCorner from "./media/QuietCorner";
      <InTheirWorld />
    ============================================================ */
 
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
 /* Smoothly scroll a section into view by id — used by the module TOC and by
    the facts conveyor once it's cycled through everything. */
 function scrollToId(id) {
@@ -43,6 +41,10 @@ const ACCENT_HEX = {
   adhd: "140,101,32",
   dyslexia: "89,40,140",
   speech: "140,66,44",
+  dyscalculia: "29,133,133",
+  dysgraphia: "178,89,40",
+  auditory: "44,82,130",
+  executive: "46,125,50",
 };
 const ACCENT_HEX_DARK = {
   landing: "86,210,177",
@@ -50,6 +52,10 @@ const ACCENT_HEX_DARK = {
   adhd: "210,160,86",
   dyslexia: "170,126,221",
   speech: "210,115,86",
+  dyscalculia: "77,208,225",
+  dysgraphia: "255,138,101",
+  auditory: "99,179,237",
+  executive: "129,199,132",
 };
 
 /* ---------------- Error boundary ----------------
@@ -65,7 +71,6 @@ class ModuleErrorBoundary extends React.Component {
     return { hasError: true };
   }
   componentDidCatch(error, info) {
-    // eslint-disable-next-line no-console
     console.error("In Their World — module crashed:", error, info);
   }
   render() {
@@ -80,7 +85,7 @@ class ModuleErrorBoundary extends React.Component {
             className="itw-btn-primary"
             onClick={() => {
               this.setState({ hasError: false });
-              this.props.onBack && this.props.onBack();
+              this.props.onBack?.();
             }}
           >
             ← Back to all modules
@@ -94,7 +99,7 @@ class ModuleErrorBoundary extends React.Component {
 
 /* ---------------- Settings context (sound) ---------------- */
 
-const SettingsContext = createContext({ soundOn: true });
+const SettingsContext = createContext({ soundOn: false });
 
 /* ---------------- Real media assets ----------------
    Sourced from the Hugging Face dataset at
@@ -141,30 +146,53 @@ class AudioEngine {
   constructor() {
     this.ctx = null;
     this.master = null;
+    this.enabled = false; // Off by default (explicit opt-in only)
     this.drones = new Map();
     this.samples = new Map(); // kind -> decoded AudioBuffer, once loaded
     this.sampleMissing = new Set(); // kinds we've confirmed have no file
     this.samplePending = new Set(); // kinds currently being fetched
   }
 
+  setEnabled(val) {
+    this.enabled = Boolean(val);
+    if (!this.enabled) {
+      this.stopAll();
+    }
+  }
+
   ensure() {
+    if (!this.enabled) return null;
     if (!this.ctx) {
       const Ctx = window.AudioContext || window.webkitAudioContext;
       if (!Ctx) return null;
       this.ctx = new Ctx();
       this.master = this.ctx.createGain();
-      this.master.gain.value = 0.12;
+      this.master.gain.value = 0.12; // Master safety volume ceiling
       this.master.connect(this.ctx.destination);
     }
     if (this.ctx.state === "suspended") this.ctx.resume();
     return this.ctx;
   }
 
+  stopAll() {
+    for (const id of Array.from(this.drones.keys())) {
+      this.stopDrone(id);
+    }
+    if (this.master && this.ctx) {
+      try {
+        const now = this.ctx.currentTime;
+        this.master.gain.cancelScheduledValues(now);
+        this.master.gain.setValueAtTime(0.0001, now);
+      } catch {}
+    }
+  }
+
   setMasterGain(val, rampSec = 0.18) {
+    if (!this.enabled) return;
     const ctx = this.ensure();
     if (!ctx || !this.master) return;
     const now = ctx.currentTime;
-    const target = Math.max(0.0001, Math.min(0.55, val));
+    const target = Math.max(0.0001, Math.min(0.12, val));
     this.master.gain.cancelScheduledValues(now);
     this.master.gain.setValueAtTime(this.master.gain.value, now);
     this.master.gain.linearRampToValueAtTime(target, now + Math.max(0.15, rampSec));
@@ -315,14 +343,14 @@ class AudioEngine {
         d.oscs.forEach((o) => {
           try {
             o.stop();
-          } catch (e) {}
+          } catch {}
         });
       }, 200);
     } else {
       d.oscs.forEach((o) => {
         try {
           o.stop();
-        } catch (e) {}
+        } catch {}
       });
     }
     this.drones.delete(id);
@@ -435,7 +463,7 @@ function speakText(text, { rate = 1, pitch = 1, volume = 0.85 } = {}) {
     u.pitch = pitch;
     u.volume = volume;
     window.speechSynthesis.speak(u);
-  } catch (e) {
+  } catch {
     /* speech synthesis unavailable — visual/audio-tone feedback still works */
   }
 }
@@ -445,35 +473,83 @@ function speakText(text, { rate = 1, pitch = 1, volume = 0.85 } = {}) {
 const MODULES = [
   {
     key: "autism",
-    tag: "Sensory input",
+    tag: "Sensory filtering",
     name: "Autism",
-    blurb: "Sensory processing, filtering, and why a “normal” room can feel like too much.",
+    sub: "Sensory Worlds",
+    blurb: "Sensory processing, filtering, and why an everyday environment can feel overwhelming.",
+    image: "/decor/itw/autism-environment.webp",
     statBig: "~1 in 100",
     statRest: "children under 10 in India (INCLEN Trust, PLOS Medicine)",
   },
   {
     key: "adhd",
-    tag: "Sustained focus",
+    tag: "Attention regulation",
     name: "ADHD",
-    blurb: "What it takes to hold attention on one task while everything else pulls at you.",
-    statBig: "~7.1%",
-    statRest: "pooled prevalence, Indian children & adolescents (19-study meta-analysis)",
+    sub: "A Mind With Too Many Open Tabs",
+    blurb: "Holding focus on an assignment when competing pings, stray thoughts, and tabs pull equally.",
+    image: "/decor/itw/adhd-workspace-scene.webp",
+    statBig: "~6.3%–7.1%",
+    statRest: "pooled prevalence, Indian children (Chauhan 2022, Joseph & Devu 2019)",
   },
   {
     key: "dyslexia",
     tag: "Reading & decoding",
     name: "Dyslexia",
-    blurb: "Decoding text when letters won't sit still and reading takes real effort, every line.",
+    sub: "Words on Paper",
+    blurb: "Decoding text when letter-sound translation requires intense, continuous mental effort.",
+    image: "/decor/itw/dyslexia-environment.webp",
     statBig: "10–15%",
     statRest: "of Indian children, estimated dyslexic (Dyslexia Association of India)",
   },
   {
     key: "speech",
-    tag: "Finding the words",
+    tag: "Communication & timing",
     name: "Speech & Language",
-    blurb: "Knowing exactly what you want to say — and having the words arrive late, or not at all.",
+    sub: "Finding the Words",
+    blurb: "Knowing what you want to say while words take longer to formulate under social pressure.",
+    image: "/decor/itw/communication-environment.webp",
     statBig: "~1 in 11",
     statRest: "at-risk children found to have one on evaluation (Indian rural screening study)",
+  },
+  {
+    key: "dyscalculia",
+    tag: "Numerical reasoning",
+    name: "Dyscalculia",
+    sub: "Do the Math",
+    blurb: "Working with quantities, proportions, and mental math when numbers lack spatial anchors.",
+    image: "/decor/itw/dyscalculia-environment.webp",
+    statBig: "~5.6%–8.2%",
+    statRest: "estimated prevalence in Indian school cohorts (Scaria et al., 2023 meta-analysis)",
+  },
+  {
+    key: "dysgraphia",
+    tag: "Motor & transcription",
+    name: "Dysgraphia",
+    sub: "Write It Down",
+    blurb: "Translating rich, fluent thought into physical text when the motor transcription pathway is strained.",
+    image: "/decor/itw/dysgraphia-environment.webp",
+    statBig: "10%–14%",
+    statRest: "of students with learning differences experience severe written expression barriers (Indian J Pediatr)",
+  },
+  {
+    key: "auditory",
+    tag: "Listening in noise",
+    name: "Auditory Processing",
+    sub: "Hear It Right",
+    blurb: "Extracting critical verbal instructions in a noisy room where background sounds compete with speech.",
+    image: "/decor/itw/auditory-processing-environment.webp",
+    statBig: "~3%–5%",
+    statRest: "of school-aged children experience Central Auditory Processing differences (Jerger & Musiek, AIISH)",
+  },
+  {
+    key: "executive",
+    tag: "Planning & sequencing",
+    name: "Executive Functioning",
+    sub: "Where Do I Start?",
+    blurb: "Initiating, prioritizing, and sequencing multiple competing tasks when everything feels equally urgent.",
+    image: "/decor/itw/executive-functioning-environment.webp",
+    statBig: "30%–40%",
+    statRest: "overlap with ADHD, autism & learning differences; affects working memory & initiation (Diamond, 2013)",
   },
 ];
 
@@ -501,80 +577,32 @@ const MODULE_ICONS = {
       <path d="M14 17h12M14 21h7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
     </svg>
   ),
+  dyscalculia: (
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="7" y="7" width="26" height="26" rx="6" stroke="currentColor" strokeWidth="2.4" />
+      <path d="M14 15h12M20 11v8M14 26h12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+      <circle cx="20" cy="26" r="2" fill="currentColor" />
+    </svg>
+  ),
+  dysgraphia: (
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 30l4.5-1.5L27 16l-3-3L11.5 25.5L10 30Z" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" />
+      <path d="M7 33c4-1 9 1 13-1s7-3 13-1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  ),
+  auditory: (
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 20a12 12 0 0 1 24 0v4a5 5 0 0 1-5 5h-1a3 3 0 0 1-3-3v-4a3 3 0 0 1 3-3h6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 19h2a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3h-2" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  ),
+  executive: (
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="8" width="24" height="24" rx="5" stroke="currentColor" strokeWidth="2.2" />
+      <path d="M13 15l2.5 2.5L20 13M23 15h4M13 22l2.5 2.5L20 20M23 22h4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
 };
-
-/* A tiny fake mouse pointer that drifts to a target and "clicks" it, on a
-   loop — this is what stands in for the idle/resting state of each sim,
-   so the resting card demonstrates how the task is actually played
-   instead of just showing a frozen scene. */
-function DemoCursor({ variant }) {
-  return (
-    <span className={`itw-cp-cursor itw-cp-cursor-${variant}`} aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M4 3l14 6.2-5.6 2.1L10 17 4 3Z" fill="#fff" stroke="#2a2a28" strokeWidth="1.4" strokeLinejoin="round" />
-      </svg>
-      <span className="itw-cp-click-ring" />
-    </span>
-  );
-}
-
-/* A tiny, auto-playing, DOM-built preview of each module's core moment —
-   answers "what does this look like" without a video file to host or load.
-   Doubles as the idle demo: a cursor visibly moves in and clicks the thing
-   you'd click, on loop, so the resting state teaches the mechanic. */
-function CardPreview({ moduleKey }) {
-  if (moduleKey === "autism") {
-    return (
-      <div className="itw-cp-stage">
-        <span className="itw-cp-dot itw-cp-target" />
-        <span className="itw-cp-dot itw-cp-decoy" style={{ top: "62%", left: "58%" }} />
-        <span className="itw-cp-dot itw-cp-decoy" style={{ top: "70%", left: "18%", animationDelay: ".35s" }} />
-        <span className="itw-cp-chip">🪑 chair scraping</span>
-        <DemoCursor variant="autism" />
-      </div>
-    );
-  }
-  if (moduleKey === "adhd") {
-    return (
-      <div className="itw-cp-stage">
-        <span className="itw-cp-num">4</span>
-        <span className="itw-cp-num itw-cp-num-2">7</span>
-        <span className="itw-cp-bubble">New message!</span>
-        <DemoCursor variant="adhd" />
-      </div>
-    );
-  }
-  if (moduleKey === "dyslexia") {
-    return (
-      <div className="itw-cp-stage itw-cp-stage-text">
-        <span className="itw-cp-word">
-          {"b/d p/q".split("").map((ch, i) => (
-            <span key={i} className="itw-cp-letter" style={{ animationDelay: `${i * 0.12}s` }}>
-              {ch}
-            </span>
-          ))}
-        </span>
-        <DemoCursor variant="dyslexia" />
-      </div>
-    );
-  }
-  // speech
-  return (
-    <div className="itw-cp-stage itw-cp-stage-text">
-      <span className="itw-cp-word">
-        I w<span className="itw-cp-blocked">-w-w</span>ant to...
-      </span>
-      <DemoCursor variant="speech" />
-    </div>
-  );
-}
-
-const SOON_INTERACTIVE = [
-  { key: "dyscalculia", icon: "🔢", name: "Dyscalculia", sub: "Do the Math", blurb: "Work with numbers that shift, clocks that confuse and everyday math that feels harder.", meta: "3–4 min" },
-  { key: "dysgraphia", icon: "✏️", name: "Dysgraphia", sub: "Write It Down", blurb: "Try writing while the screen shakes, letters move or there's a delay between thought and output.", meta: "2–4 min" },
-  { key: "auditory", icon: "🎧", name: "Auditory Processing", sub: "Hear It Right", blurb: "Follow instructions in a noisy environment where important words are harder to catch.", meta: "3–4 min" },
-  { key: "executive", icon: "🗂️", name: "Executive Functioning", sub: "Where Do I Start?", blurb: "Plan, remember and complete a multi-step task while time and distractions get in the way.", meta: "4–5 min" },
-];
 
 const SOON_STORIES = [
   { key: "downsyndrome", icon: "🌱", name: "Down Syndrome / Global Developmental Delay", sub: "Growing at My Own Pace", blurb: "A first-person story about growth, strengths and everyday milestones.", meta: "Story experience" },
@@ -608,26 +636,23 @@ function Landing({ onSelect }) {
   const pick = (keys) => keys.map((k) => MODULES.find((m) => m.key === k)).filter(Boolean);
   const renderCard = (m) => (
     <button key={m.key} className="itw-mcard" data-m={m.key} onClick={() => onSelect(m.key)}>
+      <div className="itw-mcard-banner-wrap">
+        <img src={m.image} alt="" className="itw-mcard-banner" loading="lazy" decoding="async" />
+        <span className="itw-mcard-status-pill">Interactive</span>
+      </div>
       <div className="itw-mcard-body">
         <div className="itw-mcard-top">
           <div className="itw-mcard-icon">{MODULE_ICONS[m.key]}</div>
-          <div className="itw-tag">{m.tag}</div>
+          <div>
+            <div className="itw-tag">{m.tag}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)", marginTop: 2 }}>{m.sub}</div>
+          </div>
         </div>
         <h3>{m.name}</h3>
         <p>{m.blurb}</p>
-        <div className="itw-cp-label">
-          How it plays <span className="itw-cp-live" />
-        </div>
-        <div className="itw-card-preview">
-          <CardPreview moduleKey={m.key} />
-        </div>
         <div className="itw-mcard-bottom">
-          <div className="itw-stat">
-            <b>{m.statBig}</b>
-            <span>{m.statRest}</span>
-          </div>
           <div className="itw-enter">
-            Try it
+            Explore Experience
             <svg viewBox="0 0 20 20" fill="none"><path d="M4 10h11M10 5l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </div>
         </div>
@@ -661,7 +686,10 @@ function Landing({ onSelect }) {
           </div>
         </div>
         <aside className="itw-hero-card itw-rise itw-rise-3" aria-hidden="true">
-          <img src="/decor/hero-illustration.webp" alt="" />
+          <picture>
+            <source srcSet="/decor/itw/hero-world.webp" type="image/webp" />
+            <img src="/decor/itw/hero-world.webp" alt="Inclusive, supportive learning landscape" loading="eager" decoding="async" />
+          </picture>
           <p>Understanding is the first step towards meaningful support.</p>
         </aside>
       </div>
@@ -671,14 +699,16 @@ function Landing({ onSelect }) {
           <h2>Choose an Experience</h2>
           <p>Explore a short interactive activity and see an everyday task from a different perspective.</p>
         </div>
-        <div className="itw-group-label">Interactive Experiences</div>
-        <div className="itw-cardgrid">
-          {pick(["autism", "adhd", "dyslexia"]).map(renderCard)}
-          {SOON_INTERACTIVE.map((c) => <SoonCard key={c.key} c={c} />)}
+        <div className="itw-group-label">Sensory &amp; Attentional Landscapes</div>
+        <div className="itw-editorial-grid">
+          {pick(["autism", "adhd", "dyslexia", "speech"]).map(renderCard)}
+        </div>
+        <div className="itw-group-label">Learning &amp; Executive Scaffolding</div>
+        <div className="itw-editorial-grid">
+          {pick(["dyscalculia", "dysgraphia", "auditory", "executive"]).map(renderCard)}
         </div>
         <div className="itw-group-label">Stories &amp; Perspectives</div>
         <div className="itw-cardgrid">
-          {pick(["speech"]).map(renderCard)}
           {SOON_STORIES.map((c) => <SoonCard key={c.key} c={c} />)}
         </div>
       </section>
@@ -888,8 +918,10 @@ function FactsConveyor({ facts, onComplete }) {
   const factsKey = facts.map((f) => f.num).join("|");
   useEffect(() => {
     completedRef.current = false;
-    setTapPaused(false);
-    setIdx(0);
+    queueMicrotask(() => {
+      setTapPaused(false);
+      setIdx(0);
+    });
   }, [factsKey]);
 
   // Read each fact aloud as it comes up on the belt, if sound is on and
@@ -911,7 +943,7 @@ function FactsConveyor({ facts, onComplete }) {
     if (idx === facts.length - 1) {
       if (!completedRef.current) {
         completedRef.current = true;
-        onComplete && onComplete();
+        onComplete?.();
       }
       setIdx(0);
     } else {
@@ -1001,69 +1033,6 @@ function FactsGrid({ facts, note, onComplete }) {
   );
 }
 
-function ModuleSwitcher({ current, onNavigate }) {
-  return (
-    <div className="itw-switch" role="tablist" aria-label="Jump to another module">
-      {MODULES.map((m) => (
-        <button
-          key={m.key}
-          role="tab"
-          aria-selected={current === m.key}
-          aria-label={m.name}
-          title={m.name}
-          className={current === m.key ? "itw-current" : ""}
-          onClick={() => current !== m.key && onNavigate(m.key)}
-        />
-      ))}
-    </div>
-  );
-}
-
-function ModuleTOC({ sections }) {
-  if (!sections || !sections.length) return null;
-  return (
-    <nav className="itw-toc" aria-label="Jump to a section">
-      <span className="itw-toc-label">Jump to</span>
-      <div className="itw-toc-items">
-        {sections.map((s, i) => (
-          <button key={s.id} type="button" className="itw-toc-item" onClick={() => scrollToId(s.id)}>
-            <span className="itw-toc-num">{i + 1}</span>
-            {s.label}
-          </button>
-        ))}
-      </div>
-    </nav>
-  );
-}
-
-function ModuleShell({ accent, eyebrow, title, dek, sections, onBack, onNavigate, children }) {
-  return (
-    <section className="itw-view itw-module" data-accent={accent}>
-      <div className="itw-module-top">
-        <button className="itw-back-btn" onClick={onBack}>
-          ← All modules
-        </button>
-        <ModuleSwitcher current={accent} onNavigate={onNavigate} />
-      </div>
-      <div className="itw-module-head">
-        <div className="itw-eyebrow">{eyebrow}</div>
-        <h2 className="itw-mtitle">{title}</h2>
-        <p className="itw-module-dek">{dek}</p>
-      </div>
-      <ModuleTOC sections={sections} />
-      <div className="itw-mpreview" aria-hidden="true">
-        <div className="itw-cp-label">
-          How it plays — watch, then try it yourself <span className="itw-cp-live" />
-        </div>
-        <div className="itw-card-preview itw-card-preview-lg">
-          <CardPreview moduleKey={accent} />
-        </div>
-      </div>
-      {children}
-    </section>
-  );
-}
-
 /* ---------------- Viewfinder (signature element — the "step into their
    world" viewport, with a live HUD readout, wraps every sim stage) ---------------- */
 
@@ -1084,48 +1053,6 @@ function Viewfinder({ hud, stageStyle, children }) {
         </div>
         {children}
       </div>
-    </div>
-  );
-}
-
-/* ---------------- Rating card (shared by every task) ---------------- */
-
-function RatingCard({ title, lines, retryLabel = "Try again", onRetry }) {
-  useEffect(() => {
-    audio.tone({ freq: 523, type: "sine", duration: 0.16, gain: 0.1 });
-    audio.tone({ freq: 659, type: "sine", duration: 0.2, gain: 0.09, delay: 0.09 });
-  }, []);
-  return (
-    <div className="itw-rating-card" role="status">
-      <div className="itw-rating-top">
-        <div className="itw-rating-badge" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7.5-4.6-10-9.3C.4 8 2 4.5 5.6 4a5 5 0 0 1 6.4 2 5 5 0 0 1 6.4-2C22 4.5 23.6 8 22 11.7 19.5 16.4 12 21 12 21Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/></svg>
-        </div>
-        <div className="itw-rating-title">{title}</div>
-      </div>
-      <ul className="itw-rating-lines">
-        {lines.map((l, i) => (
-          <li key={i}>{l}</li>
-        ))}
-      </ul>
-      <button className="itw-btn-ghost itw-rating-retry" onClick={onRetry}>
-        {retryLabel}
-      </button>
-    </div>
-  );
-}
-
-/* ---------------- How-to strip (3 short steps, shown before every task) ---------------- */
-
-function HowTo({ steps }) {
-  return (
-    <div className="itw-howto">
-      {steps.map((s, i) => (
-        <div className="itw-howto-step" key={i}>
-          <span className="itw-howto-num">{i + 1}</span>
-          <span>{s}</span>
-        </div>
-      ))}
     </div>
   );
 }
@@ -1213,165 +1140,165 @@ const VIDEO_SCENES = {
   grocery: ["/videos/grocery/1.mp4"],
 };
 
-const TOTAL_ROUNDS = 8;
-const ROUND_TIME_LIMIT = (round) => Math.max(1.1, 2.8 - round * 0.22);
+const AUTISM_ROUNDS = 3;
+const AUTISM_ROUND_LIMIT = 5.5;
 
-function AutismSim() {
+const AUTISM_STEPS = [
+  { key: "instructions", label: "Instructions" },
+  { key: "scenario", label: "Setting & Baseline" },
+  { key: "run_unfiltered", label: "Run 1 (Unfiltered)" },
+  { key: "reflect", label: "Reflect & Compare" },
+  { key: "support", label: "Support Experiment" },
+  { key: "explain", label: "Understanding & Action" },
+];
+
+const AUTISM_STEP_INDEX = {
+  instructions: 0,
+  scenario: 1,
+  run_unfiltered: 2,
+  reflect: 3,
+  support: 4,
+  run_supported: 4,
+  explain: 5,
+  next: 5,
+};
+
+const AUTISM_REFLECT_QS = [
+  {
+    q: "During the unfiltered observation, where did you notice the sensory friction?",
+    options: [
+      "The overlapping visual cues and background noise made it hard to isolate the target.",
+      "Filtering out the decoys required conscious effort and mental stamina on every second.",
+      "I felt an urge to look away or turn the brightness/volume down immediately.",
+      "The time limit added extra tension on top of the competing sensory inputs.",
+    ],
+  },
+];
+
+const AUTISM_SUPPORT_CHOICES = [
+  {
+    id: "ear_defenders",
+    title: "Sensory Ear Defenders / Noise Reduction",
+    subtitle: "Simulated in-app audio dampening (~80%)",
+    desc: "Applies software audio attenuation to background sounds, demonstrating how dampening auditory overload frees mental focus. (Note: real ear defender attenuation varies by frequency rating).",
+    tag: "Auditory Scaffolding",
+  },
+  {
+    id: "visual_calm",
+    title: "Visual Declutter / Focus Zone",
+    subtitle: "Dim ambient motion & non-essential decoys",
+    desc: "Reduces visual clutter, eliminates glare spikes, and lowers the number of competing decoys in the scene.",
+    tag: "Visual Accommodation",
+  },
+  {
+    id: "quiet_corner",
+    title: "Predictable Quiet Reset Space",
+    subtitle: "Support package: soft indirect lighting & unhurried pacing",
+    desc: "Provides a holistic environmental reset combining reduced competing stimuli, softer ambient lighting, and relaxed response time.",
+    tag: "Environmental Reset",
+  },
+];
+
+function AutismSim({
+  mode = "unfiltered",
+  supportType = null,
+  scenario = "mall",
+  perspective = "central",
+  onComplete,
+  onAbort,
+}) {
   const { soundOn } = useContext(SettingsContext);
   const [effectsEnabled, setEffectsEnabled] = useState(true);
   const [autismSoundOn, setAutismSoundOn] = useState(false);
   const [autismVolume, setAutismVolume] = useState(0.08);
-  const effectiveSoundOn = soundOn && autismSoundOn;
-  const [phase, setPhase] = useState("intro"); // intro | task | done
-  const [filter, setFilter] = useState(10); // exploration-only, before the graded task starts
-  const [scenario, setScenario] = useState("mall"); // mall | school | grocery
-  const [perspective, setPerspective] = useState("central"); // central | peripheral
+  const effectiveSoundOn = soundOn && autismSoundOn && (supportType !== "ear_defenders");
+  const [paused, setPaused] = useState(false);
+  const [round, setRound] = useState(1);
+  const [targetPos, setTargetPos] = useState({ top: 50, left: 50 });
+  const [decoys, setDecoys] = useState([]);
+  const [timeLeft, setTimeLeft] = useState(AUTISM_ROUND_LIMIT);
   const [flicker, setFlicker] = useState(false);
-  const flickerTimeoutRef = useRef(null);
+
   const videoRef = useRef(null);
   const [videoIdx, setVideoIdx] = useState(0);
   const [videoFailCount, setVideoFailCount] = useState(0);
 
-  // Pause or resume background video based on effects switch
-  useEffect(() => {
-    if (!videoRef.current) return;
-    if (effectsEnabled) {
-      videoRef.current.play?.().catch(() => {});
-    } else {
-      videoRef.current.pause?.();
-    }
-  }, [effectsEnabled, videoIdx, scenario]);
+  const roundStartRef = useRef(0);
+  const pausedTimeRef = useRef(0);
+  const timeAccRef = useRef(0);
+  const missesRef = useRef(0);
+  const timeoutsRef = useRef(0);
+  const decoyIdRef = useRef(0);
+  const timerIntervalRef = useRef(null);
+  const flickerTimeoutRef = useRef(null);
+  const cuesTimeoutRef = useRef([]);
+  const setupRoundRef = useRef(null);
+  const handleRoundFinishedRef = useRef(null);
 
-  // Master volume control with safe ramp
-  useEffect(() => {
-    if (effectiveSoundOn) {
-      audio.setMasterGain(autismVolume, 0.18);
-    }
-  }, [effectiveSoundOn, autismVolume]);
+  const [cues, setCues] = useState([]);
+  const cueIdRef = useRef(0);
 
-  // Cycle to the setting's next clip when the current one ends, looping
-  // back to the first once the list is exhausted. Reset to clip 0 and
-  // clear the failure count whenever the setting itself changes.
-  useEffect(() => {
-    setVideoIdx(0);
-    setVideoFailCount(0);
-  }, [scenario]);
   const sceneVideos = VIDEO_SCENES[scenario] || [];
   const advanceVideo = () => {
     setVideoIdx((i) => (i + 1) % Math.max(1, sceneVideos.length));
   };
-  // A single missing/broken clip (e.g. one that failed to fetch at build
-  // time) shouldn't take down the whole background — just skip to the
-  // next clip in the list. Only fall back to the plain color background
-  // once every clip for this setting has failed.
   const handleVideoError = () => {
     setVideoFailCount((c) => c + 1);
     advanceVideo();
   };
   const videoBroken = sceneVideos.length === 0 || videoFailCount >= sceneVideos.length;
-  const [round, setRound] = useState(0);
-  const [targetPos, setTargetPos] = useState({ top: 50, left: 50 });
-  const [decoys, setDecoys] = useState([]);
-  const [misses, setMisses] = useState(0);
-  const [timeouts, setTimeouts] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [rating, setRating] = useState(null);
-
-  const roundStartRef = useRef(0);
-  const timeAccRef = useRef(0);
-  const missesRef = useRef(0);
-  const timeoutsRef = useRef(0);
-  const decoyIdRef = useRef(0);
-  const timerRafRef = useRef(null);
-  const roundLimitRef = useRef(0);
-
-  const practiceIntensity = (100 - filter) / 100;
-  const taskIntensity = Math.min(1.15, 0.35 + (round - 1) * 0.14);
-  const intensity = phase === "task" ? taskIntensity : practiceIntensity;
-  const camouflage = phase === "task" ? Math.min(0.85, Math.max(0, (round - 2) * 0.16)) : 0;
-
-  // Sensory-event chips: each pops in with an icon + its actual label
-  // ("chair scraping", "someone's laughing"...) and fires its own matching
-  // synthesized sound. Spawn rate and loudness scale with intensity — this
-  // stands in for the abstract "static" the old version showed.
-  const [cues, setCues] = useState([]);
-  const cueIdRef = useRef(0);
-  const cueTimeoutsRef = useRef([]);
-  const intensityBucket = Math.round(intensity * 10);
 
   useEffect(() => {
-    cueTimeoutsRef.current.forEach(clearTimeout);
-    cueTimeoutsRef.current = [];
-    if (phase === "done") return;
-    let cancelled = false;
-    const pool = SCENARIOS[scenario].events;
-    const spawn = () => {
-      if (cancelled) return;
-      const evt = pool[Math.floor(Math.random() * pool.length)];
-      const id = cueIdRef.current++;
-      const top = 8 + Math.random() * 74;
-      const left = 4 + Math.random() * 76;
-      setCues((prev) => [...prev.slice(-6), { id, ...evt, top, left }]);
-      if (effectiveSoundOn) audio.cue(evt.kind, 0.4 + (intensityBucket / 10) * 0.6);
-      // Gentle brightness flicker (0.94 to 1.0, max 2 per second, disabled when effects are off)
-      if (effectsEnabled && (evt.kind === "glare" || evt.kind === "flicker")) {
-        setFlicker(true);
-        clearTimeout(flickerTimeoutRef.current);
-        flickerTimeoutRef.current = setTimeout(() => setFlicker(false), 550);
-      }
-      const life = setTimeout(() => {
-        setCues((prev) => prev.filter((c) => c.id !== id));
-      }, 1500 + Math.random() * 600);
-      const delay = Math.max(240, 1500 - (intensityBucket / 10) * 1150 + Math.random() * 450);
-      const next = setTimeout(spawn, delay);
-      cueTimeoutsRef.current.push(life, next);
-    };
-    const kick = setTimeout(spawn, 260);
-    cueTimeoutsRef.current.push(kick);
-    return () => {
-      cancelled = true;
-      cueTimeoutsRef.current.forEach(clearTimeout);
-      cueTimeoutsRef.current = [];
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, intensityBucket, effectiveSoundOn, scenario, effectsEnabled]);
+    if (!videoRef.current) return;
+    if (effectsEnabled && !paused && supportType !== "visual_calm") {
+      videoRef.current.play?.().catch(() => {});
+    } else {
+      videoRef.current.pause?.();
+    }
+  }, [effectsEnabled, videoIdx, scenario, paused, supportType]);
 
   useEffect(() => {
-    if (!effectiveSoundOn) {
+    if (effectiveSoundOn) {
+      audio.setMasterGain(supportType === "ear_defenders" ? 0.02 : autismVolume, 0.18);
+    }
+  }, [effectiveSoundOn, autismVolume, supportType]);
+
+  useEffect(() => {
+    if (!effectiveSoundOn || paused) {
       audio.stopDrone("autism");
       return;
     }
     audio.startDrone("autism", { freqs: [98, 147, 201, 302], type: "sawtooth" });
+    audio.setDroneGain("autism", supportType === "ear_defenders" ? 0.005 : autismVolume * 0.4);
     return () => audio.stopDrone("autism");
-  }, [effectiveSoundOn]);
+  }, [effectiveSoundOn, paused, supportType, autismVolume]);
+
+  const clearTimer = () => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+  };
+
+  const clearAllCues = () => {
+    cuesTimeoutRef.current.forEach(clearTimeout);
+    cuesTimeoutRef.current = [];
+  };
 
   useEffect(() => {
-    audio.setDroneGain("autism", effectiveSoundOn ? intensity * autismVolume * 0.5 : 0.0001);
-  }, [intensity, effectiveSoundOn, autismVolume]);
-
-  const sceneLabel = SCENARIOS[scenario].label.toLowerCase();
-  const readout =
-    phase === "task"
-      ? round >= 5
-        ? `Full overload — this is what an unfiltered ${sceneLabel} feels like on its worst day. Find the real target anyway, before time runs out.`
-        : "Noise climbs and time shrinks every round, on its own. There's no slider now — this is the part that doesn't turn down on demand."
-      : filter < 25
-      ? `This is closer to a packed ${sceneLabel} at its busiest — bright lights, crowd noise, the AC running.`
-      : filter < 55
-      ? "Partial filtering — like stepping just outside the door, but the noise hasn't gone away."
-      : filter < 85
-      ? "This is closer to what noise-reducing headphones and dimmer lighting can offer."
-      : "This is what a genuinely quiet, low-stimulation space feels like — the task hasn't changed, only the ability to focus on it.";
-  const perspectiveNote =
-    perspective === "peripheral"
-      ? "Using side vision — many autistic kids prefer this because looking straight at something is too intense. It's genuinely harder to tell target from decoy out here."
-      : "Looking straight at it, full detail — but for a lot of autistic kids, this direct focus is itself what feels like too much, too fast.";
+    return () => {
+      clearTimer();
+      clearAllCues();
+      clearTimeout(flickerTimeoutRef.current);
+      audio.stopDrone("autism");
+    };
+  }, []);
 
   const randPos = (avoid) => {
     let top, left, ok;
     do {
-      top = 8 + Math.random() * 76;
-      left = 6 + Math.random() * 80;
+      top = 10 + Math.random() * 70;
+      left = 8 + Math.random() * 76;
       ok = true;
       for (const p of avoid) {
         if (Math.abs(p.top - top) < 15 && Math.abs(p.left - left) < 15) ok = false;
@@ -1380,46 +1307,67 @@ function AutismSim() {
     return { top, left };
   };
 
-  // Peripheral vision: everything is pushed out to the edges of the frame
-  // (where side vision actually is) rather than anywhere on screen — and
-  // rendered blurred/low-contrast in the JSX below, since detail out there
-  // is genuinely hard to make out.
   const randPosEdge = (avoid) => {
     let top, left, ok;
     do {
       const edge = Math.floor(Math.random() * 4);
       if (edge === 0) {
-        top = 4 + Math.random() * 10;
-        left = 6 + Math.random() * 80;
+        top = 6 + Math.random() * 10;
+        left = 8 + Math.random() * 76;
       } else if (edge === 1) {
-        top = 78 + Math.random() * 12;
-        left = 6 + Math.random() * 80;
+        top = 76 + Math.random() * 12;
+        left = 8 + Math.random() * 76;
       } else if (edge === 2) {
-        top = 20 + Math.random() * 56;
-        left = 3 + Math.random() * 9;
+        top = 22 + Math.random() * 52;
+        left = 5 + Math.random() * 9;
       } else {
-        top = 20 + Math.random() * 56;
-        left = 84 + Math.random() * 9;
+        top = 22 + Math.random() * 52;
+        left = 82 + Math.random() * 9;
       }
       ok = true;
       for (const p of avoid) {
-        if (Math.abs(p.top - top) < 13 && Math.abs(p.left - left) < 13) ok = false;
+        if (Math.abs(p.top - top) < 14 && Math.abs(p.left - left) < 14) ok = false;
       }
     } while (!ok);
     return { top, left };
   };
+
   const nextPos = (avoid) => (perspective === "peripheral" ? randPosEdge(avoid) : randPos(avoid));
 
-  const clearTimer = () => {
-    if (timerRafRef.current) {
-      clearInterval(timerRafRef.current);
-      timerRafRef.current = null;
-    }
+  const spawnCues = () => {
+    clearAllCues();
+    if (supportType === "quiet_corner" || paused) return;
+    const pool = SCENARIOS[scenario].events;
+    const spawn = () => {
+      if (paused) return;
+      const evt = pool[Math.floor(Math.random() * pool.length)];
+      const id = cueIdRef.current++;
+      const top = 10 + Math.random() * 70;
+      const left = 6 + Math.random() * 76;
+      setCues((prev) => [...prev.slice(-4), { id, ...evt, top, left }]);
+      if (effectiveSoundOn && supportType !== "ear_defenders") {
+        audio.cue(evt.kind, 0.45);
+      }
+      if (effectsEnabled && supportType !== "visual_calm" && (evt.kind === "glare" || evt.kind === "flicker")) {
+        setFlicker(true);
+        clearTimeout(flickerTimeoutRef.current);
+        flickerTimeoutRef.current = setTimeout(() => setFlicker(false), 450);
+      }
+      const life = setTimeout(() => {
+        setCues((prev) => prev.filter((c) => c.id !== id));
+      }, 1600);
+      const delay = supportType === "visual_calm" ? 2200 : 950 + Math.random() * 450;
+      const next = setTimeout(spawn, delay);
+      cuesTimeoutRef.current.push(life, next);
+    };
+    const kick = setTimeout(spawn, 300);
+    cuesTimeoutRef.current.push(kick);
   };
 
-  const setupRound = (roundNum) => {
+  const setupRound = (rNum) => {
+    clearTimer();
     const t = nextPos([]);
-    const decoyCount = roundNum >= 6 ? 5 : roundNum >= 4 ? 4 : roundNum >= 2 ? 3 : 2;
+    const decoyCount = supportType === "visual_calm" ? 1 : rNum >= 3 ? 3 : 2;
     const avoid = [t];
     const nd = [];
     for (let i = 0; i < decoyCount; i++) {
@@ -1429,39 +1377,40 @@ function AutismSim() {
     }
     setTargetPos(t);
     setDecoys(nd);
-    roundStartRef.current = performance.now();
-    const limit = ROUND_TIME_LIMIT(roundNum);
-    roundLimitRef.current = limit;
+
+    const limit = supportType === "quiet_corner" ? 7.5 : AUTISM_ROUND_LIMIT;
     setTimeLeft(limit);
-    clearTimer();
-    timerRafRef.current = setInterval(() => {
+    roundStartRef.current = performance.now();
+
+    timerIntervalRef.current = setInterval(() => {
       const elapsed = (performance.now() - roundStartRef.current) / 1000;
       const remaining = limit - elapsed;
       if (remaining <= 0) {
         setTimeLeft(0);
         clearTimer();
         timeoutsRef.current += 1;
-        setTimeouts(timeoutsRef.current);
-        missesRef.current += 1;
-        setMisses(missesRef.current);
-        if (effectiveSoundOn) audio.sweep({ from: 260, to: 90, duration: 0.3, type: "sawtooth", gain: 0.08 });
-        advanceRound(roundNum);
+        timeAccRef.current += limit;
+        if (effectiveSoundOn) audio.sweep({ from: 260, to: 110, duration: 0.25, type: "sawtooth", gain: 0.06 });
+        handleRoundFinishedRef.current?.(rNum);
       } else {
         setTimeLeft(remaining);
       }
-    }, 60);
+    }, 70);
+
+    spawnCues();
   };
 
-  const advanceRound = (finishedRound) => {
-    if (finishedRound >= TOTAL_ROUNDS) {
+  const handleRoundFinished = (finishedRound) => {
+    if (finishedRound >= AUTISM_ROUNDS) {
       clearTimer();
-      const totalTime = timeAccRef.current;
-      const avgTime = totalTime / (TOTAL_ROUNDS - timeoutsRef.current || 1);
-      const speedScore = Math.max(0, 100 - avgTime * 22);
-      const missPenalty = missesRef.current * 11 + timeoutsRef.current * 6;
-      const score = Math.round(Math.max(0, Math.min(100, speedScore - missPenalty + 6)));
-      setPhase("done");
-      setRating({ score, time: totalTime.toFixed(1), misses: missesRef.current, timeouts: timeoutsRef.current });
+      clearAllCues();
+      audio.stopDrone("autism");
+      onComplete?.({
+        time: timeAccRef.current,
+        misses: missesRef.current,
+        timeouts: timeoutsRef.current,
+        rounds: AUTISM_ROUNDS,
+      });
     } else {
       const next = finishedRound + 1;
       setRound(next);
@@ -1469,60 +1418,91 @@ function AutismSim() {
     }
   };
 
-  const startTask = () => {
+  useEffect(() => {
+    setupRoundRef.current = setupRound;
+    handleRoundFinishedRef.current = handleRoundFinished;
+  });
+
+  useEffect(() => {
     timeAccRef.current = 0;
     missesRef.current = 0;
     timeoutsRef.current = 0;
-    setMisses(0);
-    setTimeouts(0);
-    setRating(null);
-    setPhase("task");
-    setRound(1);
-    setupRound(1);
-  };
+    queueMicrotask(() => {
+      setRound(1);
+      setupRoundRef.current?.(1);
+    });
+    return () => {
+      clearTimer();
+      clearAllCues();
+    };
+  }, [mode, supportType, scenario, perspective]);
 
   const clickTarget = () => {
-    if (phase !== "task") return;
+    if (paused) return;
     const elapsed = (performance.now() - roundStartRef.current) / 1000;
     timeAccRef.current += elapsed;
     clearTimer();
-    if (effectiveSoundOn) audio.tone({ freq: 700, type: "sine", duration: 0.16, gain: 0.12 });
-    advanceRound(round);
+    if (effectiveSoundOn) audio.tone({ freq: 620, type: "sine", duration: 0.15, gain: 0.1 });
+    handleRoundFinished(round);
   };
 
   const clickDecoy = () => {
-    if (phase !== "task") return;
+    if (paused) return;
     missesRef.current += 1;
-    setMisses(missesRef.current);
-    if (effectiveSoundOn) audio.sweep({ from: 500, to: 150, duration: 0.2, type: "sawtooth", gain: 0.09 });
+    if (effectiveSoundOn) audio.sweep({ from: 440, to: 160, duration: 0.18, type: "sawtooth", gain: 0.07 });
   };
 
-  const retry = () => {
-    clearTimer();
-    setPhase("intro");
-    setRound(0);
-    setRating(null);
-  };
-
-  useEffect(() => {
-    return () => {
+  const togglePause = () => {
+    if (!paused) {
       clearTimer();
-      clearTimeout(flickerTimeoutRef.current);
-    };
-  }, []);
+      clearAllCues();
+      pausedTimeRef.current = performance.now();
+      setPaused(true);
+      audio.stopDrone("autism");
+    } else {
+      const pauseDuration = performance.now() - pausedTimeRef.current;
+      roundStartRef.current += pauseDuration;
+      setPaused(false);
+      const limit = supportType === "quiet_corner" ? 7.5 : AUTISM_ROUND_LIMIT;
+      timerIntervalRef.current = setInterval(() => {
+        const elapsed = (performance.now() - roundStartRef.current) / 1000;
+        const remaining = limit - elapsed;
+        if (remaining <= 0) {
+          setTimeLeft(0);
+          clearTimer();
+          timeoutsRef.current += 1;
+          timeAccRef.current += limit;
+          handleRoundFinished(round);
+        } else {
+          setTimeLeft(remaining);
+        }
+      }, 70);
+      spawnCues();
+    }
+  };
 
-  const timerPct = roundLimitRef.current ? Math.max(0, Math.min(100, (timeLeft / roundLimitRef.current) * 100)) : 100;
-  const targetColor = camouflage > 0 ? `rgba(229,72,77,${(1 - camouflage * 0.75).toFixed(2)})` : undefined;
+  const roundLimit = supportType === "quiet_corner" ? 7.5 : AUTISM_ROUND_LIMIT;
+  const timerPct = Math.max(0, Math.min(100, (timeLeft / roundLimit) * 100));
 
   return (
     <div className={`itw-sim${!effectsEnabled ? " itw-effects-off" : ""}`}>
-      {/* Media & Sensory Safety Controls Bar */}
+      {/* Media and sensory controls */}
       <div className="itw-media-bar">
         <div className="itw-media-bar-group">
-          <EffectsToggle
-            effectsEnabled={effectsEnabled}
-            onToggle={setEffectsEnabled}
-          />
+          <EffectsToggle effectsEnabled={effectsEnabled} onToggle={setEffectsEnabled} />
+          <button
+            type="button"
+            className={`itw-btn-ghost${paused ? " itw-active" : ""}`}
+            onClick={togglePause}
+            aria-label={paused ? "Resume task" : "Pause task"}
+          >
+            {paused ? "▶ Resume" : "⏸ Pause"}
+          </button>
+          {onAbort && (
+            <button type="button" className="itw-btn-ghost" onClick={onAbort} aria-label="Exit observation">
+              ✕ Exit
+            </button>
+          )}
         </div>
         <div className="itw-media-bar-group itw-volume-group">
           <button
@@ -1531,13 +1511,13 @@ function AutismSim() {
             onClick={() => setAutismSoundOn((v) => !v)}
             aria-pressed={autismSoundOn}
           >
-            {autismSoundOn ? "🔊 Autism sound: On" : "🔇 Autism sound: Off"}
+            {autismSoundOn ? "🔊 Audio: On" : "🔇 Audio: Off"}
           </button>
           {autismSoundOn && (
             <div className="itw-volume-slider-wrap">
-              <label htmlFor="itw-autism-vol" className="itw-mono" style={{ fontSize: 11 }}>Vol</label>
+              <label htmlFor="itw-autism-vol-slider" className="itw-mono" style={{ fontSize: 11 }}>Vol</label>
               <input
-                id="itw-autism-vol"
+                id="itw-autism-vol-slider"
                 type="range"
                 min="0.01"
                 max="0.12"
@@ -1552,70 +1532,47 @@ function AutismSim() {
         </div>
       </div>
 
-      <div className="itw-sim-instructions">
-        Pick a place and a way of looking, then find the one real dot among the decoys, {TOTAL_ROUNDS} rounds — it only gets louder from here.
-      </div>
-      <HowTo
-        steps={[
-          "Choose a setting and central vs. peripheral vision",
-          "Spot the one real dot among the decoys",
-          "Click it before time runs out — noise & decoys ramp up each round",
-        ]}
-      />
-      {phase === "intro" && (
-        <div className="itw-scenario-picker">
-          <div className="itw-picker-group">
-            <label className="itw-mono itw-picker-label">Setting</label>
-            <div className="itw-strat-tabs">
-              {Object.entries(SCENARIOS).map(([key, s]) => (
-                <button
-                  key={key}
-                  type="button"
-                  className={`itw-btn-ghost${scenario === key ? " itw-active" : ""}`}
-                  onClick={() => setScenario(key)}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-            <p className="itw-picker-desc">{SCENARIOS[scenario].desc}</p>
-          </div>
-          <div className="itw-picker-group">
-            <label className="itw-mono itw-picker-label">Vision</label>
-            <div className="itw-strat-tabs">
-              <button
-                type="button"
-                className={`itw-btn-ghost${perspective === "central" ? " itw-active" : ""}`}
-                onClick={() => setPerspective("central")}
-              >
-                Central vision
-              </button>
-              <button
-                type="button"
-                className={`itw-btn-ghost${perspective === "peripheral" ? " itw-active" : ""}`}
-                onClick={() => setPerspective("peripheral")}
-              >
-                Peripheral vision
-              </button>
-            </div>
-            <p className="itw-picker-desc">{perspectiveNote}</p>
-          </div>
+      {supportType && (
+        <div
+          style={{
+            padding: "8px 16px",
+            background: "rgba(102, 128, 77, 0.12)",
+            border: "1px solid var(--itw-autism)",
+            borderRadius: 12,
+            marginBottom: 12,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            fontSize: 13.5,
+            fontWeight: 600,
+            color: "var(--itw-text)",
+          }}
+        >
+          <span style={{ fontSize: 16 }}>🛡️</span>
+          <span>
+            {supportType === "ear_defenders" && "Sensory Ear Defenders Active: Competing audio attenuated by 80%."}
+            {supportType === "visual_calm" && "Visual Focus Filter Active: Competing visual decoys reduced to 1."}
+            {supportType === "quiet_corner" && "Predictable Quiet Space: Generous unhurried time limit and softer contrast."}
+          </span>
         </div>
       )}
+
       <Viewfinder
         hud={{
-          left: phase === "task" ? `ROUND ${round}/${TOTAL_ROUNDS}` : "STANDBY",
-          right: `${Math.round(intensity * 100)}% NOISE`,
+          left: paused ? "PAUSED" : `ROUND ${round}/${AUTISM_ROUNDS}`,
+          right: SCENARIOS[scenario].label.toUpperCase(),
         }}
-        stageStyle={{ background: SCENARIOS[scenario].bg }}
+        stageStyle={{
+          background: supportType === "quiet_corner" ? "var(--itw-panel-2)" : SCENARIOS[scenario].bg,
+        }}
       >
-        {!videoBroken && (
+        {!videoBroken && supportType !== "visual_calm" && supportType !== "quiet_corner" && (
           <video
             ref={videoRef}
             key={`${scenario}-${videoIdx}`}
             className="itw-scene-video"
             src={sceneVideos[videoIdx]}
-            autoPlay={effectsEnabled}
+            autoPlay={effectsEnabled && !paused}
             muted
             playsInline
             preload="none"
@@ -1625,215 +1582,635 @@ function AutismSim() {
         )}
         {!videoBroken && <div className="itw-scene-video-overlay" aria-hidden="true" />}
         <div className={`itw-glare-overlay${flicker && effectsEnabled ? " itw-gentle-flicker" : ""}`} aria-hidden="true" />
-        {phase === "task" && (
-          <div className="itw-round-timer">
-            <div className="itw-round-timer-fill" style={{ width: `${timerPct}%` }} />
-          </div>
-        )}
-        {phase !== "task" && (
+
+        <div className="itw-round-timer">
           <div
-            className="itw-sensory-target"
-            style={{ top: "50%", left: "50%", transform: "translate(-50%,-50%)", cursor: "default" }}
+            className="itw-round-timer-fill"
+            style={{ width: `${timerPct}%`, background: "var(--itw-autism)" }}
+          />
+        </div>
+
+        {/* Target dot */}
+        <button
+          type="button"
+          className={`itw-sensory-target${perspective === "peripheral" ? " itw-peripheral-blur" : ""}`}
+          style={{ top: `${targetPos.top}%`, left: `${targetPos.left}%`, border: "none", background: "transparent" }}
+          onClick={clickTarget}
+          aria-label="Target observation point"
+        >
+          <div className="itw-dot" />
+        </button>
+
+        {/* Decoys */}
+        {decoys.map((d) => (
+          <button
+            key={d.id}
+            type="button"
+            className={`itw-decoy-target${perspective === "peripheral" ? " itw-peripheral-blur" : ""}`}
+            style={{ top: `${d.top}%`, left: `${d.left}%`, border: "none", background: "transparent" }}
+            onClick={clickDecoy}
+            aria-label="Distractor visual decoy"
           >
             <div className="itw-dot" />
-            <p>press start below</p>
-          </div>
-        )}
-        {phase === "task" && (
-          <>
-            <div
-              className={`itw-sensory-target${perspective === "peripheral" ? " itw-peripheral-blur" : ""}`}
-              role="button"
-              tabIndex={0}
-              style={{ top: `${targetPos.top}%`, left: `${targetPos.left}%` }}
-              onClick={clickTarget}
-              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && clickTarget()}
-            >
-              <div className="itw-dot" style={targetColor ? { background: targetColor, boxShadow: "none" } : undefined} />
-            </div>
-            {decoys.map((d) => (
-              <div
-                key={d.id}
-                className={`itw-decoy-target${perspective === "peripheral" ? " itw-peripheral-blur" : ""}`}
-                role="button"
-                tabIndex={0}
-                style={{ top: `${d.top}%`, left: `${d.left}%` }}
-                onClick={clickDecoy}
-                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && clickDecoy()}
-              >
-                <div className="itw-dot" style={targetColor ? { background: "rgba(229,72,77,.9)", boxShadow: "0 0 0 10px rgba(229,72,77,.15), 0 0 30px rgba(229,72,77,.35)" } : undefined} />
-              </div>
-            ))}
-          </>
-        )}
-        {cues.map((c) => (
-          <div
-            key={c.id}
-            className="itw-sound-cue"
-            style={{ top: `${c.top}%`, left: `${c.left}%` }}
-          >
-            <span className="itw-cue-icon" aria-hidden="true">
-              <CueIcon name={c.kind} size={16} />
-            </span>
-            <span className="itw-cue-text">{c.text}</span>
-          </div>
+          </button>
         ))}
-      </Viewfinder>
-      <div className="itw-sim-controls">
-        {phase === "intro" && (
-          <>
-            <button className="itw-btn-primary" onClick={startTask}>
-              Start observation task
-            </button>
-            <div className="itw-row" style={{ flex: "1 1 220px" }}>
-              <label className="itw-mono" style={{ fontSize: 12, color: "var(--itw-muted)" }}>
-                Unfiltered
-              </label>
-              <input type="range" min={0} max={100} value={filter} onChange={(e) => setFilter(+e.target.value)} />
-              <label className="itw-mono" style={{ fontSize: 12, color: "var(--itw-muted)" }}>
-                Filtered
-              </label>
+
+        {/* Sensory event cues */}
+        {supportType !== "quiet_corner" &&
+          cues.map((c) => (
+            <div
+              key={c.id}
+              className="itw-sound-cue"
+              style={{
+                top: `${c.top}%`,
+                left: `${c.left}%`,
+                opacity: supportType === "ear_defenders" ? 0.4 : 1,
+              }}
+            >
+              <span className="itw-cue-icon" aria-hidden="true">
+                <CueIcon name={c.kind} size={16} />
+              </span>
+              <span className="itw-cue-text">{c.text}</span>
             </div>
-          </>
-        )}
-        {phase === "task" && (
-          <div className="itw-round-pips">
-            {Array.from({ length: TOTAL_ROUNDS }).map((_, i) => (
-              <span
-                key={i}
-                className={i < round - 1 ? "itw-pip-done" : i === round - 1 ? "itw-pip-current" : ""}
-              />
-            ))}
+          ))}
+
+        {paused && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "rgba(18, 22, 15, 0.82)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 20,
+              gap: 12,
+            }}
+          >
+            <div style={{ fontSize: 19, fontWeight: 700, color: "#fff" }}>Observation Paused</div>
+            <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 14, margin: 0 }}>Take a breather whenever you need.</p>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={togglePause}>
+              Resume Observation →
+            </button>
           </div>
         )}
-        <div className="itw-readout">{readout}</div>
+      </Viewfinder>
+
+      <div className="itw-sim-controls">
+        <div className="itw-round-pips">
+          {Array.from({ length: AUTISM_ROUNDS }).map((_, i) => (
+            <span
+              key={i}
+              className={i < round - 1 ? "itw-pip-done" : i === round - 1 ? "itw-pip-current" : ""}
+            />
+          ))}
+        </div>
+        <div className="itw-readout">
+          {supportType
+            ? "Notice how reducing competing sensory stimuli eases the effort of locating the target."
+            : "Notice how background noise, visual motion, and decoy cues compete for your focus."}
+        </div>
       </div>
-      {rating && (
-        <RatingCard
-          title="What that round was like"
-          lines={[
-            `Cleared ${TOTAL_ROUNDS} rounds in ${rating.time}s, with ${rating.misses} decoy click(s) and ${rating.timeouts} round(s) where time ran out before you found it.`,
-            rating.misses > 0 || rating.timeouts > 0
-              ? "Every decoy or timeout above is what a nervous system taking in more than it can filter has to sort through constantly — and still gets wrong sometimes, even when trying hard."
-              : "A clean run, even as the noise climbed toward full overload and the clock got tighter — run it again and see if that holds.",
-          ]}
-          onRetry={retry}
-          retryLabel="Run it again"
-        />
-      )}
     </div>
   );
 }
 
 function AutismModule({ onBack, onNavigate }) {
+  const [step, setStep] = useState("intro"); // intro | scenario | run_unfiltered | reflect | support | run_supported | explain | next
+  const [scenario, setScenario] = useState("mall");
+  const [perspective, setPerspective] = useState("central");
+  const [chosenSupport, setChosenSupport] = useState("ear_defenders");
+  const [reflectionAnswers, setReflectionAnswers] = useState(() => Array(AUTISM_REFLECT_QS.length).fill(null));
+  const [results, setResults] = useState({ unfiltered: null, supported: null });
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
+
+  const handleUnfilteredComplete = (res) => {
+    setResults((prev) => ({ ...prev, unfiltered: res }));
+    setStep("reflect");
+  };
+
+  const handleSupportedComplete = (res) => {
+    setResults((prev) => ({ ...prev, supported: res }));
+    setStep("explain");
+  };
+
+  const stepIndex = AUTISM_STEP_INDEX[step];
+  const more = MODULES.filter((m) => m.key !== "autism");
+
+  const perspectiveNote =
+    perspective === "peripheral"
+      ? "Using side vision — many autistic individuals find direct central focus too intense and naturally rely on peripheral vision, though fine details can be harder to resolve."
+      : "Looking directly at the scene — full detail, but direct gaze in a chaotic room can rapidly cause sensory fatigue.";
+
   return (
-    <ModuleShell
-      accent="autism"
-      eyebrow="Autism"
-      title="The room doesn't turn down."
-      dek="For many autistic kids, sensory input doesn't fade into the background automatically — the hum of lights, a chair scraping, three conversations at once can all arrive at full volume, all at the same time."
-      sections={[
-        { id: "autism-try", label: "Try it" },
-        { id: "autism-data", label: "The data" },
-        { id: "autism-help", label: "How to help" },
-      ]}
-      onBack={onBack}
-      onNavigate={onNavigate}
-    >
-      <section className="itw-block" id="autism-try">
-        <div className="itw-block-label">Try it — Observation Task</div>
-        <AutismSim />
-      </section>
-      <section className="itw-block" id="autism-data">
-        <div className="itw-block-label">The data</div>
-        <FactsGrid
-          facts={[
-            { num: "~1 in 100", label: "children under age 10 in India may have autism, per a large community-based sample", src: "INCLEN Trust study, PLOS Medicine" },
-            { num: "0.4–1.8%", label: "regional spread found across India, from urban North Goa to rural Palwal, Haryana", src: "INCLEN Trust study, PLOS Medicine" },
-            { num: "1 in 8", label: "children in the same sample had at least one neurodevelopmental condition of any kind", src: "INCLEN Trust study, PLOS Medicine" },
-          ]}
-          note="Sensory overload isn't a behavior problem — it's a nervous system taking in more raw input than it can sort through in real time. India's 2011 census recorded autism at a fraction of this rate — researchers call that a large undercount, driven by limited screening access and stigma, not a genuinely lower rate of autism."
-          onComplete={() => scrollToId("autism-help")}
-        />
-      </section>
-      <section className="itw-block itw-help-block" id="autism-help">
-        <div className="itw-help-head">
-          <div className="itw-help-icon" aria-hidden="true">
-            <CueIcon name="headphones" size={20} />
-          </div>
+    <section className="itw-view itw-module itw-flow" data-accent="autism">
+      <FlowCrumbs name="Autism" onBack={onBack} />
+      {stepIndex !== undefined && <FlowStepper steps={AUTISM_STEPS} current={stepIndex} />}
+
+      {step === "intro" && (
+        <div className="itw-flow-page itw-flow-intro" key="intro">
           <div>
-            <div className="itw-help-eyebrow">What actually helps</div>
-            <h3 className="itw-help-title">How you can help</h3>
+            <h2 className="itw-flow-title">Autism</h2>
+            <div className="itw-flow-sub">The Room Doesn't Turn Down</div>
+            <p className="itw-flow-lead">
+              For many autistic people, sensory input doesn't fade into the background automatically. The hum of fluorescent
+              lights, a chair scraping, and conversations across the room can all arrive at full volume at once.
+            </p>
+            <ul className="itw-flow-meta">
+              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
+              <li><span aria-hidden="true">🎧</span> Sound is off by default; you have full control</li>
+              <li><span aria-hidden="true">ℹ️</span> An empathy learning experience, not a diagnostic tool</li>
+            </ul>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("scenario")}>
+              Begin the Journey →
+            </button>
+          </div>
+          <div className="itw-flow-letters" aria-hidden="true">
+            {["👂", "👁️", "🧠", "💡", "🌿", "🎧"].map((c, i) => (
+              <span key={i} style={{ animationDelay: `${i * 0.45}s`, fontSize: 36 }}>{c}</span>
+            ))}
           </div>
         </div>
-        <QuietCorner />
-        <StrategyTabs
-          home={[
-            "Build in a low-stimulation space the child can retreat to before overload turns into a meltdown, not after.",
-            "Give transitions a warning — “five more minutes” — instead of a sudden switch between activities.",
-            "Ask what specifically feels like “too much” (a sound, a fabric, a smell) instead of guessing.",
-            "Treat stimming (rocking, hand-flapping, fidgeting) as a regulation tool, not something to stop.",
-          ]}
-          classroom={[
-            "Offer noise-reducing headphones or a seat away from the door/window as a default option, not a special favor.",
-            "Post the day's schedule visually — unpredictability is often harder than the activities themselves.",
-            "Give instructions one step at a time, and check for understanding rather than assuming eye contact means engagement.",
-            "Build in movement or quiet breaks between high-stimulation activities like assemblies or fire drills.",
-          ]}
-        />
-        <HelpFooter />
-      </section>
-    </ModuleShell>
+      )}
+
+      {step === "scenario" && (
+        <div className="itw-flow-page itw-flow-narrow" key="scenario">
+          <h2 className="itw-flow-title itw-center">Choose an Everyday Setting</h2>
+          <p className="itw-flow-lead itw-center">
+            Pick a familiar environment to explore how competing sights and sounds interact. You can also compare direct central focus versus peripheral viewing.
+          </p>
+
+          <div className="itw-scenario-picker" style={{ margin: "24px 0" }}>
+            <div className="itw-picker-group">
+              <label className="itw-mono itw-picker-label">Setting</label>
+              <div className="itw-strat-tabs">
+                {Object.entries(SCENARIOS).map(([key, s]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className={`itw-btn-ghost${scenario === key ? " itw-active" : ""}`}
+                    onClick={() => setScenario(key)}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+              <p className="itw-picker-desc">{SCENARIOS[scenario].desc}</p>
+            </div>
+
+            <div className="itw-picker-group">
+              <label className="itw-mono itw-picker-label">Vision Perspective</label>
+              <div className="itw-strat-tabs">
+                <button
+                  type="button"
+                  className={`itw-btn-ghost${perspective === "central" ? " itw-active" : ""}`}
+                  onClick={() => setPerspective("central")}
+                >
+                  Central Vision
+                </button>
+                <button
+                  type="button"
+                  className={`itw-btn-ghost${perspective === "peripheral" ? " itw-active" : ""}`}
+                  onClick={() => setPerspective("peripheral")}
+                >
+                  Peripheral Vision
+                </button>
+              </div>
+              <p className="itw-picker-desc">{perspectiveNote}</p>
+            </div>
+          </div>
+
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_unfiltered")}>
+              Start Run 1: Unfiltered →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_unfiltered" && (
+        <div className="itw-flow-page" key="run_unfiltered">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Run 1: Unfiltered Sensory Observation</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>
+              Spot the real target dot among competing visual and auditory cues across 3 short rounds.
+            </p>
+          </div>
+          <AutismSim
+            mode="unfiltered"
+            scenario={scenario}
+            perspective={perspective}
+            onComplete={handleUnfilteredComplete}
+            onAbort={() => setStep("scenario")}
+          />
+        </div>
+      )}
+
+      {step === "reflect" && (
+        <div className="itw-flow-page itw-flow-narrow" key="reflect">
+          <h2 className="itw-flow-title itw-center">Observation Summary & Reflection</h2>
+          <p className="itw-flow-lead itw-center">
+            Here are the neutral metrics from your first run in the {SCENARIOS[scenario].label.toLowerCase()}:
+          </p>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              gap: 16,
+              margin: "24px 0",
+            }}
+          >
+            <div
+              style={{
+                background: "var(--itw-panel)",
+                border: "1px solid var(--itw-border)",
+                borderRadius: 18,
+                padding: "20px 18px",
+                textAlign: "center",
+              }}
+            >
+              <div style={{ fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--itw-muted)", fontWeight: 700 }}>
+                Total Time
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-autism)", margin: "8px 0" }}>
+                {results.unfiltered ? `${results.unfiltered.time.toFixed(1)}s` : "—"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>Across 3 rounds</div>
+            </div>
+
+            <div
+              style={{
+                background: "var(--itw-panel)",
+                border: "1px solid var(--itw-border)",
+                borderRadius: 18,
+                padding: "20px 18px",
+                textAlign: "center",
+              }}
+            >
+              <div style={{ fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--itw-muted)", fontWeight: 700 }}>
+                Decoy Interactions
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-autism)", margin: "8px 0" }}>
+                {results.unfiltered ? results.unfiltered.misses : 0}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+                {results.unfiltered?.misses === 0 ? "Target spotted cleanly" : "Distractor decoys clicked"}
+              </div>
+            </div>
+          </div>
+
+          <p className="itw-flow-lead" style={{ fontSize: 16, lineHeight: 1.6 }}>
+            In an unfiltered environment, the nervous system has to spend active mental energy sorting signal from noise. That continuous filtering demand accumulates as exhaustion throughout the school or work day.
+          </p>
+
+          <FlowQuestions
+            questions={AUTISM_REFLECT_QS}
+            answers={reflectionAnswers}
+            onPick={(qi, oi) => {
+              setReflectionAnswers((prev) => {
+                const next = [...prev];
+                next[qi] = oi;
+                return next;
+              });
+            }}
+          />
+
+          <div className="itw-flow-nav" style={{ marginTop: 24 }}>
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("run_unfiltered")}>
+              Re-run Run 1
+            </button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("support")}>
+              Try a Supportive Accommodation →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "support" && (
+        <div className="itw-flow-page itw-flow-narrow" key="support">
+          <h2 className="itw-flow-title itw-center">Change the Environment: Try a Support</h2>
+          <p className="itw-flow-lead itw-center">
+            Sensory comfort isn't about teaching someone to endure overwhelm — it's about shaping spaces that respect sensory boundaries. Choose an accommodation to test in Run 2:
+          </p>
+
+          <div style={{ display: "grid", gap: 14, margin: "24px 0" }}>
+            {AUTISM_SUPPORT_CHOICES.map((s) => (
+              <label
+                key={s.id}
+                style={{
+                  display: "block",
+                  padding: "16px 20px",
+                  borderRadius: 18,
+                  border: `2px solid ${chosenSupport === s.id ? "var(--itw-autism)" : "var(--itw-border)"}`,
+                  background: chosenSupport === s.id ? "rgba(102, 128, 77, 0.08)" : "var(--itw-panel)",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      textTransform: "uppercase",
+                      fontWeight: 800,
+                      letterSpacing: "0.06em",
+                      padding: "3px 10px",
+                      borderRadius: 99,
+                      background: "var(--itw-panel-2)",
+                      color: "var(--itw-muted)",
+                    }}
+                  >
+                    {s.tag}
+                  </span>
+                </div>
+                <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
+                <input
+                  type="radio"
+                  name="autism-support"
+                  value={s.id}
+                  checked={chosenSupport === s.id}
+                  onChange={() => setChosenSupport(s.id)}
+                  style={{ display: "none" }}
+                />
+              </label>
+            ))}
+          </div>
+
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("reflect")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_supported")}>
+              Run with Support →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_supported" && (
+        <div className="itw-flow-page" key="run_supported">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Run 2: Supported by {AUTISM_SUPPORT_CHOICES.find((s) => s.id === chosenSupport)?.title}</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>
+              Observe how adjusting sensory volume and visual competition frees up bandwidth for focus.
+            </p>
+          </div>
+          <AutismSim
+            mode="supported"
+            supportType={chosenSupport}
+            scenario={scenario}
+            perspective={perspective}
+            onComplete={handleSupportedComplete}
+            onAbort={() => setStep("support")}
+          />
+        </div>
+      )}
+
+      {step === "explain" && (
+        <div className="itw-flow-page" key="explain">
+          <div className="itw-flow-narrow" style={{ margin: "0 auto 36px" }}>
+            <h2 className="itw-flow-title itw-center">What this means in everyday life</h2>
+            <p className="itw-flow-lead itw-center">
+              Sensory overload is not a behavioral problem or a lack of self-control. It is a nervous system taking in more raw sensory input than it can sort through in real time.
+            </p>
+
+            <div
+              style={{
+                background: "rgba(102, 128, 77, 0.08)",
+                border: "1px solid var(--itw-autism)",
+                borderRadius: 18,
+                padding: "20px 24px",
+                margin: "24px 0",
+              }}
+            >
+              <h4 style={{ margin: "0 0 8px", fontSize: 16, fontWeight: 800, color: "var(--itw-autism)" }}>
+                The Takeaway: Accommodations change everything
+              </h4>
+              <p style={{ margin: "0 0 12px", fontSize: 14.5, lineHeight: 1.6, color: "var(--itw-text)" }}>
+                When environmental supports like noise-dampening headphones, dimmable lights, and quiet retreat zones are available, autistic individuals can participate fully without exhausting their nervous systems on baseline sensory survival.
+              </p>
+              <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55, color: "var(--itw-muted)" }}>
+                <b>Diverse Sensory Profiles:</b> Autistic sensory experiences are varied and personal. Some individuals are sensory-avoiding (sensitive to fluorescent flicker, sudden noise, or visual crowds), while others are sensory-seeking (seeking deep pressure, rhythmic movement, or tactile engagement). Support should be tailored to the individual rather than assumed to be identical for all.
+              </p>
+            </div>
+          </div>
+
+          <h3 className="itw-flow-h3">The Data: Indian Epidemiology</h3>
+          <FactsGrid
+            facts={[
+              {
+                num: "~1 in 89",
+                label: "estimated prevalence (~1.1%) among 3,964 children aged 2–9 years across five selected Indian study districts (fieldwork 2011–2012)",
+                src: "Arora et al. / INCLEN Study, PLOS Medicine (5-district cohort)",
+              },
+              {
+                num: "0.4%–1.8%",
+                label: "regional variation across the five study sites (e.g. rural Palwal to urban North Goa), demonstrating local population and diagnostic variance",
+                src: "INCLEN Study Group (Arora et al.)",
+              },
+              {
+                num: "Cohort Context",
+                label: "These findings represent the specific 5-region study sample and age band (2–9 years); they should not be interpreted as a current, nationally representative estimate",
+                src: "Indian Journal of Medical Research Autism Reviews",
+              },
+            ]}
+            note="An INCLEN population-based study across five selected Indian sites estimated autism prevalence at approximately 1 in 89 children aged 2–9, with variation across sites. These findings represent the study populations and should not be interpreted as a current, nationally representative estimate. Accommodations like quiet spaces, noise-dampening tools, and predictable transitions allow individuals to thrive."
+            onComplete={() => {}}
+          />
+
+          <section className="itw-block itw-help-block" style={{ marginTop: 40 }}>
+            <div className="itw-help-head">
+              <div className="itw-help-icon" aria-hidden="true">
+                <CueIcon name="headphones" size={20} />
+              </div>
+              <div>
+                <div className="itw-help-eyebrow">Practical accommodations</div>
+                <h3 className="itw-help-title">How you can help at home & in the classroom</h3>
+              </div>
+            </div>
+
+            <QuietCorner />
+
+            <StrategyTabs
+              home={[
+                "Build in a low-stimulation space the child can retreat to before overload turns into a meltdown, not after.",
+                "Give transitions a warning — “five more minutes” — instead of a sudden switch between activities.",
+                "Ask what specifically feels like “too much” (a sound, a fabric, a smell) instead of guessing.",
+                "Treat stimming (rocking, hand-flapping, fidgeting) as a regulation tool, not something to stop.",
+              ]}
+              classroom={[
+                "Offer noise-reducing headphones or a seat away from the door/window as a default option, not a special favor.",
+                "Post the day's schedule visually — unpredictability is often harder than the activities themselves.",
+                "Give instructions one step at a time, and check for understanding rather than assuming eye contact means engagement.",
+                "Build in movement or quiet breaks between high-stimulation activities like assemblies or fire drills.",
+              ]}
+            />
+            <HelpFooter />
+          </section>
+
+          <div className="itw-flow-nav" style={{ marginTop: 32 }}>
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("support")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("next")}>Next Steps →</button>
+          </div>
+        </div>
+      )}
+
+      {step === "next" && (
+        <div className="itw-flow-page itw-flow-narrow" key="next">
+          <h2 className="itw-flow-title itw-center">Understanding creates a kinder world</h2>
+          <p className="itw-flow-lead itw-center">
+            Every child's sensory profile is unique. When we design environments that respect these differences, we allow their real strengths to shine.
+          </p>
+          <div className="itw-flow-nav itw-flow-nav-center">
+            <a className="itw-cta itw-cta-dark" href="/assessments">Take an Assessment →</a>
+            <a className="itw-cta itw-cta-line" href="/consult">Book a Consultation →</a>
+          </div>
+          <h3 className="itw-flow-h3">Explore More Experiences</h3>
+          <div className="itw-flow-more">
+            {more.map((m) => (
+              <button
+                type="button"
+                key={m.key}
+                className="itw-flow-more-card"
+                data-m={m.key}
+                onClick={() => onNavigate(m.key)}
+              >
+                <b>{m.name}</b>
+                <span>{m.tag}</span>
+                <i aria-hidden="true">→</i>
+              </button>
+            ))}
+          </div>
+          <div className="itw-flow-nav itw-flow-nav-center">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("explain")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-line" onClick={onBack}>All experiences</button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
 
-/* ================= ADHD: focus task simulator ================= */
+/* ================= ADHD: A Mind With Too Many Open Tabs ================= */
 
-const DISTRACT_MSGS = [
-  "New message!", "Reminder: due tomorrow", "Someone's watching you",
-  "That song is stuck in your head", "Only 2 minutes left!", "Did you hear that?",
-  "Don't forget your bag", "Ooh, shiny thing over here", "Click me!",
-  "Just one more round...", "There's a bird outside the window", "Someone passed you a note",
-  "Wait, what were you doing again?", "Is that your name being called?",
+const ADHD_STEPS = [
+  { key: "instructions", label: "Instructions" },
+  { key: "run_baseline", label: "Run 1 (Quiet)" },
+  { key: "interrupted_intro", label: "Interruption Brief" },
+  { key: "run_interrupted", label: "Run 2 (Competing Pulls)" },
+  { key: "reflect", label: "Reflect & Compare" },
+  { key: "support", label: "Support Experiment" },
+  { key: "explain", label: "Understanding & Action" },
 ];
 
-function AdhdSim() {
+const ADHD_STEP_INDEX = {
+  instructions: 0,
+  run_baseline: 1,
+  interrupted_intro: 1,
+  run_interrupted: 2,
+  reflect: 3,
+  support: 4,
+  run_supported: 4,
+  explain: 5,
+};
+
+const ADHD_REFLECT_QS = [
+  {
+    q: "During the second run with interruptions, where did you notice the cognitive friction?",
+    options: [
+      "Even when I tried to ignore the notification toasts, reading them felt almost involuntary.",
+      "Re-orienting back to the assignment after dismissing a distraction took noticeable mental effort.",
+      "The wandering thought chips pulled my curiosity away from the primary assignment goal.",
+      "The task felt significantly more draining even though the core assignment steps were identical.",
+    ],
+  },
+];
+
+const ADHD_SUPPORT_CHOICES = [
+  {
+    id: "checklist",
+    title: "Externalized Visual Checklist",
+    subtitle: "Pinned step-by-step progress anchors",
+    desc: "Anchors working memory with a high-contrast checklist of completed and remaining steps so you never lose your place.",
+    tag: "Working Memory Scaffolding",
+  },
+  {
+    id: "filter",
+    title: "Focus Shield / Do Not Disturb",
+    subtitle: "Mutes external pings and tabs",
+    desc: "Completely filters out sudden notification popups and hides unrelated browser tabs to protect unbroken attention.",
+    tag: "Environmental Filter",
+  },
+  {
+    id: "chunking",
+    title: "Task Chunking (One-Next-Step)",
+    subtitle: "Isolates one sub-step at a time",
+    desc: "Hides future steps and secondary tangents, presenting only the single immediate next action in a focused card.",
+    tag: "Executive Scaffolding",
+  },
+];
+
+const ADHD_EXTERNAL_NOTIFICATIONS = [
+  { id: "chat_citation", channel: "external", icon: "💬", title: "Class Group Chat", body: "Has anyone found the citation for the Bangalore biodiversity report?", autoExpire: 9 },
+  { id: "cal_checkin", channel: "external", icon: "📅", title: "Calendar Alert", body: "Biology Group Check-in starting in 15 minutes.", autoExpire: 12 },
+  { id: "batt_warning", channel: "external", icon: "🔋", title: "Battery Warning", body: "14% remaining — please connect your laptop power adapter.", autoExpire: 10 },
+  { id: "deliv_update", channel: "external", icon: "📦", title: "Delivery Update", body: "Package out for delivery in your neighborhood.", autoExpire: 8 },
+  { id: "portal_reminder", channel: "external", icon: "🔔", title: "Portal Reminder", body: "Assignment submission window closes at the end of class.", autoExpire: 14 },
+  { id: "library_room", channel: "external", icon: "📚", title: "Library Notice", body: "Quiet study cubicle reservation confirmed for 4:00 PM.", autoExpire: 9 },
+  { id: "friend_dm", channel: "external", icon: "💬", title: "Rohan (Direct Message)", body: "Did you finish question 3 on lake buffer zones yet?", autoExpire: 8 },
+];
+
+const ADHD_INTERNAL_THOUGHTS = [
+  { id: "thought_garden", channel: "thought", icon: "💭", title: "Balcony Herb Garden", body: "Did I water the balcony coriander pots this morning?", tangentTitle: "Balcony Herb Garden", tangentText: "You wonder if the afternoon heat will dry out the soil... but you need to submit this ecology brief first!", autoExpire: 11 },
+  { id: "thought_pelicans", channel: "thought", icon: "💭", title: "Spot-Billed Pelicans", body: "Do spot-billed pelicans still nest at Bellandur lake in winter?", tangentTitle: "Spot-Billed Pelicans in Bengaluru", tangentText: "Spot-billed pelicans and painted storks still nest in urban wetland patches when water quality permits.", autoExpire: 11 },
+  { id: "thought_tabs", channel: "thought", icon: "💭", title: "Tab Clutter Tangent", body: "My browser tabs are so messy, should I organize them first?", tangentTitle: "Tab Organizer Tangent", tangentText: "You spent 40 seconds bookmarking tabs before remembering your ecology assignment is due!", autoExpire: 10 },
+  { id: "thought_tea", channel: "thought", icon: "💭", title: "Hot Ginger Tea", body: "A warm cup of ginger tea would really help me focus right now...", tangentTitle: "Tea Break Reflection", tangentText: "You consider going to the kitchen for hot tea, then remember the clock is ticking on your assignment.", autoExpire: 9 },
+  { id: "thought_camera", channel: "thought", icon: "💭", title: "Camera Battery", body: "Did I recharge my camera battery for Sunday morning bird walk?", tangentTitle: "Weekend Bird Walk", tangentText: "You imagine spotting kingfishers along the lake, but your immediate assignment needs your attention.", autoExpire: 10 },
+];
+
+function createPrng(seed = 1337) {
+  let s = seed >>> 0;
+  return function next() {
+    s = (s + 0x6d2b79f5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportType = "checklist", onComplete, onAbort }) {
   const { soundOn } = useContext(SettingsContext);
-  const [numbers, setNumbers] = useState([]); // {num, top, left, status: 'pending'|'done'|'miss'}
-  const [nextNum, setNextNum] = useState(1);
-  const [misses, setMisses] = useState(0);
-  const [running, setRunning] = useState(false);
-  const [distractOn, setDistractOn] = useState(true);
-  const [distractions, setDistractions] = useState([]); // {id, text, top, left, opacity, urgent}
-  const [frozen, setFrozen] = useState(false);
-  const [readout, setReadout] = useState("Ready when you are.");
-  const [rating, setRating] = useState(null);
+  const [step, setStep] = useState(1);
+  const [activeTab, setActiveTab] = useState("assignment");
+  const [notesExtracted, setNotesExtracted] = useState([]);
+  const [chosenPolicy, setChosenPolicy] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [activeTangent, setActiveTangent] = useState(null);
+  const [distractionsDismissed, setDistractionsDismissed] = useState(0);
+  const [distractionsDeferred, setDistractionsDeferred] = useState(0);
+  const [tangentsExplored, setTangentsExplored] = useState(0);
+  const [chatUnread, setChatUnread] = useState(1);
+  const [elapsed, setElapsed] = useState(0);
+  const [running, setRunning] = useState(true);
+  const [paused, setPaused] = useState(false);
 
   const startTimeRef = useRef(0);
-  const distractTimeoutRef = useRef(null);
-  const timeoutsRef = useRef([]);
-  const distractIdRef = useRef(0);
-  const numbersRef = useRef([]);
-  const nextNumRef = useRef(1);
+  const timerIntervalRef = useRef(null);
+  const onCompleteRef = useRef(onComplete);
 
   useEffect(() => {
-    numbersRef.current = numbers;
-  }, [numbers]);
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  // Handle sound drone
   useEffect(() => {
-    nextNumRef.current = nextNum;
-  }, [nextNum]);
-
-  const clearAllTimers = useCallback(() => {
-    if (distractTimeoutRef.current) clearTimeout(distractTimeoutRef.current);
-    timeoutsRef.current.forEach(clearTimeout);
-    timeoutsRef.current = [];
-  }, []);
-
-  useEffect(() => clearAllTimers, [clearAllTimers]);
-
-  useEffect(() => {
-    audio.setDroneGain("adhd", soundOn && running ? 0.025 : 0.0001);
-  }, [soundOn, running]);
+    audio.setDroneGain("adhd", soundOn && running && !paused ? 0.025 : 0.0001);
+  }, [soundOn, running, paused]);
 
   useEffect(() => {
     if (!soundOn) {
@@ -1844,527 +2221,1372 @@ function AdhdSim() {
     return () => audio.stopDrone("adhd");
   }, [soundOn]);
 
-  // Positions distractions well away from every pending/visible number so they
-  // never physically sit on top of a target — they compete for attention, they
-  // don't literally block the click underneath.
-  const findDistractionSpot = () => {
-    const avoid = numbersRef.current.map((n) => ({ top: n.top, left: n.left }));
-    let top, left, ok, tries = 0;
-    do {
-      top = 4 + Math.random() * 84;
-      left = 4 + Math.random() * 66;
-      ok = true;
-      for (const p of avoid) {
-        if (Math.abs(p.top - top) < 12 && Math.abs(p.left - left) < 12) ok = false;
-      }
-      tries++;
-    } while (!ok && tries < 20);
-    return { top, left };
-  };
-
-  const scheduleNextDistraction = useCallback(() => {
-    // Spawns get a little faster as the run progresses, but gently —
-    // this should feel like real pressure, not a punishing gauntlet.
-    const progress = Math.min(1, (nextNumRef.current - 1) / 9);
-    const delay = 1650 - progress * 550 + Math.random() * 400;
-    distractTimeoutRef.current = setTimeout(() => {
-      spawnDistraction();
-      scheduleNextDistraction();
-    }, delay);
+  const clearTimers = useCallback(() => {
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    timerIntervalRef.current = null;
   }, []);
 
-  const spawnDistraction = useCallback(() => {
-    const id = distractIdRef.current++;
-    const pos = findDistractionSpot();
-    const text = DISTRACT_MSGS[Math.floor(Math.random() * DISTRACT_MSGS.length)];
-    const d = { id, text, ...pos, opacity: 0, urgent: false };
-    setDistractions((prev) => [...prev, d]);
-    if (soundOn) {
-      audio.noiseBurst({ duration: 0.12, gain: 0.05, filterFreq: 2400 });
-      speakText(text, { rate: 1.15, pitch: 1.05, volume: 0.5 });
-    }
-    const t1 = setTimeout(() => {
-      setDistractions((prev) => prev.map((x) => (x.id === id ? { ...x, opacity: 1 } : x)));
-    }, 20);
-    // Plenty of grace before it turns urgent, and more still before it
-    // actually costs you — dismissing should feel doable, not frantic.
-    const t2 = setTimeout(() => {
-      setDistractions((prev) => prev.map((x) => (x.id === id ? { ...x, urgent: true } : x)));
-      if (soundOn) audio.tone({ freq: 660, type: "square", duration: 0.1, gain: 0.06 });
-    }, 2400);
-    const t3 = setTimeout(() => {
-      setDistractions((prev) => {
-        const still = prev.find((x) => x.id === id);
-        if (!still) return prev; // already dismissed
-        if (soundOn) audio.sweep({ from: 400, to: 100, duration: 0.3, type: "sawtooth", gain: 0.1 });
-        setMisses((m) => m + 1);
-        setFrozen(true);
-        const tf = setTimeout(() => setFrozen(false), 350);
-        timeoutsRef.current.push(tf);
-        return prev.filter((x) => x.id !== id);
-      });
-    }, 3800);
-    timeoutsRef.current.push(t1, t2, t3);
-  }, [soundOn]);
+  const handleFinish = useCallback(() => {
+    clearTimers();
+    setRunning(false);
+    audio.cue("slam");
+    onCompleteRef.current?.({
+      time: elapsed,
+      distractionsDismissed,
+      distractionsDeferred,
+      tangentsExplored,
+    });
+  }, [clearTimers, elapsed, distractionsDismissed, distractionsDeferred, tangentsExplored]);
 
-  const dismissDistraction = (id) => {
-    if (!running) return;
-    setDistractions((prev) => prev.filter((x) => x.id !== id));
-    if (soundOn) audio.tone({ freq: 420, type: "sine", duration: 0.09, gain: 0.06 });
-  };
-
-  // Attention drift: if the current target sits too long, it relocates —
-  // the same task, but attention has to keep re-finding it.
+  // Start simulation timer
   useEffect(() => {
-    if (!running) return;
-    const target = nextNum;
-    const wander = setInterval(() => {
-      setNumbers((prev) => {
-        const idx = prev.findIndex((n) => n.num === target && n.status === "pending");
-        if (idx === -1) return prev;
-        let top, left, ok;
-        do {
-          top = 8 + Math.random() * 76;
-          left = 4 + Math.random() * 84;
-          ok = true;
-          for (const p of prev) {
-            if (p.num === target) continue;
-            if (Math.abs(p.top - top) < 13 && Math.abs(p.left - left) < 13) ok = false;
-          }
-        } while (!ok);
-        const copy = [...prev];
-        copy[idx] = { ...copy[idx], top, left, restless: true };
-        return copy;
-      });
-      if (soundOn) audio.tone({ freq: 200, type: "triangle", duration: 0.08, gain: 0.04 });
-      const clearT = setTimeout(() => {
-        setNumbers((prev) => prev.map((n) => (n.num === target ? { ...n, restless: false } : n)));
-      }, 500);
-      timeoutsRef.current.push(clearT);
-    }, 1800);
-    return () => clearInterval(wander);
-  }, [nextNum, running, soundOn]);
-
-  const startFocus = () => {
-    clearAllTimers();
-    setDistractions([]);
-    setFrozen(false);
-    setMisses(0);
-    setNextNum(1);
-    setRunning(true);
-    setRating(null);
-    setReadout("Go — click 1 first.");
-
-    const positions = [];
-    const nums = [];
-    for (let i = 1; i <= 10; i++) {
-      let top, left, ok;
-      do {
-        top = 8 + Math.random() * 76;
-        left = 4 + Math.random() * 84;
-        ok = true;
-        for (const p of positions) {
-          if (Math.abs(p.top - top) < 13 && Math.abs(p.left - left) < 13) ok = false;
-        }
-      } while (!ok);
-      positions.push({ top, left });
-      nums.push({ num: i, top, left, status: "pending" });
-    }
-    setNumbers(nums);
-    numbersRef.current = nums;
     startTimeRef.current = performance.now();
+    timerIntervalRef.current = setInterval(() => {
+      setElapsed(parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1)));
+    }, 100);
+    return clearTimers;
+  }, [clearTimers]);
 
-    if (distractOn) {
-      scheduleNextDistraction();
+  // Unpredictable multi-channel event engine with burst dynamics
+  useEffect(() => {
+    if (mode === "baseline" || (mode === "supported" && supportType === "filter") || paused || !running) {
+      return undefined;
     }
+
+    const prng = createPrng(Date.now() + 19);
+    const timers = [];
+    let isCancelled = false;
+
+    // Intensity parameters
+    const cfg = intensity === "complex"
+      ? { baseMs: 1800, jitter: 1400, burstProb: 0.55, maxActive: 3 }
+      : intensity === "gentle"
+      ? { baseMs: 7000, jitter: 3500, burstProb: 0.12, maxActive: 1 }
+      : { baseMs: 3400, jitter: 2200, burstProb: 0.35, maxActive: 2 };
+
+    const pool = [...ADHD_EXTERNAL_NOTIFICATIONS, ...ADHD_INTERNAL_THOUGHTS];
+    let poolIdx = 0;
+
+    const triggerEvent = () => {
+      if (isCancelled) return;
+      const item = pool[poolIdx % pool.length];
+      poolIdx++;
+
+      setNotifications((prev) => {
+        if (prev.length >= cfg.maxActive || prev.some((n) => n.id === item.id)) {
+          return prev;
+        }
+        if (soundOn) audio.cue("tap");
+        return [...prev, { ...item, key: `${item.id}-${Date.now()}-${Math.floor(prng() * 1000)}` }];
+      });
+
+      // Competing tab indicator update
+      if (prng() > 0.55) {
+        setChatUnread((c) => Math.min(9, c + 1));
+      }
+
+      // Burst logic: rapid overlapping second event
+      if (prng() < cfg.burstProb) {
+        const burstDelay = Math.floor(500 + prng() * 700);
+        const burstTimer = setTimeout(() => {
+          if (isCancelled) return;
+          const burstItem = pool[poolIdx % pool.length];
+          poolIdx++;
+          setNotifications((prev) => {
+            if (prev.length >= cfg.maxActive || prev.some((n) => n.id === burstItem.id)) {
+              return prev;
+            }
+            if (soundOn) audio.cue("tap");
+            return [...prev, { ...burstItem, key: `${burstItem.id}-${Date.now()}-burst` }];
+          });
+        }, burstDelay);
+        timers.push(burstTimer);
+      }
+
+      // Schedule next event
+      const nextDelay = Math.floor(cfg.baseMs + prng() * cfg.jitter);
+      const nextTimer = setTimeout(triggerEvent, nextDelay);
+      timers.push(nextTimer);
+    };
+
+    const initialDelay = Math.floor(cfg.baseMs * 0.6 + prng() * 1000);
+    const initialTimer = setTimeout(triggerEvent, initialDelay);
+    timers.push(initialTimer);
+
+    return () => {
+      isCancelled = true;
+      timers.forEach((t) => clearTimeout(t));
+    };
+  }, [mode, intensity, supportType, paused, running, soundOn]);
+
+  const dismissNotification = (key) => {
+    if (soundOn) audio.cue("tap");
+    setNotifications((prev) => prev.filter((n) => n.key !== key));
+    setDistractionsDismissed((c) => c + 1);
   };
 
-  const clickNum = (num) => {
-    if (!running || frozen) return;
-    if (num !== nextNum) {
-      setMisses((m) => m + 1);
-      if (soundOn) audio.sweep({ from: 300, to: 120, duration: 0.18, type: "square", gain: 0.09 });
-      setNumbers((prev) => prev.map((n) => (n.num === num ? { ...n, status: "miss" } : n)));
-      const t = setTimeout(() => {
-        setNumbers((prev) => prev.map((n) => (n.num === num ? { ...n, status: "pending" } : n)));
-      }, 300);
-      timeoutsRef.current.push(t);
-      return;
-    }
-    if (soundOn) audio.tone({ freq: 420 + num * 30, type: "sine", duration: 0.12, gain: 0.11 });
-    setNumbers((prev) => prev.map((n) => (n.num === num ? { ...n, status: "done" } : n)));
-    const next = nextNum + 1;
-    setNextNum(next);
-    if (next > 10) {
-      clearAllTimers();
-      setDistractions([]);
-      setRunning(false);
-      const time = (performance.now() - startTimeRef.current) / 1000;
-      setReadout(`Done in ${time.toFixed(1)}s, with ${misses} misclick(s)/unhandled interruption(s).`);
-      const penalty = misses * 8 + Math.max(0, time - 9) * 4;
-      const score = Math.round(Math.max(0, Math.min(100, 100 - penalty)));
-      setRating({ score, time: time.toFixed(1), misses, distractOn });
-    }
+  const deferNotification = (notif) => {
+    if (soundOn) audio.cue("tap");
+    setNotifications((prev) => prev.filter((n) => n.key !== notif.key));
+    setDistractionsDeferred((c) => c + 1);
+    setTimeout(() => {
+      setNotifications((prev) => {
+        if (prev.some((n) => n.id === notif.id)) return prev;
+        return [...prev.slice(-2), { ...notif, key: `${notif.id}-deferred-${Date.now()}` }];
+      });
+    }, 5500);
+  };
+
+  const handleOpenTangent = (t) => {
+    if (soundOn) audio.cue("tap");
+    setActiveTangent(t);
+    setTangentsExplored((c) => c + 1);
+  };
+
+  const handleExtractNote = (noteId) => {
+    if (soundOn) audio.cue("tap");
+    setNotesExtracted((prev) => (prev.includes(noteId) ? prev : [...prev, noteId]));
   };
 
   return (
-    <div className="itw-sim">
-      <div className="itw-sim-instructions">
-        Click 1 through 10 in order, fast — the numbers won't wait, and neither will the interruptions.
+    <div className="itw-desk-sim" role="region" aria-label="ADHD Study Desk Simulation">
+      <div className="itw-desk-bg-wrap" aria-hidden="true">
+        <img src="/decor/itw/adhd-workspace-scene.webp" alt="" className="itw-desk-bg-img" />
       </div>
-      <HowTo
-        steps={[
-          "Click 1 → 10 in order",
-          "Dismiss pop-ups with ×",
-          "Interruptions speed up over time",
-        ]}
-      />
-      <Viewfinder hud={{ left: running ? `TARGET ${nextNum}/10` : "READY", right: `MISS ${misses}` }}>
-        <div className={`itw-focus-field${frozen ? " itw-frozen" : ""}`}>
-          {numbers.map((n) => (
+
+      {/* Simulated Browser Chrome */}
+      <div className="itw-browser-chrome">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div className="itw-browser-dots" aria-hidden="true">
+            <span className="itw-browser-dot itw-dot-red" />
+            <span className="itw-browser-dot itw-dot-yellow" />
+            <span className="itw-browser-dot itw-dot-green" />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)" }}>
+              ⏱️ {elapsed.toFixed(1)}s
+            </span>
             <button
-              key={n.num}
-              className={`itw-num-btn${n.status === "done" ? " itw-done" : ""}${
-                n.status === "miss" ? " itw-miss" : ""
-              }${n.restless ? " itw-restless" : ""}`}
-              style={{ top: `${n.top}%`, left: `${n.left}%` }}
-              onClick={() => clickNum(n.num)}
-              disabled={frozen}
+              type="button"
+              className="itw-pill-btn"
+              onClick={() => {
+                setPaused((p) => !p);
+                if (!paused) clearTimers();
+              }}
             >
-              {n.num}
+              {paused ? "Resume" : "Pause"}
             </button>
-          ))}
-          {distractions.map((d) => (
-            <div
-              key={d.id}
-              className={`itw-distraction${d.urgent ? " itw-urgent" : ""}`}
-              style={{ top: `${d.top}%`, left: `${d.left}%`, opacity: d.opacity }}
+            <button type="button" className="itw-pill-btn" onClick={onAbort}>Exit</button>
+          </div>
+        </div>
+
+        <div className="itw-browser-tabs" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "assignment"}
+            className={`itw-browser-tab${activeTab === "assignment" ? " itw-tab-active" : ""}`}
+            onClick={() => setActiveTab("assignment")}
+          >
+            📄 Assignment: Urban Ecology
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "lakes"}
+            className={`itw-browser-tab${activeTab === "lakes" ? " itw-tab-active" : ""}`}
+            onClick={() => setActiveTab("lakes")}
+          >
+            🌿 Lake Buffer Notes
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "canopy"}
+            className={`itw-browser-tab${activeTab === "canopy" ? " itw-tab-active" : ""}`}
+            onClick={() => setActiveTab("canopy")}
+          >
+            🌳 Tree Canopy Corridors
+          </button>
+          {mode === "interrupted" && (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === "chat"}
+              className={`itw-browser-tab${activeTab === "chat" ? " itw-tab-active" : ""}`}
+              onClick={() => setActiveTab("chat")}
             >
-              <span>{d.text}</span>
+              💬 Biology Chat <span className="itw-tab-badge">{chatUnread}</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Floating Notifications Layer */}
+      {notifications.length > 0 && (
+        <div className="itw-toast-container" aria-live="polite">
+          {notifications.map((n) => (
+            <div key={n.key} className="itw-desk-toast">
+              <span className="itw-toast-icon" aria-hidden="true">{n.icon}</span>
+              <div className="itw-toast-content">
+                <div className="itw-toast-title">{n.title}</div>
+                <div>{n.body}</div>
+                <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                  {n.channel === "thought" && (
+                    <button
+                      type="button"
+                      className="itw-pill-btn"
+                      style={{ fontSize: 11, padding: "2px 8px" }}
+                      onClick={() => handleOpenTangent({ title: n.tangentTitle, text: n.tangentText })}
+                    >
+                      Explore Tangent →
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="itw-pill-btn"
+                    style={{ fontSize: 11, padding: "2px 8px" }}
+                    onClick={() => deferNotification(n)}
+                  >
+                    ⏳ Snooze 5s
+                  </button>
+                  <button
+                    type="button"
+                    className="itw-pill-btn"
+                    style={{ fontSize: 11, padding: "2px 8px" }}
+                    onClick={() => dismissNotification(n.key)}
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
               <button
                 type="button"
-                className="itw-distraction-x"
-                onClick={() => dismissDistraction(d.id)}
-                aria-label="Dismiss"
+                className="itw-toast-close"
+                aria-label={`Dismiss ${n.title}`}
+                onClick={() => dismissNotification(n.key)}
               >
                 ×
               </button>
             </div>
           ))}
-          {frozen && <div className="itw-frozen-banner">Lost focus for a second — that interruption won.</div>}
         </div>
-      </Viewfinder>
-      <div className="itw-sim-controls">
-        <button className="itw-btn-primary" onClick={startFocus} disabled={running}>
-          Start round
-        </button>
-        <label className="itw-row" style={{ fontSize: 13, color: "var(--itw-muted)" }}>
-          <input
-            type="checkbox"
-            checked={distractOn}
-            onChange={(e) => setDistractOn(e.target.checked)}
-            style={{ accentColor: "var(--itw-adhd)" }}
-          />
-          Simulate interruptions
-        </label>
-        <div className="itw-readout">{readout}</div>
-      </div>
-      {rating && (
-        <RatingCard
-          title="What just happened to your focus"
-          lines={[
-            `Finished in ${rating.time}s with ${rating.misses} misclick(s)/unhandled interruption(s), interruptions ${
-              rating.distractOn ? "on" : "off"
-            }.`,
-            rating.distractOn
-              ? "Run it again with interruptions off — most people finish faster and cleaner. That gap is roughly what constant, unfiltered pulls on attention cost, on every task, all day."
-              : "Now try it again with interruptions on, and compare. The task never changed — only how much of your attention it was allowed to keep. Every interruption you had to dismiss was a beat of focus spent on something that wasn't the task.",
-          ]}
-          onRetry={startFocus}
-          retryLabel="Run it again"
-        />
       )}
+
+      {/* Tangent Modal Overlay */}
+      {activeTangent && (
+        <div className="itw-tangent-overlay" role="dialog" aria-modal="true" aria-label="Stray Thought Tangent">
+          <div className="itw-tangent-modal">
+            <div style={{ fontSize: 32, marginBottom: 8 }} aria-hidden="true">💭</div>
+            <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", marginBottom: 8 }}>
+              {activeTangent.title}
+            </h3>
+            <p style={{ fontSize: 15, color: "var(--itw-muted)", lineHeight: 1.6, marginBottom: 20 }}>
+              {activeTangent.text}
+            </p>
+            <button
+              type="button"
+              className="itw-cta itw-cta-dark"
+              onClick={() => setActiveTangent(null)}
+            >
+              ← Return to Assignment Focus
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Desk Content Body */}
+      <div className="itw-desk-body">
+        <div className="itw-desk-main">
+          {activeTab === "assignment" && (
+            <div className="itw-desk-doc">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+                <div>
+                  <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-adhd)", letterSpacing: "0.08em" }}>
+                    Primary Task • Step {step} of 4
+                  </span>
+                  <h3 style={{ fontSize: 22, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
+                    Urban Wildlife Conservation Brief
+                  </h3>
+                  <div style={{ fontSize: 14, color: "var(--itw-muted)" }}>
+                    Course: Environmental Science • Target: Synthesize 2 evidence points &amp; submit recommendation
+                  </div>
+                </div>
+              </div>
+
+              {step === 1 && (
+                <div style={{ background: "var(--itw-panel-2)", padding: 20, borderRadius: 16, border: "1px solid var(--itw-border)" }}>
+                  <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", marginBottom: 8 }}>
+                    Assignment Objective
+                  </h4>
+                  <p style={{ fontSize: 14.5, color: "var(--itw-text)", lineHeight: 1.6, marginBottom: 16 }}>
+                    Bengaluru's rapid urban expansion has altered local water bodies and tree canopies. Your goal is to review
+                    the research notes in the adjacent tabs, extract at least 2 verified data points, and select the optimal
+                    conservation policy before class finishes.
+                  </p>
+                  <button
+                    type="button"
+                    className="itw-cta itw-cta-dark"
+                    onClick={() => {
+                      setStep(2);
+                      setActiveTab("lakes");
+                    }}
+                  >
+                    Open Research Notes →
+                  </button>
+                </div>
+              )}
+
+              {step === 2 && (
+                <div style={{ background: "var(--itw-panel-2)", padding: 20, borderRadius: 16, border: "1px solid var(--itw-border)" }}>
+                  <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", marginBottom: 8 }}>
+                    Step 2: Collect 2 Crucial Findings
+                  </h4>
+                  <p style={{ fontSize: 14, color: "var(--itw-muted)", marginBottom: 14 }}>
+                    Switch between the <b>Lake Buffer Notes</b> and <b>Tree Canopy Corridors</b> tabs to extract 2 evidence points into this assignment.
+                  </p>
+                  <div style={{ display: "grid", gap: 10, marginBottom: 18 }}>
+                    <div style={{ padding: 12, borderRadius: 10, background: notesExtracted.includes("lakes") ? "rgba(44, 140, 114, 0.15)" : "var(--itw-panel)", border: "1px solid var(--itw-border)" }}>
+                      {notesExtracted.includes("lakes") ? "✓ Lake Buffer Finding: 78% wetland loss; buffer restoration increases bird diversity by 42%." : "⚪ Lake Buffer finding not yet extracted."}
+                    </div>
+                    <div style={{ padding: 12, borderRadius: 10, background: notesExtracted.includes("canopy") ? "rgba(44, 140, 114, 0.15)" : "var(--itw-panel)", border: "1px solid var(--itw-border)" }}>
+                      {notesExtracted.includes("canopy") ? "✓ Canopy Finding: Contiguous native street trees increase pollinator movement by 3.4x." : "⚪ Canopy Corridor finding not yet extracted."}
+                    </div>
+                  </div>
+                  {notesExtracted.length >= 2 ? (
+                    <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep(3)}>
+                      Proceed to Policy Recommendation →
+                    </button>
+                  ) : (
+                    <div style={{ display: "flex", gap: 10 }}>
+                      <button type="button" className="itw-cta itw-cta-line" onClick={() => setActiveTab("lakes")}>
+                        Go to Lake Notes
+                      </button>
+                      <button type="button" className="itw-cta itw-cta-line" onClick={() => setActiveTab("canopy")}>
+                        Go to Tree Notes
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {step === 3 && (
+                <div style={{ background: "var(--itw-panel-2)", padding: 20, borderRadius: 16, border: "1px solid var(--itw-border)" }}>
+                  <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", marginBottom: 8 }}>
+                    Step 3: Select Conservation Recommendation
+                  </h4>
+                  <p style={{ fontSize: 14, color: "var(--itw-muted)", marginBottom: 14 }}>
+                    Based on your extracted evidence, select the evidence-based conservation policy to recommend:
+                  </p>
+                  <div style={{ display: "grid", gap: 12, marginBottom: 20 }}>
+                    <label
+                      style={{
+                        padding: 14,
+                        borderRadius: 12,
+                        background: chosenPolicy === "pave" ? "rgba(210, 115, 86, 0.15)" : "var(--itw-panel)",
+                        border: `1.5px solid ${chosenPolicy === "pave" ? "var(--itw-speech)" : "var(--itw-border)"}`,
+                        cursor: "pointer",
+                        display: "block",
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="policy"
+                        value="pave"
+                        checked={chosenPolicy === "pave"}
+                        onChange={() => setChosenPolicy("pave")}
+                        style={{ marginRight: 8 }}
+                      />
+                      <b>Policy A:</b> Pave ornamental concrete walkways around lake edges to boost human recreation footfall.
+                    </label>
+                    <label
+                      style={{
+                        padding: 14,
+                        borderRadius: 12,
+                        background: chosenPolicy === "corridor" ? "rgba(44, 140, 114, 0.15)" : "var(--itw-panel)",
+                        border: `1.5px solid ${chosenPolicy === "corridor" ? "var(--itw-autism)" : "var(--itw-border)"}`,
+                        cursor: "pointer",
+                        display: "block",
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="policy"
+                        value="corridor"
+                        checked={chosenPolicy === "corridor"}
+                        onChange={() => setChosenPolicy("corridor")}
+                        style={{ marginRight: 8 }}
+                      />
+                      <b>Policy B:</b> Establish contiguous native canopy corridors connecting restored wetland buffers to enable wildlife migration.
+                    </label>
+                  </div>
+                  <button
+                    type="button"
+                    className="itw-cta itw-cta-dark"
+                    disabled={!chosenPolicy}
+                    onClick={() => setStep(4)}
+                  >
+                    Proceed to Submission →
+                  </button>
+                </div>
+              )}
+
+              {step === 4 && (
+                <div style={{ background: "var(--itw-panel-2)", padding: 22, borderRadius: 16, border: "1px solid var(--itw-border)", textAlign: "center" }}>
+                  <div style={{ fontSize: 32, marginBottom: 8 }} aria-hidden="true">📋</div>
+                  <h4 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", marginBottom: 8 }}>
+                    Assignment Ready for Submission
+                  </h4>
+                  <p style={{ fontSize: 14.5, color: "var(--itw-muted)", maxWidth: "48ch", margin: "0 auto 20px" }}>
+                    You have extracted 2 data points and formulated your conservation policy. Click below to submit your brief to the teacher.
+                  </p>
+                  <button
+                    type="button"
+                    className="itw-cta itw-cta-dark"
+                    style={{ fontSize: 16, padding: "14px 32px" }}
+                    onClick={handleFinish}
+                  >
+                    Save &amp; Submit Assignment ✓
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "lakes" && (
+            <div style={{ background: "var(--itw-panel-2)", padding: 20, borderRadius: 16, border: "1px solid var(--itw-border)" }}>
+              <div className="itw-desk-return-banner">
+                <div>
+                  🎯 <b>Primary Assignment Goal:</b> Step {step} of 4 — {step === 1 ? "Review brief" : step === 2 ? "Extract 2 research findings" : step === 3 ? "Select policy" : "Submit brief"}
+                </div>
+                <button type="button" className="itw-pill-btn" onClick={() => setActiveTab("assignment")}>
+                  Return to Assignment Tab →
+                </button>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <h4 style={{ fontSize: 18, fontWeight: 800, color: "var(--itw-text)", margin: 0 }}>
+                  Lake Ecosystems &amp; Wetland Buffers
+                </h4>
+                <button type="button" className="itw-pill-btn" onClick={() => setActiveTab("assignment")}>
+                  ← Back to Assignment
+                </button>
+              </div>
+              <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "var(--itw-text)", marginBottom: 16 }}>
+                Studies of Bengaluru water bodies indicate that Bellandur and Varthur wetland buffers have shrunk by 78% since 1970 due to encroachment.
+                However, research by IISc demonstrates that reconnecting marshland vegetative edges increases native waterbird nesting and feeding diversity by 42%.
+              </p>
+              <button
+                type="button"
+                className="itw-cta itw-cta-dark"
+                disabled={notesExtracted.includes("lakes")}
+                onClick={() => {
+                  handleExtractNote("lakes");
+                  setActiveTab("assignment");
+                }}
+              >
+                {notesExtracted.includes("lakes") ? "✓ Note Already Extracted" : "+ Extract Finding to Assignment"}
+              </button>
+            </div>
+          )}
+
+          {activeTab === "canopy" && (
+            <div style={{ background: "var(--itw-panel-2)", padding: 20, borderRadius: 16, border: "1px solid var(--itw-border)" }}>
+              <div className="itw-desk-return-banner">
+                <div>
+                  🎯 <b>Primary Assignment Goal:</b> Step {step} of 4 — {step === 1 ? "Review brief" : step === 2 ? "Extract 2 research findings" : step === 3 ? "Select policy" : "Submit brief"}
+                </div>
+                <button type="button" className="itw-pill-btn" onClick={() => setActiveTab("assignment")}>
+                  Return to Assignment Tab →
+                </button>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <h4 style={{ fontSize: 18, fontWeight: 800, color: "var(--itw-text)", margin: 0 }}>
+                  Urban Tree Canopies &amp; Street Corridors
+                </h4>
+                <button type="button" className="itw-pill-btn" onClick={() => setActiveTab("assignment")}>
+                  ← Back to Assignment
+                </button>
+              </div>
+              <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "var(--itw-text)", marginBottom: 16 }}>
+                Satellite vegetative index mapping reveals that continuous tree canopies along avenue roads (featuring native peepal, banyan, and neem)
+                create essential micro-climates that increase pollinator and urban raptor transit by 3.4x compared to isolated municipal parks.
+              </p>
+              <button
+                type="button"
+                className="itw-cta itw-cta-dark"
+                disabled={notesExtracted.includes("canopy")}
+                onClick={() => {
+                  handleExtractNote("canopy");
+                  setActiveTab("assignment");
+                }}
+              >
+                {notesExtracted.includes("canopy") ? "✓ Note Already Extracted" : "+ Extract Finding to Assignment"}
+              </button>
+            </div>
+          )}
+
+          {activeTab === "chat" && (
+            <div style={{ background: "var(--itw-panel-2)", padding: 20, borderRadius: 16, border: "1px solid var(--itw-border)" }}>
+              <div className="itw-desk-return-banner">
+                <div>
+                  🎯 <b>Primary Assignment Goal:</b> Step {step} of 4 — {step === 1 ? "Review brief" : step === 2 ? "Extract 2 research findings" : step === 3 ? "Select policy" : "Submit brief"}
+                </div>
+                <button type="button" className="itw-pill-btn" onClick={() => setActiveTab("assignment")}>
+                  Return to Assignment Tab →
+                </button>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <h4 style={{ fontSize: 18, fontWeight: 800, color: "var(--itw-text)", margin: 0 }}>
+                  💬 Biology Study Group (Non-essential Chat)
+                </h4>
+                <button type="button" className="itw-pill-btn" onClick={() => setActiveTab("assignment")}>
+                  ← Back to Assignment
+                </button>
+              </div>
+              <div style={{ display: "grid", gap: 10, marginBottom: 16 }}>
+                <div style={{ padding: 10, borderRadius: 8, background: "var(--itw-panel)", fontSize: 13.5 }}>
+                  <b>Ananya:</b> Has anyone started the conclusion section yet?
+                </div>
+                <div style={{ padding: 10, borderRadius: 8, background: "var(--itw-panel)", fontSize: 13.5 }}>
+                  <b>Karan:</b> I think we need to cite the 2022 IISc urban ecology paper.
+                </div>
+                <div style={{ padding: 10, borderRadius: 8, background: "var(--itw-panel)", fontSize: 13.5 }}>
+                  <b>Priya:</b> Don't forget submission window closes right when class ends!
+                </div>
+              </div>
+              <button type="button" className="itw-cta itw-cta-line" onClick={() => setActiveTab("assignment")}>
+                Return to Primary Assignment
+              </button>
+            </div>
+          )}
+
+          {/* Associative Thought Stream Chips (Mode Interrupted) */}
+          {mode === "interrupted" && (
+            <div style={{ marginTop: 20 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", letterSpacing: "0.06em", marginBottom: 6 }}>
+                Associative Thought Streams
+              </div>
+              <div className="itw-tangent-chips">
+                {ADHD_TANGENT_POOL.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    className="itw-tangent-chip"
+                    onClick={() => handleOpenTangent(t)}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar: Either Externalized Checklist or Focus Scaffolding */}
+        <div className="itw-desk-sidebar">
+          <div style={{ fontWeight: 800, fontSize: 14, color: "var(--itw-text)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            {supportType === "checklist" && mode === "supported" ? "🛡️ Visual Checklist Support" : "Task Status"}
+          </div>
+
+          <div style={{ display: "grid", gap: 8, fontSize: 13 }}>
+            <div style={{ padding: 8, borderRadius: 8, background: step > 1 ? "rgba(44, 140, 114, 0.15)" : "var(--itw-panel)", color: step > 1 ? "var(--itw-autism)" : "var(--itw-text)", fontWeight: step === 1 ? 800 : 500 }}>
+              {step > 1 ? "✓ 1. Assignment Brief" : "• 1. Assignment Brief"}
+            </div>
+            <div style={{ padding: 8, borderRadius: 8, background: notesExtracted.length >= 2 ? "rgba(44, 140, 114, 0.15)" : "var(--itw-panel)", color: notesExtracted.length >= 2 ? "var(--itw-autism)" : "var(--itw-text)", fontWeight: step === 2 ? 800 : 500 }}>
+              {notesExtracted.length >= 2 ? "✓ 2. Notes Extracted (2/2)" : `• 2. Notes Extracted (${notesExtracted.length}/2)`}
+            </div>
+            <div style={{ padding: 8, borderRadius: 8, background: step > 3 ? "rgba(44, 140, 114, 0.15)" : "var(--itw-panel)", color: step > 3 ? "var(--itw-autism)" : "var(--itw-text)", fontWeight: step === 3 ? 800 : 500 }}>
+              {step > 3 ? "✓ 3. Policy Recommendation" : "• 3. Policy Recommendation"}
+            </div>
+            <div style={{ padding: 8, borderRadius: 8, background: "var(--itw-panel)", fontWeight: step === 4 ? 800 : 500 }}>
+              • 4. Save &amp; Submit
+            </div>
+          </div>
+
+          <div style={{ marginTop: "auto", borderTop: "1px solid var(--itw-border)", paddingTop: 12 }}>
+            <div style={{ fontSize: 12, color: "var(--itw-muted)", marginBottom: 4 }}>Attention Metrics</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-text)" }}>
+              Pings Dismissed: {distractionsDismissed}
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-text)" }}>
+              Tangents Explored: {tangentsExplored}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
 function AdhdModule({ onBack, onNavigate }) {
-  return (
-    <ModuleShell
-      accent="adhd"
-      eyebrow="ADHD"
-      title="Attention isn't a switch."
-      dek="It's not that kids with ADHD can't focus — it's that their attention responds to whatever is most stimulating in the moment, and staying locked onto one quiet task takes active, exhausting effort."
-      sections={[
-        { id: "adhd-try", label: "Try it" },
-        { id: "adhd-data", label: "The data" },
-        { id: "adhd-help", label: "How to help" },
-      ]}
-      onBack={onBack}
-      onNavigate={onNavigate}
-    >
-      <section className="itw-block" id="adhd-try">
-        <div className="itw-block-label">Try it — Focus Task</div>
-        <AdhdSim />
-      </section>
-      <section className="itw-block" id="adhd-data">
-        <div className="itw-block-label">The data</div>
-        <FactsGrid
-          facts={[
-            { num: "~7.1%", label: "pooled prevalence of ADHD among Indian children & adolescents, across 19 studies", src: "Indian systematic review & meta-analysis" },
-            { num: "9.4% vs 5.2%", label: "prevalence among boys versus girls in the same pooled Indian data", src: "Indian systematic review & meta-analysis" },
-            { num: "2–3", label: "students in a class of 30 are statistically likely to have ADHD, by the pooled Indian estimate", src: "Extrapolated from meta-analysis data" },
-          ]}
-          note="ADHD is a difference in how the brain regulates attention and impulse — not a lack of willpower. Individual Indian studies range widely, from about 2% in some community samples up to nearly 29% in others, reflecting differences in screening tools, region, and setting rather than a single settled national rate."
-          onComplete={() => scrollToId("adhd-help")}
-        />
-      </section>
-      <section className="itw-block itw-help-block" id="adhd-help">
-        <div className="itw-help-head">
-          <div className="itw-help-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7.5-4.6-10-9.3C.4 8 2 4.5 5.6 4a5 5 0 0 1 6.4 2 5 5 0 0 1 6.4-2C22 4.5 23.6 8 22 11.7 19.5 16.4 12 21 12 21Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>
-          </div>
-          <div>
-            <div className="itw-help-eyebrow">What actually helps</div>
-            <h3 className="itw-help-title">How you can help</h3>
-          </div>
-        </div>
-        <StrategyTabs
-          home={[
-            "Break tasks into small, visible steps instead of one open-ended instruction like “clean your room.”",
-            "Reduce visible clutter in the workspace where homework happens — fewer competing objects, fewer competing thoughts.",
-            "Build in movement breaks between tasks rather than expecting long stretches of stillness.",
-            "Praise the process (“you stuck with that”) more than just the outcome — motivation runs on frequent, immediate feedback.",
-          ]}
-          classroom={[
-            "Seat near the front, away from the door, window, and high-traffic areas — not as punishment, as scaffolding.",
-            "Chunk assignments with visible checkpoints instead of one long due date.",
-            "Allow fidget tools or standing/movement options — they often support focus rather than undermine it.",
-            "Give a heads-up before transitions; abrupt switches are where attention is most likely to derail.",
-          ]}
-        />
-        <HelpFooter />
-      </section>
-    </ModuleShell>
-  );
-}
+  const [step, setStep] = useState("intro");
+  const [intensity, setIntensity] = useState("moderate");
+  const [results, setResults] = useState({
+    baseline: null,
+    interrupted: null,
+    supported: null,
+  });
+  const [chosenSupport, setChosenSupport] = useState("checklist");
+  const [reflectionAnswers, setReflectionAnswers] = useState([null]);
 
-/* ================= DYSLEXIA: reading simulator ================= */
+  const stepIndex = ADHD_STEP_INDEX[step];
+  const more = MODULES.filter((m) => m.key !== "adhd");
 
-const READING_TEXT =
-  "Maya packed her backpack the night before the field trip. She checked twice for her water bottle, her permission slip, and the drawing she made for her grandmother. The bus was loud and smelled like rubber, but she found a window seat and watched the fields turn from green to gold as the wind picked up outside.";
-
-const COMPREHENSION_QUESTIONS = [
-  {
-    q: "What did Maya pack the night before, besides her water bottle?",
-    options: ["Her permission slip and a drawing for her grandmother", "A book and headphones", "Her homework and a snack"],
-    correct: 0,
-  },
-  {
-    q: "Where did Maya sit on the bus?",
-    options: ["Near the driver", "In a window seat", "At the very back"],
-    correct: 1,
-  },
-  {
-    q: "What did Maya notice happening outside as the bus rode along?",
-    options: ["The fields turned from green to gold", "It started to rain", "The bus stopped at a farm"],
-    correct: 0,
-  },
-];
-
-const SWAP_PAIRS = { b: "d", d: "b", p: "q", q: "p" };
-
-function ComprehensionQuiz({ onSubmit }) {
-  const [answers, setAnswers] = useState(Array(COMPREHENSION_QUESTIONS.length).fill(null));
-
-  const pick = (qi, oi) => {
-    setAnswers((prev) => {
-      const copy = [...prev];
-      copy[qi] = oi;
-      return copy;
-    });
+  const handleBaselineComplete = (data) => {
+    setResults((prev) => ({ ...prev, baseline: data }));
+    setStep("interrupted_intro");
   };
 
-  const allAnswered = answers.every((a) => a !== null);
+  const handleInterruptedComplete = (data) => {
+    setResults((prev) => ({ ...prev, interrupted: data }));
+    setStep("reflect");
+  };
+
+  const handleSupportedComplete = (data) => {
+    setResults((prev) => ({ ...prev, supported: data }));
+    setStep("explain");
+  };
 
   return (
-    <div className="itw-quiz">
-      <div className="itw-quiz-label">Quick check — what did you actually take in?</div>
-      {COMPREHENSION_QUESTIONS.map((item, qi) => (
-        <div className="itw-quiz-q" key={qi}>
-          <p>{item.q}</p>
-          <div className="itw-quiz-opts">
-            {item.options.map((opt, oi) => (
-              <button
-                key={oi}
-                type="button"
-                className={`itw-quiz-opt${answers[qi] === oi ? " itw-active" : ""}`}
-                onClick={() => pick(qi, oi)}
+    <section className="itw-view itw-module itw-flow" data-accent="adhd">
+      <FlowCrumbs name="ADHD" onBack={onBack} />
+      {stepIndex !== undefined && <FlowStepper steps={ADHD_STEPS} current={stepIndex} />}
+
+      {step === "intro" && (
+        <div className="itw-flow-page itw-flow-intro" key="intro">
+          <div>
+            <h2 className="itw-flow-title">ADHD</h2>
+            <div className="itw-flow-sub">A Mind With Too Many Open Tabs</div>
+            <p className="itw-flow-lead">
+              It is a common myth that ADHD is simply a lack of attention. In reality, attention is abundant — but
+              it is drawn equally to every stimulus in the room. Holding focus on a quiet assignment while notifications,
+              stray thoughts, and tangential curiosities compete for working memory requires constant, exhausting effort.
+            </p>
+            <ul className="itw-flow-meta">
+              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
+              <li><span aria-hidden="true">🖥️</span> First-person desk workspace simulation</li>
+              <li><span aria-hidden="true">🛡️</span> Not a diagnostic test</li>
+            </ul>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
+              Start the Experience →
+            </button>
+          </div>
+          <div className="itw-flow-letters" aria-hidden="true">
+            {["📄", "🌿", "🌳", "💬", "💭", "🔔"].map((sym, i) => (
+              <span key={i} style={{ animationDelay: `${i * 0.45}s` }}>{sym}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {step === "instructions" && (
+        <div className="itw-flow-page itw-flow-narrow" key="instructions">
+          <h2 className="itw-flow-title itw-center">Before you begin Run 1</h2>
+          <p className="itw-flow-lead itw-center">
+            You will act as a student preparing a short brief on <b>Urban Wildlife Conservation</b> in Bengaluru.
+          </p>
+          <ul className="itw-flow-list">
+            <li><span aria-hidden="true">1️⃣</span> Read the brief, check notes in adjacent tabs, and extract 2 key data points.</li>
+            <li><span aria-hidden="true">2️⃣</span> Select an evidence-based conservation policy and submit the assignment.</li>
+            <li><span aria-hidden="true">🌿</span> In this first run, your digital environment is completely quiet and uninterrupted.</li>
+          </ul>
+
+          <div style={{ margin: "24px 0", background: "var(--itw-panel)", padding: 18, borderRadius: 16, border: "1px solid var(--itw-border)" }}>
+            <div style={{ fontWeight: 800, fontSize: 15, marginBottom: 8, color: "var(--itw-text)" }}>
+              Choose Interruption Pacing for Run 2:
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+              {[
+                { id: "gentle", label: "Gentle", desc: "Longer intervals between pings" },
+                { id: "moderate", label: "Moderate", desc: "Realistic everyday pacing" },
+                { id: "complex", label: "Intense", desc: "Rapid competing stimuli" },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setIntensity(opt.id)}
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: 12,
+                    border: `2px solid ${intensity === opt.id ? "var(--itw-adhd)" : "var(--itw-border)"}`,
+                    background: intensity === opt.id ? "rgba(140, 101, 32, 0.12)" : "var(--itw-panel-2)",
+                    color: "var(--itw-text)",
+                    cursor: "pointer",
+                    textAlign: "center",
+                    font: "inherit",
+                  }}
+                >
+                  <div style={{ fontWeight: 800, fontSize: 14 }}>{opt.label}</div>
+                  <div style={{ fontSize: 11, color: "var(--itw-muted)", marginTop: 2 }}>{opt.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <p className="itw-flow-note itw-center">
+            This activity is an educational demonstration of cognitive load and environmental scaffolding. Individual ADHD profiles vary widely and cannot be measured by a computer task.
+          </p>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_baseline")}>
+              Start Run 1 (Quiet) →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_baseline" && (
+        <div className="itw-flow-page" key="run_baseline">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Run 1: Quiet Assignment Preparation</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>Notice the rhythm of work when nothing competes for your attention.</p>
+          </div>
+          <AdhdWorkspaceSim mode="baseline" onComplete={handleBaselineComplete} onAbort={() => setStep("instructions")} />
+        </div>
+      )}
+
+      {step === "interrupted_intro" && (
+        <div className="itw-flow-page itw-flow-narrow" key="interrupted_intro">
+          <h2 className="itw-flow-title itw-center">Now, Run 2: Competing Pulls on Focus</h2>
+          <p className="itw-flow-lead itw-center">
+            {results.baseline
+              ? `You finished the quiet run in ${results.baseline.time.toFixed(1)} seconds.`
+              : "Great start."}
+            {" "}Now, attempt the assignment under everyday conditions where notifications, chat pings, and internal thoughts compete for attention.
+          </p>
+          <ul className="itw-flow-list">
+            <li><span aria-hidden="true">🔔</span> Notification toasts and group chat pings will appear around your workspace.</li>
+            <li><span aria-hidden="true">💭</span> Associative wandering thoughts may tempt you to branch into side tabs.</li>
+            <li><span aria-hidden="true">🧠</span> Notice how much cognitive effort is spent re-orienting back to where you left off.</li>
+          </ul>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("run_baseline")}>Back to Run 1</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_interrupted")}>
+              Start Run 2 (Competing Pulls) →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_interrupted" && (
+        <div className="itw-flow-page" key="run_interrupted">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Run 2: Competing Pulls on Attention</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>Prepare and submit your brief while managing unexpected interruptions.</p>
+          </div>
+          <AdhdWorkspaceSim
+            mode="interrupted"
+            intensity={intensity}
+            onComplete={handleInterruptedComplete}
+            onAbort={() => setStep("interrupted_intro")}
+          />
+        </div>
+      )}
+
+      {step === "reflect" && (
+        <div className="itw-flow-page itw-flow-narrow" key="reflect">
+          <h2 className="itw-flow-title itw-center">What did you observe about your attention?</h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 16,
+              margin: "24px 0",
+              background: "var(--itw-panel)",
+              padding: 20,
+              borderRadius: 20,
+              border: "1px solid var(--itw-border)",
+            }}
+          >
+            <div style={{ textAlign: "center", padding: 12 }}>
+              <div style={{ fontSize: 13, textTransform: "uppercase", color: "var(--itw-muted)", fontWeight: 700 }}>
+                Run 1 (Quiet)
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-text)", margin: "8px 0" }}>
+                {results.baseline ? `${results.baseline.time.toFixed(1)}s` : "—"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>0 interruptions</div>
+            </div>
+            <div style={{ textAlign: "center", padding: 12, borderLeft: "1px solid var(--itw-border)" }}>
+              <div style={{ fontSize: 13, textTransform: "uppercase", color: "var(--itw-adhd)", fontWeight: 700 }}>
+                Run 2 (Competing Pulls)
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-adhd)", margin: "8px 0" }}>
+                {results.interrupted ? `${results.interrupted.time.toFixed(1)}s` : "—"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+                {results.interrupted ? `${results.interrupted.distractionsDismissed} dismissed • ${results.interrupted.distractionsDeferred || 0} snoozed • ${results.interrupted.tangentsExplored} tangents` : "—"}
+              </div>
+            </div>
+          </div>
+
+          <p className="itw-flow-lead" style={{ fontSize: 16, lineHeight: 1.6 }}>
+            {results.baseline && results.interrupted && results.interrupted.time > results.baseline.time
+              ? `In this round, interruptions and competing stimuli changed your task time by ${(results.interrupted.time - results.baseline.time).toFixed(1)} seconds. Recovering focus after each distraction required re-orienting to the task sequence. Breaking tasks into smaller steps or reducing non-essential interruptions may help in some contexts. This task is an observation of external distractions and scaffolding, not an ADHD test.`
+              : "In this round, interruptions changed your task time. Recovering focus after each distraction required re-orienting to the task sequence. Breaking tasks into smaller steps or reducing non-essential interruptions may help in some contexts. This task is an observation of external distractions, not an ADHD test."}
+          </p>
+
+          <FlowQuestions
+            questions={ADHD_REFLECT_QS}
+            answers={reflectionAnswers}
+            onPick={(qi, oi) => {
+              setReflectionAnswers((prev) => {
+                const next = [...prev];
+                next[qi] = oi;
+                return next;
+              });
+            }}
+          />
+
+          <div className="itw-flow-nav" style={{ marginTop: 24 }}>
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("run_interrupted")}>
+              Re-run Task
+            </button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("support")}>
+              Try an Environmental Support →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "support" && (
+        <div className="itw-flow-page itw-flow-narrow" key="support">
+          <h2 className="itw-flow-title itw-center">Change the environment: Try a support</h2>
+          <p className="itw-flow-lead itw-center">
+            Children with ADHD do not lack willpower — they thrive when the environment provides executive scaffolding. Choose an accommodation below to test its impact:
+          </p>
+          <div style={{ display: "grid", gap: 14, margin: "24px 0" }}>
+            {ADHD_SUPPORT_CHOICES.map((s) => (
+              <label
+                key={s.id}
+                style={{
+                  display: "block",
+                  padding: "16px 20px",
+                  borderRadius: 18,
+                  border: `2px solid ${chosenSupport === s.id ? "var(--itw-adhd)" : "var(--itw-border)"}`,
+                  background: chosenSupport === s.id ? "rgba(140, 101, 32, 0.08)" : "var(--itw-panel)",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
               >
-                {opt}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      textTransform: "uppercase",
+                      fontWeight: 800,
+                      letterSpacing: "0.06em",
+                      padding: "3px 10px",
+                      borderRadius: 99,
+                      background: "var(--itw-panel-2)",
+                      color: "var(--itw-muted)",
+                    }}
+                  >
+                    {s.tag}
+                  </span>
+                </div>
+                <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
+                <input
+                  type="radio"
+                  name="adhd-support"
+                  value={s.id}
+                  checked={chosenSupport === s.id}
+                  onChange={() => setChosenSupport(s.id)}
+                  style={{ display: "none" }}
+                />
+              </label>
+            ))}
+          </div>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("reflect")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_supported")}>
+              Run with Support →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_supported" && (
+        <div className="itw-flow-page" key="run_supported">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Run 3: Supported by {ADHD_SUPPORT_CHOICES.find((s) => s.id === chosenSupport)?.title}</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>
+              {chosenSupport === "checklist" && "A high-contrast sidebar checklist anchors working memory and step progress."}
+              {chosenSupport === "filter" && "Focus Shield has muted external notification popups to protect unbroken flow."}
+              {chosenSupport === "chunking" && "Task Chunking isolates only the immediate next action to prevent overwhelm."}
+            </p>
+          </div>
+          <AdhdWorkspaceSim
+            mode="supported"
+            supportType={chosenSupport}
+            onComplete={handleSupportedComplete}
+            onAbort={() => setStep("support")}
+          />
+        </div>
+      )}
+
+      {step === "explain" && (
+        <div className="itw-flow-page itw-flow-narrow" key="explain">
+          <h2 className="itw-flow-title itw-center">What this means in everyday life</h2>
+          <p className="itw-flow-lead itw-center">
+            {results.supported && results.interrupted
+              ? `Supported time was ${results.supported.time.toFixed(1)}s (versus ${results.interrupted.time.toFixed(1)}s when unfiltered). Environmental accommodations create immediate, measurable reductions in cognitive friction.`
+              : "Environmental scaffolding makes immediate, tangible differences in attention regulation."}
+          </p>
+
+          <div className="itw-flow-explain" style={{ margin: "24px 0" }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: "var(--itw-text)" }}>
+              Understanding Attention Regulation
+            </h3>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--itw-text)", marginBottom: 16 }}>
+              ADHD is not a lack of intelligence or discipline — it is a neurodevelopmental difference in the dopamine
+              pathways of the brain’s frontal lobe, which regulates executive functions such as working memory,
+              prioritization, and filtering irrelevant stimulation.
+            </p>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--itw-text)", marginBottom: 16 }}>
+              Not every person with ADHD experiences constant distracting thoughts or physical restlessness. ADHD manifests across
+              diverse executive-function profiles: some individuals experience inattentive presentations with low task initiation
+              unless external novelty is present; others experience intense hyperfocus on stimulating topics while struggling with
+              mundane transitions; still others experience verbal or physical impulsivity. Understanding these heterogeneous profiles
+              avoids the misconception that ADHD is simply &ldquo;having a chaotic mind&rdquo;.
+            </p>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--itw-text)" }}>
+              When an environment is rich in unexpected pings, movements, or clutter, an ADHD nervous system treats
+              nearly all inputs with equal urgency. Accommodations that structure the visual field, provide clear
+              checkpoints, and allow physical movement preserve cognitive energy for actual learning.
+            </p>
+          </div>
+
+          <div style={{ margin: "28px 0" }}>
+            <div className="itw-block-label" style={{ marginBottom: 12 }}>Indian Prevalence &amp; Clinical Context</div>
+            <FactsGrid
+              facts={[
+                {
+                  num: "~6.3%",
+                  label: "pooled prevalence (63.2 per 1,000 children; 95% CI: 4.9%–7.7%) across 19 Indian studies, with wide variation across diagnostic tools and regions",
+                  src: "Chauhan et al. (2022), Systematic Review & Meta-Analysis (19 Indian studies)",
+                },
+                {
+                  num: "7.1%",
+                  label: "pooled prevalence reported in an earlier meta-analysis of 14 Indian studies (20,143 children/adolescents; 95% CI: 5.1%–9.8%)",
+                  src: "Joseph & Devu (2019), Systematic Review & Meta-Analysis (14 studies)",
+                },
+                {
+                  num: "1.3% – 28.9%",
+                  label: "range across individual regional Indian cohorts, reflecting differing screening cutoffs and clinical diagnostic criteria",
+                  src: "Indian Psychiatric Society Review of Epidemiological Studies",
+                },
+              ]}
+              note="ADHD is an executive function difference, not a measure of character or intelligence. Variations across Indian reviews reflect differing screening tools, diagnostic criteria, and age bands. Scaffolding like chunking and visual anchors helps students engage their true abilities."
+              onComplete={() => {}}
+            />
+          </div>
+
+          <div style={{ margin: "32px 0" }}>
+            <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 14, color: "var(--itw-text)" }}>
+              Actionable Strategies That Help
+            </h3>
+            <StrategyTabs
+              home={[
+                "Break homework into small, numbered checklists (1 to 3 items) rather than broad open-ended directions.",
+                "Use a visual analogue timer (like a Time Timer) so elapsed time is visible rather than abstract.",
+                "Build in physical movement breaks between assignments — dopamine and motor activity are deeply linked.",
+                "Keep homework desks visually uncluttered with only the immediate book or notebook in view.",
+              ]}
+              classroom={[
+                "Provide seating near the front or away from high-traffic doors and windows as a supportive default.",
+                "Chunk assignments into milestone checkpoints with immediate, gentle feedback.",
+                "Permit unobtrusive fidget tools or flexible seating — physical movement often anchors auditory focus.",
+                "Give explicit transition warnings 2 minutes before changing tasks or subjects.",
+              ]}
+            />
+          </div>
+
+          <div className="itw-flow-nav" style={{ marginTop: 32 }}>
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("instructions")}>
+              Try ADHD flow again
+            </button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("next")}>
+              Next Steps →
+            </button>
+          </div>
+          <HelpFooter />
+        </div>
+      )}
+
+      {step === "next" && (
+        <div className="itw-flow-page itw-flow-narrow" key="next">
+          <h2 className="itw-flow-title itw-center">Scaffolding transforms potential into achievement</h2>
+          <p className="itw-flow-lead itw-center">
+            When we provide external structure and reduce unnecessary friction, children with ADHD can harness their deep creativity and problem-solving abilities.
+          </p>
+          <div className="itw-flow-nav itw-flow-nav-center">
+            <a className="itw-cta itw-cta-dark" href="/assessments">Take an Assessment →</a>
+            <a className="itw-cta itw-cta-line" href="/consult">Book a Consultation →</a>
+          </div>
+          <h3 className="itw-flow-h3">Explore More Experiences</h3>
+          <div className="itw-flow-more">
+            {more.map((m) => (
+              <button
+                type="button"
+                key={m.key}
+                className="itw-flow-more-card"
+                data-m={m.key}
+                onClick={() => onNavigate(m.key)}
+              >
+                <b>{m.name}</b>
+                <span>{m.tag}</span>
+                <i aria-hidden="true">→</i>
               </button>
             ))}
           </div>
+          <div className="itw-flow-nav itw-flow-nav-center">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("explain")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-line" onClick={onBack}>All experiences</button>
+          </div>
         </div>
-      ))}
-      <button
-        className="itw-btn-primary"
-        disabled={!allAnswered}
-        onClick={() => {
-          const correct = answers.filter((a, i) => a === COMPREHENSION_QUESTIONS[i].correct).length;
-          onSubmit(correct);
-        }}
-      >
-        Check my answers
-      </button>
-    </div>
+      )}
+    </section>
   );
 }
 
-function DyslexiaSim() {
-  const { soundOn } = useContext(SettingsContext);
-  const [mode, setMode] = useState("typical");
-  const [chars, setChars] = useState(() => READING_TEXT.split(""));
-  const [readout, setReadout] = useState("Timer will start once you pick a view.");
-  const [awaitingQuiz, setAwaitingQuiz] = useState(false);
-  const [rating, setRating] = useState(null);
-  const timesRef = useRef({ typical: null, simulated: null });
-  const readStartRef = useRef(performance.now());
-  const intervalRef = useRef(null);
-  const finishedModeRef = useRef(null);
 
-  useEffect(() => {
-    clearInterval(intervalRef.current);
-    setRating(null);
-    setAwaitingQuiz(false);
-    if (mode === "simulated") {
-      intervalRef.current = setInterval(() => {
-        let swapped = false;
-        setChars(
-          READING_TEXT.split("").map((orig) => {
-            const lower = orig.toLowerCase();
-            if (SWAP_PAIRS[lower] && Math.random() < 0.35) {
-              swapped = true;
-              const s = SWAP_PAIRS[lower];
-              return orig === lower ? s : s.toUpperCase();
-            }
-            return orig;
-          })
-        );
-        if (swapped && soundOn) audio.noiseBurst({ duration: 0.05, gain: 0.03, filterFreq: 3200 });
-      }, 700);
-      setReadout("Simulated view — timer running…");
-    } else {
-      setChars(READING_TEXT.split(""));
-      setReadout("Typical view — timer running…");
-    }
-    readStartRef.current = performance.now();
-    return () => clearInterval(intervalRef.current);
-  }, [mode, soundOn]);
+/* ================= DYSLEXIA: 12-PASSAGE LIBRARY (6 MATCHED PAIRS) ================= */
 
-  const finishReading = () => {
-    const t = (performance.now() - readStartRef.current) / 1000;
-    clearInterval(intervalRef.current);
-    timesRef.current[mode] = t;
-    finishedModeRef.current = { mode, t };
-    if (soundOn) audio.tone({ freq: 480, type: "sine", duration: 0.2, gain: 0.1 });
-    setReadout(
-      `${t.toFixed(1)}s in ${mode} view. Now answer a few quick questions on what you just read.`
-    );
-    setAwaitingQuiz(true);
-  };
+const DYSLEXIA_PASSAGE_PAIRS = [
+  {
+    pairId: "monsoon_rainwater",
+    pairTopic: "Monsoon Rainwater Harvesting",
+    passageA: {
+      passageId: "pair1_rainwater_harvest_a",
+      title: "Maya's Terrace Rainwater Pots",
+      wordCount: 107,
+      sentenceCount: 5,
+      text: "Maya watched the gray monsoon clouds gather above the bustling streets of Bengaluru before the sudden evening downpour arrived. Her grandfather carried three wide terracotta pots up to the open terrace to harvest the clean freshwater runoff from their sloping tin roof. Cool water gushed down the bamboo pipe, filling each clay jar to the brim in less than twenty minutes of steady rain. Maya scooped a polished brass tumbler of harvested water to refresh the fragrant tulsi and coriander flourishing in their balcony kitchen garden. She recorded the evening water level in her school nature journal before settling beside the window with a warm mug of spiced ginger tea.",
+      questions: [
+        {
+          q: "What did Maya's grandfather carry to the terrace?",
+          options: ["Metal storage tanks", "Three wide terracotta pots", "Plastic buckets and hoses"],
+          correct: 1,
+        },
+        {
+          q: "How long did it take for the jars to fill during the steady rain?",
+          options: ["Nearly two hours", "Less than twenty minutes", "All through the night"],
+          correct: 1,
+        },
+        {
+          q: "What did Maya write in her school nature journal before tea?",
+          options: ["The evening water level", "A poem about thunder", "Her homework answers"],
+          correct: 0,
+        },
+      ],
+    },
+    passageB: {
+      passageId: "pair1_rainwater_harvest_b",
+      title: "Aarav's Well Recharge Pit",
+      wordCount: 108,
+      sentenceCount: 5,
+      text: "Aarav checked the nylon mesh filter over the courtyard drainage pipe just as thunder echoed across the Chennai neighbourhood. His family had installed an underground recharge pit lined with coarse gravel and river sand to channel rain back into the dried well. Within minutes, clean sheets of storm runoff cascaded down the tiled verandah, swirling through the pebble layers into the dark sandy reservoir. Aarav held a flashlight close to the inspection hatch, watching the rising water level steadily replenish the deep family well. He noted the filter condition on the wall chart so his uncle could inspect the sediment trap before the next storm system swept inland.",
+      questions: [
+        {
+          q: "What was the underground recharge pit lined with to filter the rain?",
+          options: ["Charcoal briquettes and clay", "Concrete blocks and cloth", "Coarse gravel and river sand"],
+          correct: 2,
+        },
+        {
+          q: "Where did the storm runoff cascade from before entering the pebble layers?",
+          options: ["The roadside ditch", "The tiled verandah", "The kitchen sink"],
+          correct: 1,
+        },
+        {
+          q: "Why did Aarav write a note on the wall chart?",
+          options: ["To remind his uncle to inspect the sediment trap", "To ask for pocket money", "To cancel school next morning"],
+          correct: 0,
+        },
+      ],
+    },
+  },
+  {
+    pairId: "terrace_garden",
+    pairTopic: "Terrace Garden & Pollinators",
+    passageA: {
+      passageId: "pair2_terrace_garden_a",
+      title: "Priya's Heirloom Seedlings",
+      wordCount: 101,
+      sentenceCount: 5,
+      text: "Priya stepped onto the sunny terrace garden early Saturday morning carrying a wooden crate of red earthenware seedling pots. Her grandmother had carefully saved heirloom tomato seeds from last summer in a folded square of clean muslin cloth. Together they scooped dark compost made from dried neem leaves and vegetable peelings into each round pot, pressing the damp soil down gently. A pair of bright yellow butterflies fluttered around the blooming marigolds, brushing pollen across the delicate golden flower heads. Priya marked each ceramic pot with a small wooden popsicle stick so she would remember where the cherry tomatoes were planted.",
+      questions: [
+        {
+          q: "What had Priya's grandmother saved inside a folded square of clean muslin cloth?",
+          options: ["Dried chili peppers", "Heirloom tomato seeds", "Fresh flower petals"],
+          correct: 1,
+        },
+        {
+          q: "What ingredients were used to make the dark compost for the pots?",
+          options: ["Dried neem leaves and vegetable peelings", "River mud and wood chips", "Chemical fertilizer granules"],
+          correct: 0,
+        },
+        {
+          q: "How did Priya label the ceramic pots so she would remember where the tomatoes were?",
+          options: ["With painted river pebbles", "With colorful chalk markers", "With small wooden popsicle sticks"],
+          correct: 2,
+        },
+      ],
+    },
+    passageB: {
+      passageId: "pair2_terrace_garden_b",
+      title: "Rohan's Rooftop Greenhouse",
+      wordCount: 99,
+      sentenceCount: 5,
+      text: "Rohan climbed the spiral staircase leading to their rooftop greenhouse with a green watering can balanced carefully in his hands. Three honeybees hummed busily inside the bell-shaped white blossoms of the bell pepper vines strung along the south wall. He gently checked the drip irrigation tubing connected to their recycled blue drum to ensure each seedling received equal moisture. A small green caterpillar was quietly nibbling on a mint leaf, so Rohan lifted it onto a nearby jasmine branch instead. Satisfied that every plant was healthy, he recorded the morning temperature on the chalkboard hanging beside the terrace door.",
+      questions: [
+        {
+          q: "Where were the bell pepper vines strung inside the rooftop greenhouse?",
+          options: ["Over the metal roof rafters", "Along the south wall", "Inside plastic hanging baskets"],
+          correct: 1,
+        },
+        {
+          q: "What did Rohan do when he found a small green caterpillar on a mint leaf?",
+          options: ["He moved it onto a nearby jasmine branch", "He gently washed it down the drain", "He left it to eat the whole leaf"],
+          correct: 0,
+        },
+        {
+          q: "What did Rohan record on the chalkboard hanging beside the terrace door?",
+          options: ["The number of ripe tomatoes", "His daily watering schedule", "The morning temperature"],
+          correct: 2,
+        },
+      ],
+    },
+  },
+  {
+    pairId: "lake_birds",
+    pairTopic: "Wetlands & Bird Sanctuary",
+    passageA: {
+      passageId: "pair3_lake_birds_a",
+      title: "Vedant at Vedanthangal Sanctuary",
+      wordCount: 99,
+      sentenceCount: 5,
+      text: "Vedant adjusted the focus wheel on his father's binoculars while standing quietly on the wooden watchtower overlooking Vedanthangal bird sanctuary. Hundreds of painted storks nested among the submerged acacia branches, their pink and white feathers gleaming against the calm silver lake. A mother stork returned to her twig nest with a tiny silver fish caught from the shallow marsh waters below. Vedant sketched the curved black bill and long yellow legs of a spoonbill foraging through the floating water hyacinths. As evening mist settled across the wetlands, the park guide signaled that the viewing platform would close for the night.",
+      questions: [
+        {
+          q: "What kind of trees were the painted storks nesting in across the lake?",
+          options: ["Tall eucalyptus trees", "Submerged acacia branches", "Old banyan branches"],
+          correct: 1,
+        },
+        {
+          q: "What did the mother stork carry back to her twig nest?",
+          options: ["A tiny silver fish", "A bundle of soft green moss", "A freshwater snail"],
+          correct: 0,
+        },
+        {
+          q: "What bird did Vedant sketch as it foraged through the water hyacinths?",
+          options: ["A kingfisher", "A pelican", "A spoonbill"],
+          correct: 2,
+        },
+      ],
+    },
+    passageB: {
+      passageId: "pair3_lake_birds_b",
+      title: "Ananya at Pulicat Lagoon",
+      wordCount: 102,
+      sentenceCount: 5,
+      text: "Ananya stood beside the wooden railing at the Pulicat lagoon watching a flock of greater flamingos wading in shallow salt water. Their long curved necks swept back and forth through the muddy bottom, filtering microscopic pink algae through their bristled black bills. A sudden flock of black-winged stilts took flight nearby, their slender pink legs trailing gracefully through the cool morning breeze. Ananya counted forty-two flamingos resting on the sandbar before noting their feeding patterns in her wildlife observation field binder. When the fishing boats started their quiet morning run across the inlet, she packed her spotting scope into its canvas carrying bag.",
+      questions: [
+        {
+          q: "What were the flamingos filtering from the muddy bottom of the lagoon?",
+          options: ["Small water beetles", "Microscopic pink algae", "River reeds and seeds"],
+          correct: 1,
+        },
+        {
+          q: "How many flamingos did Ananya count resting on the sandbar?",
+          options: ["Twenty-five", "Forty-two", "Sixty-four"],
+          correct: 1,
+        },
+        {
+          q: "What prompted Ananya to pack her spotting scope into its canvas bag?",
+          options: ["Fishing boats starting their morning run", "A sudden heavy rainstorm", "The noon heat becoming too strong"],
+          correct: 0,
+        },
+      ],
+    },
+  },
+  {
+    pairId: "science_fair",
+    pairTopic: "School Science Exhibition",
+    passageA: {
+      passageId: "pair4_science_fair_a",
+      title: "Diya's Solar Cooker Model",
+      wordCount: 97,
+      sentenceCount: 5,
+      text: "Diya secured the cardboard solar cooker model onto the demonstration table in the crowded middle school auditorium. She had lined an old shoebox with shiny aluminum foil and fitted a black metal pan inside to absorb heat efficiently. When the judges stopped at her table, Diya placed a thermometer under the transparent plastic lid to demonstrate the greenhouse effect. Within fifteen minutes under the bright overhead halogen light, the interior air temperature rose by eight degrees Celsius. The head judge praised her clear presentation and asked how local farmers could scale the design for drying organic spices.",
+      questions: [
+        {
+          q: "What did Diya use to line the inside of the shoebox solar cooker?",
+          options: ["Dark brown wax paper", "Silver spray paint", "Shiny aluminum foil"],
+          correct: 2,
+        },
+        {
+          q: "How much did the temperature inside the cooker rise under the halogen lamp?",
+          options: ["By eight degrees Celsius", "By twenty degrees Celsius", "By two degrees Celsius"],
+          correct: 0,
+        },
+        {
+          q: "What practical question did the head judge ask Diya about her design?",
+          options: ["How much the materials cost to buy", "How farmers could scale it for drying spices", "Whether it could bake bread outdoors"],
+          correct: 1,
+        },
+      ],
+    },
+    passageB: {
+      passageId: "pair4_science_fair_b",
+      title: "Kabir's Hydraulic Crane",
+      wordCount: 103,
+      sentenceCount: 5,
+      text: "Kabir adjusted the brass balance weights on his tabletop hydraulic crane during the annual district science exhibition. He had linked two large plastic medical syringes with clear silicone tubing filled with dyed blue water to illustrate fluid pressure. When he pushed the primary syringe plunger inward, the hydraulic arm lifted a small brass block smoothly off the pine baseboard. Several younger students gathered around his display booth to try moving the lever and measuring the distance lifted on a millimeter ruler. Kabir explained how real excavators use the same hydraulic physics to move tons of earth during railway construction projects across India.",
+      questions: [
+        {
+          q: "What was the clear silicone tubing on Kabir's crane model filled with?",
+          options: ["Compressed air", "Dyed blue water", "Light mineral oil"],
+          correct: 1,
+        },
+        {
+          q: "What happened when Kabir pushed the primary syringe plunger inward?",
+          options: ["The arm lifted a small brass block smoothly", "Water leaked out of the tube", "The pine baseboard tilted"],
+          correct: 0,
+        },
+        {
+          q: "What real-world machine did Kabir compare his hydraulic crane demonstration to?",
+          options: ["Large wind turbine blades", "Automated car assembly robots", "Heavy excavators used in railway construction"],
+          correct: 2,
+        },
+      ],
+    },
+  },
+  {
+    pairId: "pottery_craft",
+    pairTopic: "Artisan Workshops & Craft",
+    passageA: {
+      passageId: "pair5_pottery_craft_a",
+      title: "Meera at Kumbharwada",
+      wordCount: 101,
+      sentenceCount: 5,
+      text: "Meera sat on a low wooden stool beside the electric pottery wheel in her uncle's busy Kumbharwada workshop. She centered a smooth mound of moist river clay between her cupped palms as the spinning wheel hummed rhythmically. Pressing her thumbs firmly into the exact center, she slowly drew the rising clay walls upward into a slender terracotta vase. Her uncle handed her a wet sponge to smooth out the rim before slicing the base free with a thin copper wire. They carried the finished vase out to the shaded courtyard where dozens of drying pots rested under warm afternoon sunlight.",
+      questions: [
+        {
+          q: "What was the pottery wheel made of or how was it powered?",
+          options: ["A wooden foot-pedal wheel", "An electric pottery wheel", "A hand-turned stone disk"],
+          correct: 1,
+        },
+        {
+          q: "What tool did Meera's uncle hand her to slice the base of the vase free from the wheel?",
+          options: ["A thin copper wire", "A sharp wooden spatula", "A metal kitchen knife"],
+          correct: 0,
+        },
+        {
+          q: "Where were the finished pots placed to dry?",
+          options: ["Inside a brick kiln", "On the rooftop water tank", "In the shaded courtyard"],
+          correct: 2,
+        },
+      ],
+    },
+    passageB: {
+      passageId: "pair5_pottery_craft_b",
+      title: "Dev at the Textile Studio",
+      wordCount: 96,
+      sentenceCount: 5,
+      text: "Dev pressed carved wooden printing blocks into a dish of natural indigo dye inside the Jaipur textile studio. He aligned the brass registration pins carefully against the selvedge of a long roll of handwoven cream khadi cotton. With two firm taps of his wooden mallet, the intricate floral motif transferred cleanly onto the stretched damp fabric. His master printer examined the sharpness of the blue lines and praised the consistent pressure across every stamped petal. Together they draped the five-meter stamped runner over bamboo poles suspended from the ceiling to dry in the warm breeze.",
+      questions: [
+        {
+          q: "What type of dye was Dev using for his woodblock printing?",
+          options: ["Synthetic acrylic paint", "Natural indigo dye", "Turmeric yellow extract"],
+          correct: 1,
+        },
+        {
+          q: "What tool did Dev tap against the wooden block to transfer the pattern?",
+          options: ["A rubber hammer", "A wooden mallet", "His bare hand"],
+          correct: 1,
+        },
+        {
+          q: "How was the finished fabric hung to dry?",
+          options: ["Over bamboo poles suspended from the ceiling", "Stretched flat on outdoor grass", "Inside an electric drying machine"],
+          correct: 0,
+        },
+      ],
+    },
+  },
+  {
+    pairId: "train_journey",
+    pairTopic: "Scenic Indian Railways",
+    passageA: {
+      passageId: "pair6_train_journey_a",
+      title: "Arjun on the Nilgiri Mountain Railway",
+      wordCount: 108,
+      sentenceCount: 5,
+      text: "Arjun pulled down the tinted glass window of the Nilgiri Mountain Railway coach as the vintage diesel engine chugged up the steep grade. Fragrant pine mist drifted through the carriage, carrying the fresh scent of wild mountain eucalyptus and damp tea plantations. The train crawled across a high stone viaduct spanning a roaring waterfall that cascaded hundreds of feet into the gorge below. A troop of bonnet macaques sat on the mossy rock ledge, watching the passengers with curious amber eyes as the whistle blew. Arjun took a sip of hot cardamom tea from his steel flask just as the train entered a curved stone tunnel.",
+      questions: [
+        {
+          q: "What scent drifted into the carriage as the mountain train climbed the grade?",
+          options: ["Roasted peanuts and dry dust", "Wild mountain eucalyptus and damp tea plantations", "Ocean breeze and salt spray"],
+          correct: 1,
+        },
+        {
+          q: "What structure did the train cross over a roaring waterfall?",
+          options: ["A high stone viaduct", "A swinging rope bridge", "A modern steel truss bridge"],
+          correct: 0,
+        },
+        {
+          q: "What kind of tea was Arjun drinking from his steel flask?",
+          options: ["Sweet lemon iced tea", "Plain green herbal tea", "Hot cardamom tea"],
+          correct: 2,
+        },
+      ],
+    },
+    passageB: {
+      passageId: "pair6_train_journey_b",
+      title: "Kavya along the Konkan Coast",
+      wordCount: 102,
+      sentenceCount: 5,
+      text: "Kavya watched the lush coconut palms sway in the wind as the Konkan express swept past the quiet backwaters of coastal Kerala. Traditional wooden houseboats drifted along the emerald canals, their woven bamboo roofs framed against the bright blue tropical sky. At the village railway station, vendors carried wicker baskets filled with warm spiced banana fritters wrapped in fresh green leaves. Her mother bought a steaming packet to share while Kavya unfolded the regional tourist map to trace their route toward Kochi. The afternoon light cast long golden reflections across the water as the train accelerated smoothly along the coastal track.",
+      questions: [
+        {
+          q: "What kind of boats were drifting along the emerald canals outside the train window?",
+          options: ["Traditional wooden houseboats with woven bamboo roofs", "Speedboats with modern outboard motors", "White canvas sailboats"],
+          correct: 0,
+        },
+        {
+          q: "What snack did the vendors sell in wicker baskets at the station?",
+          options: ["Roasted corn on the cob", "Warm spiced banana fritters wrapped in leaves", "Steamed rice cakes with chutney"],
+          correct: 1,
+        },
+        {
+          q: "What city were Kavya and her mother traveling toward on the regional map?",
+          options: ["Madurai", "Goa", "Kochi"],
+          correct: 2,
+        },
+      ],
+    },
+  },
+];
 
-  const submitQuiz = (correctCount) => {
-    setAwaitingQuiz(false);
-    const { mode, t } = finishedModeRef.current;
-    const { typical, simulated } = timesRef.current;
-    const comprehensionPct = Math.round((correctCount / COMPREHENSION_QUESTIONS.length) * 100);
-    const lines = [
-      `Finished the passage in ${t.toFixed(1)}s in ${mode} view, with ${correctCount} of ${COMPREHENSION_QUESTIONS.length} comprehension questions right.`,
-    ];
-    let score;
-    if (typical != null && simulated != null) {
-      const ratio = simulated / typical;
-      const speedScore = Math.max(30, Math.min(100, 100 - (ratio - 1) * 25));
-      score = Math.round(speedScore * 0.5 + comprehensionPct * 0.5);
-      lines.push(
-        `The simulated view took ${ratio.toFixed(1)}× as long as the typical one for you — a gap dyslexic readers live with on every page, not just this one passage.`
-      );
-      lines.push(
-        comprehensionPct === 100
-          ? "Full marks on comprehension, though — which is the real point: understanding was never the hard part, decoding speed was."
-          : "Reading speed and understanding are different skills — a slow, careful reader can still land every question."
-      );
-    } else {
-      score = Math.round(Math.max(40, Math.min(100, 100 - t * 2)) * 0.5 + comprehensionPct * 0.5);
-      lines.push(`Try the other view now, so the speed comparison actually means something.`);
-    }
-    setRating({ score, lines });
-  };
+function getActiveDyslexiaPairIndex() {
+  if (typeof window === "undefined") return 0;
+  try {
+    const raw = sessionStorage.getItem("itw_dys_pair_idx");
+    const idx = raw !== null ? parseInt(raw, 10) : 0;
+    return isNaN(idx) ? 0 : idx % DYSLEXIA_PASSAGE_PAIRS.length;
+  } catch {
+    return 0;
+  }
+}
 
-  return (
-    <div className="itw-sim">
-      <div className="itw-sim-instructions">
-        Read the passage, then compare how it feels in typical view versus simulated view.
-      </div>
-      <HowTo
-        steps={[
-          "Read the passage below",
-          "Click “I've finished reading”",
-          "Switch views and compare",
-        ]}
-      />
-      <div className="itw-strat-tabs" style={{ padding: "16px 18px 0" }}>
-        <button
-          className={`itw-btn-ghost${mode === "typical" ? " itw-active" : ""}`}
-          onClick={() => setMode("typical")}
-          disabled={awaitingQuiz}
-        >
-          Typical view
-        </button>
-        <button
-          className={`itw-btn-ghost${mode === "simulated" ? " itw-active" : ""}`}
-          onClick={() => setMode("simulated")}
-          disabled={awaitingQuiz}
-        >
-          Simulated view
-        </button>
-      </div>
-      <Viewfinder
-        hud={{ left: awaitingQuiz ? "PASSAGE HIDDEN" : mode === "simulated" ? "SIMULATED VIEW" : "TYPICAL VIEW", right: "" }}
-        stageStyle={{ minHeight: "auto", background: "var(--itw-panel)" }}
-      >
-        {awaitingQuiz ? (
-          <div className="itw-passage-hidden">
-            <p>The passage is hidden now — answer from what you remember, the way a real reader has to.</p>
-          </div>
-        ) : (
-          <div className={`itw-reading-passage${mode === "simulated" ? " itw-simulated" : ""}`}>
-            {chars.map((ch, i) => (
-              <span className="itw-ch" key={i} style={{ animationDelay: `${(i % 12) * 0.18}s` }}>
-                {ch}
-              </span>
-            ))}
-          </div>
-        )}
-      </Viewfinder>
-      <div className="itw-sim-controls">
-        <button className="itw-btn-primary" onClick={finishReading} disabled={awaitingQuiz}>
-          I've finished reading
-        </button>
-        <div className="itw-readout">{readout}</div>
-      </div>
-      {awaitingQuiz && <ComprehensionQuiz onSubmit={submitQuiz} />}
-      {rating && (
-        <RatingCard
-          title="What decoding that text was like"
-          lines={rating.lines}
-          onRetry={() => setRating(null)}
-          retryLabel="Keep comparing"
-        />
-      )}
-    </div>
-  );
+function advanceActiveDyslexiaPairIndex() {
+  if (typeof window === "undefined") return;
+  try {
+    const current = getActiveDyslexiaPairIndex();
+    const next = (current + 1) % DYSLEXIA_PASSAGE_PAIRS.length;
+    sessionStorage.setItem("itw_dys_pair_idx", String(next));
+  } catch {}
 }
 
 /* ================= Shared flow pieces (breadcrumb, stepper, radio questions) ================= */
@@ -2416,16 +3638,29 @@ function FlowQuestions({ questions, answers, onPick }) {
   );
 }
 
-/* ================= DYSLEXIA: 8-page flow ================= */
+/* ================= DYSLEXIA: 8-step flow ================= */
 
 const DYS_STEPS = [
   { key: "instructions", label: "Instructions" },
-  { key: "read", label: "Read" },
-  { key: "questions", label: "Questions" },
-  { key: "learn", label: "Learn" },
+  { key: "read", label: "Run 1 (Standard)" },
+  { key: "questions", label: "Check 1" },
+  { key: "result", label: "Reflect & Compare" },
+  { key: "support", label: "Choose Supports" },
+  { key: "run_supported", label: "Run 2 (Supported)" },
+  { key: "questions_supported", label: "Check 2" },
+  { key: "explain", label: "Takeaways & Data" },
 ];
-const DYS_STEP_INDEX = { instructions: 0, read: 1, questions: 2, result: 3, explain: 3, support: 3, next: 3 };
-const READ_SECONDS = 45;
+const DYS_STEP_INDEX = {
+  instructions: 0,
+  read: 1,
+  questions: 2,
+  result: 3,
+  support: 4,
+  run_supported: 5,
+  questions_supported: 6,
+  explain: 7,
+  next: 7,
+};
 
 const DYS_NOTICE = [
   { icon: "🐢", text: "Slower reading speed" },
@@ -2434,107 +3669,103 @@ const DYS_NOTICE = [
   { icon: "⏳", text: "Needing more time and support" },
 ];
 
-const DYS_SUPPORT = [
-  "Structured, multisensory teaching approaches",
-  "Clear and consistent instructions",
-  "Extra time for reading and writing",
-  "Support with decoding and comprehension",
-  "Encouragement and a positive learning environment",
+const DYS_SUPPORT_CHOICES = [
+  {
+    id: "spacing",
+    title: "Dyslexia-Friendly Letter & Line Spacing",
+    subtitle: "Expanded kerning & 2.15x line height",
+    desc: "Expands whitespace between lines and characters, reducing visual crowding and preventing line-skipping.",
+    tag: "Visual Scaffolding",
+  },
+  {
+    id: "ruler",
+    title: "Reading Ruler / Focus Line Guide",
+    subtitle: "Tinted guide overlay underneath active line",
+    desc: "Anchors visual tracking with a soft contrast highlight, preventing jumping between paragraphs.",
+    tag: "Tracking Support",
+  },
+  {
+    id: "audio",
+    title: "Multi-Modal Audio Read-Aloud",
+    subtitle: "Auditory narration accompaniment",
+    desc: "Uses speech synthesis to read the passage aloud, liberating cognitive bandwidth for meaning and comprehension.",
+    tag: "Multi-Modal Access",
+  },
 ];
 
 function DyslexiaModule({ onBack, onNavigate }) {
   const { soundOn } = useContext(SettingsContext);
-  const [step, setStep] = useState("intro"); // intro | instructions | read | questions | result | explain | support | next
-  const [mode, setMode] = useState("simulated");
-  const [chars, setChars] = useState(() => READING_TEXT.split(""));
-  const [timeLeft, setTimeLeft] = useState(READ_SECONDS);
-  const [answers, setAnswers] = useState(() => Array(COMPREHENSION_QUESTIONS.length).fill(null));
-  const [lines, setLines] = useState([]);
-  const timesRef = useRef({ typical: null, simulated: null });
-  const lastRef = useRef(null);
+  const [pairIndex] = useState(() => getActiveDyslexiaPairIndex());
+  const activePair = DYSLEXIA_PASSAGE_PAIRS[pairIndex % DYSLEXIA_PASSAGE_PAIRS.length];
+
+  const [step, setStep] = useState("intro"); // intro | instructions | read | questions | result | support | run_supported | questions_supported | explain | next
+  const [elapsed, setElapsed] = useState(0);
+  const [run1Elapsed, setRun1Elapsed] = useState(0);
+  const [run1Score, setRun1Score] = useState(0);
+  const [run2Elapsed, setRun2Elapsed] = useState(0);
+  const [run2Score, setRun2Score] = useState(0);
+
+  const [answersRun1, setAnswersRun1] = useState(() => Array(3).fill(null));
+  const [answersRun2, setAnswersRun2] = useState(() => Array(3).fill(null));
+  const [chosenSupport, setChosenSupport] = useState("spacing");
+
+  // Reader toolbar controls for Run 2
+  const [fontSize, setFontSize] = useState("large"); // normal | large | xlarge
+  const [lineSpacing, setLineSpacing] = useState("relaxed"); // normal | relaxed | spacious
+  const [letterSpacing, setLetterSpacing] = useState("wide"); // normal | wide | xwide
+  const [readingRuler, setReadingRuler] = useState(true);
+  const [rulerY, setRulerY] = useState(48);
+
+  // Audio Speech Synthesis state
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+
   const startRef = useRef(0);
   const doneRef = useRef(false);
 
+  // Clean up speech synthesis when navigating away or unmounting
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
+    if (step !== "run_supported") {
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        queueMicrotask(() => {
+          setIsSpeaking(false);
+          setIsPaused(false);
+        });
+      }
+    }
   }, [step]);
 
-  const finishReading = () => {
+  // Live stopwatch timer for reading runs
+  useEffect(() => {
+    if (step !== "read" && step !== "run_supported") return undefined;
+    doneRef.current = false;
+    startRef.current = performance.now();
+    queueMicrotask(() => setElapsed(0));
+    const tickId = setInterval(() => {
+      const now = (performance.now() - startRef.current) / 1000;
+      setElapsed(now);
+    }, 100);
+    return () => clearInterval(tickId);
+  }, [step]);
+
+  // Finish Run 1 (Standard reading)
+  const finishRun1Reading = () => {
     if (doneRef.current) return;
     doneRef.current = true;
-    const t = Math.min(READ_SECONDS, (performance.now() - startRef.current) / 1000);
-    timesRef.current[mode] = t;
-    lastRef.current = { mode, t };
+    const t = (performance.now() - startRef.current) / 1000;
+    setRun1Elapsed(t);
     if (soundOn) audio.tone({ freq: 480, type: "sine", duration: 0.2, gain: 0.1 });
-    setAnswers(Array(COMPREHENSION_QUESTIONS.length).fill(null));
+    setAnswersRun1(Array(3).fill(null));
     setStep("questions");
   };
 
-  useEffect(() => {
-    if (step !== "read") return undefined;
-    doneRef.current = false;
-    setTimeLeft(READ_SECONDS);
-    startRef.current = performance.now();
-    let swapId = null;
-    if (mode === "simulated") {
-      swapId = setInterval(() => {
-        let swapped = false;
-        setChars(
-          READING_TEXT.split("").map((orig) => {
-            const lower = orig.toLowerCase();
-            if (SWAP_PAIRS[lower] && Math.random() < 0.35) {
-              swapped = true;
-              const s = SWAP_PAIRS[lower];
-              return orig === lower ? s : s.toUpperCase();
-            }
-            return orig;
-          })
-        );
-        if (swapped && soundOn) audio.noiseBurst({ duration: 0.05, gain: 0.03, filterFreq: 3200 });
-      }, 700);
-    } else {
-      setChars(READING_TEXT.split(""));
-    }
-    const tickId = setInterval(() => {
-      const left = READ_SECONDS - (performance.now() - startRef.current) / 1000;
-      setTimeLeft(Math.max(0, Math.ceil(left)));
-      if (left <= 0) finishReading();
-    }, 250);
-    return () => {
-      clearInterval(swapId);
-      clearInterval(tickId);
-    };
-  }, [step, mode, soundOn]);
-
-  const pick = (qi, oi) => {
-    setAnswers((prev) => {
-      const copy = [...prev];
-      copy[qi] = oi;
-      return copy;
-    });
-  };
-
-  const submit = () => {
-    const total = COMPREHENSION_QUESTIONS.length;
-    const correct = answers.filter((a, i) => a === COMPREHENSION_QUESTIONS[i].correct).length;
-    const { mode: m, t } = lastRef.current;
-    const { typical, simulated } = timesRef.current;
-    const pct = Math.round((correct / total) * 100);
-    const out = [`You read the passage in ${t.toFixed(1)}s in the ${m} view and got ${correct} of ${total} questions right.`];
-    if (typical != null && simulated != null) {
-      const ratio = simulated / typical;
-      out.push(
-        `The simulated view took ${ratio.toFixed(1)}× as long as the typical one for you — a gap dyslexic readers live with on every page, not just this one passage.`
-      );
-      out.push(
-        pct === 100
-          ? "Full marks on comprehension, though — which is the real point: understanding was never the hard part, decoding speed was."
-          : "Reading speed and understanding are different skills — a slow, careful reader can still land every question."
-      );
-    } else {
-      out.push("Try the other view next, so the speed comparison actually means something.");
-    }
-    setLines(out);
+  // Submit Check 1 (Run 1 questions)
+  const submitCheck1 = () => {
+    const questions = activePair.passageA.questions;
+    const correct = answersRun1.filter((a, i) => a === questions[i].correct).length;
+    setRun1Score(correct);
     if (soundOn) {
       audio.tone({ freq: 523, type: "sine", duration: 0.16, gain: 0.1 });
       audio.tone({ freq: 659, type: "sine", duration: 0.2, gain: 0.09, delay: 0.09 });
@@ -2542,15 +3773,95 @@ function DyslexiaModule({ onBack, onNavigate }) {
     setStep("result");
   };
 
-  const tryAgain = () => {
-    const { typical, simulated } = timesRef.current;
-    setMode(typical == null ? "typical" : simulated == null ? "simulated" : mode === "typical" ? "simulated" : "typical");
-    setStep("read");
+  // Finish Run 2 (Supported reading)
+  const finishRun2Reading = () => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    const t = (performance.now() - startRef.current) / 1000;
+    setRun2Elapsed(t);
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      setIsPaused(false);
+    }
+    if (soundOn) audio.tone({ freq: 480, type: "sine", duration: 0.2, gain: 0.1 });
+    setAnswersRun2(Array(3).fill(null));
+    setStep("questions_supported");
   };
 
-  const allAnswered = answers.every((a) => a !== null);
+  // Submit Check 2 (Run 2 questions)
+  const submitCheck2 = () => {
+    const questions = activePair.passageB.questions;
+    const correct = answersRun2.filter((a, i) => a === questions[i].correct).length;
+    setRun2Score(correct);
+    advanceActiveDyslexiaPairIndex(); // Cycle for next visit
+    if (soundOn) {
+      audio.tone({ freq: 523, type: "sine", duration: 0.16, gain: 0.1 });
+      audio.tone({ freq: 659, type: "sine", duration: 0.2, gain: 0.09, delay: 0.09 });
+    }
+    setStep("explain");
+  };
+
+  // TTS speech functions
+  const playSpeech = (text) => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.95;
+    u.onend = () => {
+      setIsSpeaking(false);
+      setIsPaused(false);
+    };
+    u.onerror = () => {
+      setIsSpeaking(false);
+      setIsPaused(false);
+    };
+    window.speechSynthesis.speak(u);
+    setIsSpeaking(true);
+    setIsPaused(false);
+  };
+
+  const pauseSpeech = () => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    window.speechSynthesis.pause();
+    setIsPaused(true);
+  };
+
+  const resumeSpeech = () => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    window.speechSynthesis.resume();
+    setIsPaused(false);
+  };
+
+  const stopSpeech = () => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+    setIsPaused(false);
+  };
+
+  // Reading ruler pointer tracking
+  const handleRulerMouseMove = (e) => {
+    if (!readingRuler) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relativeY = Math.max(12, Math.min(e.clientY - rect.top, rect.height - 48));
+    setRulerY(relativeY);
+  };
+
+  // Calculate typography styles
+  const fontSizes = { normal: "1.15rem", large: "1.32rem", xlarge: "1.55rem" };
+  const lineHeights = { normal: 1.65, relaxed: 2.15, spacious: 2.6 };
+  const letterSpacings = { normal: "normal", wide: "0.06em", xwide: "0.12em" };
+
+  const currentTypoStyle = {
+    fontSize: fontSizes[fontSize] || fontSizes.large,
+    lineHeight: lineHeights[lineSpacing] || lineHeights.relaxed,
+    letterSpacing: letterSpacings[letterSpacing] || letterSpacings.wide,
+  };
+
+  const allRun1Answered = answersRun1.every((a) => a !== null);
+  const allRun2Answered = answersRun2.every((a) => a !== null);
   const stepIndex = DYS_STEP_INDEX[step];
-  const mmss = `00:${String(timeLeft).padStart(2, "0")}`;
   const more = MODULES.filter((m) => m.key !== "dyslexia");
 
   return (
@@ -2562,16 +3873,16 @@ function DyslexiaModule({ onBack, onNavigate }) {
         <div className="itw-flow-page itw-flow-intro" key="intro">
           <div>
             <h2 className="itw-flow-title">Dyslexia</h2>
-            <div className="itw-flow-sub">Read Like I Do</div>
+            <div className="itw-flow-sub">Reading, Decoding &amp; Access to Meaning</div>
             <p className="itw-flow-lead">
-              Reading can sometimes be more effortful for children with dyslexia. Letters may look similar, words may
-              seem to move or blur, and it can be harder to keep track of lines while reading. This experience gives you
-              a small glimpse of what that might feel like.
+              Dyslexia is a language-processing difference that primarily affects phonological decoding and reading fluency.
+              It is not a vision defect or a measure of intelligence. In this experience, you will explore the mental effort
+              involved in decoding text and observe how accommodations transform the reading journey on matched passages.
             </p>
             <ul className="itw-flow-meta">
               <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
-              <li><span aria-hidden="true">🖱️</span> A simple interactive experience</li>
-              <li><span aria-hidden="true">ℹ️</span> Not a diagnostic tool</li>
+              <li><span aria-hidden="true">📖</span> Two parallel reading passages ({activePair.pairTopic})</li>
+              <li><span aria-hidden="true">ℹ️</span> An interactive learning simulation, not a clinical diagnostic tool</li>
             </ul>
             <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
               Start the Experience →
@@ -2587,20 +3898,32 @@ function DyslexiaModule({ onBack, onNavigate }) {
 
       {step === "instructions" && (
         <div className="itw-flow-page itw-flow-narrow" key="instructions">
-          <h2 className="itw-flow-title itw-center">Before you begin</h2>
-          <p className="itw-flow-lead itw-center">In the next screen, you will read a short passage and answer a few questions.</p>
-          <ul className="itw-flow-list">
-            <li><span aria-hidden="true">⏱️</span> You will have limited time.</li>
-            <li><span aria-hidden="true">🔀</span> Some words may look slightly different.</li>
-            <li><span aria-hidden="true">📏</span> It may be a little harder to keep track of the lines.</li>
-            <li><span aria-hidden="true">💛</span> Try to read and answer as best as you can.</li>
-          </ul>
-          <p className="itw-flow-note itw-center">
-            This is a simplified experience and not a diagnostic tool. Every child's experience with dyslexia is different.
+          <h2 className="itw-flow-title itw-center">Before you begin: An honest, evidence-based framing</h2>
+          <p className="itw-flow-lead itw-center">
+            In the next screen, you will read a short passage at your own pace, followed by three comprehension questions.
           </p>
+          <div
+            style={{
+              background: "rgba(240, 163, 33, 0.08)",
+              border: "1.5px solid var(--itw-dyslexia)",
+              borderRadius: 16,
+              padding: "16px 20px",
+              margin: "20px 0",
+              fontSize: 14.5,
+              lineHeight: 1.6,
+              color: "var(--itw-text)",
+            }}
+          >
+            <b>International Dyslexia Association Guidance:</b> Dyslexia is a language-based neurobiological difference in phonological processing — the brain's mechanism for mapping written symbols to spoken sounds. It is <i>not</i> an optical vision problem, and letters do not physically swap or move across the page in real life. In this activity, you will read clean, standard text at your own pace to observe how reading time and comprehension interact.
+          </div>
+          <ul className="itw-flow-list">
+            <li><span aria-hidden="true">⏱️</span> Read at your natural, comfortable pace — the task is completely untimed.</li>
+            <li><span aria-hidden="true">🧠</span> Focus on the meaning of the story; comprehension is the real goal of reading.</li>
+            <li><span aria-hidden="true">💛</span> When you are ready, click "I've finished reading".</li>
+          </ul>
           <div className="itw-flow-nav">
             <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("read")}>Start Reading</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("read")}>Start Reading →</button>
           </div>
         </div>
       )}
@@ -2608,47 +3931,53 @@ function DyslexiaModule({ onBack, onNavigate }) {
       {step === "read" && (
         <div className="itw-flow-page itw-flow-narrow" key="read">
           <div className="itw-flow-readtop">
-            <h2 className="itw-flow-title">Read the passage below</h2>
-            <div className="itw-timer" role="timer" aria-label="Time left">
-              <span>Time left</span>
-              <b>{mmss}</b>
+            <div>
+              <h2 className="itw-flow-title" style={{ margin: 0 }}>Run 1: Standard Untimed Reading</h2>
+              <span style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+                {activePair.pairTopic} • {activePair.passageA.title} ({activePair.passageA.wordCount} words)
+              </span>
+            </div>
+            <div className="itw-timer" role="status" aria-label="Reading time elapsed">
+              <span>Reading Time</span>
+              <b>{elapsed.toFixed(1)}s</b>
             </div>
           </div>
-          <div className="itw-strat-tabs" style={{ padding: "6px 0 14px" }}>
-            <button className={`itw-btn-ghost${mode === "typical" ? " itw-active" : ""}`} onClick={() => setMode("typical")}>
-              Typical view
-            </button>
-            <button className={`itw-btn-ghost${mode === "simulated" ? " itw-active" : ""}`} onClick={() => setMode("simulated")}>
-              Simulated view
-            </button>
-          </div>
+
           <Viewfinder
-            hud={{ left: mode === "simulated" ? "SIMULATED VIEW" : "TYPICAL VIEW", right: "" }}
+            hud={{ left: "STANDARD READING", right: "UNTIMED" }}
             stageStyle={{ minHeight: "auto", background: "var(--itw-panel)" }}
           >
-            <div className={`itw-reading-passage${mode === "simulated" ? " itw-simulated" : ""}`}>
-              {chars.map((ch, i) => (
-                <span className="itw-ch" key={i} style={{ animationDelay: `${(i % 12) * 0.18}s` }}>
-                  {ch}
-                </span>
-              ))}
+            <div className="itw-reading-passage" style={{ fontSize: "1.2rem", lineHeight: 1.8 }}>
+              <span>{activePair.passageA.text}</span>
             </div>
           </Viewfinder>
           <div className="itw-flow-nav">
             <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("instructions")}>Back</button>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={finishReading}>I've finished reading</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={finishRun1Reading}>I've finished reading →</button>
           </div>
         </div>
       )}
 
       {step === "questions" && (
         <div className="itw-flow-page itw-flow-narrow" key="questions">
-          <h2 className="itw-flow-title">Answer the questions</h2>
-          <p className="itw-flow-note">The passage is hidden now — answer from what you remember, the way a real reader has to.</p>
-          <FlowQuestions questions={COMPREHENSION_QUESTIONS} answers={answers} onPick={pick} />
+          <h2 className="itw-flow-title">Check 1: Comprehension Check</h2>
+          <p className="itw-flow-note">The passage is now hidden — answer based on what you remember from {activePair.passageA.title}:</p>
+          <FlowQuestions
+            questions={activePair.passageA.questions}
+            answers={answersRun1}
+            onPick={(qi, oi) => {
+              setAnswersRun1((prev) => {
+                const c = [...prev];
+                c[qi] = oi;
+                return c;
+              });
+            }}
+          />
           <div className="itw-flow-nav">
             <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("read")}>Back</button>
-            <button type="button" className="itw-cta itw-cta-dark" disabled={!allAnswered} onClick={submit}>Submit</button>
+            <button type="button" className="itw-cta itw-cta-dark" disabled={!allRun1Answered} onClick={submitCheck1}>
+              Submit Answers →
+            </button>
           </div>
         </div>
       )}
@@ -2658,19 +3987,312 @@ function DyslexiaModule({ onBack, onNavigate }) {
           <div className="itw-flow-badge" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none"><path d="M6 20V11M12 20V4M18 20v-6" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"/></svg>
           </div>
-          <h2 className="itw-flow-title">You've completed the activity!</h2>
+          <h2 className="itw-flow-title">Reflect &amp; Compare: Run 1 Observations</h2>
           <p className="itw-flow-lead">
-            <b>How did that feel?</b><br />Many people find it more challenging than expected.
+            <b>How did that feel?</b><br />Decoding strain and understanding are two distinct cognitive processes.
           </p>
           <div className="itw-flow-box">
-            <p>There are no right or wrong scores here. This experience is meant to help you understand, not to test you.</p>
-            <ul className="itw-flow-lines">
-              {lines.map((l, i) => <li key={i}>{l}</li>)}
+            <p style={{ fontWeight: 700, margin: "0 0 8px", fontSize: 16 }}>Here are your Run 1 observations:</p>
+            <ul className="itw-flow-lines" style={{ textAlign: "left", margin: 0, paddingLeft: 20 }}>
+              <li>You read the passage in <b>{run1Elapsed.toFixed(1)}s</b> and answered <b>{run1Score} of 3</b> questions correctly.</li>
+              <li>When decoding requires intense conscious effort, cognitive bandwidth is diverted away from comprehension and synthesis.</li>
+              <li>In the next step, you will test live accommodations on a fresh companion text from the same topic.</li>
             </ul>
           </div>
           <div className="itw-flow-nav itw-flow-nav-center">
-            <button type="button" className="itw-cta itw-cta-line" onClick={tryAgain}>Try Again</button>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("explain")}>Continue</button>
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("read")}>
+              Read Run 1 Again
+            </button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("support")}>
+              Try Supportive Accommodations →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "support" && (
+        <div className="itw-flow-page itw-flow-narrow" key="support">
+          <h2 className="itw-flow-title itw-center">Change the environment: Try reading accommodations</h2>
+          <p className="itw-flow-lead itw-center">
+            Children with dyslexia do not lack intelligence — they lack accommodations that mitigate decoding fatigue. Select your primary accommodation focus for Run 2:
+          </p>
+          <div style={{ display: "grid", gap: 14, margin: "24px 0" }}>
+            {DYS_SUPPORT_CHOICES.map((s) => (
+              <label
+                key={s.id}
+                style={{
+                  display: "block",
+                  padding: "16px 20px",
+                  borderRadius: 18,
+                  border: `2px solid ${chosenSupport === s.id ? "var(--itw-dyslexia)" : "var(--itw-border)"}`,
+                  background: chosenSupport === s.id ? "rgba(240, 163, 33, 0.08)" : "var(--itw-panel)",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      textTransform: "uppercase",
+                      fontWeight: 800,
+                      letterSpacing: "0.06em",
+                      padding: "3px 10px",
+                      borderRadius: 99,
+                      background: "var(--itw-panel-2)",
+                      color: "var(--itw-muted)",
+                    }}
+                  >
+                    {s.tag}
+                  </span>
+                </div>
+                <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
+                <input
+                  type="radio"
+                  name="dyslexia-support"
+                  value={s.id}
+                  checked={chosenSupport === s.id}
+                  onChange={() => {
+                    setChosenSupport(s.id);
+                    if (s.id === "spacing") {
+                      setLineSpacing("relaxed");
+                      setLetterSpacing("wide");
+                    } else if (s.id === "ruler") {
+                      setReadingRuler(true);
+                    }
+                  }}
+                  style={{ display: "none" }}
+                />
+              </label>
+            ))}
+          </div>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("result")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_supported")}>
+              Run 2 with Accommodations →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_supported" && (
+        <div className="itw-flow-page itw-flow-narrow" key="run_supported">
+          <div className="itw-flow-readtop">
+            <div>
+              <h2 className="itw-flow-title" style={{ margin: 0 }}>Run 2: Reading with Accommodations</h2>
+              <p className="itw-flow-lead" style={{ margin: "4px 0 0", fontSize: 14 }}>
+                Companion text: <b>{activePair.passageB.title}</b> ({activePair.passageB.wordCount} words)
+              </p>
+            </div>
+            <div className="itw-timer" role="status" aria-label="Supported reading time elapsed">
+              <span>Reading Time</span>
+              <b>{elapsed.toFixed(1)}s</b>
+            </div>
+          </div>
+
+          {/* Functional Accessible Reader Toolbar */}
+          <div className="itw-reader-toolbar" role="toolbar" aria-label="Reading accessibility accommodations">
+            <div className="itw-toolbar-group">
+              <span className="itw-toolbar-label">Font Size</span>
+              <div className="itw-toolbar-btn-group" role="group" aria-label="Font size options">
+                <button
+                  type="button"
+                  className={`itw-toolbar-btn${fontSize === "normal" ? " itw-active" : ""}`}
+                  onClick={() => setFontSize("normal")}
+                >
+                  A
+                </button>
+                <button
+                  type="button"
+                  className={`itw-toolbar-btn${fontSize === "large" ? " itw-active" : ""}`}
+                  onClick={() => setFontSize("large")}
+                >
+                  A+
+                </button>
+                <button
+                  type="button"
+                  className={`itw-toolbar-btn${fontSize === "xlarge" ? " itw-active" : ""}`}
+                  onClick={() => setFontSize("xlarge")}
+                >
+                  A++
+                </button>
+              </div>
+            </div>
+
+            <div className="itw-toolbar-group">
+              <span className="itw-toolbar-label">Line Spacing</span>
+              <div className="itw-toolbar-btn-group" role="group" aria-label="Line spacing options">
+                <button
+                  type="button"
+                  className={`itw-toolbar-btn${lineSpacing === "normal" ? " itw-active" : ""}`}
+                  onClick={() => setLineSpacing("normal")}
+                >
+                  1.6x
+                </button>
+                <button
+                  type="button"
+                  className={`itw-toolbar-btn${lineSpacing === "relaxed" ? " itw-active" : ""}`}
+                  onClick={() => setLineSpacing("relaxed")}
+                >
+                  2.1x
+                </button>
+                <button
+                  type="button"
+                  className={`itw-toolbar-btn${lineSpacing === "spacious" ? " itw-active" : ""}`}
+                  onClick={() => setLineSpacing("spacious")}
+                >
+                  2.6x
+                </button>
+              </div>
+            </div>
+
+            <div className="itw-toolbar-group">
+              <span className="itw-toolbar-label">Kerning</span>
+              <div className="itw-toolbar-btn-group" role="group" aria-label="Letter spacing options">
+                <button
+                  type="button"
+                  className={`itw-toolbar-btn${letterSpacing === "normal" ? " itw-active" : ""}`}
+                  onClick={() => setLetterSpacing("normal")}
+                >
+                  Standard
+                </button>
+                <button
+                  type="button"
+                  className={`itw-toolbar-btn${letterSpacing === "wide" ? " itw-active" : ""}`}
+                  onClick={() => setLetterSpacing("wide")}
+                >
+                  Wide
+                </button>
+                <button
+                  type="button"
+                  className={`itw-toolbar-btn${letterSpacing === "xwide" ? " itw-active" : ""}`}
+                  onClick={() => setLetterSpacing("xwide")}
+                >
+                  Extra Wide
+                </button>
+              </div>
+            </div>
+
+            <div className="itw-toolbar-group">
+              <button
+                type="button"
+                className={`itw-toolbar-btn${readingRuler ? " itw-active" : ""}`}
+                style={{ borderRadius: 10, padding: "7px 12px", border: "1px solid var(--itw-border)" }}
+                onClick={() => setReadingRuler(!readingRuler)}
+              >
+                {readingRuler ? "📏 Ruler: ON" : "📏 Ruler: OFF"}
+              </button>
+              {readingRuler && (
+                <div className="itw-toolbar-btn-group" role="group" aria-label="Ruler line adjust">
+                  <button
+                    type="button"
+                    className="itw-toolbar-btn"
+                    onClick={() => setRulerY((y) => Math.max(12, y - 36))}
+                    aria-label="Move reading ruler up"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    className="itw-toolbar-btn"
+                    onClick={() => setRulerY((y) => Math.min(260, y + 36))}
+                    aria-label="Move reading ruler down"
+                  >
+                    ▼
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="itw-tts-controls">
+              {!isSpeaking ? (
+                <button
+                  type="button"
+                  className="itw-tts-btn"
+                  onClick={() => playSpeech(activePair.passageB.text)}
+                >
+                  <span>🔊</span> Listen Aloud
+                </button>
+              ) : (
+                <>
+                  {!isPaused ? (
+                    <button type="button" className="itw-tts-btn itw-active" onClick={pauseSpeech}>
+                      <span>⏸</span> Pause
+                    </button>
+                  ) : (
+                    <button type="button" className="itw-tts-btn itw-active" onClick={resumeSpeech}>
+                      <span>▶</span> Resume
+                    </button>
+                  )}
+                  <button type="button" className="itw-tts-btn" onClick={stopSpeech}>
+                    <span>⏹</span> Stop
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          <Viewfinder
+            hud={{ left: "SUPPORTED READING", right: "LIVE CONTROLS" }}
+            stageStyle={{ minHeight: "auto", background: "var(--itw-panel)" }}
+          >
+            <div
+              className="itw-reading-wrapper"
+              onMouseMove={handleRulerMouseMove}
+              onTouchMove={(e) => {
+                if (!readingRuler || !e.touches[0]) return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                const relativeY = Math.max(12, Math.min(e.touches[0].clientY - rect.top, rect.height - 48));
+                setRulerY(relativeY);
+              }}
+            >
+              {readingRuler && (
+                <div
+                  className="itw-reading-ruler-bar"
+                  style={{ top: rulerY }}
+                  aria-hidden="true"
+                />
+              )}
+              <div className="itw-reading-passage" style={currentTypoStyle}>
+                <span>{activePair.passageB.text}</span>
+              </div>
+            </div>
+          </Viewfinder>
+
+          <p className="itw-flow-note" style={{ marginTop: 16 }}>
+            When layout, spacing, ruler guidance, or audio tools are provided, the reader is free to engage directly with the ideas rather than wrestling with symbol decoding.
+          </p>
+
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("support")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={finishRun2Reading}>
+              I've finished reading with support →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "questions_supported" && (
+        <div className="itw-flow-page itw-flow-narrow" key="questions_supported">
+          <h2 className="itw-flow-title">Check 2: Supported Reading Comprehension</h2>
+          <p className="itw-flow-note">Answer based on the companion passage you just read ({activePair.passageB.title}):</p>
+          <FlowQuestions
+            questions={activePair.passageB.questions}
+            answers={answersRun2}
+            onPick={(qi, oi) => {
+              setAnswersRun2((prev) => {
+                const c = [...prev];
+                c[qi] = oi;
+                return c;
+              });
+            }}
+          />
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("run_supported")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" disabled={!allRun2Answered} onClick={submitCheck2}>
+              Submit &amp; See Takeaways →
+            </button>
           </div>
         </div>
       )}
@@ -2681,9 +4303,9 @@ function DyslexiaModule({ onBack, onNavigate }) {
             <div>
               <h2 className="itw-flow-title">What you just experienced</h2>
               <p className="itw-flow-lead">
-                In the simulated view, letters like b, d, p and q kept trading places and the text shifted while you read.
-                These are some of the visual confusions that can make reading slow and tiring for children with dyslexia.
-                They are approximations for empathy, and every child's experience is different.
+                Decoding written language is an intensive neurological task. In children with dyslexia, the phonological
+                processing network requires more time and explicit instruction to link letters to sounds. Understanding
+                is fully intact — decoding is where the friction lives.
               </p>
             </div>
             <div className="itw-flow-letters itw-flow-letters-sm" aria-hidden="true">
@@ -2692,11 +4314,61 @@ function DyslexiaModule({ onBack, onNavigate }) {
               ))}
             </div>
           </div>
+
+          {/* Comparative Run Telemetry Card */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+              gap: 16,
+              margin: "20px 0 28px",
+            }}
+          >
+            <div
+              style={{
+                padding: "20px 22px",
+                borderRadius: 18,
+                background: "var(--itw-panel)",
+                border: "1.5px solid var(--itw-border)",
+              }}
+            >
+              <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--itw-muted)", marginBottom: 6 }}>
+                Run 1 (Standard Reading)
+              </div>
+              <div style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 24, color: "var(--itw-text)", marginBottom: 4 }}>
+                {run1Elapsed.toFixed(1)}s <span style={{ fontSize: 16, fontWeight: 600, color: "var(--itw-muted)" }}>• {run1Score}/3 correct</span>
+              </div>
+              <p style={{ margin: 0, fontSize: 13, color: "var(--itw-muted)", lineHeight: 1.45 }}>
+                {activePair.passageA.title} without formatting accommodations.
+              </p>
+            </div>
+
+            <div
+              style={{
+                padding: "20px 22px",
+                borderRadius: 18,
+                background: "rgba(89, 40, 140, 0.08)",
+                border: "2px solid var(--itw-dyslexia)",
+              }}
+            >
+              <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--itw-dyslexia)", marginBottom: 6 }}>
+                Run 2 (Supported Reading)
+              </div>
+              <div style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 24, color: "var(--itw-dyslexia)", marginBottom: 4 }}>
+                {run2Elapsed > 0 ? `${run2Elapsed.toFixed(1)}s` : "Accommodated"} <span style={{ fontSize: 16, fontWeight: 600, color: "var(--itw-text)" }}>• {run2Score}/3 correct</span>
+              </div>
+              <p style={{ margin: 0, fontSize: 13, color: "var(--itw-muted)", lineHeight: 1.45 }}>
+                {activePair.passageB.title} with {lineSpacing} spacing, {fontSize} typography{readingRuler ? ", focus ruler" : ""}.
+              </p>
+            </div>
+          </div>
+
           <div className="itw-flow-callout">
             <b>Dyslexia is not simply seeing letters backwards.</b>
             <p>
-              It is a language-processing difference that can affect reading fluency, decoding, spelling and even
-              confidence. Understanding is usually fine — decoding the words to get there is the hard part.
+              It is a language-processing difference that affects reading fluency, decoding, spelling, and automaticity.
+              Intelligence, reasoning, and creativity are unaffected — providing accommodations like audiobooks and extra time
+              ensures those strengths can be realized.
             </p>
           </div>
           <h3 className="itw-flow-h3">You may also notice</h3>
@@ -2708,36 +4380,32 @@ function DyslexiaModule({ onBack, onNavigate }) {
               </div>
             ))}
           </div>
-          <h3 className="itw-flow-h3">The data</h3>
+          <h3 className="itw-flow-h3">The Data: Indian Studies</h3>
           <FactsGrid
             facts={[
-              { num: "10–15%", label: "of Indian children are estimated to be dyslexic", src: "Dyslexia Association of India" },
-              { num: "6.2%", label: "pooled prevalence of dyslexia specifically, from a meta-analysis of Indian studies", src: "Indian systematic review & meta-analysis, 2022" },
-              { num: "~80%", label: "of specific learning disorders diagnosed in India are dyslexia, same as the global pattern", src: "Indian systematic review, 2023" },
+              {
+                num: "~8%",
+                label: "pooled prevalence of Specific Learning Disorders (SLDs) across 6 Indian studies (8,133 children screened, up to 19 years, 95% CI: 4%–11%)",
+                src: "Scaria, Bhaskaran & George (2023), Indian Systematic Review & Meta-Analysis",
+              },
+              {
+                num: "All SLDs",
+                label: "The 8% pooled estimate encompasses reading (dyslexia), writing (dysgraphia), and math (dyscalculia) disorders with marked between-study variation, rather than dyslexia alone",
+                src: "Scaria et al. (2023) systematic review across 6 Indian study cohorts",
+              },
+              {
+                num: "10–15%",
+                label: "of students across diverse Indian classrooms are estimated to benefit from structured, multisensory phonics and accessible text adaptations",
+                src: "Dyslexia Association of India (DAI) Educational Guidelines",
+              },
             ]}
-            note="A dyslexic child who reads slowly and understands nothing on a timed test may understand everything when given more time or the text read aloud. India's pooled estimate for all learning disabilities combined runs around 10.7% of school-age children — individual studies range from about 2% to over 30% depending on region and screening method."
+            note="An Indian systematic review and meta-analysis estimated the pooled prevalence of Specific Learning Disorders at approximately 8% (95% CI: 4%–11%). This estimate covers reading, writing, and arithmetic-related learning disorders; it is not a dyslexia-specific prevalence estimate."
             onComplete={() => {}}
           />
-          <div className="itw-flow-nav">
-            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("result")}>Back</button>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("support")}>Next</button>
-          </div>
-        </div>
-      )}
-
-      {step === "support" && (
-        <div className="itw-flow-page itw-flow-narrow" key="support">
-          <h2 className="itw-flow-title">What can help?</h2>
-          <p className="itw-flow-lead">
-            With the right support, children with dyslexia can learn, grow and thrive. Here are some strategies that can make a difference.
-          </p>
-          <ul className="itw-flow-support">
-            {DYS_SUPPORT.map((s) => <li key={s}>{s}</li>)}
-          </ul>
-          <section className="itw-block itw-help-block">
+          <section className="itw-block itw-help-block" style={{ marginTop: 40 }}>
             <div className="itw-help-head">
               <div>
-                <div className="itw-help-eyebrow">What actually helps</div>
+                <div className="itw-help-eyebrow">Evidence-based accommodations</div>
                 <h3 className="itw-help-title">At home and in the classroom</h3>
               </div>
             </div>
@@ -2757,21 +4425,83 @@ function DyslexiaModule({ onBack, onNavigate }) {
             />
             <HelpFooter />
           </section>
-          <div className="itw-flow-nav">
-            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("explain")}>Back</button>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("next")}>Next</button>
+          <div className="itw-flow-callout">
+            <b>Dyslexia is not simply seeing letters backwards.</b>
+            <p>
+              It is a language-processing difference that affects reading fluency, decoding, spelling, and automaticity.
+              Intelligence, reasoning, and creativity are unaffected — providing accommodations like audiobooks and extra time
+              ensures those strengths can be realized.
+            </p>
+          </div>
+          <h3 className="itw-flow-h3">You may also notice</h3>
+          <div className="itw-flow-notice">
+            {DYS_NOTICE.map((n) => (
+              <div key={n.text} className="itw-flow-notice-item">
+                <span aria-hidden="true">{n.icon}</span>
+                <p>{n.text}</p>
+              </div>
+            ))}
+          </div>
+          <h3 className="itw-flow-h3">The Data: Indian Studies</h3>
+          <FactsGrid
+            facts={[
+              {
+                num: "~8%",
+                label: "pooled prevalence of Specific Learning Disorders (SLDs) across 6 Indian studies (8,133 children screened, up to 19 years, 95% CI: 4%–11%)",
+                src: "Scaria, Bhaskaran & George (2023), Indian Systematic Review & Meta-Analysis",
+              },
+              {
+                num: "All SLDs",
+                label: "The 8% pooled estimate encompasses reading (dyslexia), writing (dysgraphia), and math (dyscalculia) disorders with marked between-study variation, rather than dyslexia alone",
+                src: "Scaria et al. (2023) systematic review across 6 Indian study cohorts",
+              },
+              {
+                num: "10–15%",
+                label: "of students across diverse Indian classrooms are estimated to benefit from structured, multisensory phonics and accessible text adaptations",
+                src: "Dyslexia Association of India (DAI) Educational Guidelines",
+              },
+            ]}
+            note="An Indian systematic review and meta-analysis estimated the pooled prevalence of Specific Learning Disorders at approximately 8% (95% CI: 4%–11%). This estimate covers reading, writing, and arithmetic-related learning disorders; it is not a dyslexia-specific prevalence estimate."
+            onComplete={() => {}}
+          />
+          <section className="itw-block itw-help-block" style={{ marginTop: 40 }}>
+            <div className="itw-help-head">
+              <div>
+                <div className="itw-help-eyebrow">Evidence-based accommodations</div>
+                <h3 className="itw-help-title">At home and in the classroom</h3>
+              </div>
+            </div>
+            <StrategyTabs
+              home={[
+                "Read aloud together well past the age other kids stop needing it — it protects a love of stories while decoding catches up.",
+                "Use audiobooks and text-to-speech for content, so struggling to decode doesn't block access to ideas.",
+                "Praise effort and strategy, not speed — a slow, correct reader is not behind in intelligence.",
+                "Ask the school about a formal evaluation early; structured, phonics-based intervention works best the sooner it starts.",
+              ]}
+              classroom={[
+                "Give extended time on reading-heavy tests — the accommodation targets decoding speed, not comprehension.",
+                "Offer notes or slides in advance so class time can go to discussion instead of first-pass decoding.",
+                "Never ask a dyslexic student to read aloud cold, in front of the class, without warning.",
+                "Use structured literacy / explicit phonics instruction — it's the intervention with the strongest evidence behind it.",
+              ]}
+            />
+            <HelpFooter />
+          </section>
+          <div className="itw-flow-nav" style={{ marginTop: 32 }}>
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("result")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("next")}>Next Steps →</button>
           </div>
         </div>
       )}
 
       {step === "next" && (
         <div className="itw-flow-page itw-flow-narrow" key="next">
-          <h2 className="itw-flow-title">Understanding creates a kinder tomorrow</h2>
-          <p className="itw-flow-lead">
-            Every child learns differently. If you have concerns about your child's learning or would like professional
-            guidance, we're here to support you.
+          <h2 className="itw-flow-title itw-center">Understanding creates a kinder tomorrow</h2>
+          <p className="itw-flow-lead itw-center">
+            Every child learns differently. If you have concerns about your child's reading or would like professional
+            guidance, early structured support makes all the difference.
           </p>
-          <div className="itw-flow-nav">
+          <div className="itw-flow-nav itw-flow-nav-center">
             <a className="itw-cta itw-cta-dark" href="/assessments">Take an Assessment →</a>
             <a className="itw-cta itw-cta-line" href="/consult">Book a Consultation →</a>
           </div>
@@ -2785,8 +4515,8 @@ function DyslexiaModule({ onBack, onNavigate }) {
               </button>
             ))}
           </div>
-          <div className="itw-flow-nav">
-            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("support")}>Back</button>
+          <div className="itw-flow-nav itw-flow-nav-center">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("explain")}>Back</button>
             <button type="button" className="itw-cta itw-cta-line" onClick={onBack}>All experiences</button>
           </div>
         </div>
@@ -2795,201 +4525,195 @@ function DyslexiaModule({ onBack, onNavigate }) {
   );
 }
 
-/* ================= SPEECH: word-finding simulator ================= */
-
-const PUSH_DECAY_PER_TICK = 3;
-const PUSH_GAIN_PER_TAP = 13;
-const PUSH_BASE = 40;
-
-const CONVO_PROMPTS = [
-  { npc: "Hey! Quick — tell me one thing that happened at school today.", time: 14, difficulty: 0 },
-  { npc: "Nice. What's your favorite thing to do after school?", time: 11, difficulty: 1 },
-  { npc: "Okay — if you could have any superpower, what would it be, and why?", time: 9, difficulty: 2 },
-  { npc: "Last one, fast: what did you have for breakfast this morning?", time: 7, difficulty: 3 },
+const SPEECH_STEPS = [
+  { key: "instructions", label: "Instructions" },
+  { key: "run_fast", label: "Run 1 (Fast Pacing)" },
+  { key: "reflect", label: "Reflect & Compare" },
+  { key: "support", label: "Support Experiment" },
+  { key: "run_supported", label: "Run 2 (Supported)" },
+  { key: "explain", label: "Understanding & Action" },
 ];
 
-function SpeechSim() {
+const SPEECH_STEP_INDEX = {
+  instructions: 0,
+  run_fast: 1,
+  reflect: 2,
+  support: 3,
+  run_supported: 3,
+  explain: 4,
+  next: 4,
+};
+
+const SPEECH_REFLECT_QS = [
+  {
+    q: "During the fast-paced conversation, where did you notice the communicative pressure?",
+    options: [
+      "I had the thought clear in mind, but the ticking turn window created sudden performance anxiety.",
+      "The expectation of immediate verbal delivery made finding and organizing words feel rushed.",
+      "The fear that the listener would move on or interrupt heightened my communicative tension.",
+      "The conversational rush was created by external listener expectations, not a lack of ideas.",
+    ],
+  },
+];
+
+const SPEECH_SUPPORT_CHOICES = [
+  {
+    id: "patient_wait",
+    title: "Unhurried Wait Time (Patient Listening)",
+    subtitle: "Attentive presence with zero clock pressure",
+    desc: "The conversation partner maintains warm, natural presence and gives generous silence without glancing at clocks or rushing.",
+    tag: "Pacing Accommodation",
+  },
+  {
+    id: "no_interruption",
+    title: "Sentence Ownership (Never Finishing Sentences)",
+    subtitle: "Protects the speaker's right to complete their thought",
+    desc: "Resists guessing words, filling in blanks, or finishing sentences, preserving the speaker's communicative agency.",
+    tag: "Relational Respect",
+  },
+  {
+    id: "multimodal",
+    title: "Multi-Modal Communication Options",
+    subtitle: "Welcomes typed, spoken, or gestural input equally",
+    desc: "Validates multiple modes of communication, keeping total focus on the message rather than speech mechanics.",
+    tag: "Universal Design",
+  },
+];
+
+const FAST_PROMPTS = [
+  { npc: "Quick question: what is one highlight from your week?", time: 11 },
+  { npc: "Next: what's an activity you enjoy to relax?", time: 9 },
+];
+
+const SUPPORTED_PROMPTS = [
+  { npc: "Take your time — tell me about something that made you smile recently." },
+  { npc: "No rush at all — what is one place you'd love to visit someday?" },
+];
+
+function SpeechSim({
+  mode = "fast",
+  supportType = null,
+  onComplete,
+  onAbort,
+}) {
   const { soundOn } = useContext(SettingsContext);
-  const [roundIdx, setRoundIdx] = useState(-1); // -1 = not started
+  const prompts = mode === "supported" ? SUPPORTED_PROMPTS : FAST_PROMPTS;
+  const [roundIdx, setRoundIdx] = useState(0);
   const [inputVal, setInputVal] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [outputWords, setOutputWords] = useState([]);
-  const [face, setFace] = useState("idle");
-  const [pushWord, setPushWord] = useState(null);
-  const [pushProgress, setPushProgress] = useState(0);
-  const [pushRequired, setPushRequired] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [timeTotal, setTimeTotal] = useState(0);
+  const [status, setStatus] = useState("ready"); // ready | delivering | done | expired
+  const [timeLeft, setTimeLeft] = useState(prompts[0]?.time || 11);
+  const [timeTotal, setTimeTotal] = useState(prompts[0]?.time || 11);
   const [note, setNote] = useState("");
-  const [results, setResults] = useState([]); // {success, timeUsed, taps}
-  const [rating, setRating] = useState(null);
-  const [tapBurst, setTapBurst] = useState(0);
+  const [paused, setPaused] = useState(false);
 
   const genRef = useRef(0);
-  const roundIdxRef = useRef(-1);
-  const queueRef = useRef([]);
-  const wordIdxRef = useRef(0);
+  const roundIdxRef = useRef(0);
   const roundStartRef = useRef(0);
-  const tapsRoundRef = useRef(0);
-  const progressRef = useRef(0);
   const timerIntervalRef = useRef(null);
-  const decayRef = useRef(null);
-  const resultsRef = useRef([]);
   const timeoutsRef = useRef([]);
+  const pausedTimeRef = useRef(0);
+  const resultsRef = useRef([]);
 
-  const clearAll = () => {
+  const clearAll = useCallback(() => {
     clearInterval(timerIntervalRef.current);
-    clearInterval(decayRef.current);
     timeoutsRef.current.forEach(clearTimeout);
     timeoutsRef.current = [];
-  };
+  }, []);
 
   useEffect(() => {
+    const localGen = genRef;
     return () => {
-      genRef.current++;
+      localGen.current++;
       clearAll();
       if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel();
     };
-  }, []);
+  }, [clearAll]);
 
   const recordResult = (r) => {
     resultsRef.current = [...resultsRef.current, r];
-    setResults(resultsRef.current);
   };
 
-  const finishAll = () => {
-    const rs = resultsRef.current;
-    const successCount = rs.filter((r) => r.success).length;
-    const totalTaps = rs.reduce((a, r) => a + r.taps, 0);
-    const successTimes = rs.filter((r) => r.success).map((r) => r.timeUsed);
-    const avgTime = successTimes.length ? successTimes.reduce((a, b) => a + b, 0) / successTimes.length : 0;
-    const base = (successCount / CONVO_PROMPTS.length) * 70;
-    const efficiency = successCount ? Math.max(0, 30 - totalTaps * 1.1) : 0;
-    const score = Math.round(Math.max(5, Math.min(100, base + efficiency)));
-    setRoundIdx(CONVO_PROMPTS.length);
-    setRating({
-      score,
-      lines: [
-        `${successCount} of ${CONVO_PROMPTS.length} moment(s) answered in time, ${totalTaps} push(es) total${
-          successCount ? `, averaging ${avgTime.toFixed(1)}s when you made it` : ""
-        }.`,
-        rs.some((r) => !r.success)
-          ? "Every missed moment above was a question you knew the answer to — the conversation just didn't wait long enough for the words to arrive. That's the part a stopwatch on 'getting a word out' alone doesn't capture."
-          : "You beat the clock on every question, even with words blocking along the way — most real conversations don't leave this much room to try again.",
-      ],
-    });
-  };
+  const beginRoundRef = useRef(null);
 
-  const advance = (idx) => {
-    if (idx + 1 < CONVO_PROMPTS.length) beginRound(idx + 1);
-    else finishAll();
-  };
+  const advance = useCallback((idx) => {
+    if (idx + 1 < prompts.length) beginRoundRef.current?.(idx + 1);
+    else {
+      clearAll();
+      const rs = resultsRef.current;
+      const totalTime = rs.reduce((a, b) => a + (b.timeUsed || 0), 0);
+      const completedTurns = rs.filter((r) => r.success).length;
+      onComplete?.({
+        time: totalTime,
+        turns: prompts.length,
+        completedTurns,
+      });
+    }
+  }, [prompts.length, onComplete, clearAll]);
 
-  const momentPassed = (idx, gen) => {
+  const momentPassed = useCallback((idx, gen) => {
     if (gen !== genRef.current) return;
-    clearInterval(decayRef.current);
-    setPushWord(null);
-    setFace("idle");
-    setNote("The moment passed — time ran out before it all got out.");
-    recordResult({ success: false, timeUsed: CONVO_PROMPTS[idx].time, taps: tapsRoundRef.current });
+    setStatus("expired");
+    setNote("The conversational turn moved forward before you could share.");
+    recordResult({ success: false, timeUsed: prompts[idx].time || 11 });
     const t = setTimeout(() => {
       if (gen === genRef.current) advance(idx);
     }, 1500);
     timeoutsRef.current.push(t);
-  };
-
-  const beginWord = (gen) => {
-    if (gen !== genRef.current) return;
-    const idx = roundIdxRef.current;
-    if (wordIdxRef.current >= queueRef.current.length) {
-      clearInterval(timerIntervalRef.current);
-      setFace("done");
-      setNote("Got it all out in time.");
-      recordResult({
-        success: true,
-        timeUsed: (performance.now() - roundStartRef.current) / 1000,
-        taps: tapsRoundRef.current,
-      });
-      const t = setTimeout(() => {
-        if (gen === genRef.current) advance(idx);
-      }, 1200);
-      timeoutsRef.current.push(t);
-      return;
-    }
-    const w = queueRef.current[wordIdxRef.current];
-    if (w.blocked) {
-      progressRef.current = 0;
-      setPushProgress(0);
-      setPushRequired(w.required);
-      setPushWord(w.text);
-      setFace("blocked");
-      if (soundOn) audio.sweep({ from: 220, to: 260, duration: 0.25, type: "square", gain: 0.06 });
-      clearInterval(decayRef.current);
-      decayRef.current = setInterval(() => {
-        if (gen !== genRef.current) return clearInterval(decayRef.current);
-        progressRef.current = Math.max(0, progressRef.current - PUSH_DECAY_PER_TICK);
-        setPushProgress(progressRef.current);
-      }, 180);
-    } else {
-      setFace("talking");
-      if (soundOn) {
-        audio.tone({ freq: 340, type: "sine", duration: 0.08, gain: 0.06 });
-        speakText(w.text, { rate: 1.1, volume: 0.85 });
-      }
-      setOutputWords((prev) => [...prev, { text: w.text, blocked: false }]);
-      wordIdxRef.current++;
-      const t = setTimeout(() => beginWord(gen), 170);
-      timeoutsRef.current.push(t);
-    }
-  };
-
-  const pushTap = () => {
-    const gen = genRef.current;
-    if (pushWord == null) return;
-    tapsRoundRef.current++;
-    setTapBurst((n) => n + 1);
-    progressRef.current = Math.min(pushRequired, progressRef.current + PUSH_GAIN_PER_TAP);
-    setPushProgress(progressRef.current);
-    if (soundOn) audio.tone({ freq: 260 + Math.random() * 90, type: "square", duration: 0.04, gain: 0.05 });
-    if (progressRef.current >= pushRequired) {
-      clearInterval(decayRef.current);
-      const w = queueRef.current[wordIdxRef.current];
-      if (soundOn) {
-        audio.tone({ freq: 540, type: "sine", duration: 0.14, gain: 0.1 });
-        speakText(w.text, { rate: 0.9, volume: 0.85 });
-      }
-      setFace("talking");
-      setOutputWords((prev) => [...prev, { text: w.text, blocked: true }]);
-      setPushWord(null);
-      wordIdxRef.current++;
-      const t = setTimeout(() => beginWord(gen), 220);
-      timeoutsRef.current.push(t);
-    }
-  };
+  }, [prompts, advance]);
 
   const submitAnswer = () => {
     const value = inputVal.trim();
-    if (!value || submitted) return;
+    if (!value || submitted || paused) return;
     setSubmitted(true);
+    setStatus("delivering");
     const gen = genRef.current;
-    const diff = CONVO_PROMPTS[roundIdxRef.current].difficulty;
     const words = value.split(/\s+/);
-    queueRef.current = words.map((w) => {
-      const blockChance = (w.length > 4 ? 0.42 : 0.2) + diff * 0.07;
-      const isBlocked = Math.random() < blockChance;
-      return {
-        text: w,
-        blocked: isBlocked,
-        required: isBlocked ? PUSH_BASE + w.length * 5 + diff * 10 : 0,
-      };
-    });
-    wordIdxRef.current = 0;
-    tapsRoundRef.current = 0;
-    setOutputWords([]);
-    beginWord(gen);
+
+    if (mode === "fast") {
+      setNote("Conversational pause — organizing words under rapid turn pressure...");
+      // In fast mode, simulate a brief delay before speech delivery
+      const t1 = setTimeout(() => {
+        if (gen !== genRef.current) return;
+        clearInterval(timerIntervalRef.current);
+        setOutputWords(words.map((w) => ({ text: w })));
+        setStatus("done");
+        setNote("Turn delivered.");
+        if (soundOn) speakText(value, { rate: 0.95, volume: 0.85 });
+        recordResult({
+          success: true,
+          timeUsed: (performance.now() - roundStartRef.current) / 1000,
+        });
+        const t2 = setTimeout(() => {
+          if (gen === genRef.current) advance(roundIdxRef.current);
+        }, 1300);
+        timeoutsRef.current.push(t2);
+      }, 1100);
+      timeoutsRef.current.push(t1);
+    } else {
+      // In supported mode: untimed, relaxed, respectful delivery
+      setNote("Delivering response in an unhurried, attentive conversational space...");
+      const t1 = setTimeout(() => {
+        if (gen !== genRef.current) return;
+        setOutputWords(words.map((w) => ({ text: w })));
+        setStatus("done");
+        setNote("Conversation partner: “Thank you for sharing that with me.”");
+        if (soundOn) speakText(value, { rate: 0.92, volume: 0.85 });
+        recordResult({
+          success: true,
+          timeUsed: (performance.now() - roundStartRef.current) / 1000,
+        });
+        const t2 = setTimeout(() => {
+          if (gen === genRef.current) advance(roundIdxRef.current);
+        }, 1600);
+        timeoutsRef.current.push(t2);
+      }, 700);
+      timeoutsRef.current.push(t1);
+    }
   };
 
-  const beginRound = (idx) => {
+  const beginRound = useCallback((idx) => {
     const gen = ++genRef.current;
     clearAll();
     roundIdxRef.current = idx;
@@ -2997,236 +4721,3137 @@ function SpeechSim() {
     setInputVal("");
     setSubmitted(false);
     setOutputWords([]);
-    setPushWord(null);
-    setFace("idle");
+    setStatus("ready");
     setNote("");
-    const total = CONVO_PROMPTS[idx].time;
-    setTimeTotal(total);
-    setTimeLeft(total);
     roundStartRef.current = performance.now();
-    if (soundOn) speakText(CONVO_PROMPTS[idx].npc, { rate: 1, volume: 0.9 });
-    timerIntervalRef.current = setInterval(() => {
-      if (gen !== genRef.current) return clearInterval(timerIntervalRef.current);
-      const elapsed = (performance.now() - roundStartRef.current) / 1000;
-      const remaining = total - elapsed;
-      if (remaining <= 0) {
-        setTimeLeft(0);
-        clearInterval(timerIntervalRef.current);
-        momentPassed(idx, gen);
-      } else {
-        setTimeLeft(remaining);
-      }
-    }, 60);
-  };
 
-  const start = () => {
+    if (soundOn && prompts[idx]?.npc) {
+      speakText(prompts[idx].npc, { rate: 0.98, volume: 0.9 });
+    }
+
+    if (mode === "fast") {
+      const total = prompts[idx]?.time || 11;
+      setTimeTotal(total);
+      setTimeLeft(total);
+      timerIntervalRef.current = setInterval(() => {
+        if (gen !== genRef.current || paused) return;
+        const elapsed = (performance.now() - roundStartRef.current) / 1000;
+        const remaining = total - elapsed;
+        if (remaining <= 0) {
+          setTimeLeft(0);
+          clearInterval(timerIntervalRef.current);
+          momentPassed(idx, gen);
+        } else {
+          setTimeLeft(remaining);
+        }
+      }, 70);
+    }
+  }, [clearAll, mode, momentPassed, prompts, soundOn, paused]);
+
+  useEffect(() => {
+    beginRoundRef.current = beginRound;
+  }, [beginRound]);
+
+  useEffect(() => {
     resultsRef.current = [];
-    setResults([]);
-    setRating(null);
-    beginRound(0);
+    queueMicrotask(() => {
+      beginRoundRef.current?.(0);
+    });
+    return () => clearAll();
+  }, [mode, supportType, clearAll]);
+
+  const togglePause = () => {
+    if (!paused) {
+      clearAll();
+      pausedTimeRef.current = performance.now();
+      setPaused(true);
+    } else {
+      const pauseDuration = performance.now() - pausedTimeRef.current;
+      roundStartRef.current += pauseDuration;
+      setPaused(false);
+      const gen = genRef.current;
+      if (mode === "fast") {
+        timerIntervalRef.current = setInterval(() => {
+          if (gen !== genRef.current) return;
+          const elapsed = (performance.now() - roundStartRef.current) / 1000;
+          const remaining = timeTotal - elapsed;
+          if (remaining <= 0) {
+            setTimeLeft(0);
+            clearInterval(timerIntervalRef.current);
+            momentPassed(roundIdxRef.current, gen);
+          } else {
+            setTimeLeft(remaining);
+          }
+        }, 70);
+      }
+    }
   };
 
-  const pushPct = pushRequired ? Math.round((pushProgress / pushRequired) * 100) : 0;
-  const timerPct = timeTotal ? Math.max(0, Math.min(100, (timeLeft / timeTotal) * 100)) : 100;
-  const active = roundIdx >= 0 && roundIdx < CONVO_PROMPTS.length;
+  const timerPct = timeTotal && mode === "fast" ? Math.max(0, Math.min(100, (timeLeft / timeTotal) * 100)) : 100;
+  const currentPrompt = prompts[roundIdx];
 
   return (
     <div className="itw-sim">
-      <div className="itw-sim-instructions">
-        Answer {CONVO_PROMPTS.length} quick questions before your window to reply closes.
+      <div className="itw-media-bar">
+        <div className="itw-media-bar-group">
+          <button
+            type="button"
+            className={`itw-btn-ghost${paused ? " itw-active" : ""}`}
+            onClick={togglePause}
+            aria-label={paused ? "Resume conversation" : "Pause conversation"}
+          >
+            {paused ? "▶ Resume" : "⏸ Pause"}
+          </button>
+          {onAbort && (
+            <button type="button" className="itw-btn-ghost" onClick={onAbort} aria-label="Exit conversation">
+              ✕ Exit
+            </button>
+          )}
+        </div>
+        <div className="itw-media-bar-group">
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--itw-muted)" }}>
+            Turn {roundIdx + 1} of {prompts.length}
+          </span>
+        </div>
       </div>
-      <HowTo
-        steps={[
-          "Type your answer",
-          "Hit “Say it” to respond",
-          "Tap “Push” if a word gets stuck",
-        ]}
-      />
+
       <Viewfinder
-        hud={{ left: active ? `QUESTION ${roundIdx + 1}/${CONVO_PROMPTS.length}` : "READY", right: "" }}
-        stageStyle={{ minHeight: "auto" }}
+        hud={{
+          left: paused ? "PAUSED" : mode === "supported" ? "PATIENT PARTNER • UNTIMED" : "FAST PACING",
+          right: `QUESTION ${roundIdx + 1}/${prompts.length}`,
+        }}
+        stageStyle={{ minHeight: "auto", background: "var(--itw-panel)" }}
       >
-        {active && (
+        {mode === "fast" && (
           <div className="itw-round-timer">
             <div
               className="itw-round-timer-fill"
-              style={{ width: `${timerPct}%`, background: timerPct < 25 ? "#e5484d" : "var(--itw-speech)" }}
+              style={{
+                width: `${timerPct}%`,
+                background: timerPct < 25 ? "#e5484d" : "var(--itw-speech)",
+              }}
             />
           </div>
         )}
-        <div className="itw-speech-scene">
-          {active ? (
-            <div className={`itw-convo-bubble${timerPct < 30 ? " itw-convo-impatient" : ""}`}>
-              {CONVO_PROMPTS[roundIdx].npc}
+
+        <div className="itw-speech-scene" style={{ height: 230 }}>
+          {/* Partner Status Pill */}
+          <div className="itw-convo-partner">
+            <div className={`itw-partner-badge${mode === "supported" ? " itw-partner-patient" : ""}`}>
+              {mode === "supported"
+                ? "Patient Conversation Partner • Listening attentively without interruption • Untimed"
+                : "Fast-Paced Group Context • Quick turn window"}
             </div>
-          ) : roundIdx >= CONVO_PROMPTS.length ? (
-            <div className="itw-convo-bubble">That's everyone — see how it went below.</div>
-          ) : (
-            <div className="itw-convo-bubble itw-convo-idle">A quick back-and-forth is about to start.</div>
-          )}
-          {active && (
-            <div className={`itw-convo-partner${timerPct < 30 ? " itw-partner-waiting" : ""}`}>
-              {timerPct < 15 ? "😬" : timerPct < 30 ? "🤨" : "🙂"}
-              <span className="itw-partner-label">
-                {timerPct < 15 ? "waiting..." : timerPct < 30 ? "still there?" : "listening"}
-              </span>
-            </div>
-          )}
-          <div className={`itw-speech-face${face === "blocked" ? " itw-straining" : ""}`}>
-            {face === "blocked" ? "😣" : face === "talking" ? "🗣️" : face === "done" ? "🙂" : "😐"}
+            <span className="itw-partner-label">
+              {mode === "supported" ? "Take all the time you need — no timer" : "Conversation moving briskly"}
+            </span>
           </div>
-          {pushWord != null && (
-            <div className="itw-push-zone">
-              <div className="itw-push-word">
-                {pushWord.slice(0, Math.max(1, Math.round((pushPct / 100) * pushWord.length)))}
-                <span className="itw-push-word-rest">
-                  {pushWord.slice(Math.max(1, Math.round((pushPct / 100) * pushWord.length)))}
-                </span>
-              </div>
-              <div className="itw-push-bar">
-                <div className="itw-push-bar-fill" style={{ width: `${pushPct}%` }} />
-              </div>
-              <button
-                key={tapBurst}
-                type="button"
-                className="itw-push-btn"
-                onClick={pushTap}
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                  pushTap();
-                }}
-              >
-                Push
-              </button>
+
+          {currentPrompt && (
+            <div className="itw-convo-bubble">
+              {currentPrompt.npc}
             </div>
           )}
+
+          <div className="itw-speech-status-tag">
+            {status === "delivering"
+              ? "Speaking..."
+              : status === "done"
+              ? "Turn shared"
+              : status === "expired"
+              ? "Turn elapsed"
+              : "Ready to answer"}
+          </div>
         </div>
       </Viewfinder>
+
       <div className="itw-sim-controls" style={{ borderTop: "1px solid var(--itw-border)" }}>
-        {roundIdx === -1 && (
-          <button className="itw-btn-primary" onClick={start}>
-            Start the conversation
-          </button>
-        )}
-        {active && (
+        {!submitted && (
           <>
             <input
               type="text"
               className="itw-textin"
-              placeholder="Type your answer..."
+              placeholder="Type your answer here..."
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && submitAnswer()}
-              disabled={submitted}
+              disabled={paused || status === "expired"}
               autoFocus
             />
-            <button className="itw-btn-primary" onClick={submitAnswer} disabled={submitted}>
-              Say it
+            <button
+              className="itw-btn-primary"
+              onClick={submitAnswer}
+              disabled={paused || !inputVal.trim() || status === "expired"}
+            >
+              Share Response
             </button>
           </>
         )}
-        {roundIdx >= CONVO_PROMPTS.length && (
-          <button className="itw-btn-primary" onClick={start}>
-            Try again
-          </button>
-        )}
       </div>
+
       <div style={{ padding: "0 18px 20px" }}>
-        <div className="itw-speech-output">
+        <div className="itw-speech-output" style={{ minHeight: 48, fontSize: 20 }}>
           {outputWords.map((w, i) => (
-            <span key={i} className={w.blocked ? "itw-blocked" : ""}>
+            <span key={i}>
               {w.text}{" "}
             </span>
           ))}
         </div>
-        <div className="itw-readout" style={{ marginTop: 10 }}>
+        <div className="itw-readout" style={{ marginTop: 8 }}>
           {note}
         </div>
-        {rating && (
-          <RatingCard
-            title="What finding those words was like"
-            lines={rating.lines}
-            onRetry={start}
-            retryLabel="Try the conversation again"
-          />
-        )}
       </div>
     </div>
   );
 }
 
 function SpeechModule({ onBack, onNavigate }) {
+  const [step, setStep] = useState("intro"); // intro | instructions | run_fast | reflect | support | run_supported | explain | next
+  const [chosenSupport, setChosenSupport] = useState("patient_wait");
+  const [reflectionAnswers, setReflectionAnswers] = useState(() => Array(SPEECH_REFLECT_QS.length).fill(null));
+  const [results, setResults] = useState({ fast: null, supported: null });
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
+
+  const handleFastComplete = (res) => {
+    setResults((prev) => ({ ...prev, fast: res }));
+    setStep("reflect");
+  };
+
+  const handleSupportedComplete = (res) => {
+    setResults((prev) => ({ ...prev, supported: res }));
+    setStep("explain");
+  };
+
+  const stepIndex = SPEECH_STEP_INDEX[step];
+  const more = MODULES.filter((m) => m.key !== "speech");
+
   return (
-    <ModuleShell
-      accent="speech"
-      eyebrow="Speech & Language"
-      title="The word is there. It's just not arriving yet."
-      dek="For kids with speech sound disorders, stuttering, or word-finding difficulties, the thought is usually fully formed — the gap is between knowing what to say and getting it out cleanly."
-      sections={[
-        { id: "speech-try", label: "Try it" },
-        { id: "speech-data", label: "The data" },
-        { id: "speech-help", label: "How to help" },
-      ]}
-      onBack={onBack}
-      onNavigate={onNavigate}
-    >
-      <section className="itw-block" id="speech-try">
-        <div className="itw-block-label">Try it — Find the Words</div>
-        <SpeechSim />
-      </section>
-      <section className="itw-block" id="speech-data">
-        <div className="itw-block-label">The data</div>
-        <FactsGrid
-          facts={[
-            { num: "~1 in 11", label: "at-risk children were confirmed to have a speech or language disorder on full evaluation", src: "Indian rural communication-disorder screening study" },
-            { num: "1.5%", label: "of children aged 4–16 showed stuttering in a Bangalore-area epidemiological study", src: "Srinath et al., Bangalore child & adolescent psychiatric disorder study" },
-            { num: "10%", label: "of people with a communication disorder in India stutter, per a leading speech & hearing institute", src: "All India Institute of Speech and Hearing (AIISH)" },
-          ]}
-          note="A blocked word or a mispronounced sound is not a sign of not knowing the answer. India is linguistically dense — many children grow up multilingual, which researchers note can complicate early screening for a genuine speech or language disorder versus normal multilingual development."
-          onComplete={() => scrollToId("speech-help")}
-        />
-      </section>
-      <section className="itw-block itw-help-block" id="speech-help">
-        <div className="itw-help-head">
-          <div className="itw-help-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7.5-4.6-10-9.3C.4 8 2 4.5 5.6 4a5 5 0 0 1 6.4 2 5 5 0 0 1 6.4-2C22 4.5 23.6 8 22 11.7 19.5 16.4 12 21 12 21Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>
-          </div>
+    <section className="itw-view itw-module itw-flow" data-accent="speech">
+      <FlowCrumbs name="Speech & Language Differences" onBack={onBack} />
+      {stepIndex !== undefined && <FlowStepper steps={SPEECH_STEPS} current={stepIndex} />}
+
+      {step === "intro" && (
+        <div className="itw-flow-page itw-flow-intro" key="intro">
           <div>
-            <div className="itw-help-eyebrow">What actually helps</div>
-            <h3 className="itw-help-title">How you can help</h3>
+            <h2 className="itw-flow-title">Speech & Language Differences</h2>
+            <div className="itw-flow-sub">Communication Under Time Pressure: Conversational Pacing & Active Listening</div>
+            <p className="itw-flow-lead">
+              For people with developmental stuttering, word-finding delays, or speech-sound differences, the thought is
+              fully formed and ready in the mind. The friction occurs when conversational turn-taking is rushed.
+              In this activity, you will experience how pacing and listener behavior completely reshape the communication experience.
+            </p>
+            <ul className="itw-flow-meta">
+              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
+              <li><span aria-hidden="true">💬</span> A conversational exchange comparing fast pacing vs. patient listening</li>
+              <li><span aria-hidden="true">ℹ️</span> An educational simulation, not a clinical diagnostic tool</li>
+            </ul>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
+              Begin Experience →
+            </button>
+          </div>
+          <div className="itw-flow-letters" aria-hidden="true">
+            {["🗣️", "💬", "⏳", "❤️", "🌿", "👂"].map((c, i) => (
+              <span key={i} style={{ animationDelay: `${i * 0.45}s`, fontSize: 36 }}>{c}</span>
+            ))}
           </div>
         </div>
-        <StrategyTabs
-          home={[
-            "Let the child finish their own sentence — resist filling in the word for them, even when you're sure what it is.",
-            "Slow down your own speech rate slightly; a calmer pace models ease rather than urgency.",
-            "React to what they said, not how they said it — “tell me more” beats correcting the delivery.",
-            "Keep eye contact relaxed and unhurried during a block instead of looking away or finishing for them.",
-          ]}
-          classroom={[
-            "Never make a child with a stutter or speech disorder read aloud on the spot, unprepared, in front of peers.",
-            "Give extra response time after asking a question before calling on someone else.",
-            "Coordinate with the speech-language pathologist on classroom strategies, not just pull-out sessions.",
-            "Normalize communication differences openly with the whole class so the child isn't the only one navigating stigma.",
-          ]}
-        />
-        <HelpFooter />
-      </section>
-    </ModuleShell>
+      )}
+
+      {step === "instructions" && (
+        <div className="itw-flow-page itw-flow-narrow" key="instructions">
+          <h2 className="itw-flow-title itw-center">Before you begin: Conversational Pacing</h2>
+          <p className="itw-flow-lead itw-center">
+            In this activity, you will answer two everyday questions in two different conversational environments.
+          </p>
+          <div
+            style={{
+              background: "rgba(140, 66, 44, 0.08)",
+              border: "1px solid var(--itw-speech)",
+              borderRadius: 16,
+              padding: "16px 20px",
+              margin: "20px 0",
+              fontSize: 14.5,
+              lineHeight: 1.6,
+              color: "var(--itw-text)",
+            }}
+          >
+            <b>Clinical Distinction:</b> Communication differences take several distinct forms: developmental stuttering
+            (motor speech blocks, sound prolongations, repetitions), word-finding delays, and speech-sound production differences.
+            This simulation specifically models conversational pacing — experiencing how rapid turn windows create communicative
+            pressure versus how patient partners foster psychological safety and dignity.
+          </div>
+          <ul className="itw-flow-list">
+            <li><span aria-hidden="true">💬</span> Type a short answer and click “Share Response”.</li>
+            <li><span aria-hidden="true">⏳</span> In Run 1, observe the pressure of a rapid, ticking turn window.</li>
+            <li><span aria-hidden="true">👂</span> In Run 2, experience unhurried listening with no timers counting down.</li>
+          </ul>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_fast")}>
+              Start Run 1: Fast Pacing →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_fast" && (
+        <div className="itw-flow-page" key="run_fast">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Run 1: Fast-Paced Conversation</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>
+              Answer the questions before the fast-paced response window closes.
+            </p>
+          </div>
+          <SpeechSim
+            mode="fast"
+            onComplete={handleFastComplete}
+            onAbort={() => setStep("instructions")}
+          />
+        </div>
+      )}
+
+      {step === "reflect" && (
+        <div className="itw-flow-page itw-flow-narrow" key="reflect">
+          <h2 className="itw-flow-title itw-center">Reflection: Conversational Urgency</h2>
+          <p className="itw-flow-lead itw-center">
+            Here are the neutral metrics from your fast-paced exchange:
+          </p>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              gap: 16,
+              margin: "24px 0",
+            }}
+          >
+            <div
+              style={{
+                background: "var(--itw-panel)",
+                border: "1px solid var(--itw-border)",
+                borderRadius: 18,
+                padding: "20px 18px",
+                textAlign: "center",
+              }}
+            >
+              <div style={{ fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--itw-muted)", fontWeight: 700 }}>
+                Total Speaking Time
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-speech)", margin: "8px 0" }}>
+                {results.fast ? `${results.fast.time.toFixed(1)}s` : "—"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>Across 2 conversational turns</div>
+            </div>
+
+            <div
+              style={{
+                background: "var(--itw-panel)",
+                border: "1px solid var(--itw-border)",
+                borderRadius: 18,
+                padding: "20px 18px",
+                textAlign: "center",
+              }}
+            >
+              <div style={{ fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--itw-muted)", fontWeight: 700 }}>
+                Turn Success Rate
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-speech)", margin: "8px 0" }}>
+                {results.fast ? `${results.fast.completedTurns} / ${results.fast.turns}` : "—"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+                {results.fast?.completedTurns === results.fast?.turns ? "Completed within window" : "Turns elapsed before delivery"}
+              </div>
+            </div>
+          </div>
+
+          <p className="itw-flow-lead" style={{ fontSize: 16, lineHeight: 1.6 }}>
+            In high-speed discussions, the pressure of being interrupted or having the group move on generates communicative tension. The thoughts were ready — the conversational timing was simply unsupportive.
+          </p>
+
+          <FlowQuestions
+            questions={SPEECH_REFLECT_QS}
+            answers={reflectionAnswers}
+            onPick={(qi, oi) => {
+              setReflectionAnswers((prev) => {
+                const next = [...prev];
+                next[qi] = oi;
+                return next;
+              });
+            }}
+          />
+
+          <div className="itw-flow-nav" style={{ marginTop: 24 }}>
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("run_fast")}>
+              Re-run Run 1
+            </button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("support")}>
+              Try a Supportive Accommodation →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "support" && (
+        <div className="itw-flow-page itw-flow-narrow" key="support">
+          <h2 className="itw-flow-title itw-center">Change the environment: Try conversational support</h2>
+          <p className="itw-flow-lead itw-center">
+            People with speech differences do not need advice to “calm down” or “speak slower.” They need conversation partners who offer unhurried space. Select an accommodation for Run 2:
+          </p>
+
+          <div style={{ display: "grid", gap: 14, margin: "24px 0" }}>
+            {SPEECH_SUPPORT_CHOICES.map((s) => (
+              <label
+                key={s.id}
+                style={{
+                  display: "block",
+                  padding: "16px 20px",
+                  borderRadius: 18,
+                  border: `2px solid ${chosenSupport === s.id ? "var(--itw-speech)" : "var(--itw-border)"}`,
+                  background: chosenSupport === s.id ? "rgba(140, 66, 44, 0.08)" : "var(--itw-panel)",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      textTransform: "uppercase",
+                      fontWeight: 800,
+                      letterSpacing: "0.06em",
+                      padding: "3px 10px",
+                      borderRadius: 99,
+                      background: "var(--itw-panel-2)",
+                      color: "var(--itw-muted)",
+                    }}
+                  >
+                    {s.tag}
+                  </span>
+                </div>
+                <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
+                <input
+                  type="radio"
+                  name="speech-support"
+                  value={s.id}
+                  checked={chosenSupport === s.id}
+                  onChange={() => setChosenSupport(s.id)}
+                  style={{ display: "none" }}
+                />
+              </label>
+            ))}
+          </div>
+
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("reflect")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_supported")}>
+              Run with Support →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_supported" && (
+        <div className="itw-flow-page" key="run_supported">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Run 2: Supported by {SPEECH_SUPPORT_CHOICES.find((s) => s.id === chosenSupport)?.title}</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>
+              Notice how having an unhurried, attentive listener completely transforms communication comfort.
+            </p>
+          </div>
+          <SpeechSim
+            mode="supported"
+            supportType={chosenSupport}
+            onComplete={handleSupportedComplete}
+            onAbort={() => setStep("support")}
+          />
+        </div>
+      )}
+
+      {step === "explain" && (
+        <div className="itw-flow-page" key="explain">
+          <div className="itw-flow-narrow" style={{ margin: "0 auto 36px" }}>
+            <h2 className="itw-flow-title itw-center">What this means in everyday life</h2>
+            <p className="itw-flow-lead itw-center">
+              A speech pause, block, or repetition is never a sign of lack of intelligence, hesitation, or unpreparedness.
+            </p>
+
+            <div
+              style={{
+                background: "rgba(140, 66, 44, 0.08)",
+                border: "1px solid var(--itw-speech)",
+                borderRadius: 18,
+                padding: "20px 24px",
+                margin: "24px 0",
+              }}
+            >
+              <h4 style={{ margin: "0 0 8px", fontSize: 16, fontWeight: 800, color: "var(--itw-speech)" }}>
+                ASHA Clinical Guidance: Listen to what is said, not how it is delivered
+              </h4>
+              <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.6, color: "var(--itw-text)" }}>
+                The American Speech-Language-Hearing Association (ASHA) emphasizes key relational practices: never finish a speaker's sentences or guess words for them, maintain warm and relaxed eye contact, keep your own speech rate measured, and focus entirely on the message being communicated rather than the delivery fluency.
+              </p>
+            </div>
+          </div>
+
+          <h3 className="itw-flow-h3">The Data: Indian Context</h3>
+          <FactsGrid
+            facts={[
+              {
+                num: "1.5% vs 0.46%",
+                label: "community prevalence of stuttering in school-age cohorts: 1.5% in Bangalore (Srinath et al., ages 4–16 across urban and rural cohorts) and 0.46% in Tamil Nadu (74,544 schoolchildren screened)",
+                src: "Srinath et al. (2005) Bangalore Study; Tamil Nadu School Survey (2018)",
+              },
+              {
+                num: "~10% Caseload",
+                label: "proportion of pediatric clients presenting to specialized tertiary clinics who stutter — a clinical caseload denominator, not a general community prevalence figure",
+                src: "All India Institute of Speech and Hearing (AIISH Mysore) Clinical Registry",
+              },
+              {
+                num: "Multilingual",
+                label: "In multilingual Indian environments, clinical guidelines emphasize distinguishing natural second-language formulation pauses from clinical speech disorders",
+                src: "AIISH Clinical Guidelines & ASHA Multilingual Practice Recommendations",
+              },
+            ]}
+            note="Community prevalence studies (e.g., 1.5% in Bangalore or 0.46% in Tamil Nadu) measure general child populations, whereas tertiary clinical statistics (~10% at AIISH) describe patients seeking specialized care. In multilingual Indian contexts, speech-language pathologists emphasize giving speakers unhurried time and distinguishing natural language formulation pauses from clinical speech disorders."
+            onComplete={() => {}}
+          />
+
+          <section className="itw-block itw-help-block" style={{ marginTop: 40 }}>
+            <div className="itw-help-head">
+              <div className="itw-help-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7.5-4.6-10-9.3C.4 8 2 4.5 5.6 4a5 5 0 0 1 6.4 2 5 5 0 0 1 6.4-2C22 4.5 23.6 8 22 11.7 19.5 16.4 12 21 12 21Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>
+              </div>
+              <div>
+                <div className="itw-help-eyebrow">Practical accommodations</div>
+                <h3 className="itw-help-title">How you can support at home & in the classroom</h3>
+              </div>
+            </div>
+
+            <StrategyTabs
+              home={[
+                "Let the speaker finish their own sentence — resist filling in words, even when you know what they intend to say.",
+                "Slow down your own conversational pace slightly; a calm rhythm models ease rather than urgency.",
+                "React to what they said, not how they said it — “tell me more” is far more supportive than commenting on fluency.",
+                "Maintain natural, relaxed eye contact during speech blocks rather than looking away or expressing impatience.",
+              ]}
+              classroom={[
+                "Never force a student who stutters to read aloud on the spot in front of peers without prior agreement and preparation.",
+                "Provide extended wait time after asking a question before expecting an answer or calling on another student.",
+                "Coordinate with the speech-language pathologist to integrate accommodations into regular classroom participation.",
+                "Foster an inclusive classroom environment where all communication styles are respected equally.",
+              ]}
+            />
+            <HelpFooter />
+          </section>
+
+          <div className="itw-flow-nav" style={{ marginTop: 32 }}>
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("support")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("next")}>Next Steps →</button>
+          </div>
+        </div>
+      )}
+
+      {step === "next" && (
+        <div className="itw-flow-page itw-flow-narrow" key="next">
+          <h2 className="itw-flow-title itw-center">Every voice deserves to be heard</h2>
+          <p className="itw-flow-lead itw-center">
+            When we create space for every communication style, we build more empathetic homes, classrooms, and communities.
+          </p>
+          <div className="itw-flow-nav itw-flow-nav-center">
+            <a className="itw-cta itw-cta-dark" href="/assessments">Take an Assessment →</a>
+            <a className="itw-cta itw-cta-line" href="/consult">Book a Consultation →</a>
+          </div>
+          <h3 className="itw-flow-h3">Explore More Experiences</h3>
+          <div className="itw-flow-more">
+            {more.map((m) => (
+              <button
+                type="button"
+                key={m.key}
+                className="itw-flow-more-card"
+                data-m={m.key}
+                onClick={() => onNavigate(m.key)}
+              >
+                <b>{m.name}</b>
+                <span>{m.tag}</span>
+                <i aria-hidden="true">→</i>
+              </button>
+            ))}
+          </div>
+          <div className="itw-flow-nav itw-flow-nav-center">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("explain")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-line" onClick={onBack}>All experiences</button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
+
+
+/* ================= DYSCALCULIA: Do the Math ================= */
+
+const DYSCALC_STEPS = [
+  { key: "instructions", label: "Instructions" },
+  { key: "run_baseline", label: "Run 1 (Direct Count)" },
+  { key: "unsupported_intro", label: "Scaling Brief" },
+  { key: "run_unsupported", label: "Run 2 (Abstract Scaling)" },
+  { key: "reflect", label: "Reflect & Compare" },
+  { key: "support", label: "Support Experiment" },
+  { key: "explain", label: "Understanding & Action" },
+];
+
+const DYSCALC_STEP_INDEX = {
+  instructions: 0,
+  run_baseline: 1,
+  unsupported_intro: 1,
+  run_unsupported: 2,
+  reflect: 3,
+  support: 4,
+  run_supported: 4,
+  explain: 5,
+};
+
+const DYSCALC_REFLECT_QS = [
+  {
+    q: "During the abstract scaling calculation, what did you observe?",
+    options: [
+      "Calculating 1.5x in working memory felt slippery without visual number anchors.",
+      "I had to recalculate multiple times because digits didn't feel spatially grounded.",
+      "The arithmetic took mental energy away from understanding the broader recipe.",
+      "Having a concrete number line or block model made the proportional relation instantly clear.",
+    ],
+  },
+];
+
+const DYSCALC_SUPPORT_CHOICES = [
+  {
+    id: "numberline",
+    title: "Visual Number Line & Interval Jump",
+    subtitle: "Spatial quantity anchoring",
+    desc: "Anchors proportional scaling on a physical visual number line so mental arithmetic is replaced by visual estimation.",
+    tag: "Spatial Scaffolding",
+  },
+  {
+    id: "blocks",
+    title: "Tactile Counter Blocks (CRA Model)",
+    subtitle: "Concrete base-10 visual units",
+    desc: "Uses the Concrete-Representational-Abstract framework: group 50g and 100g blocks visibly to reach the scaled amount.",
+    tag: "Concrete Scaffolding",
+  },
+  {
+    id: "scaffold",
+    title: "Step-by-Step Ratio Deconstruction",
+    subtitle: "Base + Half = Target formula",
+    desc: "Deconstructs 1.5x into two atomic operations: take the original base amount, then add half of it.",
+    tag: "Cognitive Scaffolding",
+  },
+];
+
+function DyscalculiaSim({ mode = "baseline", supportType = "numberline", onComplete, onAbort }) {
+  const { soundOn } = useContext(SettingsContext);
+  const [flourVal, setFlourVal] = useState(mode === "baseline" ? 200 : 200);
+  const [milkVal, setMilkVal] = useState(mode === "baseline" ? 120 : 120);
+  const [sugarVal, setSugarVal] = useState(mode === "baseline" ? 60 : 60);
+  const [elapsed, setElapsed] = useState(0);
+  const [calcErrors, setCalcErrors] = useState(0);
+
+  const startTimeRef = useRef(0);
+  const timerRef = useRef(null);
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  useEffect(() => {
+    startTimeRef.current = performance.now();
+    timerRef.current = setInterval(() => {
+      setElapsed(parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1)));
+    }, 100);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  const handleCheck = () => {
+    // Target for 6 servings (1.5x): flour: 300, milk: 180, sugar: 90
+    // Baseline targets (4 servings): flour: 200, milk: 120, sugar: 60
+    const correct = mode === "baseline"
+      ? (flourVal === 200 && milkVal === 120 && sugarVal === 60)
+      : (flourVal === 300 && milkVal === 180 && sugarVal === 90);
+
+    if (correct) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (soundOn) audio.cue("slam");
+      onCompleteRef.current?.({
+        time: elapsed,
+        calcErrors,
+      });
+    } else {
+      if (soundOn) audio.cue("flicker");
+      setCalcErrors((c) => c + 1);
+    }
+  };
+
+  return (
+    <div className="itw-dyscalc-card" role="region" aria-label="Baking Recipe Scaling Exercise">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div>
+          <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-dyscalculia)", letterSpacing: "0.08em" }}>
+            Cardamom Cookies • {mode === "baseline" ? "4 Servings (Base Recipe)" : "Scale for 6 Guests (1.5×)"}
+          </span>
+          <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
+            {mode === "baseline" ? "Measure Base Ingredients" : "Calculate Scaled Ingredients"}
+          </h3>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)" }}>
+            ⏱️ {elapsed.toFixed(1)}s
+          </span>
+          <button type="button" className="itw-pill-btn" onClick={onAbort}>Exit</button>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gap: 14 }}>
+        {/* Ingredient 1: Flour */}
+        <div className="itw-dyscalc-row">
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 15, color: "var(--itw-text)" }}>🌾 Whole Wheat Flour</div>
+            <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+              Base (4 servings): 200g • {mode === "baseline" ? "Target: 200g" : "Need for 6 servings: 1.5×"}
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button
+              type="button"
+              className="itw-pill-btn"
+              onClick={() => setFlourVal((v) => Math.max(0, v - (mode === "supported" && supportType === "blocks" ? 50 : 20)))}
+            >
+              -
+            </button>
+            <span style={{ fontFamily: "var(--font-mono)", fontWeight: 800, fontSize: 18, minWidth: 64, textAlign: "center", color: "var(--itw-text)" }}>
+              {flourVal}g
+            </span>
+            <button
+              type="button"
+              className="itw-pill-btn"
+              onClick={() => setFlourVal((v) => v + (mode === "supported" && supportType === "blocks" ? 50 : 20))}
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        {/* Number Line Support Overlay if active */}
+        {mode === "supported" && supportType === "numberline" && (
+          <div style={{ background: "var(--itw-panel)", padding: 12, borderRadius: 12, border: "1.5px solid var(--itw-dyscalculia)" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--itw-dyscalculia)", marginBottom: 6 }}>
+              Visual Number Line: 200g + 100g = 300g
+            </div>
+            <div style={{ position: "relative", height: 24, background: "rgba(29, 133, 133, 0.1)", borderRadius: 6 }}>
+              <div style={{ position: "absolute", left: "0%", top: 2, fontSize: 10, fontFamily: "var(--font-mono)" }}>0g</div>
+              <div style={{ position: "absolute", left: "50%", top: 2, fontSize: 10, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)" }}>200g (Base)</div>
+              <div style={{ position: "absolute", left: "75%", top: 2, fontSize: 10, fontFamily: "var(--font-mono)", fontWeight: 800, color: "var(--itw-dyscalculia)" }}>300g (Target)</div>
+            </div>
+          </div>
+        )}
+
+        {/* Concrete CRA Blocks Overlay if active */}
+        {mode === "supported" && supportType === "blocks" && (
+          <div style={{ background: "var(--itw-panel)", padding: 12, borderRadius: 12, border: "1.5px solid var(--itw-dyscalculia)" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--itw-dyscalculia)", marginBottom: 6 }}>
+              🧱 Concrete Counter Units (CRA Model): 4 units (200g) + 2 units (100g) = 6 units (300g)
+            </div>
+            <div className="itw-dyscalc-cra-blocks">
+              <span className="itw-cra-cube">50g</span>
+              <span className="itw-cra-cube">50g</span>
+              <span className="itw-cra-cube">50g</span>
+              <span className="itw-cra-cube">50g</span>
+              <span style={{ fontWeight: 800, color: "var(--itw-dyscalculia)" }}>+</span>
+              <span className="itw-cra-cube" style={{ background: "rgba(44, 140, 114, 0.2)", borderColor: "var(--itw-autism)" }}>50g</span>
+              <span className="itw-cra-cube" style={{ background: "rgba(44, 140, 114, 0.2)", borderColor: "var(--itw-autism)" }}>50g</span>
+              <span style={{ fontWeight: 800, color: "var(--itw-text)", fontSize: 12, marginLeft: 6 }}>= 300g Target</span>
+            </div>
+          </div>
+        )}
+
+        {/* Ratio Deconstruction Scaffold if active */}
+        {mode === "supported" && supportType === "scaffold" && (
+          <div style={{ background: "var(--itw-panel)", padding: 12, borderRadius: 12, border: "1.5px solid var(--itw-dyscalculia)" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--itw-dyscalculia)", marginBottom: 4 }}>
+              💡 Two-Step Formula: [Base Amount] + [Half of Base] = [1.5× Scaled Target]
+            </div>
+            <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+              Flour: 200g + 100g = <b>300g</b> • Milk: 120ml + 60ml = <b>180ml</b> • Sugar: 60g + 30g = <b>90g</b>
+            </div>
+          </div>
+        )}
+
+        {/* Ingredient 2: Milk */}
+        <div className="itw-dyscalc-row">
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 15, color: "var(--itw-text)" }}>🥛 Warm Milk</div>
+            <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+              Base (4 servings): 120ml • {mode === "baseline" ? "Target: 120ml" : "Need for 6 servings: 1.5×"}
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button
+              type="button"
+              className="itw-pill-btn"
+              onClick={() => setMilkVal((v) => Math.max(0, v - (mode === "supported" && supportType === "blocks" ? 30 : 10)))}
+            >
+              -
+            </button>
+            <span style={{ fontFamily: "var(--font-mono)", fontWeight: 800, fontSize: 18, minWidth: 64, textAlign: "center", color: "var(--itw-text)" }}>
+              {milkVal}ml
+            </span>
+            <button
+              type="button"
+              className="itw-pill-btn"
+              onClick={() => setMilkVal((v) => v + (mode === "supported" && supportType === "blocks" ? 30 : 10))}
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        {/* Ingredient 3: Raw Sugar */}
+        <div className="itw-dyscalc-row">
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 15, color: "var(--itw-text)" }}>🍯 Unrefined Sugar</div>
+            <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+              Base (4 servings): 60g • {mode === "baseline" ? "Target: 60g" : "Need for 6 servings: 1.5×"}
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button
+              type="button"
+              className="itw-pill-btn"
+              onClick={() => setSugarVal((v) => Math.max(0, v - (mode === "supported" && supportType === "blocks" ? 30 : 10)))}
+            >
+              -
+            </button>
+            <span style={{ fontFamily: "var(--font-mono)", fontWeight: 800, fontSize: 18, minWidth: 64, textAlign: "center", color: "var(--itw-text)" }}>
+              {sugarVal}g
+            </span>
+            <button
+              type="button"
+              className="itw-pill-btn"
+              onClick={() => setSugarVal((v) => v + (mode === "supported" && supportType === "blocks" ? 30 : 10))}
+            >
+              +
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {calcErrors > 0 && (
+        <div style={{ marginTop: 14, color: "var(--itw-speech)", fontSize: 13, fontWeight: 700 }}>
+          ⚠️ Check your proportions: at 1.5x, each ingredient equals its base amount plus half of that base.
+        </div>
+      )}
+
+      <div style={{ marginTop: 22, display: "flex", justifyContent: "flex-end" }}>
+        <button type="button" className="itw-cta itw-cta-dark" onClick={handleCheck}>
+          Confirm Measurements ✓
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function DyscalculiaModule({ onBack, onNavigate }) {
+  const [step, setStep] = useState("intro");
+  const [results, setResults] = useState({ baseline: null, unsupported: null, supported: null });
+  const [chosenSupport, setChosenSupport] = useState("numberline");
+  const [reflectionAnswers, setReflectionAnswers] = useState([null]);
+
+  const stepIndex = DYSCALC_STEP_INDEX[step];
+  const more = MODULES.filter((m) => m.key !== "dyscalculia");
+
+  const handleBaselineComplete = (data) => {
+    setResults((prev) => ({ ...prev, baseline: data }));
+    setStep("unsupported_intro");
+  };
+
+  const handleUnsupportedComplete = (data) => {
+    setResults((prev) => ({ ...prev, unsupported: data }));
+    setStep("reflect");
+  };
+
+  const handleSupportedComplete = (data) => {
+    setResults((prev) => ({ ...prev, supported: data }));
+    setStep("explain");
+  };
+
+  return (
+    <section className="itw-view itw-module itw-flow" data-accent="dyscalculia">
+      <FlowCrumbs name="Dyscalculia" onBack={onBack} />
+      {stepIndex !== undefined && <FlowStepper steps={DYSCALC_STEPS} current={stepIndex} />}
+
+      {step === "intro" && (
+        <div className="itw-flow-page itw-flow-intro" key="intro">
+          <div>
+            <h2 className="itw-flow-title">Dyscalculia</h2>
+            <div className="itw-flow-sub">Do the Math</div>
+            <p className="itw-flow-lead">
+              Numbers are not just abstract symbols on a page; in daily life, they represent spatial distances, time intervals,
+              and physical quantities. For individuals with dyscalculia, holding mental numbers without concrete spatial anchors
+              creates intense cognitive fatigue, turning everyday cooking, budgeting, or time-tracking into an uphill struggle.
+            </p>
+            <ul className="itw-flow-meta">
+              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
+              <li><span aria-hidden="true">🔢</span> Everyday recipe scaling task</li>
+              <li><span aria-hidden="true">🛡️</span> Empathy exercise, not a diagnostic test</li>
+            </ul>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
+              Start the Experience →
+            </button>
+          </div>
+          <div className="itw-flow-letters" aria-hidden="true">
+            {["1.5×", "300g", "180ml", "½", "¼", "90g"].map((sym, i) => (
+              <span key={i} style={{ animationDelay: `${i * 0.45}s` }}>{sym}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {step === "instructions" && (
+        <div className="itw-flow-page itw-flow-narrow" key="instructions">
+          <h2 className="itw-flow-title itw-center">Before you begin Run 1</h2>
+          <p className="itw-flow-lead itw-center">
+            You are measuring ingredients for traditional cardamom cookies.
+          </p>
+          <ul className="itw-flow-list">
+            <li><span aria-hidden="true">🥣</span> In Run 1, simply adjust the ingredient amounts to match the base recipe for 4 servings.</li>
+            <li><span aria-hidden="true">📏</span> In Run 2, you will experience the cognitive friction of scaling that recipe for 6 people without visual aids.</li>
+            <li><span aria-hidden="true">💡</span> In Run 3, test how visual number lines and concrete scaffolding relieve mathematical strain.</li>
+          </ul>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_baseline")}>
+              Start Run 1 (Direct Count) →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_baseline" && (
+        <div className="itw-flow-page" key="run_baseline">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Run 1: Base Recipe Measurement</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>Notice how straightforward measuring is when quantities are already specified.</p>
+          </div>
+          <DyscalculiaSim mode="baseline" onComplete={handleBaselineComplete} onAbort={() => setStep("instructions")} />
+        </div>
+      )}
+
+      {step === "unsupported_intro" && (
+        <div className="itw-flow-page itw-flow-narrow" key="unsupported_intro">
+          <h2 className="itw-flow-title itw-center">Now, Run 2: Scaling by 1.5×</h2>
+          <p className="itw-flow-lead itw-center">
+            Two extra guests have joined! You must now scale the recipe from 4 servings to 6 servings (a 1.5× multiplier).
+          </p>
+          <ul className="itw-flow-list">
+            <li><span aria-hidden="true">🧠</span> Calculate 1.5× for 200g flour, 120ml milk, and 60g sugar mentally.</li>
+            <li><span aria-hidden="true">⚠️</span> Notice how holding mental arithmetic calculations without visual models strains working memory.</li>
+          </ul>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("run_baseline")}>Back to Run 1</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_unsupported")}>
+              Start Run 2 (Abstract Scaling) →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_unsupported" && (
+        <div className="itw-flow-page" key="run_unsupported">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Run 2: Abstract Mental Calculation</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>Scale each ingredient by 1.5× without visual aids.</p>
+          </div>
+          <DyscalculiaSim mode="unsupported" onComplete={handleUnsupportedComplete} onAbort={() => setStep("unsupported_intro")} />
+        </div>
+      )}
+
+      {step === "reflect" && (
+        <div className="itw-flow-page itw-flow-narrow" key="reflect">
+          <h2 className="itw-flow-title itw-center">What did you observe about mathematical working memory?</h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 16,
+              margin: "24px 0",
+              background: "var(--itw-panel)",
+              padding: 20,
+              borderRadius: 20,
+              border: "1px solid var(--itw-border)",
+            }}
+          >
+            <div style={{ textAlign: "center", padding: 12 }}>
+              <div style={{ fontSize: 13, textTransform: "uppercase", color: "var(--itw-muted)", fontWeight: 700 }}>
+                Run 1 (Direct)
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-text)", margin: "8px 0" }}>
+                {results.baseline ? `${results.baseline.time.toFixed(1)}s` : "—"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>0 calculations</div>
+            </div>
+            <div style={{ textAlign: "center", padding: 12, borderLeft: "1px solid var(--itw-border)" }}>
+              <div style={{ fontSize: 13, textTransform: "uppercase", color: "var(--itw-dyscalculia)", fontWeight: 700 }}>
+                Run 2 (Mental Scaling)
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-dyscalculia)", margin: "8px 0" }}>
+                {results.unsupported ? `${results.unsupported.time.toFixed(1)}s` : "—"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+                {results.unsupported ? `${results.unsupported.calcErrors} adjustment attempts` : "—"}
+              </div>
+            </div>
+          </div>
+
+          <p className="itw-flow-lead" style={{ fontSize: 16, lineHeight: 1.6 }}>
+            {results.baseline && results.unsupported && results.unsupported.time > results.baseline.time
+              ? `In this round, calculating proportions in working memory changed your task time by ${(results.unsupported.time - results.baseline.time).toFixed(1)} seconds. When mathematical concepts lack a spatial visual representation, everyday conversions require significant mental strain. This task observes visual scaffolding in arithmetic, not diagnostic math ability.`
+              : "In this round, calculating proportions in working memory required additional mental effort. When mathematical concepts lack a spatial visual representation, everyday conversions require significant mental strain. This task observes visual scaffolding in arithmetic, not diagnostic math ability."}
+          </p>
+
+          <FlowQuestions
+            questions={DYSCALC_REFLECT_QS}
+            answers={reflectionAnswers}
+            onPick={(qi, oi) => {
+              setReflectionAnswers((prev) => {
+                const next = [...prev];
+                next[qi] = oi;
+                return next;
+              });
+            }}
+          />
+
+          <div className="itw-flow-nav" style={{ marginTop: 24 }}>
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("run_unsupported")}>
+              Re-run Task
+            </button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("support")}>
+              Try a Visual Accommodation →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "support" && (
+        <div className="itw-flow-page itw-flow-narrow" key="support">
+          <h2 className="itw-flow-title itw-center">Ground numbers spatially: Choose a support</h2>
+          <p className="itw-flow-lead itw-center">
+            Children with dyscalculia benefit enormously from multi-sensory, spatial representations of quantity. Choose an environmental scaffold below:
+          </p>
+          <div style={{ display: "grid", gap: 14, margin: "24px 0" }}>
+            {DYSCALC_SUPPORT_CHOICES.map((s) => (
+              <label
+                key={s.id}
+                style={{
+                  display: "block",
+                  padding: "16px 20px",
+                  borderRadius: 18,
+                  border: `2px solid ${chosenSupport === s.id ? "var(--itw-dyscalculia)" : "var(--itw-border)"}`,
+                  background: chosenSupport === s.id ? "rgba(29, 133, 133, 0.08)" : "var(--itw-panel)",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      textTransform: "uppercase",
+                      fontWeight: 800,
+                      letterSpacing: "0.06em",
+                      padding: "3px 10px",
+                      borderRadius: 99,
+                      background: "var(--itw-panel-2)",
+                      color: "var(--itw-muted)",
+                    }}
+                  >
+                    {s.tag}
+                  </span>
+                </div>
+                <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
+                <input
+                  type="radio"
+                  name="dyscalc-support"
+                  value={s.id}
+                  checked={chosenSupport === s.id}
+                  onChange={() => setChosenSupport(s.id)}
+                  style={{ display: "none" }}
+                />
+              </label>
+            ))}
+          </div>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("reflect")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_supported")}>
+              Run with Support →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_supported" && (
+        <div className="itw-flow-page" key="run_supported">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Run 3: Supported by {DYSCALC_SUPPORT_CHOICES.find((s) => s.id === chosenSupport)?.title}</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>
+              {chosenSupport === "numberline" && "A marked visual number line anchors spatial intervals so you don't have to calculate in the dark."}
+              {chosenSupport === "blocks" && "Concrete 50g block units make quantities tactile and visible."}
+              {chosenSupport === "scaffold" && "Ratio deconstruction scaffolds operations into clear one-step additions."}
+            </p>
+          </div>
+          <DyscalculiaSim
+            mode="supported"
+            supportType={chosenSupport}
+            onComplete={handleSupportedComplete}
+            onAbort={() => setStep("support")}
+          />
+        </div>
+      )}
+
+      {step === "explain" && (
+        <div className="itw-flow-page itw-flow-narrow" key="explain">
+          <h2 className="itw-flow-title itw-center">What this means in everyday life</h2>
+          <p className="itw-flow-lead itw-center">
+            {results.supported && results.unsupported
+              ? `Supported time was ${results.supported.time.toFixed(1)}s (versus ${results.unsupported.time.toFixed(1)}s when unsupported). Spatial tools transform abstract numbers into intuitive concepts.`
+              : "Visual and concrete tools transform abstract numerical calculations into intuitive concepts."}
+          </p>
+
+          <div className="itw-flow-explain" style={{ margin: "24px 0" }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: "var(--itw-text)" }}>
+              Understanding Numerical Cognition
+            </h3>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--itw-text)", marginBottom: 16 }}>
+              Dyscalculia is a specific learning difference that affects the brain's intraparietal sulcus, which is responsible
+              for foundational number sense — our intuitive ability to gauge "how many" without counting (subitizing) and
+              spatially map magnitudes along a mental number line.
+            </p>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--itw-text)" }}>
+              Children with dyscalculia do not struggle because they are careless; they struggle because their brains translate
+              digits into quantities differently. Providing graph paper, visual number lines, measuring manipulatives, and
+              calculators allows them to demonstrate their strong conceptual reasoning.
+            </p>
+          </div>
+
+          <div style={{ margin: "28px 0" }}>
+            <div className="itw-block-label" style={{ marginBottom: 12 }}>Indian Prevalence &amp; Research Context</div>
+            <FactsGrid
+              facts={[
+                {
+                  num: "~8% (All SLDs)",
+                  label: "pooled prevalence of Specific Learning Disorders (SLDs) overall across Indian school-aged cohorts (Scaria et al., 2023; 95% CI: 4%–11%), encompassing reading, writing, and mathematics, with dyscalculia specifically estimated at 3%–6% within clinical sub-analyses",
+                  src: "Scaria, Bhaskaran & George (2023), Indian Systematic Review & Meta-Analysis of SLDs",
+                },
+                {
+                  num: "Foundational",
+                  label: "Developmental dyscalculia reflects a core neurocognitive difference in basic number representation, not general intelligence",
+                  src: "Butterworth (2010), Developmental Dyscalculia and Foundational Number Modules",
+                },
+                {
+                  num: "CRA Framework",
+                  label: "Concrete-Representational-Abstract instructional scaffolding significantly boosts arithmetic fluency and conceptual transfer",
+                  src: "Indian Academy of Pediatrics (IAP) Guidelines on Learning Disorders",
+                },
+              ]}
+              note="Dyscalculia is an innate difference in numerical magnitude processing. In Indian academic settings, allowing calculators for higher-order science and using concrete manipulatives helps children excel without unnecessary computational stress."
+              onComplete={() => {}}
+            />
+          </div>
+
+          <div style={{ margin: "32px 0" }}>
+            <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 14, color: "var(--itw-text)" }}>
+              Actionable Strategies That Help
+            </h3>
+            <StrategyTabs
+              home={[
+                "Use concrete measuring cups and physical coins during cooking and shopping to anchor quantities in physical space.",
+                "Provide visual analog clocks with color-coded intervals rather than purely digital numbers.",
+                "Encourage finger-counting and tactile counters without stigma — they serve as essential external working memory.",
+                "Break multi-step math homework into one problem per page to eliminate visual crowding.",
+              ]}
+              classroom={[
+                "Provide grid or graph paper during arithmetic tasks to assist spatial column and decimal alignment.",
+                "Permit the use of visual number lines and multiplication matrices during assessments.",
+                "Separate grading of conceptual mathematical reasoning from raw mental arithmetic accuracy.",
+                "Adopt the Concrete-Representational-Abstract (CRA) teaching progression across math concepts.",
+              ]}
+            />
+          </div>
+
+          <div className="itw-flow-nav" style={{ marginTop: 32 }}>
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("instructions")}>
+              Try Dyscalculia flow again
+            </button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("next")}>
+              Next Steps →
+            </button>
+          </div>
+          <HelpFooter />
+        </div>
+      )}
+
+      {step === "next" && (
+        <div className="itw-flow-page itw-flow-narrow" key="next">
+          <h2 className="itw-flow-title itw-center">Numbers make sense with the right tools</h2>
+          <p className="itw-flow-lead itw-center">
+            When we replace abstract mental burdens with spatial and concrete representations, every learner can develop mathematical confidence.
+          </p>
+          <div className="itw-flow-nav itw-flow-nav-center">
+            <a className="itw-cta itw-cta-dark" href="/assessments">Take an Assessment →</a>
+            <a className="itw-cta itw-cta-line" href="/consult">Book a Consultation →</a>
+          </div>
+          <h3 className="itw-flow-h3">Explore More Experiences</h3>
+          <div className="itw-flow-more">
+            {more.map((m) => (
+              <button
+                type="button"
+                key={m.key}
+                className="itw-flow-more-card"
+                data-m={m.key}
+                onClick={() => onNavigate(m.key)}
+              >
+                <b>{m.name}</b>
+                <span>{m.tag}</span>
+                <i aria-hidden="true">→</i>
+              </button>
+            ))}
+          </div>
+          <div className="itw-flow-nav itw-flow-nav-center">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("explain")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-line" onClick={onBack}>All experiences</button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+/* ================= DYSGRAPHIA: Write It Down ================= */
+
+const DYSGRAPH_STEPS = [
+  { key: "instructions", label: "Instructions" },
+  { key: "run_baseline", label: "Run 1 (Mental Clarity)" },
+  { key: "unsupported_intro", label: "Transcription Brief" },
+  { key: "run_unsupported", label: "Run 2 (Motor Bottleneck)" },
+  { key: "reflect", label: "Reflect & Compare" },
+  { key: "support", label: "Support Experiment" },
+  { key: "explain", label: "Understanding & Action" },
+];
+
+const DYSGRAPH_STEP_INDEX = {
+  instructions: 0,
+  run_baseline: 1,
+  unsupported_intro: 1,
+  run_unsupported: 2,
+  reflect: 3,
+  support: 4,
+  run_supported: 4,
+  explain: 5,
+};
+
+const DYSGRAPH_REFLECT_QS = [
+  {
+    q: "During the manual transcription run, where did you notice the disconnect?",
+    options: [
+      "I knew the exact sentence in my head, but manual word transcription felt slow and fragmented.",
+      "The physical effort of transcribing text drained cognitive energy away from the science ideas.",
+      "Manual transcription demands competed directly with the working memory needed for formulating academic thoughts.",
+      "Switching to voice dictation or structured concept blocks let my ideas flow directly onto the page.",
+    ],
+  },
+];
+
+const DYSGRAPH_SUPPORT_CHOICES = [
+  {
+    id: "dictation",
+    title: "Voice Dictation / Speech-to-Text",
+    subtitle: "Bypasses motor transcription entirely",
+    desc: "Speak your thoughts aloud; speech recognition software converts your spoken ideas into clean text with zero physical motor strain.",
+    tag: "Motor Bypass Accommodation",
+  },
+  {
+    id: "wordbank",
+    title: "Structured Concept & Sentence Bank",
+    subtitle: "One-click phrase assembly",
+    desc: "Scaffolds transcription by allowing the learner to tap core academic phrases to construct coherent syntax with 80% fewer motor actions.",
+    tag: "Executive Scaffolding",
+  },
+  {
+    id: "predictive",
+    title: "Keyboard Assist with Word Prediction",
+    subtitle: "Predictive academic autocomplete",
+    desc: "Predicts multi-syllable scientific words after 1–2 letters, eliminating manual handwriting fatigue.",
+    tag: "Assistive Technology",
+  },
+];
+
+const DYSGRAPH_TARGET_WORDS = ["Plants", "absorb", "sunlight", "to", "produce", "glucose", "releasing", "oxygen"];
+
+function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplete, onAbort }) {
+  const { soundOn } = useContext(SettingsContext);
+  const [typedWords, setTypedWords] = useState([]);
+  const [elapsed, setElapsed] = useState(0);
+
+  const startTimeRef = useRef(0);
+  const timerRef = useRef(null);
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  useEffect(() => {
+    startTimeRef.current = performance.now();
+    timerRef.current = setInterval(() => {
+      setElapsed(parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1)));
+    }, 100);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  const handleAddWord = (word) => {
+    if (soundOn) audio.cue("tap");
+    const nextWords = [...typedWords, word];
+    setTypedWords(nextWords);
+
+    if (nextWords.length >= DYSGRAPH_TARGET_WORDS.length) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (soundOn) audio.cue("slam");
+      onCompleteRef.current?.({
+        time: elapsed,
+        wordsCount: nextWords.length,
+      });
+    }
+  };
+
+  const handleVoiceDictate = () => {
+    if (soundOn) audio.cue("call");
+    setTypedWords(DYSGRAPH_TARGET_WORDS);
+    if (timerRef.current) clearInterval(timerRef.current);
+    onCompleteRef.current?.({
+      time: 2.1,
+      wordsCount: DYSGRAPH_TARGET_WORDS.length,
+    });
+  };
+
+  const handleSelectChunk = (chunk) => {
+    if (soundOn) audio.cue("tap");
+    const words = chunk.split(" ");
+    const next = [...typedWords, ...words];
+    setTypedWords(next);
+    if (next.length >= DYSGRAPH_TARGET_WORDS.length) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (soundOn) audio.cue("slam");
+      onCompleteRef.current?.({
+        time: elapsed,
+        wordsCount: next.length,
+      });
+    }
+  };
+
+  return (
+    <div className="itw-dysgraph-canvas" role="region" aria-label="Transcription Mechanics Simulation">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <div>
+          <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-dysgraphia)", letterSpacing: "0.08em" }}>
+            Science Notebook • {mode === "baseline" ? "Baseline Writing" : mode === "unsupported" ? "Manual Word Transcription" : "Supported Expression"}
+          </span>
+          <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-paper-text)", margin: "4px 0" }}>
+            The Idea in Your Mind: &ldquo;Plants absorb sunlight to produce glucose, releasing oxygen.&rdquo;
+          </h3>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-paper-muted)" }}>
+            ⏱️ {elapsed.toFixed(1)}s
+          </span>
+          <button type="button" className="itw-pill-btn" onClick={onAbort}>Exit</button>
+        </div>
+      </div>
+
+      {/* Transcription Output Display */}
+      <div className="itw-dysgraph-output">
+        {typedWords.length === 0 ? (
+          <span style={{ color: "var(--itw-paper-muted)", fontStyle: "italic" }}>
+            {mode === "supported" && supportType === "dictation"
+              ? "Click 'Dictate Sentence' below to speak your ideas aloud without manual typing strain."
+              : "Assemble your sentence below to transcribe your hypothesis..."}
+          </span>
+        ) : (
+          typedWords.map((w, idx) => (
+            <span
+              key={idx}
+              style={{
+                display: "inline-block",
+                marginRight: 6,
+                fontWeight: 600,
+                color: "var(--itw-paper-text)",
+              }}
+            >
+              {w}
+            </span>
+          ))
+        )}
+      </div>
+
+      {/* Input Controls */}
+      <div style={{ marginTop: 20 }}>
+        {mode === "supported" && supportType === "dictation" ? (
+          <div style={{ textAlign: "center", padding: "16px 0" }}>
+            <button
+              type="button"
+              className="itw-cta itw-cta-dark"
+              style={{ fontSize: 16, padding: "14px 28px", display: "inline-flex", alignItems: "center", gap: 8 }}
+              onClick={handleVoiceDictate}
+            >
+              🎙️ Dictate Sentence with Voice (Speech-to-Text)
+            </button>
+            <div style={{ fontSize: 13, color: "var(--itw-paper-muted)", marginTop: 8 }}>
+              Voice recognition translates your oral fluency directly onto the page, bypassing motor strain.
+            </div>
+          </div>
+        ) : mode === "supported" && supportType === "wordbank" ? (
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-paper-muted)", marginBottom: 8 }}>
+              Sentence Starters &amp; Concept Blocks (Chunked Academic Assembly):
+            </div>
+            <div className="itw-word-bank">
+              {[
+                "Plants absorb sunlight",
+                "to produce glucose",
+                "releasing oxygen",
+              ].map((chunk) => {
+                const words = chunk.split(" ");
+                const isDone = words.every((w) => typedWords.includes(w));
+                return (
+                  <button
+                    key={chunk}
+                    type="button"
+                    className="itw-word-chip"
+                    disabled={isDone}
+                    onClick={() => handleSelectChunk(chunk)}
+                    style={{
+                      background: isDone ? "var(--itw-panel)" : "rgba(178, 89, 40, 0.12)",
+                      borderColor: "var(--itw-dysgraphia)",
+                      fontWeight: 700,
+                    }}
+                  >
+                    + {chunk}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-paper-muted)", marginBottom: 8 }}>
+              {mode === "unsupported" ? "Assemble individual words (simulating fine-motor transcription demands):" : "Select Concept Blocks:"}
+            </div>
+            <div className="itw-word-bank">
+              {DYSGRAPH_TARGET_WORDS.map((word, i) => {
+                const isNext = typedWords.length === i;
+                const isDone = typedWords.length > i;
+                return (
+                  <button
+                    key={word}
+                    type="button"
+                    className="itw-word-chip"
+                    disabled={isDone || (!isNext && mode === "unsupported")}
+                    onClick={() => handleAddWord(word)}
+                    style={{
+                      opacity: isDone ? 0.4 : isNext ? 1 : 0.7,
+                      borderColor: isNext ? "var(--itw-dysgraphia)" : "var(--itw-border)",
+                      fontWeight: isNext ? 800 : 500,
+                    }}
+                  >
+                    {word}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DysgraphiaModule({ onBack, onNavigate }) {
+  const [step, setStep] = useState("intro");
+  const [results, setResults] = useState({ baseline: null, unsupported: null, supported: null });
+  const [chosenSupport, setChosenSupport] = useState("dictation");
+  const [reflectionAnswers, setReflectionAnswers] = useState([null]);
+
+  const stepIndex = DYSGRAPH_STEP_INDEX[step];
+  const more = MODULES.filter((m) => m.key !== "dysgraphia");
+
+  const handleBaselineComplete = (data) => {
+    setResults((prev) => ({ ...prev, baseline: data }));
+    setStep("unsupported_intro");
+  };
+
+  const handleUnsupportedComplete = (data) => {
+    setResults((prev) => ({ ...prev, unsupported: data }));
+    setStep("reflect");
+  };
+
+  const handleSupportedComplete = (data) => {
+    setResults((prev) => ({ ...prev, supported: data }));
+    setStep("explain");
+  };
+
+  return (
+    <section className="itw-view itw-module itw-flow" data-accent="dysgraphia">
+      <FlowCrumbs name="Dysgraphia" onBack={onBack} />
+      {stepIndex !== undefined && <FlowStepper steps={DYSGRAPH_STEPS} current={stepIndex} />}
+
+      {step === "intro" && (
+        <div className="itw-flow-page itw-flow-intro" key="intro">
+          <div>
+            <h2 className="itw-flow-title">Dysgraphia</h2>
+            <div className="itw-flow-sub">Write It Down</div>
+            <p className="itw-flow-lead">
+              A child with dysgraphia may possess an extraordinary vocabulary, complex scientific insights, and vivid
+              story ideas. But when asked to put pencil to paper, a neurological disconnect in the motor transcription
+              pathway turns writing into an agonizing physical slog, creating hand cramps and disjointed output.
+            </p>
+            <ul className="itw-flow-meta">
+              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
+              <li><span aria-hidden="true">✏️</span> Transcription bottleneck simulation</li>
+              <li><span aria-hidden="true">🛡️</span> Empathy exercise, not a diagnostic test</li>
+            </ul>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
+              Start the Experience →
+            </button>
+          </div>
+          <div className="itw-flow-letters" aria-hidden="true">
+            {["✏️", "📝", "🎙️", "A", "b", "C"].map((sym, i) => (
+              <span key={i} style={{ animationDelay: `${i * 0.45}s` }}>{sym}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {step === "instructions" && (
+        <div className="itw-flow-page itw-flow-narrow" key="instructions">
+          <h2 className="itw-flow-title itw-center">Before you begin Run 1</h2>
+          <p className="itw-flow-lead itw-center">
+            You know the biology hypothesis perfectly: <b>&ldquo;Plants absorb sunlight to produce glucose, releasing oxygen.&rdquo;</b>
+          </p>
+          <ul className="itw-flow-list">
+            <li><span aria-hidden="true">🧠</span> Notice how clear, fluent, and effortless the idea feels in your mind.</li>
+            <li><span aria-hidden="true">✍️</span> In Run 2, experience what happens when the mechanical transcription channel is heavily constrained.</li>
+            <li><span aria-hidden="true">🎙️</span> In Run 3, test voice dictation to see how motor bypass accommodations unlock true student potential.</li>
+          </ul>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => handleBaselineComplete({ time: 3.2 })}>
+              Confirm Mental Clarity (Run 1) →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "unsupported_intro" && (
+        <div className="itw-flow-page itw-flow-narrow" key="unsupported_intro">
+          <h2 className="itw-flow-title itw-center">Now, Run 2: The Physical Transcription Barrier</h2>
+          <p className="itw-flow-lead itw-center">
+            You must now physically transcribe the exact sentence into your science notebook.
+          </p>
+          <ul className="itw-flow-list">
+            <li><span aria-hidden="true">✍️</span> Transcribe the full scientific sentence into your notebook word by word.</li>
+            <li><span aria-hidden="true">🧠</span> Notice how the conscious mechanical focus of transcription drains working memory away from the science concepts.</li>
+            <li><span aria-hidden="true">🛡️</span> In Run 3, test assistive supports (speech-to-text or concept blocks) that bypass this bottleneck.</li>
+          </ul>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("instructions")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_unsupported")}>
+              Start Run 2 (Manual Transcription) →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_unsupported" && (
+        <div className="itw-flow-page" key="run_unsupported">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Run 2: Motor Transcription Bottleneck</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>Transcribe your sentence while experiencing motor drag and hand fatigue.</p>
+          </div>
+          <DysgraphiaSim mode="unsupported" onComplete={handleUnsupportedComplete} onAbort={() => setStep("unsupported_intro")} />
+        </div>
+      )}
+
+      {step === "reflect" && (
+        <div className="itw-flow-page itw-flow-narrow" key="reflect">
+          <h2 className="itw-flow-title itw-center">What did you observe about transcription effort?</h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 16,
+              margin: "24px 0",
+              background: "var(--itw-panel)",
+              padding: 20,
+              borderRadius: 20,
+              border: "1px solid var(--itw-border)",
+            }}
+          >
+            <div style={{ textAlign: "center", padding: 12 }}>
+              <div style={{ fontSize: 13, textTransform: "uppercase", color: "var(--itw-muted)", fontWeight: 700 }}>
+                Run 1 (Mental Clarity)
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-text)", margin: "8px 0" }}>
+                {results.baseline ? `${results.baseline.time.toFixed(1)}s` : "—"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>Instant mental formulation</div>
+            </div>
+            <div style={{ textAlign: "center", padding: 12, borderLeft: "1px solid var(--itw-border)" }}>
+              <div style={{ fontSize: 13, textTransform: "uppercase", color: "var(--itw-dysgraphia)", fontWeight: 700 }}>
+                Run 2 (Motor Bottleneck)
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-dysgraphia)", margin: "8px 0" }}>
+                {results.unsupported ? `${results.unsupported.time.toFixed(1)}s` : "—"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+                {results.unsupported ? "Mechanical fatigue & pauses" : "—"}
+              </div>
+            </div>
+          </div>
+
+          <p className="itw-flow-lead" style={{ fontSize: 16, lineHeight: 1.6 }}>
+            {results.baseline && results.unsupported && results.unsupported.time > results.baseline.time
+              ? `In this round, the physical mechanics of transcription slowed output by ${(results.unsupported.time - results.baseline.time).toFixed(1)} seconds. Notice how the physical effort of letter formation drained energy away from scientific ideation. Dysgraphia is an execution difference, not a lack of intelligence or creativity. This task observes transcription load, not diagnostic ability.`
+              : "In this round, the physical mechanics of transcription created significant drag. Dysgraphia is an execution difference, not a lack of intelligence or creativity. This task observes transcription load, not diagnostic ability."}
+          </p>
+
+          <FlowQuestions
+            questions={DYSGRAPH_REFLECT_QS}
+            answers={reflectionAnswers}
+            onPick={(qi, oi) => {
+              setReflectionAnswers((prev) => {
+                const next = [...prev];
+                next[qi] = oi;
+                return next;
+              });
+            }}
+          />
+
+          <div className="itw-flow-nav" style={{ marginTop: 24 }}>
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("run_unsupported")}>
+              Re-run Task
+            </button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("support")}>
+              Try an Assistive Support →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "support" && (
+        <div className="itw-flow-page itw-flow-narrow" key="support">
+          <h2 className="itw-flow-title itw-center">Bypass motor drag: Choose an accommodation</h2>
+          <p className="itw-flow-lead itw-center">
+            Children with dysgraphia shine when evaluation separates knowledge from handwriting motor execution. Select a support:
+          </p>
+          <div style={{ display: "grid", gap: 14, margin: "24px 0" }}>
+            {DYSGRAPH_SUPPORT_CHOICES.map((s) => (
+              <label
+                key={s.id}
+                style={{
+                  display: "block",
+                  padding: "16px 20px",
+                  borderRadius: 18,
+                  border: `2px solid ${chosenSupport === s.id ? "var(--itw-dysgraphia)" : "var(--itw-border)"}`,
+                  background: chosenSupport === s.id ? "rgba(178, 89, 40, 0.08)" : "var(--itw-panel)",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      textTransform: "uppercase",
+                      fontWeight: 800,
+                      letterSpacing: "0.06em",
+                      padding: "3px 10px",
+                      borderRadius: 99,
+                      background: "var(--itw-panel-2)",
+                      color: "var(--itw-muted)",
+                    }}
+                  >
+                    {s.tag}
+                  </span>
+                </div>
+                <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
+                <input
+                  type="radio"
+                  name="dysgraph-support"
+                  value={s.id}
+                  checked={chosenSupport === s.id}
+                  onChange={() => setChosenSupport(s.id)}
+                  style={{ display: "none" }}
+                />
+              </label>
+            ))}
+          </div>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("reflect")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_supported")}>
+              Run with Support →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_supported" && (
+        <div className="itw-flow-page" key="run_supported">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Run 3: Supported by {DYSGRAPH_SUPPORT_CHOICES.find((s) => s.id === chosenSupport)?.title}</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>
+              {chosenSupport === "dictation" && "Voice recognition converts speech into text instantly, bypassing fine-motor barriers."}
+              {chosenSupport === "wordbank" && "Structured concept blocks scaffold syntax and reduce repetitive physical keystrokes."}
+              {chosenSupport === "predictive" && "Word autocomplete assists rapid scientific phrase composition."}
+            </p>
+          </div>
+          <DysgraphiaSim
+            mode="supported"
+            supportType={chosenSupport}
+            onComplete={handleSupportedComplete}
+            onAbort={() => setStep("support")}
+          />
+        </div>
+      )}
+
+      {step === "explain" && (
+        <div className="itw-flow-page itw-flow-narrow" key="explain">
+          <h2 className="itw-flow-title itw-center">What this means in everyday life</h2>
+          <p className="itw-flow-lead itw-center">
+            {results.supported && results.unsupported
+              ? `Supported time was ${results.supported.time.toFixed(1)}s (versus ${results.unsupported.time.toFixed(1)}s when unsupported). When motor barriers are lifted, deep learning becomes visible.`
+              : "Assistive accommodations allow children to express their true knowledge without motor exhaustion."}
+          </p>
+
+          <div className="itw-flow-explain" style={{ margin: "24px 0" }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: "var(--itw-text)" }}>
+              Separating Ideation from Transcription
+            </h3>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--itw-text)", marginBottom: 16 }}>
+              Writing requires two completely distinct neurological systems: <i>ideation</i> (generating thoughts, vocabulary,
+              and argument structure) and <i>transcription</i> (the fine-motor and orthographic motor programming needed to form
+              letters and spell words).
+            </p>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--itw-text)" }}>
+              In dysgraphia, the orthographic motor loop operates with severe friction. When educators grade a student’s knowledge
+              strictly through their physical handwriting neatness or writing speed, they penalize the child’s motor coordination
+              rather than their intellect.
+            </p>
+            <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "var(--itw-text)", marginTop: 12 }}>
+              <strong>ASHA &amp; Clinical Definition:</strong> The American Speech-Language-Hearing Association (ASHA) and DSM-5 categorize written expression differences into transcription mechanics (handwriting, orthographic letter-form retrieval, and typing fluidity) and text generation / ideation (organizing thoughts, paragraph sequencing, and narrative coherence). Supporting students requires targeting both dimensions: assistive tech (speech-to-text, keyboarding) for transcription, alongside visual graphic organizers and sentence frames for text generation.
+            </p>
+          </div>
+
+          <div style={{ margin: "28px 0" }}>
+            <div className="itw-block-label" style={{ marginBottom: 12 }}>Indian Prevalence &amp; Clinical Context</div>
+            <FactsGrid
+              facts={[
+                {
+                  num: "10% – 14%",
+                  label: "of Indian school students referred for learning difficulties exhibit marked written expression and graphomotor barriers",
+                  src: "Indian Journal of Pediatrics & AIISH Mysore Clinical Reports",
+                },
+                {
+                  num: "Orthographic Loop",
+                  label: "Dysgraphia stems from working-memory retrieval of letterforms and motor planning, distinct from intellectual capacity",
+                  src: "Berninger & Wolf (2009), Teaching Students with Dyslexia and Dysgraphia",
+                },
+                {
+                  num: "Assistive Rights",
+                  label: "The Rights of Persons with Disabilities (RPwD) Act 2016 mandates scribes, oral exams, and extra time for specific learning disabilities",
+                  src: "Ministry of Social Justice & Empowerment, Government of India",
+                },
+              ]}
+              note="Dysgraphia affects motor output, not intellectual comprehension. Simple accommodations like speech-to-text, typed submissions, and oral examinations bridge the gap between brilliant thinking and written work."
+              onComplete={() => {}}
+            />
+          </div>
+
+          <div style={{ margin: "32px 0" }}>
+            <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 14, color: "var(--itw-text)" }}>
+              Actionable Strategies That Help
+            </h3>
+            <StrategyTabs
+              home={[
+                "Allow children to dictate homework drafts using speech recognition before touching a pencil or keyboard.",
+                "Provide ergonomic triangular pencil grips or weighted pens to reduce hand muscle cramping.",
+                "Focus home praise on the ideas and storytelling within a paragraph rather than handwriting neatness.",
+                "Incorporate hand-strengthening play (putty, clay, fine-motor origami) in low-pressure contexts.",
+              ]}
+              classroom={[
+                "Separate grading: assign one grade for conceptual understanding and another for handwriting mechanics.",
+                "Provide printed class notes or lecture slides so students don't spend all working memory copying from the board.",
+                "Permit laptops, speech-to-text tools, or scribes for long-form essay examinations.",
+                "Offer extra time during written assessments to accommodate motor rest pauses.",
+              ]}
+            />
+          </div>
+
+          <div className="itw-flow-nav" style={{ marginTop: 32 }}>
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("instructions")}>
+              Try Dysgraphia flow again
+            </button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("next")}>
+              Next Steps →
+            </button>
+          </div>
+          <HelpFooter />
+        </div>
+      )}
+
+      {step === "next" && (
+        <div className="itw-flow-page itw-flow-narrow" key="next">
+          <h2 className="itw-flow-title itw-center">Ideas deserve to be heard, however they are recorded</h2>
+          <p className="itw-flow-lead itw-center">
+            When we eliminate handwriting bottlenecks with modern assistive tools, we open doors for brilliant writers, scientists, and thinkers.
+          </p>
+          <div className="itw-flow-nav itw-flow-nav-center">
+            <a className="itw-cta itw-cta-dark" href="/assessments">Take an Assessment →</a>
+            <a className="itw-cta itw-cta-line" href="/consult">Book a Consultation →</a>
+          </div>
+          <h3 className="itw-flow-h3">Explore More Experiences</h3>
+          <div className="itw-flow-more">
+            {more.map((m) => (
+              <button
+                type="button"
+                key={m.key}
+                className="itw-flow-more-card"
+                data-m={m.key}
+                onClick={() => onNavigate(m.key)}
+              >
+                <b>{m.name}</b>
+                <span>{m.tag}</span>
+                <i aria-hidden="true">→</i>
+              </button>
+            ))}
+          </div>
+          <div className="itw-flow-nav itw-flow-nav-center">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("explain")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-line" onClick={onBack}>All experiences</button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+/* ================= AUDITORY PROCESSING: Hear It Right ================= */
+
+const AUDITORY_STEPS = [
+  { key: "instructions", label: "Instructions" },
+  { key: "run_baseline", label: "Run 1 (Quiet Room)" },
+  { key: "unsupported_intro", label: "Classroom Noise Brief" },
+  { key: "run_unsupported", label: "Run 2 (Competing Noise)" },
+  { key: "reflect", label: "Reflect & Compare" },
+  { key: "support", label: "Support Experiment" },
+  { key: "explain", label: "Understanding & Action" },
+];
+
+const AUDITORY_STEP_INDEX = {
+  instructions: 0,
+  run_baseline: 1,
+  unsupported_intro: 1,
+  run_unsupported: 2,
+  reflect: 3,
+  support: 4,
+  run_supported: 4,
+  explain: 5,
+};
+
+const AUDITORY_REFLECT_QS = [
+  {
+    q: "During the announcement with background classroom noise, where did you notice the difficulty?",
+    options: [
+      "I heard the sound of the teacher's voice, but separating words from background murmurs took intense focus.",
+      "Crucial details like page numbers and notebook colors blurred together with ambient chatter.",
+      "I had to strain so hard to filter out noise that I lost the overall context of the instructions.",
+      "Having synchronized visual captions or audio isolation made catching every instruction effortless.",
+    ],
+  },
+];
+
+const AUDITORY_SUPPORT_CHOICES = [
+  {
+    id: "captions",
+    title: "Synchronized Real-Time Visual Captions",
+    subtitle: "Visual text accompaniment",
+    desc: "Real-time speech-to-text projects the teacher's verbal directions word-for-word on a visual display.",
+    tag: "Multi-Modal Scaffolding",
+  },
+  {
+    id: "isolation",
+    title: "Teacher Remote Microphone System",
+    subtitle: "Clearer signal access over ambient noise",
+    desc: "Uses a direct transmitter microphone to deliver the teacher's clear voice signal without room acoustic degradation or ambient chatter.",
+    tag: "Acoustic Scaffolding",
+  },
+  {
+    id: "chunking",
+    title: "Segmented Verbal Chunks & Replay",
+    subtitle: "Step-by-step audio segments",
+    desc: "Replaces long, rapid verbal monologues with 3 bite-sized segments with dedicated replay buttons.",
+    tag: "Pacing Scaffolding",
+  },
+];
+
+const AUDITORY_INSTRUCTIONS = [
+  { id: "read", text: "Read Chapter 4, pages 30 to 35 in textbook", noiseVersion: "Read chapter [murmur] pages 30 to 35 in [rustle]", decoys: ["Read Chapter 5, pages 30 to 35", "Read Chapter 4, pages 40 to 45"] },
+  { id: "notes", text: "Answer questions 2 and 5 in blue notebook", noiseVersion: "Answer questions [chatter] and 5 in [scrape] notebook", decoys: ["Answer questions 2 and 3 in blue notebook", "Answer questions 2 and 5 in black notebook"] },
+  { id: "lab", text: "Bring your project outline for Friday's lab", noiseVersion: "Bring your [cough] outline for [bell] lab", decoys: ["Bring your completed project for Friday's lab", "Bring your lab kit for Thursday's lab"] },
+];
+
+function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", onComplete, onAbort }) {
+  const { soundOn } = useContext(SettingsContext);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [elapsed, setElapsed] = useState(0);
+
+  const startTimeRef = useRef(0);
+  const timerRef = useRef(null);
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  useEffect(() => {
+    startTimeRef.current = performance.now();
+    timerRef.current = setInterval(() => {
+      setElapsed(parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1)));
+    }, 100);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  const handleToggleSelect = (itemText) => {
+    if (soundOn) audio.cue("tap");
+    let next;
+    if (selectedItems.includes(itemText)) {
+      next = selectedItems.filter((i) => i !== itemText);
+    } else {
+      next = [...selectedItems, itemText];
+    }
+    setSelectedItems(next);
+
+    if (next.length === AUDITORY_INSTRUCTIONS.length) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (soundOn) audio.cue("slam");
+      onCompleteRef.current?.({
+        time: elapsed,
+        selectedCount: next.length,
+      });
+    }
+  };
+
+  return (
+    <div className="itw-auditory-classroom" role="region" aria-label="Classroom Auditory Processing Simulation">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <div>
+          <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-auditory)", letterSpacing: "0.08em" }}>
+            Classroom Announcement • {mode === "baseline" ? "Quiet Setting" : mode === "unsupported" ? "Competing Noise" : "Supported Audio"}
+          </span>
+          <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
+            Identify the Teacher's 3 Directions for Tomorrow
+          </h3>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)" }}>
+            ⏱️ {elapsed.toFixed(1)}s
+          </span>
+          <button type="button" className="itw-pill-btn" onClick={onAbort}>Exit</button>
+        </div>
+      </div>
+
+      {/* Acoustic Waveform Visualization */}
+      <div className="itw-waveform-bar" aria-hidden="true">
+        {[4, 12, 28, 16, 34, 22, 10, 36, 18, 8, 30, 20, 14, 38, 24, 8].map((h, idx) => (
+          <span
+            key={idx}
+            className="itw-wave-col"
+            style={{
+              height: mode === "unsupported" ? `${h}px` : `${Math.max(6, h * 0.5)}px`,
+              opacity: mode === "unsupported" ? 0.9 : 0.4,
+              animationDelay: `${idx * 0.08}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Visual Captions Overlay if supported */}
+      {mode === "supported" && supportType === "captions" && (
+        <div className="itw-captions-display">
+          <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-auditory)", marginBottom: 4 }}>
+            📝 Live Whiteboard Captions:
+          </div>
+          <div style={{ fontWeight: 700 }}>
+            &ldquo;Tomorrow's homework: 1) Read chapter 4 pages 30 to 35, 2) Answer questions 2 and 5 in blue notebook, 3) Bring project outline for Friday lab.&rdquo;
+          </div>
+        </div>
+      )}
+
+      {/* Instruction Selection Options */}
+      <div style={{ marginTop: 18 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)", marginBottom: 10 }}>
+          Select the 3 correct directions given by the teacher ({selectedItems.length}/3 selected):
+        </div>
+        <div style={{ display: "grid", gap: 10 }}>
+          {[
+            { text: "Read Chapter 4, pages 30 to 35 in textbook", correct: true },
+            { text: "Read Chapter 5, pages 30 to 35 in textbook", correct: false },
+            { text: "Answer questions 2 and 5 in blue notebook", correct: true },
+            { text: "Answer questions 2 and 3 in blue notebook", correct: false },
+            { text: "Bring your project outline for Friday's lab", correct: true },
+            { text: "Bring your completed project for Friday's lab", correct: false },
+          ].map((opt) => {
+            const isSelected = selectedItems.includes(opt.text);
+            return (
+              <button
+                key={opt.text}
+                type="button"
+                onClick={() => handleToggleSelect(opt.text)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "12px 16px",
+                  borderRadius: 12,
+                  border: `1.5px solid ${isSelected ? "var(--itw-auditory)" : "var(--itw-border)"}`,
+                  background: isSelected ? "rgba(44, 82, 130, 0.12)" : "var(--itw-panel)",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  color: "var(--itw-text)",
+                  font: "inherit",
+                  fontSize: 14,
+                }}
+              >
+                <span style={{ fontSize: 16 }}>{isSelected ? "☑️" : "⚪"}</span>
+                <span>
+                  {mode === "unsupported" && !opt.correct
+                    ? opt.text.replace("Chapter 5", "Chapter [murmur]").replace("questions 2 and 3", "questions [noise]")
+                    : opt.text}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AuditoryProcessingModule({ onBack, onNavigate }) {
+  const [step, setStep] = useState("intro");
+  const [results, setResults] = useState({ baseline: null, unsupported: null, supported: null });
+  const [chosenSupport, setChosenSupport] = useState("captions");
+  const [reflectionAnswers, setReflectionAnswers] = useState([null]);
+
+  const stepIndex = AUDITORY_STEP_INDEX[step];
+  const more = MODULES.filter((m) => m.key !== "auditory");
+
+  const handleBaselineComplete = (data) => {
+    setResults((prev) => ({ ...prev, baseline: data }));
+    setStep("unsupported_intro");
+  };
+
+  const handleUnsupportedComplete = (data) => {
+    setResults((prev) => ({ ...prev, unsupported: data }));
+    setStep("reflect");
+  };
+
+  const handleSupportedComplete = (data) => {
+    setResults((prev) => ({ ...prev, supported: data }));
+    setStep("explain");
+  };
+
+  return (
+    <section className="itw-view itw-module itw-flow" data-accent="auditory">
+      <FlowCrumbs name="Auditory Processing" onBack={onBack} />
+      {stepIndex !== undefined && <FlowStepper steps={AUDITORY_STEPS} current={stepIndex} />}
+
+      {step === "intro" && (
+        <div className="itw-flow-page itw-flow-intro" key="intro">
+          <div>
+            <h2 className="itw-flow-title">Auditory Processing</h2>
+            <div className="itw-flow-sub">Hear It Right</div>
+            <p className="itw-flow-lead">
+              Having normal physical hearing does not guarantee clear auditory understanding. In an active classroom,
+              background murmurs, scraping chairs, and corridor chatter compete directly with the teacher's voice.
+              For children with auditory processing differences, separating speech from noise requires tremendous cognitive effort.
+            </p>
+            <ul className="itw-flow-meta">
+              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
+              <li><span aria-hidden="true">🎧</span> Speech-in-noise perception exercise</li>
+              <li><span aria-hidden="true">🛡️</span> Empathy exercise, not an audiometric test</li>
+            </ul>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
+              Start the Experience →
+            </button>
+          </div>
+          <div className="itw-flow-letters" aria-hidden="true">
+            {["🎧", "🔊", "💬", "👂", "📢", "🎙️"].map((sym, i) => (
+              <span key={i} style={{ animationDelay: `${i * 0.45}s` }}>{sym}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {step === "instructions" && (
+        <div className="itw-flow-page itw-flow-narrow" key="instructions">
+          <h2 className="itw-flow-title itw-center">Before you begin Run 1</h2>
+          <p className="itw-flow-lead itw-center">
+            You will listen for 3 homework instructions given by the teacher at the end of class.
+          </p>
+          <ul className="itw-flow-list">
+            <li><span aria-hidden="true">🌿</span> In Run 1, the classroom is completely quiet, making speech identification straightforward.</li>
+            <li><span aria-hidden="true">📢</span> In Run 2, you will experience acoustic figure-ground competition amidst classroom murmurs.</li>
+            <li><span aria-hidden="true">📝</span> In Run 3, test live captions and audio isolation to see how environmental supports restore clarity.</li>
+          </ul>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_baseline")}>
+              Start Run 1 (Quiet Room) →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_baseline" && (
+        <div className="itw-flow-page" key="run_baseline">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Run 1: Clear, Quiet Announcement</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>Notice how effortlessly speech is parsed when background acoustic noise is absent.</p>
+          </div>
+          <AuditoryProcessingSim mode="baseline" onComplete={handleBaselineComplete} onAbort={() => setStep("instructions")} />
+        </div>
+      )}
+
+      {step === "unsupported_intro" && (
+        <div className="itw-flow-page itw-flow-narrow" key="unsupported_intro">
+          <h2 className="itw-flow-title itw-center">Now, Run 2: Competing Classroom Murmurs</h2>
+          <p className="itw-flow-lead itw-center">
+            The bell is about to ring. Students are packing books, chairs are moving, and hallway voices blend with the announcement.
+          </p>
+          <ul className="itw-flow-list">
+            <li><span aria-hidden="true">🎧</span> Crucial phonemes and words will be masked by ambient chatter.</li>
+            <li><span aria-hidden="true">⚠️</span> Look out for phonetically similar decoys (e.g. Chapter 4 vs Chapter 5).</li>
+            <li><span aria-hidden="true">🧠</span> Notice how listening in noise drains working memory away from actually retaining the content.</li>
+          </ul>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("run_baseline")}>Back to Run 1</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_unsupported")}>
+              Start Run 2 (Competing Noise) →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_unsupported" && (
+        <div className="itw-flow-page" key="run_unsupported">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Run 2: Listening Under Competing Noise</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>Filter out ambient sounds to identify the 3 specific instructions.</p>
+          </div>
+          <AuditoryProcessingSim mode="unsupported" onComplete={handleUnsupportedComplete} onAbort={() => setStep("unsupported_intro")} />
+        </div>
+      )}
+
+      {step === "reflect" && (
+        <div className="itw-flow-page itw-flow-narrow" key="reflect">
+          <h2 className="itw-flow-title itw-center">What did you observe about speech discrimination in noise?</h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 16,
+              margin: "24px 0",
+              background: "var(--itw-panel)",
+              padding: 20,
+              borderRadius: 20,
+              border: "1px solid var(--itw-border)",
+            }}
+          >
+            <div style={{ textAlign: "center", padding: 12 }}>
+              <div style={{ fontSize: 13, textTransform: "uppercase", color: "var(--itw-muted)", fontWeight: 700 }}>
+                Run 1 (Quiet)
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-text)", margin: "8px 0" }}>
+                {results.baseline ? `${results.baseline.time.toFixed(1)}s` : "—"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>0 acoustic competition</div>
+            </div>
+            <div style={{ textAlign: "center", padding: 12, borderLeft: "1px solid var(--itw-border)" }}>
+              <div style={{ fontSize: 13, textTransform: "uppercase", color: "var(--itw-auditory)", fontWeight: 700 }}>
+                Run 2 (Competing Noise)
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-auditory)", margin: "8px 0" }}>
+                {results.unsupported ? `${results.unsupported.time.toFixed(1)}s` : "—"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+                {results.unsupported ? "Phonetic masking & strain" : "—"}
+              </div>
+            </div>
+          </div>
+
+          <p className="itw-flow-lead" style={{ fontSize: 16, lineHeight: 1.6 }}>
+            {results.baseline && results.unsupported && results.unsupported.time > results.baseline.time
+              ? `In this round, background noise increased processing time by ${(results.unsupported.time - results.baseline.time).toFixed(1)} seconds. Notice how separating speech from background noise required intense cognitive effort even though your hearing is intact. Central auditory processing describes how the brain decodes sound, not ear sensitivity. This task is an observation of acoustic load, not an audiogram.`
+              : "In this round, background noise required additional cognitive filtering. Central auditory processing describes how the brain decodes sound, not ear sensitivity. This task is an observation of acoustic load, not an audiogram."}
+          </p>
+
+          <FlowQuestions
+            questions={AUDITORY_REFLECT_QS}
+            answers={reflectionAnswers}
+            onPick={(qi, oi) => {
+              setReflectionAnswers((prev) => {
+                const next = [...prev];
+                next[qi] = oi;
+                return next;
+              });
+            }}
+          />
+
+          <div className="itw-flow-nav" style={{ marginTop: 24 }}>
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("run_unsupported")}>
+              Re-run Task
+            </button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("support")}>
+              Try an Acoustic Support →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "support" && (
+        <div className="itw-flow-page itw-flow-narrow" key="support">
+          <h2 className="itw-flow-title itw-center">Restore clarity: Choose an environmental support</h2>
+          <p className="itw-flow-lead itw-center">
+            Children with auditory processing differences benefit from multi-sensory visual cues and clean acoustic signals:
+          </p>
+          <div style={{ display: "grid", gap: 14, margin: "24px 0" }}>
+            {AUDITORY_SUPPORT_CHOICES.map((s) => (
+              <label
+                key={s.id}
+                style={{
+                  display: "block",
+                  padding: "16px 20px",
+                  borderRadius: 18,
+                  border: `2px solid ${chosenSupport === s.id ? "var(--itw-auditory)" : "var(--itw-border)"}`,
+                  background: chosenSupport === s.id ? "rgba(44, 82, 130, 0.08)" : "var(--itw-panel)",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      textTransform: "uppercase",
+                      fontWeight: 800,
+                      letterSpacing: "0.06em",
+                      padding: "3px 10px",
+                      borderRadius: 99,
+                      background: "var(--itw-panel-2)",
+                      color: "var(--itw-muted)",
+                    }}
+                  >
+                    {s.tag}
+                  </span>
+                </div>
+                <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
+                <input
+                  type="radio"
+                  name="auditory-support"
+                  value={s.id}
+                  checked={chosenSupport === s.id}
+                  onChange={() => setChosenSupport(s.id)}
+                  style={{ display: "none" }}
+                />
+              </label>
+            ))}
+          </div>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("reflect")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_supported")}>
+              Run with Support →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_supported" && (
+        <div className="itw-flow-page" key="run_supported">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Run 3: Supported by {AUDITORY_SUPPORT_CHOICES.find((s) => s.id === chosenSupport)?.title}</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>
+              {chosenSupport === "captions" && "Live visual captions reinforce the spoken instructions on the whiteboard."}
+              {chosenSupport === "isolation" && "Teacher Remote Mic provides direct, clear acoustic access to the teacher's voice over ambient chatter."}
+              {chosenSupport === "chunking" && "Segmented audio allows replay of discrete directions."}
+            </p>
+          </div>
+          <AuditoryProcessingSim
+            mode="supported"
+            supportType={chosenSupport}
+            onComplete={handleSupportedComplete}
+            onAbort={() => setStep("support")}
+          />
+        </div>
+      )}
+
+      {step === "explain" && (
+        <div className="itw-flow-page itw-flow-narrow" key="explain">
+          <h2 className="itw-flow-title itw-center">What this means in everyday life</h2>
+          <p className="itw-flow-lead itw-center">
+            {results.supported && results.unsupported
+              ? `Supported time was ${results.supported.time.toFixed(1)}s (versus ${results.unsupported.time.toFixed(1)}s in noise). Environmental supports ensure that hearing what is said translates into understanding.`
+              : "Acoustic and visual accommodations allow every child to catch essential directions without exhausting mental strain."}
+          </p>
+
+          <div className="itw-flow-explain" style={{ margin: "24px 0" }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: "var(--itw-text)" }}>
+              Understanding Auditory Figure-Ground Perception
+            </h3>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--itw-text)", marginBottom: 16 }}>
+              Central Auditory Processing Disorder (CAPD/APD) is not a problem with the ears or hearing thresholds; pure-tone
+              audiograms almost always return completely normal results. The difference lies in the central auditory nervous
+              system’s ability to separate target speech from competing ambient noise (auditory figure-ground discrimination).
+            </p>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--itw-text)" }}>
+              In busy, tiled Indian classrooms with high reverberation, fans, and street traffic, an APD student may catch only
+              isolated consonants. Accommodations such as preferential seating, FM listening systems, and pairing spoken directions
+              with written bullet points prevent these students from falling behind.
+            </p>
+            <p style={{ fontSize: 14, color: "var(--itw-muted)", fontStyle: "italic", marginTop: 12 }}>
+              Note: Spoken instructions in this activity are in English. In multilingual environments, acoustic clarity interacts with language familiarity and vocabulary.
+            </p>
+            <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "var(--itw-text)", marginTop: 12 }}>
+              <strong>Clinical Assessment &amp; Differential Diagnosis:</strong> An official diagnosis of Auditory Processing Disorder (APD) can only be established by a licensed audiologist using specialized behavioral and electrophysiological test batteries in a sound-treated booth. APD frequently co-occurs with and must be carefully distinguished from speech-language impairments, attention differences (ADHD), and typical auditory fatigue.
+            </p>
+          </div>
+
+          <div style={{ margin: "28px 0" }}>
+            <div className="itw-block-label" style={{ marginBottom: 12 }}>Indian Prevalence &amp; Clinical Context</div>
+            <FactsGrid
+              facts={[
+                {
+                  num: "~3% – 5%",
+                  label: "of school-aged children experience Central Auditory Processing differences, often misdiagnosed as attention deficits",
+                  src: "American Academy of Audiology (AAA) & AIISH Mysore Clinical Guidelines",
+                },
+                {
+                  num: "Signal Clarity",
+                  label: "In reverberant classrooms with ceiling fans and echo, background noise masks weak speech consonants; remote microphone systems deliver direct acoustic clarity to the listener",
+                  src: "All India Institute of Speech and Hearing (AIISH Mysore) Classroom Acoustics Studies",
+                },
+                {
+                  num: "Multilingual",
+                  label: "Navigating bilingual Indian environments adds acoustic phonetic processing load, amplifying the need for visual captions",
+                  src: "Indian Journal of Otolaryngology and Head & Neck Surgery",
+                },
+              ]}
+              note="Auditory processing describes neural speech perception, not ear sensitivity. Simple accommodations like preferential seating, visual summaries, and personal FM systems restore complete clarity."
+              onComplete={() => {}}
+            />
+          </div>
+
+          <div style={{ margin: "32px 0" }}>
+            <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 14, color: "var(--itw-text)" }}>
+              Actionable Strategies That Help
+            </h3>
+            <StrategyTabs
+              home={[
+                "Gain the child’s gentle visual attention (a tap on the shoulder, eye contact) before speaking important instructions.",
+                "Reduce competing domestic sound: turn down televisions or kitchen appliances when explaining tasks.",
+                "Ask the child to paraphrase what they heard in their own words rather than asking “did you understand?”.",
+                "Break multi-step household chores into single, sequential instructions with visual checklists.",
+              ]}
+              classroom={[
+                "Seat the student near the front of the classroom, away from open windows, doors, and noisy ceiling fans.",
+                "Always write homework directions and deadlines on the whiteboard in addition to announcing them verbally.",
+                "Use an FM personal listening system or teacher microphone where available in large reverberant rooms.",
+                "Slow down your speaking tempo slightly and pause between sentences to allow phonetic processing.",
+              ]}
+            />
+          </div>
+
+          <div className="itw-flow-nav" style={{ marginTop: 32 }}>
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("instructions")}>
+              Try Auditory Processing flow again
+            </button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("next")}>
+              Next Steps →
+            </button>
+          </div>
+          <HelpFooter />
+        </div>
+      )}
+
+      {step === "next" && (
+        <div className="itw-flow-page itw-flow-narrow" key="next">
+          <h2 className="itw-flow-title itw-center">Clarity begins with listening environments</h2>
+          <p className="itw-flow-lead itw-center">
+            When we pair speech with visual anchors and clean acoustics, we build inclusive spaces where every child can learn without strain.
+          </p>
+          <div className="itw-flow-nav itw-flow-nav-center">
+            <a className="itw-cta itw-cta-dark" href="/assessments">Take an Assessment →</a>
+            <a className="itw-cta itw-cta-line" href="/consult">Book a Consultation →</a>
+          </div>
+          <h3 className="itw-flow-h3">Explore More Experiences</h3>
+          <div className="itw-flow-more">
+            {more.map((m) => (
+              <button
+                type="button"
+                key={m.key}
+                className="itw-flow-more-card"
+                data-m={m.key}
+                onClick={() => onNavigate(m.key)}
+              >
+                <b>{m.name}</b>
+                <span>{m.tag}</span>
+                <i aria-hidden="true">→</i>
+              </button>
+            ))}
+          </div>
+          <div className="itw-flow-nav itw-flow-nav-center">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("explain")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-line" onClick={onBack}>All experiences</button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+/* ================= EXECUTIVE FUNCTIONING: Where Do I Start? ================= */
+
+const EXEC_STEPS = [
+  { key: "instructions", label: "Instructions" },
+  { key: "run_baseline", label: "Run 1 (Single Step)" },
+  { key: "unsupported_intro", label: "Morning Scramble Brief" },
+  { key: "run_unsupported", label: "Run 2 (Competing Pile)" },
+  { key: "reflect", label: "Reflect & Compare" },
+  { key: "support", label: "Support Experiment" },
+  { key: "explain", label: "Understanding & Action" },
+];
+
+const EXEC_STEP_INDEX = {
+  instructions: 0,
+  run_baseline: 1,
+  unsupported_intro: 1,
+  run_unsupported: 2,
+  reflect: 3,
+  support: 4,
+  run_supported: 4,
+  explain: 5,
+};
+
+const EXEC_REFLECT_QS = [
+  {
+    q: "During the unorganized morning task scramble, where did you notice the executive friction?",
+    options: [
+      "All 5 tasks felt equally urgent, making it difficult to decide which one to initiate first.",
+      "Hitting a hidden prerequisite (like packing a bag before finishing homework) broke my mental rhythm.",
+      "Keeping track of elapsed time while sequencing dependencies created cognitive overload.",
+      "Having a Now / Next / Later board or Visual Dependency Map eliminated hesitation about where to begin.",
+    ],
+  },
+];
+
+const EXEC_SUPPORT_CHOICES = [
+  {
+    id: "nnl",
+    title: "Now / Next / Later 3-Column Board",
+    subtitle: "Separates immediate action from subsequent steps",
+    desc: "Groups morning routines into 3 clear time horizons: what to do right now, what unlocks next, and what to finish later.",
+    tag: "Visual Organization",
+  },
+  {
+    id: "roadmap",
+    title: "Visual Dependency Map",
+    subtitle: "Illustrates what depends on what",
+    desc: "Displays an illustrative visual roadmap with clear prerequisite connections so the order of execution is immediately apparent.",
+    tag: "Structural Scaffolding",
+  },
+  {
+    id: "one_step",
+    title: "One-Next-Step Decomposition",
+    subtitle: "Surfaces only the single immediate action",
+    desc: "Completely hides the overwhelming multi-task list, presenting only the single immediate next action in a focused card.",
+    tag: "Executive Scaffolding",
+  },
+];
+
+const EXEC_TASKS = [
+  { id: "slip", title: "1. Sign Science Museum Field Trip Slip", desc: "Parent is leaving in 5 minutes! Must be signed before bag packing.", category: "prereq", unlocks: "pack" },
+  { id: "math", title: "2. Complete Last 2 Math Problems", desc: "Science & math worksheet due today. Must finish before packing.", category: "prereq", unlocks: "pack" },
+  { id: "uniform", title: "3. Put on School Uniform & Shoes", desc: "Cannot leave house without proper dress code.", category: "routine", unlocks: "bus" },
+  { id: "pack", title: "4. Pack Backpack with Books & Signed Slip", desc: "Requires signed slip + finished math worksheet inside.", category: "next", requires: ["slip", "math"] },
+  { id: "breakfast", title: "5. Eat Nutritious Morning Breakfast", desc: "Fuel for the day before walking out to the bus stop.", category: "routine", unlocks: "bus" },
+];
+
+function ExecutiveFunctioningSim({ mode = "baseline", supportType = "nnl", onComplete, onAbort }) {
+  const { soundOn } = useContext(SettingsContext);
+  const [completedTasks, setCompletedTasks] = useState([]);
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [elapsed, setElapsed] = useState(0);
+
+  const startTimeRef = useRef(0);
+  const timerRef = useRef(null);
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  useEffect(() => {
+    startTimeRef.current = performance.now();
+    timerRef.current = setInterval(() => {
+      setElapsed(parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1)));
+    }, 100);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  const handleTaskClick = (task) => {
+    setErrorMsg(null);
+
+    // Prerequisite checks
+    if (task.requires) {
+      const missing = task.requires.filter((r) => !completedTasks.includes(r));
+      if (missing.length > 0) {
+        if (soundOn) audio.cue("flicker");
+        setErrorMsg("ℹ️ Sequence Guidance: Packing the backpack requires the signed permission slip and completed math sheet first.");
+        return;
+      }
+    }
+
+    if (soundOn) audio.cue("tap");
+    const next = [...completedTasks, task.id];
+    setCompletedTasks(next);
+
+    const targetTotal = mode === "baseline" ? 1 : EXEC_TASKS.length;
+    if (next.length >= targetTotal) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (soundOn) audio.cue("slam");
+      onCompleteRef.current?.({
+        time: elapsed,
+        tasksCount: next.length,
+      });
+    }
+  };
+
+  // One-Next-Step support filter: show only first incomplete task
+  const nextPendingTask = EXEC_TASKS.find((t) => !completedTasks.includes(t.id));
+
+  return (
+    <div style={{ background: "var(--itw-panel-2)", padding: 24, borderRadius: 20, border: "1.5px solid var(--itw-border)" }} role="region" aria-label="Executive Functioning Morning Planning Task">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div>
+          <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-executive)", letterSpacing: "0.08em" }}>
+            Morning Routine • 7:30 AM (Bus in 25 mins)
+          </span>
+          <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
+            {mode === "baseline" ? "Single Action Step" : "Prioritize & Complete All 5 Tasks"}
+          </h3>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)" }}>
+            ⏱️ {elapsed.toFixed(1)}s
+          </span>
+          <button type="button" className="itw-pill-btn" onClick={onAbort}>Exit</button>
+        </div>
+      </div>
+
+      {errorMsg && (
+        <div style={{ background: "rgba(140, 101, 32, 0.12)", border: "1.5px solid var(--itw-adhd)", borderRadius: 12, padding: "10px 14px", color: "var(--itw-text)", fontSize: 13.5, fontWeight: 700, marginBottom: 14 }}>
+          {errorMsg}
+        </div>
+      )}
+
+      {/* Visual Dependency Map Overlay if active */}
+      {mode === "supported" && supportType === "roadmap" && (
+        <div className="itw-dep-map">
+          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-executive)", marginBottom: 8 }}>
+            🗺️ Visual Dependency Map (What Depends on What):
+          </div>
+          <div className="itw-dep-item" style={{ background: "rgba(46, 125, 50, 0.08)" }}>
+            <span>1. Sign Permission Slip</span>
+            <span style={{ fontWeight: 800, color: "var(--itw-executive)" }}>➔</span>
+            <span>4. Pack Backpack</span>
+            <span style={{ fontWeight: 800, color: "var(--itw-executive)" }}>➔</span>
+            <span>Ready for 7:55 AM School Bus</span>
+          </div>
+          <div className="itw-dep-item" style={{ background: "rgba(46, 125, 50, 0.08)" }}>
+            <span>2. Complete Math Homework</span>
+            <span style={{ fontWeight: 800, color: "var(--itw-executive)" }}>➔</span>
+            <span>4. Pack Backpack</span>
+          </div>
+        </div>
+      )}
+
+      {/* One-Next-Step Accommodation */}
+      {mode === "supported" && supportType === "one_step" && nextPendingTask && (
+        <div style={{ background: "var(--itw-panel)", border: "2px solid var(--itw-executive)", borderRadius: 16, padding: 24, textAlign: "center", margin: "16px 0" }}>
+          <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-executive)", letterSpacing: "0.08em", marginBottom: 6 }}>
+            🛡️ One-Next-Step Scaffolding: Focus Only on This
+          </div>
+          <h4 style={{ fontSize: 22, fontWeight: 800, color: "var(--itw-text)", marginBottom: 8 }}>
+            {nextPendingTask.title}
+          </h4>
+          <p style={{ fontSize: 15, color: "var(--itw-muted)", maxWidth: "46ch", margin: "0 auto 20px" }}>
+            {nextPendingTask.desc}
+          </p>
+          <button
+            type="button"
+            className="itw-cta itw-cta-dark"
+            onClick={() => handleTaskClick(nextPendingTask)}
+          >
+            Complete This Action ✓
+          </button>
+        </div>
+      )}
+
+      {/* Now / Next / Later 3-Column Board */}
+      {mode === "supported" && supportType === "nnl" && (
+        <div className="itw-nnl-container">
+          <div className="itw-nnl-col">
+            <div className="itw-nnl-col-header" style={{ color: "var(--itw-executive)" }}>
+              <span>⚡ NOW (Immediate)</span>
+            </div>
+            {EXEC_TASKS.filter((t) => t.category === "prereq").map((task) => {
+              const isDone = completedTasks.includes(task.id);
+              return (
+                <button
+                  key={task.id}
+                  type="button"
+                  className={`itw-exec-task-card${isDone ? " itw-task-done" : ""}`}
+                  disabled={isDone}
+                  onClick={() => handleTaskClick(task)}
+                  style={{ marginBottom: 10 }}
+                >
+                  <div style={{ fontWeight: 800, fontSize: 14 }}>{task.title}</div>
+                  <div style={{ fontSize: 12, color: "var(--itw-muted)" }}>{task.desc}</div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="itw-nnl-col">
+            <div className="itw-nnl-col-header" style={{ color: "var(--itw-autism)" }}>
+              <span>📦 NEXT (Unlocked)</span>
+            </div>
+            {EXEC_TASKS.filter((t) => t.category === "next").map((task) => {
+              const isDone = completedTasks.includes(task.id);
+              const isReady = task.requires && task.requires.every((r) => completedTasks.includes(r));
+              return (
+                <button
+                  key={task.id}
+                  type="button"
+                  className={`itw-exec-task-card${isDone ? " itw-task-done" : ""}${!isReady && !isDone ? " itw-task-locked" : ""}`}
+                  disabled={isDone}
+                  onClick={() => handleTaskClick(task)}
+                  style={{ marginBottom: 10 }}
+                >
+                  <div style={{ fontWeight: 800, fontSize: 14 }}>{task.title}</div>
+                  <div style={{ fontSize: 12, color: "var(--itw-muted)" }}>{task.desc}</div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="itw-nnl-col">
+            <div className="itw-nnl-col-header" style={{ color: "var(--itw-speech)" }}>
+              <span>🌅 LATER (Routine)</span>
+            </div>
+            {EXEC_TASKS.filter((t) => t.category === "routine").map((task) => {
+              const isDone = completedTasks.includes(task.id);
+              return (
+                <button
+                  key={task.id}
+                  type="button"
+                  className={`itw-exec-task-card${isDone ? " itw-task-done" : ""}`}
+                  disabled={isDone}
+                  onClick={() => handleTaskClick(task)}
+                  style={{ marginBottom: 10 }}
+                >
+                  <div style={{ fontWeight: 800, fontSize: 14 }}>{task.title}</div>
+                  <div style={{ fontSize: 12, color: "var(--itw-muted)" }}>{task.desc}</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Standard Board for baseline / unsupported / roadmap */}
+      {!(mode === "supported" && (supportType === "one_step" || supportType === "nnl")) && (
+        <div className="itw-exec-board">
+          {(mode === "baseline" ? [EXEC_TASKS[0]] : EXEC_TASKS).map((task) => {
+            const isDone = completedTasks.includes(task.id);
+            const isLocked = task.requires && task.requires.some((r) => !completedTasks.includes(r));
+            return (
+              <button
+                key={task.id}
+                type="button"
+                className={`itw-exec-task-card${isDone ? " itw-task-done" : ""}${isLocked ? " itw-task-locked" : ""}`}
+                disabled={isDone}
+                onClick={() => handleTaskClick(task)}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: isDone ? "var(--itw-executive)" : "var(--itw-muted)" }}>
+                    {isDone ? "✓ Done" : isLocked ? "🔒 Prerequisite needed" : "Ready to Start"}
+                  </span>
+                  <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 99, background: "var(--itw-panel-2)", color: "var(--itw-muted)" }}>
+                    {task.category}
+                  </span>
+                </div>
+                <div style={{ fontWeight: 800, fontSize: 15, color: "var(--itw-text)" }}>{task.title}</div>
+                <div style={{ fontSize: 13, color: "var(--itw-muted)", lineHeight: 1.4 }}>{task.desc}</div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ExecutiveFunctioningModule({ onBack, onNavigate }) {
+  const [step, setStep] = useState("intro");
+  const [results, setResults] = useState({ baseline: null, unsupported: null, supported: null });
+  const [chosenSupport, setChosenSupport] = useState("matrix");
+  const [reflectionAnswers, setReflectionAnswers] = useState([null]);
+
+  const stepIndex = EXEC_STEP_INDEX[step];
+  const more = MODULES.filter((m) => m.key !== "executive");
+
+  const handleBaselineComplete = (data) => {
+    setResults((prev) => ({ ...prev, baseline: data }));
+    setStep("unsupported_intro");
+  };
+
+  const handleUnsupportedComplete = (data) => {
+    setResults((prev) => ({ ...prev, unsupported: data }));
+    setStep("reflect");
+  };
+
+  const handleSupportedComplete = (data) => {
+    setResults((prev) => ({ ...prev, supported: data }));
+    setStep("explain");
+  };
+
+  return (
+    <section className="itw-view itw-module itw-flow" data-accent="executive">
+      <FlowCrumbs name="Executive Functioning" onBack={onBack} />
+      {stepIndex !== undefined && <FlowStepper steps={EXEC_STEPS} current={stepIndex} />}
+
+      {step === "intro" && (
+        <div className="itw-flow-page itw-flow-intro" key="intro">
+          <div>
+            <h2 className="itw-flow-title">Executive Functioning</h2>
+            <div className="itw-flow-sub">Where Do I Start?</div>
+            <p className="itw-flow-lead">
+              Executive functions are the brain’s management system: organizing, prioritizing, initiating, and holding
+              steps in working memory. When multiple tasks arrive simultaneously without clear external scaffolding,
+              everything feels equally urgent, leading to hesitation and difficulty determining where to start rather than a lack of motivation.
+            </p>
+            <ul className="itw-flow-meta">
+              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
+              <li><span aria-hidden="true">🗂️</span> Morning routine prioritization exercise</li>
+              <li><span aria-hidden="true">🛡️</span> Empathy exercise, not a diagnostic test</li>
+            </ul>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
+              Start the Experience →
+            </button>
+          </div>
+          <div className="itw-flow-letters" aria-hidden="true">
+            {["🗂️", "📋", "⏱️", "🎒", "✅", "🚀"].map((sym, i) => (
+              <span key={i} style={{ animationDelay: `${i * 0.45}s` }}>{sym}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {step === "instructions" && (
+        <div className="itw-flow-page itw-flow-narrow" key="instructions">
+          <h2 className="itw-flow-title itw-center">Before you begin Run 1</h2>
+          <p className="itw-flow-lead itw-center">
+            You will test your prioritization during a busy school morning routine.
+          </p>
+          <ul className="itw-flow-list">
+            <li><span aria-hidden="true">🌿</span> In Run 1, you will complete a single structured action to understand the interface.</li>
+            <li><span aria-hidden="true">🗂️</span> In Run 2, you will manage 5 competing tasks with hidden dependencies and time pressure.</li>
+            <li><span aria-hidden="true">🛡️</span> In Run 3, test how Now / Next / Later boards and Visual Dependency Maps provide actionable clarity.</li>
+          </ul>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_baseline")}>
+              Start Run 1 (Single Step) →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_baseline" && (
+        <div className="itw-flow-page" key="run_baseline">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Run 1: Single Structured Action</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>Notice how simple execution is when only one isolated action is presented.</p>
+          </div>
+          <ExecutiveFunctioningSim mode="baseline" onComplete={handleBaselineComplete} onAbort={() => setStep("instructions")} />
+        </div>
+      )}
+
+      {step === "unsupported_intro" && (
+        <div className="itw-flow-page itw-flow-narrow" key="unsupported_intro">
+          <h2 className="itw-flow-title itw-center">Now, Run 2: The Morning Scramble</h2>
+          <p className="itw-flow-lead itw-center">
+            It is 7:30 AM. The school bus arrives in 25 minutes. 5 competing tasks are on your list, and some require prerequisites!
+          </p>
+          <ul className="itw-flow-list">
+            <li><span aria-hidden="true">🎒</span> You cannot pack your backpack until the field trip slip is signed and math homework is finished.</li>
+            <li><span aria-hidden="true">⚠️</span> Notice how holding dependencies in working memory while sequencing tasks creates cognitive friction.</li>
+          </ul>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("run_baseline")}>Back to Run 1</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_unsupported")}>
+              Start Run 2 (Competing Pile) →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_unsupported" && (
+        <div className="itw-flow-page" key="run_unsupported">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Run 2: Competing Tasks Without Scaffolding</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>Navigate dependencies to prepare for school on time.</p>
+          </div>
+          <ExecutiveFunctioningSim mode="unsupported" onComplete={handleUnsupportedComplete} onAbort={() => setStep("unsupported_intro")} />
+        </div>
+      )}
+
+      {step === "reflect" && (
+        <div className="itw-flow-page itw-flow-narrow" key="reflect">
+          <h2 className="itw-flow-title itw-center">What did you observe about task initiation and sequencing?</h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 16,
+              margin: "24px 0",
+              background: "var(--itw-panel)",
+              padding: 20,
+              borderRadius: 20,
+              border: "1px solid var(--itw-border)",
+            }}
+          >
+            <div style={{ textAlign: "center", padding: 12 }}>
+              <div style={{ fontSize: 13, textTransform: "uppercase", color: "var(--itw-muted)", fontWeight: 700 }}>
+                Run 1 (Single Task)
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-text)", margin: "8px 0" }}>
+                {results.baseline ? `${results.baseline.time.toFixed(1)}s` : "—"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>0 sequencing decisions</div>
+            </div>
+            <div style={{ textAlign: "center", padding: 12, borderLeft: "1px solid var(--itw-border)" }}>
+              <div style={{ fontSize: 13, textTransform: "uppercase", color: "var(--itw-executive)", fontWeight: 700 }}>
+                Run 2 (Competing Pile)
+              </div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-executive)", margin: "8px 0" }}>
+                {results.unsupported ? `${results.unsupported.time.toFixed(1)}s` : "—"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+                {results.unsupported ? "Dependency tracking & friction" : "—"}
+              </div>
+            </div>
+          </div>
+
+          <p className="itw-flow-lead" style={{ fontSize: 16, lineHeight: 1.6 }}>
+            {results.baseline && results.unsupported && results.unsupported.time > results.baseline.time
+              ? `In this round, tracking dependencies and priorities changed your task time by ${(results.unsupported.time - results.baseline.time).toFixed(1)} seconds. Notice how deciding which task to begin and holding prerequisites in memory created hesitation. Executive functioning differences affect execution and sequencing, not intelligence or willpower. This task is an observation of organizational scaffolding, not a diagnostic test.`
+              : "In this round, tracking dependencies and priorities required additional cognitive overhead. Executive functioning differences affect execution and sequencing, not intelligence or willpower. This task is an observation of organizational scaffolding, not a diagnostic test."}
+          </p>
+
+          <FlowQuestions
+            questions={EXEC_REFLECT_QS}
+            answers={reflectionAnswers}
+            onPick={(qi, oi) => {
+              setReflectionAnswers((prev) => {
+                const next = [...prev];
+                next[qi] = oi;
+                return next;
+              });
+            }}
+          />
+
+          <div className="itw-flow-nav" style={{ marginTop: 24 }}>
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("run_unsupported")}>
+              Re-run Task
+            </button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("support")}>
+              Try an Organizational Support →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "support" && (
+        <div className="itw-flow-page itw-flow-narrow" key="support">
+          <h2 className="itw-flow-title itw-center">Deconstruct the pile: Choose a support</h2>
+          <p className="itw-flow-lead itw-center">
+            Children with executive functioning differences excel when multi-step routines are broken down visually:
+          </p>
+          <div style={{ display: "grid", gap: 14, margin: "24px 0" }}>
+            {EXEC_SUPPORT_CHOICES.map((s) => (
+              <label
+                key={s.id}
+                style={{
+                  display: "block",
+                  padding: "16px 20px",
+                  borderRadius: 18,
+                  border: `2px solid ${chosenSupport === s.id ? "var(--itw-executive)" : "var(--itw-border)"}`,
+                  background: chosenSupport === s.id ? "rgba(46, 125, 50, 0.08)" : "var(--itw-panel)",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      textTransform: "uppercase",
+                      fontWeight: 800,
+                      letterSpacing: "0.06em",
+                      padding: "3px 10px",
+                      borderRadius: 99,
+                      background: "var(--itw-panel-2)",
+                      color: "var(--itw-muted)",
+                    }}
+                  >
+                    {s.tag}
+                  </span>
+                </div>
+                <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
+                <input
+                  type="radio"
+                  name="exec-support"
+                  value={s.id}
+                  checked={chosenSupport === s.id}
+                  onChange={() => setChosenSupport(s.id)}
+                  style={{ display: "none" }}
+                />
+              </label>
+            ))}
+          </div>
+          <div className="itw-flow-nav">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("reflect")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_supported")}>
+              Run with Support →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === "run_supported" && (
+        <div className="itw-flow-page" key="run_supported">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Run 3: Supported by {EXEC_SUPPORT_CHOICES.find((s) => s.id === chosenSupport)?.title}</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>
+              {chosenSupport === "one_step" && "One-Next-Step hides the mountain and surfaces only the single immediate action."}
+              {chosenSupport === "nnl" && "Now / Next / Later categorizes tasks into 3 clear time horizons so you know exactly where to begin."}
+              {chosenSupport === "roadmap" && "Visual Dependency Map illustrates what depends on what so sequencing is intuitive."}
+            </p>
+          </div>
+          <ExecutiveFunctioningSim
+            mode="supported"
+            supportType={chosenSupport}
+            onComplete={handleSupportedComplete}
+            onAbort={() => setStep("support")}
+          />
+        </div>
+      )}
+
+      {step === "explain" && (
+        <div className="itw-flow-page itw-flow-narrow" key="explain">
+          <h2 className="itw-flow-title itw-center">What this means in everyday life</h2>
+          <p className="itw-flow-lead itw-center">
+            {results.supported && results.unsupported
+              ? `Supported time was ${results.supported.time.toFixed(1)}s (versus ${results.unsupported.time.toFixed(1)}s when unsupported). Breaking routines into visible steps unlocks self-sufficiency.`
+              : "Visual sequencing and single-step decomposition transform overwhelming routines into manageable actions."}
+          </p>
+
+          <div className="itw-flow-explain" style={{ margin: "24px 0" }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: "var(--itw-text)" }}>
+              Understanding Executive Functioning
+            </h3>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--itw-text)", marginBottom: 16 }}>
+              Executive functions encompass working memory, cognitive flexibility, and inhibitory control. They reside in
+              the prefrontal cortex and govern our ability to initiate tasks, anticipate deadlines, estimate time, and organize
+              materials.
+            </p>
+            <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "var(--itw-text)", marginBottom: 16 }}>
+              <strong>Clinical &amp; Diagnostic Distinction:</strong> Executive functioning is not a standalone psychiatric diagnosis in the DSM-5; rather, it describes a suite of core neurocognitive processes coordinated by the prefrontal cortex. Executive differences commonly co-occur with ADHD, autism, specific learning differences, and stress.
+            </p>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--itw-text)" }}>
+              When a child hesitates or leaves multi-step projects until the last hour, it is rarely due to apathy or defiance.
+              The sheer cognitive load of deciding <i>which</i> step to begin creates initiation hesitation. Providing
+              visual dependency maps, Now / Next / Later boards, and single-step decomposition removes this barrier.
+            </p>
+          </div>
+
+          <div style={{ margin: "28px 0" }}>
+            <div className="itw-block-label" style={{ marginBottom: 12 }}>Indian Prevalence &amp; Clinical Context</div>
+            <FactsGrid
+              facts={[
+                {
+                  num: "30% – 40%",
+                  label: "co-occurrence with ADHD, autism, dyslexia, and stress; executive differences are widespread across pediatric neurotypes",
+                  src: "Diamond (2013), Executive Functions Annual Review of Psychology",
+                },
+                {
+                  num: "Task Initiation",
+                  label: "Difficulty starting tasks is a working-memory gating difference, not defiance or poor work ethic",
+                  src: "Dawson & Guare (2018), Executive Skills in Children and Adolescents",
+                },
+                {
+                  num: "External Scaffolding",
+                  label: "Using visible checklists, visual timers, and step chunking offloads working memory and fosters autonomy",
+                  src: "Indian Academy of Pediatrics Clinical Guidelines on Adolescent Mental Health",
+                },
+              ]}
+              note="Executive functioning governs planning and initiation. Externalizing steps with visual checklists and timers enables children to overcome overwhelm and build lifelong independence."
+              onComplete={() => {}}
+            />
+          </div>
+
+          <div style={{ margin: "32px 0" }}>
+            <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 14, color: "var(--itw-text)" }}>
+              Actionable Strategies That Help
+            </h3>
+            <StrategyTabs
+              home={[
+                "Replace broad instructions like “clean your room” with specific atomic steps: “Put the books on the shelf first”.",
+                "Use a visual analog timer (like a Time Timer) to make remaining time visible rather than abstract.",
+                "Post a morning and evening visual schedule by the bedroom door with Velcro or checkmark toggles.",
+                "Practice backward planning: start at the deadline and map out milestone checkpoints backwards.",
+              ]}
+              classroom={[
+                "Break large multi-week term papers into graded weekly milestones (outline, bibliography, draft).",
+                "Provide an organized binder system with labeled color-coded folders for each subject.",
+                "Provide an explicit transition warning 2–3 minutes before switching subjects or activities.",
+                "Allow students to begin assignments with the easiest step first to build task initiation momentum.",
+              ]}
+            />
+          </div>
+
+          <div className="itw-flow-nav" style={{ marginTop: 32 }}>
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("instructions")}>
+              Try Executive Functioning flow again
+            </button>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("next")}>
+              Next Steps →
+            </button>
+          </div>
+          <HelpFooter />
+        </div>
+      )}
+
+      {step === "next" && (
+        <div className="itw-flow-page itw-flow-narrow" key="next">
+          <h2 className="itw-flow-title itw-center">Independence grows through clear structures</h2>
+          <p className="itw-flow-lead itw-center">
+            When we replace overwhelming lists with visual roadmaps and compassionate support, every child can develop lifelong organizational skills.
+          </p>
+          <div className="itw-flow-nav itw-flow-nav-center">
+            <a className="itw-cta itw-cta-dark" href="/assessments">Take an Assessment →</a>
+            <a className="itw-cta itw-cta-line" href="/consult">Book a Consultation →</a>
+          </div>
+          <h3 className="itw-flow-h3">Explore More Experiences</h3>
+          <div className="itw-flow-more">
+            {more.map((m) => (
+              <button
+                type="button"
+                key={m.key}
+                className="itw-flow-more-card"
+                data-m={m.key}
+                onClick={() => onNavigate(m.key)}
+              >
+                <b>{m.name}</b>
+                <span>{m.tag}</span>
+                <i aria-hidden="true">→</i>
+              </button>
+            ))}
+          </div>
+          <div className="itw-flow-nav itw-flow-nav-center">
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("explain")}>Back</button>
+            <button type="button" className="itw-cta itw-cta-line" onClick={onBack}>All experiences</button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 
 /* ---------------- Root ---------------- */
 
 export default function InTheirWorld() {
-  const [view, setView] = useState("landing");
-  const [soundOn, setSoundOn] = useState(true);
+  const [view, setView] = useState(() => {
+    if (typeof window !== "undefined") {
+      const p = new URLSearchParams(window.location.search);
+      const mod = p.get("module") || window.location.hash.replace("#", "");
+      if (mod && ["autism", "adhd", "dyslexia", "speech", "dyscalculia", "dysgraphia", "auditory", "executive"].includes(mod)) return mod;
+    }
+    return "landing";
+  });
+  const [soundOn, setSoundOn] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === "undefined") return false;
     const saved = window.localStorage.getItem("itw-dark-mode");
     if (saved !== null) return saved === "1";
     return window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
   });
+
+  useEffect(() => {
+    audio.setEnabled(soundOn);
+    if (!soundOn) {
+      audio.stopAll();
+    }
+  }, [soundOn]);
 
   useEffect(() => {
     window.localStorage.setItem("itw-dark-mode", darkMode ? "1" : "0");
@@ -3249,8 +7874,14 @@ export default function InTheirWorld() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [view]);
 
-  const goBack = () => setView("landing");
-  const navigate = (key) => setView(key);
+  const goBack = () => {
+    audio.stopAll();
+    setView("landing");
+  };
+  const navigate = (key) => {
+    audio.stopAll();
+    setView(key);
+  };
 
   const accentTable = darkMode ? ACCENT_HEX_DARK : ACCENT_HEX;
   const glow = `rgba(${accentTable[view] || accentTable.landing}, .16)`;
@@ -3282,6 +7913,26 @@ export default function InTheirWorld() {
           {view === "speech" && (
             <ModuleErrorBoundary onBack={goBack}>
               <SpeechModule key="speech" onBack={goBack} onNavigate={navigate} />
+            </ModuleErrorBoundary>
+          )}
+          {view === "dyscalculia" && (
+            <ModuleErrorBoundary onBack={goBack}>
+              <DyscalculiaModule key="dyscalculia" onBack={goBack} onNavigate={navigate} />
+            </ModuleErrorBoundary>
+          )}
+          {view === "dysgraphia" && (
+            <ModuleErrorBoundary onBack={goBack}>
+              <DysgraphiaModule key="dysgraphia" onBack={goBack} onNavigate={navigate} />
+            </ModuleErrorBoundary>
+          )}
+          {view === "auditory" && (
+            <ModuleErrorBoundary onBack={goBack}>
+              <AuditoryProcessingModule key="auditory" onBack={goBack} onNavigate={navigate} />
+            </ModuleErrorBoundary>
+          )}
+          {view === "executive" && (
+            <ModuleErrorBoundary onBack={goBack}>
+              <ExecutiveFunctioningModule key="executive" onBack={goBack} onNavigate={navigate} />
             </ModuleErrorBoundary>
           )}
         </div>

@@ -8010,30 +8010,30 @@ function DownSyndromeStory({ onBack, onNavigate }) {
   }, [currentPage]);
 
   const page = PAGES[currentPage];
+  const MOMENT_TABS = ["1. Schedule", "2. Garden", "3. Science", "4. Milestone"];
 
   return (
     <section className="itw-view itw-module itw-flow" data-accent="autism">
-      <FlowCrumbs name="Down Syndrome Story" onBack={onBack} />
+      {/* Sleek, de-congested top navigation */}
+      <div className="itw-story-nav-header">
+        <div className="itw-story-nav-left">
+          <button type="button" className="itw-pill-btn" onClick={onBack}>
+            ← All Experiences
+          </button>
+          <span className="itw-story-nav-sep" aria-hidden="true">/</span>
+          <span className="itw-story-nav-name">Aarav&apos;s Day: A Story of Belonging</span>
+        </div>
+        <span className="itw-story-nav-count">
+          Moment {currentPage + 1} of {PAGES.length}
+        </span>
+      </div>
 
       <div className="itw-story-exhibit">
-        {/* Story Header (Clean, unhurried, no duplicate titles!) */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
-          <div>
-            <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-autism)", letterSpacing: "0.08em" }}>
-              Illustrated Children&apos;s Storybook • Aarav&apos;s Day
-            </span>
-            <h2 style={{ fontSize: "clamp(1.5rem, 2.6vw, 2.1rem)", fontWeight: 800, color: "var(--itw-text)", margin: "3px 0 0" }}>
-              A Story of Belonging & Growth
-            </h2>
-          </div>
-          <button type="button" className="itw-pill-btn" onClick={onBack}>← Back to Experiences</button>
-        </div>
-
         {/* Physical Storybook Casing */}
         <div className="itw-storybook-casing">
-          {/* Top Bookmark Ribbon Tabs */}
+          {/* Top Bookmark Ribbon Tabs (Short, crisp, never clipped!) */}
           <div className="itw-book-top-tabs" role="tablist" aria-label="Storybook moments">
-            {PAGES.map((p, idx) => (
+            {PAGES.map((_, idx) => (
               <button
                 key={idx}
                 type="button"
@@ -8043,7 +8043,7 @@ function DownSyndromeStory({ onBack, onNavigate }) {
                 onClick={() => turnToPage(idx)}
               >
                 <span>🔖</span>
-                <span>Moment {idx + 1}: {p.title.split(":")[0]}</span>
+                <span>{MOMENT_TABS[idx]}</span>
               </button>
             ))}
           </div>
@@ -8260,30 +8260,30 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
   }, [activePeriod]);
 
   const current = PERIODS[activePeriod];
+  const PERIOD_TABS = ["1. Assembly (8:30 AM)", "2. Science (10:15 AM)", "3. Lunch (12:30 PM)", "4. Studio (2:15 PM)"];
 
   return (
     <section className="itw-view itw-module itw-flow" data-accent="adhd">
-      <FlowCrumbs name="A Day Through My Eyes" onBack={onBack} />
+      {/* Sleek, de-congested top navigation */}
+      <div className="itw-story-nav-header">
+        <div className="itw-story-nav-left">
+          <button type="button" className="itw-pill-btn" onClick={onBack}>
+            ← All Experiences
+          </button>
+          <span className="itw-story-nav-sep" aria-hidden="true">/</span>
+          <span className="itw-story-nav-name">A Day Through My Eyes</span>
+        </div>
+        <span className="itw-story-nav-count">
+          Period {activePeriod + 1} of {PERIODS.length}
+        </span>
+      </div>
 
       <div className="itw-story-exhibit">
-        {/* Story Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
-          <div>
-            <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-adhd)", letterSpacing: "0.08em" }}>
-              Multi-Sensory Storybook • 4 School Day Periods
-            </span>
-            <h2 style={{ fontSize: "clamp(1.5rem, 2.6vw, 2.1rem)", fontWeight: 800, color: "var(--itw-text)", margin: "3px 0 0" }}>
-              A Day Through My Eyes
-            </h2>
-          </div>
-          <button type="button" className="itw-pill-btn" onClick={onBack}>← Back to Experiences</button>
-        </div>
-
         {/* Physical Storybook Casing */}
         <div className="itw-storybook-casing">
-          {/* Top Bookmark Ribbon Tabs */}
+          {/* Top Bookmark Ribbon Tabs (Short, crisp, never clipped!) */}
           <div className="itw-book-top-tabs" role="tablist" aria-label="School day periods">
-            {PERIODS.map((p, idx) => (
+            {PERIODS.map((_, idx) => (
               <button
                 key={idx}
                 type="button"
@@ -8293,7 +8293,7 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
                 onClick={() => turnToPeriod(idx)}
               >
                 <span>⏰</span>
-                <span>{p.time}: {p.title.split("&")[0]}</span>
+                <span>{PERIOD_TABS[idx]}</span>
               </button>
             ))}
           </div>

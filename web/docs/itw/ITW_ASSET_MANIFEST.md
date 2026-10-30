@@ -1,7 +1,7 @@
 # In Their World (ITW) — Asset Manifest
 
 **Date:** 2026-10-29  
-**Specification Reference:** Section 5 & Phase 4 of `ITW_ANTIGRAVITY_MASTER_PROMPT.md`
+**Specification Reference:** Section 5 & Phase 4 of In Their World Technical Specification
 
 ---
 

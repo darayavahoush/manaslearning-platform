@@ -1,6 +1,6 @@
 # In Their World: Environment Art Generation Specification & Prompts
 
-This document provides production-ready image generation prompts, art direction guidelines, and graceful fallback implementations for the six environment backgrounds specified in `ITW_ANTIGRAVITY_MASTER_PROMPT.md`.
+This document provides production-ready image generation prompts, art direction guidelines, and graceful fallback implementations for the environment backgrounds in In Their World.
 
 ---
 

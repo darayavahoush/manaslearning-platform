@@ -1568,25 +1568,77 @@ body:has(.itw-dark) .itw-leafimg {
   background: #fdfaf2;
 }
 
-/* Page corner dog-ear */
+/* Page corner dog-ears (Top-Right Next & Top-Left Prev) */
 .itw-book-corner-curl {
   position: absolute;
   top: 0;
   right: 0;
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(135deg, transparent 50%, rgba(212, 175, 55, 0.35) 50%, #f4eee0 65%, #ffffff 100%);
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, transparent 50%, rgba(212, 175, 55, 0.45) 50%, #f4ede0 65%, #ffffff 100%);
   border-radius: 0 16px 0 0;
   cursor: pointer;
-  box-shadow: -3px 3px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.25s ease;
-  z-index: 3;
+  box-shadow: -4px 4px 10px rgba(0, 0, 0, 0.14);
+  transition: all 0.28s cubic-bezier(0.2, 0.8, 0.25, 1);
+  z-index: 15;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 6px 8px;
+}
+.itw-book-corner-curl::before {
+  content: "➔";
+  font-size: 11px;
+  color: #8b6e2e;
+  opacity: 0.75;
+  transform: rotate(-45deg);
+  transition: transform 0.28s ease;
 }
 .itw-book-corner-curl:hover {
-  width: 54px;
-  height: 54px;
-  background: linear-gradient(135deg, transparent 50%, rgba(212, 175, 55, 0.6) 50%, #eee4ce 65%, #ffffff 100%);
-  box-shadow: -5px 5px 10px rgba(0, 0, 0, 0.16);
+  width: 62px;
+  height: 62px;
+  background: linear-gradient(135deg, transparent 50%, rgba(212, 175, 55, 0.75) 50%, #ece0c6 65%, #ffffff 100%);
+  box-shadow: -6px 6px 16px rgba(0, 0, 0, 0.22);
+}
+.itw-book-corner-curl:hover::before {
+  transform: rotate(-45deg) scale(1.35);
+  opacity: 1;
+}
+
+.itw-book-corner-curl-prev {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(225deg, transparent 50%, rgba(212, 175, 55, 0.45) 50%, #f4ede0 65%, #ffffff 100%);
+  border-radius: 16px 0 0 0;
+  cursor: pointer;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.14);
+  transition: all 0.28s cubic-bezier(0.2, 0.8, 0.25, 1);
+  z-index: 15;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 6px 8px;
+}
+.itw-book-corner-curl-prev::before {
+  content: "⬅";
+  font-size: 11px;
+  color: #8b6e2e;
+  opacity: 0.75;
+  transform: rotate(45deg);
+  transition: transform 0.28s ease;
+}
+.itw-book-corner-curl-prev:hover {
+  width: 62px;
+  height: 62px;
+  background: linear-gradient(225deg, transparent 50%, rgba(212, 175, 55, 0.75) 50%, #ece0c6 65%, #ffffff 100%);
+  box-shadow: 6px 6px 16px rgba(0, 0, 0, 0.22);
+}
+.itw-book-corner-curl-prev:hover::before {
+  transform: rotate(45deg) scale(1.35);
+  opacity: 1;
 }
 
 .itw-storybook-chapter-ribbon {
@@ -1723,18 +1775,120 @@ body:has(.itw-dark) .itw-leafimg {
   background: var(--itw-accent);
 }
 
-/* Turning Page Flip Animation */
+/* ================= 3D PHYSICAL STORYBOOK PAGE TURN EFFECTS ================= */
+.itw-storybook-spread {
+  perspective: 1800px;
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+/* Page Turn Animation (Next Direction) */
+.itw-page-turn-next {
+  transform-origin: left center;
+  animation: itw-page-flip-forward 0.52s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes itw-page-flip-forward {
+  0% {
+    transform: perspective(1400px) rotateY(0deg) scale(1);
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.04);
+  }
+  35% {
+    transform: perspective(1400px) rotateY(-18deg) scale(0.985) translateX(4px);
+    box-shadow: -18px 0 32px rgba(0, 0, 0, 0.22);
+  }
+  70% {
+    transform: perspective(1400px) rotateY(-5deg) scale(0.995) translateX(1px);
+    box-shadow: -8px 0 16px rgba(0, 0, 0, 0.1);
+  }
+  100% {
+    transform: perspective(1400px) rotateY(0deg) scale(1) translateX(0);
+    box-shadow: none;
+  }
+}
+
+/* Page Turn Animation (Prev Direction) */
+.itw-page-turn-prev {
+  transform-origin: right center;
+  animation: itw-page-flip-backward 0.52s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes itw-page-flip-backward {
+  0% {
+    transform: perspective(1400px) rotateY(0deg) scale(1);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.04);
+  }
+  35% {
+    transform: perspective(1400px) rotateY(18deg) scale(0.985) translateX(-4px);
+    box-shadow: 18px 0 32px rgba(0, 0, 0, 0.22);
+  }
+  70% {
+    transform: perspective(1400px) rotateY(5deg) scale(0.995) translateX(-1px);
+    box-shadow: 8px 0 16px rgba(0, 0, 0, 0.1);
+  }
+  100% {
+    transform: perspective(1400px) rotateY(0deg) scale(1) translateX(0);
+    box-shadow: none;
+  }
+}
+
+/* Sweeping Light Sheen on Bending Page */
+.itw-page-turn-sheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 30%,
+    rgba(0, 0, 0, 0.06) 50%,
+    rgba(0, 0, 0, 0.14) 70%,
+    transparent 100%
+  );
+  animation: itw-sheen-travel 0.52s cubic-bezier(0.22, 1, 0.36, 1) both;
+  z-index: 12;
+}
+@keyframes itw-sheen-travel {
+  0% {
+    opacity: 0;
+    transform: translateX(-40%);
+  }
+  30% {
+    opacity: 1;
+    transform: translateX(10%);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(110%);
+  }
+}
+
+/* Dynamic Crease Shadow on Opposite Page */
+.itw-page-crease-shadow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.14) 0%, transparent 65%);
+  animation: itw-crease-pulse 0.52s ease-out both;
+  z-index: 12;
+}
+@keyframes itw-crease-pulse {
+  0% { opacity: 0; }
+  35% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
 .itw-page-flip-anim {
-  animation: itw-book-page-turn 0.34s cubic-bezier(0.2, 0.8, 0.25, 1) both;
+  animation: itw-book-page-turn 0.42s cubic-bezier(0.2, 0.8, 0.25, 1) both;
 }
 @keyframes itw-book-page-turn {
   0% {
-    opacity: 0.45;
-    transform: perspective(900px) rotateY(-5deg) translateX(4px);
+    opacity: 0.35;
+    transform: perspective(1100px) rotateY(-8deg) translateX(6px);
   }
   100% {
     opacity: 1;
-    transform: perspective(900px) rotateY(0deg) translateX(0);
+    transform: perspective(1100px) rotateY(0deg) translateX(0);
   }
 }
 

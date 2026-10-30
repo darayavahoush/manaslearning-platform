@@ -7893,8 +7893,56 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
 
 /* ================= STORIES & PERSPECTIVES EXHIBITS ================= */
 
+function playPageTurnSound(soundOn) {
+  if (!soundOn || typeof window === "undefined") return;
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!window.__pageAudioCtx) window.__pageAudioCtx = new AudioCtx();
+    const ctx = window.__pageAudioCtx;
+    if (ctx.state === "suspended") ctx.resume();
+
+    const duration = 0.28;
+    const bufferSize = Math.floor(ctx.sampleRate * duration);
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    let lastOut = 0.0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      lastOut = (lastOut + 0.03 * white) / 1.03;
+      data[i] = lastOut * 3.2;
+    }
+
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(1300, ctx.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(550, ctx.currentTime + duration);
+    filter.Q.value = 1.3;
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.001, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.09, ctx.currentTime + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    noise.start();
+  } catch (e) {
+    // Ignore audio initialization error
+  }
+}
+
 function DownSyndromeStory({ onBack, onNavigate }) {
+  const { soundOn } = useContext(SettingsContext);
   const [currentPage, setCurrentPage] = useState(0);
+  const [turnDir, setTurnDir] = useState("next");
+  const [turnKey, setTurnKey] = useState(0);
 
   const PAGES = [
     {
@@ -7939,6 +7987,28 @@ function DownSyndromeStory({ onBack, onNavigate }) {
     },
   ];
 
+  const turnToPage = (newPage) => {
+    if (newPage === currentPage || newPage < 0 || newPage >= PAGES.length) return;
+    const dir = newPage > currentPage ? "next" : "prev";
+    setTurnDir(dir);
+    setTurnKey((k) => k + 1);
+    playPageTurnSound(soundOn);
+    setCurrentPage(newPage);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      if (e.key === "ArrowRight") {
+        turnToPage(currentPage + 1);
+      } else if (e.key === "ArrowLeft") {
+        turnToPage(currentPage - 1);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentPage]);
+
   const page = PAGES[currentPage];
 
   return (
@@ -7970,7 +8040,7 @@ function DownSyndromeStory({ onBack, onNavigate }) {
                 role="tab"
                 aria-selected={idx === currentPage}
                 className={`itw-book-tab${idx === currentPage ? " itw-active" : ""}`}
-                onClick={() => setCurrentPage(idx)}
+                onClick={() => turnToPage(idx)}
               >
                 <span>🔖</span>
                 <span>Moment {idx + 1}: {p.title.split(":")[0]}</span>
@@ -7981,7 +8051,25 @@ function DownSyndromeStory({ onBack, onNavigate }) {
           {/* Open Two-Page Storybook Spread */}
           <div className="itw-storybook-spread">
             {/* Left Page: Illustration Plate */}
-            <div className="itw-storybook-art-page itw-page-flip-anim" key={`ds-left-${currentPage}`}>
+            <div
+              className={`itw-storybook-art-page ${turnDir === "prev" ? "itw-page-turn-prev" : "itw-page-flip-anim"}`}
+              key={`ds-left-${turnKey}`}
+            >
+              {/* Top-Left Corner Curl (Turn Back) */}
+              {currentPage > 0 && (
+                <div
+                  className="itw-book-corner-curl-prev"
+                  title={`Turn back to Moment ${currentPage}`}
+                  onClick={() => turnToPage(currentPage - 1)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Previous moment"
+                />
+              )}
+
+              {/* Dynamic crease shadow when turning forward */}
+              {turnDir === "next" && <div className="itw-page-crease-shadow" aria-hidden="true" />}
+
               <div className="itw-storybook-art-frame">
                 <img
                   src={page.image}
@@ -8005,13 +8093,19 @@ function DownSyndromeStory({ onBack, onNavigate }) {
             <div className="itw-book-spine" aria-hidden="true" />
 
             {/* Right Page: Story, Quote, Insight & In-Page Turn Navigation */}
-            <div className="itw-storybook-text-page itw-page-flip-anim" key={`ds-right-${currentPage}`}>
-              {/* Curled Paper Dog-Ear */}
+            <div
+              className={`itw-storybook-text-page ${turnDir === "next" ? "itw-page-turn-next" : "itw-page-flip-anim"}`}
+              key={`ds-right-${turnKey}`}
+            >
+              {/* Sweeping Light Sheen on Bending Page */}
+              <div className="itw-page-turn-sheen" aria-hidden="true" />
+
+              {/* Curled Paper Dog-Ear (Top-Right Turn Next) */}
               {currentPage < PAGES.length - 1 && (
                 <div
                   className="itw-book-corner-curl"
-                  title={`Turn to Page ${currentPage + 2}`}
-                  onClick={() => setCurrentPage((p) => Math.min(PAGES.length - 1, p + 1))}
+                  title={`Turn to Moment ${currentPage + 2}`}
+                  onClick={() => turnToPage(currentPage + 1)}
                   role="button"
                   tabIndex={0}
                   aria-label="Turn page"
@@ -8046,7 +8140,7 @@ function DownSyndromeStory({ onBack, onNavigate }) {
                   type="button"
                   className="itw-book-turn-btn itw-book-turn-prev"
                   disabled={currentPage === 0}
-                  onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                  onClick={() => turnToPage(currentPage - 1)}
                 >
                   ← Turn Back
                 </button>
@@ -8057,8 +8151,8 @@ function DownSyndromeStory({ onBack, onNavigate }) {
                       key={idx}
                       type="button"
                       className={`itw-book-dot${idx === currentPage ? " itw-active" : ""}`}
-                      onClick={() => setCurrentPage(idx)}
-                      aria-label={`Go to page ${idx + 1}`}
+                      onClick={() => turnToPage(idx)}
+                      aria-label={`Go to moment ${idx + 1}`}
                     />
                   ))}
                 </div>
@@ -8067,7 +8161,7 @@ function DownSyndromeStory({ onBack, onNavigate }) {
                   <button
                     type="button"
                     className="itw-book-turn-btn itw-book-turn-next"
-                    onClick={() => setCurrentPage((p) => Math.min(PAGES.length - 1, p + 1))}
+                    onClick={() => turnToPage(currentPage + 1)}
                   >
                     Turn Page →
                   </button>
@@ -8090,8 +8184,11 @@ function DownSyndromeStory({ onBack, onNavigate }) {
 }
 
 function DayThroughMyEyesStory({ onBack, onNavigate }) {
+  const { soundOn } = useContext(SettingsContext);
   const [activePeriod, setActivePeriod] = useState(0);
   const [activeLens, setActiveLens] = useState("sensory"); // sensory | attention | communication | supported
+  const [turnDir, setTurnDir] = useState("next");
+  const [turnKey, setTurnKey] = useState(0);
 
   const PERIODS = [
     {
@@ -8140,6 +8237,28 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
     },
   ];
 
+  const turnToPeriod = (newPeriod) => {
+    if (newPeriod === activePeriod || newPeriod < 0 || newPeriod >= PERIODS.length) return;
+    const dir = newPeriod > activePeriod ? "next" : "prev";
+    setTurnDir(dir);
+    setTurnKey((k) => k + 1);
+    playPageTurnSound(soundOn);
+    setActivePeriod(newPeriod);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      if (e.key === "ArrowRight") {
+        turnToPeriod(activePeriod + 1);
+      } else if (e.key === "ArrowLeft") {
+        turnToPeriod(activePeriod - 1);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activePeriod]);
+
   const current = PERIODS[activePeriod];
 
   return (
@@ -8171,7 +8290,7 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
                 role="tab"
                 aria-selected={idx === activePeriod}
                 className={`itw-book-tab${idx === activePeriod ? " itw-active" : ""}`}
-                onClick={() => setActivePeriod(idx)}
+                onClick={() => turnToPeriod(idx)}
               >
                 <span>⏰</span>
                 <span>{p.time}: {p.title.split("&")[0]}</span>
@@ -8182,7 +8301,25 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
           {/* Open Two-Page Storybook Spread */}
           <div className="itw-storybook-spread">
             {/* Left Page: Period Environment Illustration Plate */}
-            <div className="itw-storybook-art-page itw-page-flip-anim" key={`eyes-left-${activePeriod}`}>
+            <div
+              className={`itw-storybook-art-page ${turnDir === "prev" ? "itw-page-turn-prev" : "itw-page-flip-anim"}`}
+              key={`eyes-left-${turnKey}`}
+            >
+              {/* Top-Left Corner Curl (Turn Back) */}
+              {activePeriod > 0 && (
+                <div
+                  className="itw-book-corner-curl-prev"
+                  title={`Turn back to Period ${activePeriod}`}
+                  onClick={() => turnToPeriod(activePeriod - 1)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Previous period"
+                />
+              )}
+
+              {/* Dynamic crease shadow when turning forward */}
+              {turnDir === "next" && <div className="itw-page-crease-shadow" aria-hidden="true" />}
+
               <div className="itw-storybook-art-frame">
                 <img
                   src={current.image}
@@ -8206,13 +8343,19 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
             <div className="itw-book-spine" aria-hidden="true" />
 
             {/* Right Page: Perspective Lens & Story Page */}
-            <div className="itw-storybook-text-page itw-page-flip-anim" key={`eyes-right-${activePeriod}`}>
+            <div
+              className={`itw-storybook-text-page ${turnDir === "next" ? "itw-page-turn-next" : "itw-page-flip-anim"}`}
+              key={`eyes-right-${turnKey}`}
+            >
+              {/* Sweeping Light Sheen on Bending Page */}
+              <div className="itw-page-turn-sheen" aria-hidden="true" />
+
               {/* Curled Paper Dog-Ear */}
               {activePeriod < PERIODS.length - 1 && (
                 <div
                   className="itw-book-corner-curl"
                   title={`Turn to Period ${activePeriod + 2}`}
-                  onClick={() => setActivePeriod((p) => Math.min(PERIODS.length - 1, p + 1))}
+                  onClick={() => turnToPeriod(activePeriod + 1)}
                   role="button"
                   tabIndex={0}
                   aria-label="Turn page"
@@ -8291,7 +8434,7 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
                   type="button"
                   className="itw-book-turn-btn itw-book-turn-prev"
                   disabled={activePeriod === 0}
-                  onClick={() => setActivePeriod((p) => Math.max(0, p - 1))}
+                  onClick={() => turnToPeriod(activePeriod - 1)}
                 >
                   ← Turn Back
                 </button>
@@ -8302,7 +8445,7 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
                       key={idx}
                       type="button"
                       className={`itw-book-dot${idx === activePeriod ? " itw-active" : ""}`}
-                      onClick={() => setActivePeriod(idx)}
+                      onClick={() => turnToPeriod(idx)}
                       aria-label={`Go to period ${idx + 1}`}
                     />
                   ))}
@@ -8312,7 +8455,7 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
                   <button
                     type="button"
                     className="itw-book-turn-btn itw-book-turn-next"
-                    onClick={() => setActivePeriod((p) => Math.min(PERIODS.length - 1, p + 1))}
+                    onClick={() => turnToPeriod(activePeriod + 1)}
                   >
                     Turn to Next Period →
                   </button>

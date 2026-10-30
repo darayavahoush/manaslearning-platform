@@ -605,8 +605,26 @@ const MODULE_ICONS = {
 };
 
 const SOON_STORIES = [
-  { key: "downsyndrome", icon: "🌱", name: "Down Syndrome / Global Developmental Delay", sub: "Growing at My Own Pace", blurb: "A first-person story about growth, strengths and everyday milestones.", meta: "Story experience" },
-  { key: "dayineyes", icon: "🎒", name: "A Day Through My Eyes", sub: "A Composite Experience", blurb: "Follow a child through their school day and switch between different lenses based on their profile.", meta: "Interactive story" },
+  {
+    key: "downsyndrome",
+    icon: "🌱",
+    name: "Down Syndrome & Developmental Pacing",
+    sub: "Growing at My Own Pace",
+    blurb: "An interactive first-person story of Aarav: celebrating strengths, visual learning, and everyday milestones.",
+    image: "/decor/itw/down-syndrome-story.webp",
+    meta: "Interactive Story Experience",
+    badge: "Illustrated Story",
+  },
+  {
+    key: "dayineyes",
+    icon: "🎒",
+    name: "A Day Through My Eyes",
+    sub: "The Inclusive School Day Walkthrough",
+    blurb: "Step into an everyday school day and switch between Sensory, Attention, Communication, and Supported Classroom lenses.",
+    image: "/decor/itw/day-through-my-eyes.webp",
+    meta: "Multi-Perspective Exhibit",
+    badge: "Perspective Lens",
+  },
 ];
 
 const HOW_STEPS = [
@@ -615,20 +633,58 @@ const HOW_STEPS = [
   { n: 3, title: "Understand what it may mean", text: "See key insights and ways to support." },
 ];
 
-function SoonCard({ c }) {
+const INTRO_VIGNETTES = {
+  autism: { src: "/decor/itw/autism-sticker.webp", label: "Sensory Processing in Real Life" },
+  adhd: { src: "/decor/itw/adhd-sticker.webp", label: "A Mind With Dynamic Currents" },
+  dyslexia: { src: "/decor/itw/dyslexia-sticker.webp", label: "Phonological Decoding & Fluency" },
+  speech: { src: "/decor/itw/speech-sticker.webp", label: "Expressive Communication & AAC" },
+  dyscalculia: { src: "/decor/itw/dyscalculia-sticker.webp", label: "Visual Number Sense & Magnitude" },
+  dysgraphia: { src: "/decor/itw/dysgraphia-environment.webp", label: "Graphomotor Pathway & Expression" },
+  auditory: { src: "/decor/itw/auditory-processing-environment.webp", label: "Classroom Acoustic Perception" },
+  executive: { src: "/decor/itw/executive-functioning-environment.webp", label: "Working Memory & Initiation" },
+};
+
+function IntroVignette({ moduleKey }) {
+  const item = INTRO_VIGNETTES[moduleKey] || INTRO_VIGNETTES.autism;
   return (
-    <div className="itw-mcard itw-soon" aria-disabled="true">
+    <div className="itw-flow-sticker-panel" aria-hidden="true">
+      <div className="itw-flow-sticker-glow" />
+      <img src={item.src} alt="" className="itw-flow-sticker-img" loading="eager" />
+      <span className="itw-flow-sticker-badge">{item.label}</span>
+    </div>
+  );
+}
+
+function SoonCard({ c, onSelect }) {
+  return (
+    <button
+      type="button"
+      className="itw-mcard itw-story-card"
+      data-m={c.key}
+      onClick={() => onSelect && onSelect(c.key)}
+      style={{ textAlign: "left" }}
+    >
+      <div className="itw-mcard-banner-wrap">
+        <img src={c.image} alt="" className="itw-mcard-banner" loading="lazy" decoding="async" />
+        <span className="itw-mcard-status-pill">{c.badge || "Story"}</span>
+      </div>
       <div className="itw-mcard-body">
         <div className="itw-mcard-top">
           <div className="itw-mcard-icon" aria-hidden="true">{c.icon}</div>
-          <div className="itw-tag">Coming soon</div>
+          <div>
+            <div className="itw-tag" style={{ background: "rgba(44, 140, 114, 0.12)", color: "var(--itw-autism)" }}>
+              {c.badge || "Interactive"}
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)", marginTop: 2 }}>{c.sub}</div>
+          </div>
         </div>
         <h3>{c.name}</h3>
-        <div className="itw-soon-sub">{c.sub}</div>
         <p>{c.blurb}</p>
-        <div className="itw-soon-meta">{c.meta}</div>
+        <div className="itw-soon-meta" style={{ color: "var(--itw-accent)", fontWeight: 700 }}>
+          {c.meta} →
+        </div>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -709,7 +765,7 @@ function Landing({ onSelect }) {
         </div>
         <div className="itw-group-label">Stories &amp; Perspectives</div>
         <div className="itw-cardgrid">
-          {SOON_STORIES.map((c) => <SoonCard key={c.key} c={c} />)}
+          {SOON_STORIES.map((c) => <SoonCard key={c.key} c={c} onSelect={onSelect} />)}
         </div>
       </section>
 
@@ -1729,11 +1785,7 @@ function AutismModule({ onBack, onNavigate }) {
               Begin the Journey →
             </button>
           </div>
-          <div className="itw-flow-letters" aria-hidden="true">
-            {["👂", "👁️", "🧠", "💡", "🌿", "🎧"].map((c, i) => (
-              <span key={i} style={{ animationDelay: `${i * 0.45}s`, fontSize: 36 }}>{c}</span>
-            ))}
-          </div>
+          <IntroVignette moduleKey="autism" />
         </div>
       )}
 
@@ -2173,6 +2225,33 @@ const ADHD_INTERNAL_THOUGHTS = [
   { id: "thought_camera", channel: "thought", icon: "💭", title: "Camera Battery", body: "Did I recharge my camera battery for Sunday morning bird walk?", tangentTitle: "Weekend Bird Walk", tangentText: "You imagine spotting kingfishers along the lake, but your immediate assignment needs your attention.", autoExpire: 10 },
 ];
 
+const ADHD_TANGENT_POOL = [
+  {
+    id: "tangent_species",
+    label: "🦆 Spot-Billed Pelican Diet",
+    title: "Spot-Billed Pelican Diet Tangent",
+    text: "You open three Wikipedia tabs researching what pelicans eat in South Indian wetlands, spending two minutes fascinated by bird beaks before remembering your assignment!",
+  },
+  {
+    id: "tangent_tab_clean",
+    label: "🔖 Tab Bookmark Organization",
+    title: "Tab Organization Rabbit Hole",
+    text: "You start categorizing your 27 open browser tabs into neat color-coded folders... and realize you haven't written a single sentence of your assignment brief.",
+  },
+  {
+    id: "tangent_music",
+    label: "🎧 Search Lo-Fi Focus Playlist",
+    title: "The Perfect Study Playlist Quest",
+    text: "You spend 90 seconds previewing eight different instrumental tracks searching for the exact frequency to help you focus, losing your train of thought in the process.",
+  },
+  {
+    id: "tangent_tea",
+    label: "☕ Kitchen Ginger Tea Break",
+    title: "Kitchen Tea Daydream",
+    text: "You daydream about brewing fresh ginger and cardamom tea. It feels urgent and necessary right now, but your assignment timer is still running!",
+  },
+];
+
 function createPrng(seed = 1337) {
   let s = seed >>> 0;
   return function next() {
@@ -2183,21 +2262,26 @@ function createPrng(seed = 1337) {
   };
 }
 
-function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportType = "checklist", onComplete, onAbort }) {
+function shuffleWith(rand, arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportType = "filter", onComplete, onAbort }) {
   const { soundOn } = useContext(SettingsContext);
-  const [step, setStep] = useState(1);
-  const [activeTab, setActiveTab] = useState("assignment");
-  const [notesExtracted, setNotesExtracted] = useState([]);
-  const [chosenPolicy, setChosenPolicy] = useState(null);
+  const [selectedKeywords, setSelectedKeywords] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [activeTangent, setActiveTangent] = useState(null);
   const [distractionsDismissed, setDistractionsDismissed] = useState(0);
-  const [distractionsDeferred, setDistractionsDeferred] = useState(0);
   const [tangentsExplored, setTangentsExplored] = useState(0);
-  const [chatUnread, setChatUnread] = useState(1);
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(true);
   const [paused, setPaused] = useState(false);
+  const [focusSpotlight, setFocusSpotlight] = useState(mode === "supported");
 
   const startTimeRef = useRef(0);
   const timerIntervalRef = useRef(null);
@@ -2209,36 +2293,24 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
 
   // Handle sound drone
   useEffect(() => {
-    audio.setDroneGain("adhd", soundOn && running && !paused ? 0.025 : 0.0001);
-  }, [soundOn, running, paused]);
+    audio.setDroneGain("adhd", soundOn && running && !paused && mode === "interrupted" ? 0.03 : 0.0001);
+  }, [soundOn, running, paused, mode]);
 
   useEffect(() => {
-    if (!soundOn) {
+    if (!soundOn || mode !== "interrupted") {
       audio.stopDrone("adhd");
       return;
     }
     audio.startDrone("adhd", { freqs: [220, 330], type: "triangle" });
     return () => audio.stopDrone("adhd");
-  }, [soundOn]);
+  }, [soundOn, mode]);
 
   const clearTimers = useCallback(() => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     timerIntervalRef.current = null;
   }, []);
 
-  const handleFinish = useCallback(() => {
-    clearTimers();
-    setRunning(false);
-    audio.cue("slam");
-    onCompleteRef.current?.({
-      time: elapsed,
-      distractionsDismissed,
-      distractionsDeferred,
-      tangentsExplored,
-    });
-  }, [clearTimers, elapsed, distractionsDismissed, distractionsDeferred, tangentsExplored]);
-
-  // Start simulation timer
+  // Simulation stopwatch
   useEffect(() => {
     startTimeRef.current = performance.now();
     timerIntervalRef.current = setInterval(() => {
@@ -2247,214 +2319,272 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
     return clearTimers;
   }, [clearTimers]);
 
-  // Unpredictable multi-channel event engine with burst dynamics
+  // Distinct tasks per round to completely prevent muscle memory
+  const ADHD_TASKS = {
+    baseline: {
+      topic: "Planetary Science • Robotic Exploration",
+      title: "Mars Surface & Atmosphere",
+      text: "Mars is often called the Red Planet because its surface dust is rich in iron minerals. Robotic rovers navigate across ancient volcanic craters, sampling minerals and analyzing the thin carbon dioxide atmosphere for clues of prehistoric rivers.",
+      instruction: "Identify the 3 planetary science concepts in the brief above:",
+      targets: ["Robotic Rovers", "Volcanic Craters", "Carbon Atmosphere"],
+      options: [
+        "Robotic Rovers",
+        "Glacial Tundra",
+        "Volcanic Craters",
+        "Saturn Rings",
+        "Carbon Atmosphere",
+        "Solar Flare",
+      ],
+    },
+    interrupted: {
+      topic: "Deep Oceanography • Mariana Trench",
+      title: "Abyssal Marine Biology",
+      text: "Seven miles down in the Pacific Ocean lies perpetual midnight and crushing pressure. Mysterious fish create flashes of blue bioluminescence to communicate, while clouds of microscopic plankton drift past thermal chimneys in a unique submarine ecosystem.",
+      instruction: "Click the 3 ocean concepts in the brief above while pings compete for focus:",
+      targets: ["Luminous Bioluminescence", "Microscopic Plankton", "Deep Ecosystem"],
+      options: [
+        "Luminous Bioluminescence",
+        "Coral Lagoon",
+        "Microscopic Plankton",
+        "Desert Dune",
+        "Deep Ecosystem",
+        "Photosynthesis",
+      ],
+    },
+    supported: {
+      topic: "Ancient Civilizations • Indus River Valley",
+      title: "Planned Urban Archaeology",
+      text: "Four thousand years ago along the Indus River, engineers built planned cities with covered drains. Craftspeople carved beads from red carnelian, stamped unicorn seals onto trading goods, and docked international freight boats at the tidal harbor of Lothal.",
+      instruction: "Click the 3 Indus Valley concepts below (Focus Spotlight active):",
+      targets: ["Carved Carnelian", "Unicorn Seals", "Tidal Harbor"],
+      options: [
+        "Carved Carnelian",
+        "Pyramid Tombs",
+        "Unicorn Seals",
+        "Gladiator Arena",
+        "Tidal Harbor",
+        "Roman Colosseum",
+      ],
+    },
+  };
+
+  const currentTask = ADHD_TASKS[mode] || ADHD_TASKS.baseline;
+
+  // Synthesized Web Audio cues for distinct distraction types
+  const playAdhdSound = useCallback((type) => {
+    if (!soundOn || typeof window === "undefined") return;
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      if (!window.__adhdAudioCtx) window.__adhdAudioCtx = new AudioCtx();
+      const ctx = window.__adhdAudioCtx;
+      if (ctx.state === "suspended") ctx.resume();
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      if (type === "ping") {
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(880, now);
+        osc.frequency.setValueAtTime(1320, now + 0.08);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.start(now);
+        osc.stop(now + 0.36);
+      } else if (type === "buzzer") {
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(220, now);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.28);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } else if (type === "chat") {
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(1040, now);
+        osc.frequency.setValueAtTime(1280, now + 0.06);
+        osc.frequency.setValueAtTime(1560, now + 0.12);
+        gain.gain.setValueAtTime(0.16, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.26);
+        osc.start(now);
+        osc.stop(now + 0.27);
+      } else if (type === "whoosh") {
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(1600, now + 0.28);
+        gain.gain.setValueAtTime(0.14, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.start(now);
+        osc.stop(now + 0.36);
+      }
+    } catch {}
+  }, [soundOn]);
+
+  // Dynamic Distraction Generator for interrupted mode: Multi-font, multi-color pop-ins
   useEffect(() => {
-    if (mode === "baseline" || (mode === "supported" && supportType === "filter") || paused || !running) {
+    if (mode === "baseline" || mode === "supported" || paused || !running) {
+      setNotifications([]);
       return undefined;
     }
 
-    const prng = createPrng(Date.now() + 19);
     const timers = [];
     let isCancelled = false;
 
-    // Intensity parameters
-    const cfg = intensity === "complex"
-      ? { baseMs: 1800, jitter: 1400, burstProb: 0.55, maxActive: 3 }
-      : intensity === "gentle"
-      ? { baseMs: 7000, jitter: 3500, burstProb: 0.12, maxActive: 1 }
-      : { baseMs: 3400, jitter: 2200, burstProb: 0.35, maxActive: 2 };
+    const notifPool = [
+      {
+        id: "msg1",
+        title: "⚡ Discord • #study-buddies",
+        body: "Aryan: \"Wait, is the assignment due at 5 PM or midnight?! ANSWER PLS\"",
+        icon: "💬",
+        delay: 800,
+        sound: "chat",
+        styleType: "discord",
+      },
+      {
+        id: "msg2",
+        title: "📅 Calendar Reminder",
+        body: "Dentist appointment tomorrow at 4:30 PM",
+        icon: "⏰",
+        delay: 2400,
+        sound: "buzzer",
+        styleType: "calendar",
+      },
+      {
+        id: "msg3",
+        title: "📦 Amazon Delivery Alert",
+        body: "Driver is 2 stops away! Package arriving shortly.",
+        icon: "🚚",
+        delay: 4800,
+        sound: "ping",
+        styleType: "delivery",
+      },
+      {
+        id: "msg4",
+        title: "🔥 WhatsApp • Family Group (42 unread)",
+        body: "Mom sent a 4-minute voice note + 8 recipe photos",
+        icon: "📱",
+        delay: 7200,
+        sound: "chat",
+        styleType: "whatsapp",
+      },
+      {
+        id: "msg5",
+        title: "🎵 Spotify Now Playing",
+        body: "Liked: \"synthwave late-night coding beats vol. 4\"",
+        icon: "🎧",
+        delay: 9800,
+        sound: "whoosh",
+        styleType: "spotify",
+      },
+      {
+        id: "msg6",
+        title: "✨ Breaking Trend",
+        body: "Everyone is talking about the new rover photos right now!",
+        icon: "🚀",
+        delay: 12500,
+        sound: "ping",
+        styleType: "trend",
+      },
+    ];
 
-    const pool = [...ADHD_EXTERNAL_NOTIFICATIONS, ...ADHD_INTERNAL_THOUGHTS];
-    let poolIdx = 0;
-
-    const triggerEvent = () => {
-      if (isCancelled) return;
-      const item = pool[poolIdx % pool.length];
-      poolIdx++;
-
-      setNotifications((prev) => {
-        if (prev.length >= cfg.maxActive || prev.some((n) => n.id === item.id)) {
-          return prev;
-        }
-        if (soundOn) audio.cue("tap");
-        return [...prev, { ...item, key: `${item.id}-${Date.now()}-${Math.floor(prng() * 1000)}` }];
-      });
-
-      // Competing tab indicator update
-      if (prng() > 0.55) {
-        setChatUnread((c) => Math.min(9, c + 1));
-      }
-
-      // Burst logic: rapid overlapping second event
-      if (prng() < cfg.burstProb) {
-        const burstDelay = Math.floor(500 + prng() * 700);
-        const burstTimer = setTimeout(() => {
-          if (isCancelled) return;
-          const burstItem = pool[poolIdx % pool.length];
-          poolIdx++;
-          setNotifications((prev) => {
-            if (prev.length >= cfg.maxActive || prev.some((n) => n.id === burstItem.id)) {
-              return prev;
-            }
-            if (soundOn) audio.cue("tap");
-            return [...prev, { ...burstItem, key: `${burstItem.id}-${Date.now()}-burst` }];
-          });
-        }, burstDelay);
-        timers.push(burstTimer);
-      }
-
-      // Schedule next event
-      const nextDelay = Math.floor(cfg.baseMs + prng() * cfg.jitter);
-      const nextTimer = setTimeout(triggerEvent, nextDelay);
-      timers.push(nextTimer);
-    };
-
-    const initialDelay = Math.floor(cfg.baseMs * 0.6 + prng() * 1000);
-    const initialTimer = setTimeout(triggerEvent, initialDelay);
-    timers.push(initialTimer);
+    notifPool.forEach((item) => {
+      timers.push(setTimeout(() => {
+        if (isCancelled) return;
+        playAdhdSound(item.sound);
+        setNotifications((prev) => [item, ...prev.slice(0, 2)]);
+      }, item.delay));
+    });
 
     return () => {
       isCancelled = true;
-      timers.forEach((t) => clearTimeout(t));
+      timers.forEach(clearTimeout);
     };
-  }, [mode, intensity, supportType, paused, running, soundOn]);
+  }, [mode, paused, running, playAdhdSound]);
 
-  const dismissNotification = (key) => {
+  const handleToggleKeyword = (kw) => {
     if (soundOn) audio.cue("tap");
-    setNotifications((prev) => prev.filter((n) => n.key !== key));
+    if (!currentTask.targets.includes(kw)) {
+      if (soundOn) audio.cue("flicker");
+      return;
+    }
+
+    const next = selectedKeywords.includes(kw)
+      ? selectedKeywords.filter((k) => k !== kw)
+      : [...selectedKeywords, kw];
+    setSelectedKeywords(next);
+
+    // If all 3 targets identified, finish!
+    if (currentTask.targets.every((t) => next.includes(t))) {
+      clearTimers();
+      setRunning(false);
+      if (soundOn) audio.cue("slam");
+      const finalTime = parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1));
+      onCompleteRef.current?.({
+        time: finalTime,
+        distractionsDismissed,
+        tangentsExplored,
+      });
+    }
+  };
+
+  const dismissNotif = (id) => {
+    if (soundOn) audio.cue("tap");
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
     setDistractionsDismissed((c) => c + 1);
   };
 
-  const deferNotification = (notif) => {
+  const openTangent = (tangent) => {
     if (soundOn) audio.cue("tap");
-    setNotifications((prev) => prev.filter((n) => n.key !== notif.key));
-    setDistractionsDeferred((c) => c + 1);
-    setTimeout(() => {
-      setNotifications((prev) => {
-        if (prev.some((n) => n.id === notif.id)) return prev;
-        return [...prev.slice(-2), { ...notif, key: `${notif.id}-deferred-${Date.now()}` }];
-      });
-    }, 5500);
-  };
-
-  const handleOpenTangent = (t) => {
-    if (soundOn) audio.cue("tap");
-    setActiveTangent(t);
+    setActiveTangent(tangent);
     setTangentsExplored((c) => c + 1);
   };
 
-  const handleExtractNote = (noteId) => {
-    if (soundOn) audio.cue("tap");
-    setNotesExtracted((prev) => (prev.includes(noteId) ? prev : [...prev, noteId]));
-  };
+  const TANGENT_BUBBLES = [
+    { id: "t1", title: "💭 Wait, do otters hold hands when they sleep?", text: "Yes! Sea otters hold hands while floating to avoid drifting apart in currents. Cute, but back to biology!", top: "18%", left: "6%" },
+    { id: "t2", title: "💭 Did I turn off the kitchen stove?", text: "Checked in your mind: yes, the kettle was turned off after making chai.", top: "70%", left: "12%" },
+    { id: "t3", title: "💭 What was that song from the car earlier?", text: "It was that nostalgic acoustic tune. Your brain spent 20 seconds trying to remember the chorus melody.", top: "25%", right: "8%" },
+  ];
 
   return (
-    <div className="itw-desk-sim" role="region" aria-label="ADHD Study Desk Simulation">
+    <div className="itw-desk-sim" role="region" aria-label="ADHD Attention Regulation Simulation">
       <div className="itw-desk-bg-wrap" aria-hidden="true">
         <img src="/decor/itw/adhd-workspace-scene.webp" alt="" className="itw-desk-bg-img" />
       </div>
 
-      {/* Simulated Browser Chrome */}
-      <div className="itw-browser-chrome">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div className="itw-browser-dots" aria-hidden="true">
-            <span className="itw-browser-dot itw-dot-red" />
-            <span className="itw-browser-dot itw-dot-yellow" />
-            <span className="itw-browser-dot itw-dot-green" />
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)" }}>
-              ⏱️ {elapsed.toFixed(1)}s
-            </span>
-            <button
-              type="button"
-              className="itw-pill-btn"
-              onClick={() => {
-                setPaused((p) => !p);
-                if (!paused) clearTimers();
-              }}
-            >
-              {paused ? "Resume" : "Pause"}
-            </button>
-            <button type="button" className="itw-pill-btn" onClick={onAbort}>Exit</button>
-          </div>
+      {/* Desk Status Bar */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, position: "relative", zIndex: 5 }}>
+        <div>
+          <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-adhd)", letterSpacing: "0.08em" }}>
+            {mode === "baseline" ? "Run 1 (Quiet Baseline • Mars)" : mode === "interrupted" ? "Run 1 (The Distraction Storm • Deep Sea)" : "Run 2 (Focus Spotlight • Indus Valley)"}
+          </span>
+          <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
+            {currentTask.title}
+          </h3>
         </div>
-
-        <div className="itw-browser-tabs" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === "assignment"}
-            className={`itw-browser-tab${activeTab === "assignment" ? " itw-tab-active" : ""}`}
-            onClick={() => setActiveTab("assignment")}
-          >
-            📄 Assignment: Urban Ecology
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === "lakes"}
-            className={`itw-browser-tab${activeTab === "lakes" ? " itw-tab-active" : ""}`}
-            onClick={() => setActiveTab("lakes")}
-          >
-            🌿 Lake Buffer Notes
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === "canopy"}
-            className={`itw-browser-tab${activeTab === "canopy" ? " itw-tab-active" : ""}`}
-            onClick={() => setActiveTab("canopy")}
-          >
-            🌳 Tree Canopy Corridors
-          </button>
-          {mode === "interrupted" && (
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === "chat"}
-              className={`itw-browser-tab${activeTab === "chat" ? " itw-tab-active" : ""}`}
-              onClick={() => setActiveTab("chat")}
-            >
-              💬 Biology Chat <span className="itw-tab-badge">{chatUnread}</span>
-            </button>
-          )}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)" }}>
+            ⏱️ {elapsed.toFixed(1)}s
+          </span>
+          <button type="button" className="itw-pill-btn" onClick={onAbort}>Exit</button>
         </div>
       </div>
 
-      {/* Floating Notifications Layer */}
-      {notifications.length > 0 && (
-        <div className="itw-toast-container" aria-live="polite">
+      {/* Floating Notifications in Interrupted Mode */}
+      {mode === "interrupted" && notifications.length > 0 && (
+        <div className="itw-toast-container" aria-live="polite" style={{ zIndex: 10 }}>
           {notifications.map((n) => (
-            <div key={n.key} className="itw-desk-toast">
+            <div key={n.id} className={`itw-desk-toast itw-toast-${n.styleType || "default"} itw-distraction-burst`}>
               <span className="itw-toast-icon" aria-hidden="true">{n.icon}</span>
               <div className="itw-toast-content">
                 <div className="itw-toast-title">{n.title}</div>
-                <div>{n.body}</div>
-                <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
-                  {n.channel === "thought" && (
-                    <button
-                      type="button"
-                      className="itw-pill-btn"
-                      style={{ fontSize: 11, padding: "2px 8px" }}
-                      onClick={() => handleOpenTangent({ title: n.tangentTitle, text: n.tangentText })}
-                    >
-                      Explore Tangent →
-                    </button>
-                  )}
+                <div style={{ fontSize: 13, lineHeight: 1.4 }}>{n.body}</div>
+                <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
                   <button
                     type="button"
                     className="itw-pill-btn"
                     style={{ fontSize: 11, padding: "2px 8px" }}
-                    onClick={() => deferNotification(n)}
-                  >
-                    ⏳ Snooze 5s
-                  </button>
-                  <button
-                    type="button"
-                    className="itw-pill-btn"
-                    style={{ fontSize: 11, padding: "2px 8px" }}
-                    onClick={() => dismissNotification(n.key)}
+                    onClick={() => dismissNotif(n.id)}
                   >
                     Dismiss
                   </button>
@@ -2464,7 +2594,7 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
                 type="button"
                 className="itw-toast-close"
                 aria-label={`Dismiss ${n.title}`}
-                onClick={() => dismissNotification(n.key)}
+                onClick={() => dismissNotif(n.id)}
               >
                 ×
               </button>
@@ -2473,9 +2603,26 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
         </div>
       )}
 
-      {/* Tangent Modal Overlay */}
+      {/* Associative Thought Sparks in Interrupted Mode */}
+      {mode === "interrupted" && !activeTangent && (
+        <>
+          {TANGENT_BUBBLES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className="itw-spark-thought"
+              style={{ top: t.top, left: t.left, right: t.right }}
+              onClick={() => openTangent(t)}
+            >
+              {t.title}
+            </button>
+          ))}
+        </>
+      )}
+
+      {/* Tangent Modal */}
       {activeTangent && (
-        <div className="itw-tangent-overlay" role="dialog" aria-modal="true" aria-label="Stray Thought Tangent">
+        <div className="itw-tangent-overlay" role="dialog" aria-modal="true" aria-label="Associative Thought">
           <div className="itw-tangent-modal">
             <div style={{ fontSize: 32, marginBottom: 8 }} aria-hidden="true">💭</div>
             <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", marginBottom: 8 }}>
@@ -2489,330 +2636,56 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
               className="itw-cta itw-cta-dark"
               onClick={() => setActiveTangent(null)}
             >
-              ← Return to Assignment Focus
+              ← Return to Assignment
             </button>
           </div>
         </div>
       )}
 
-      {/* Desk Content Body */}
-      <div className="itw-desk-body">
-        <div className="itw-desk-main">
-          {activeTab === "assignment" && (
-            <div className="itw-desk-doc">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-                <div>
-                  <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-adhd)", letterSpacing: "0.08em" }}>
-                    Primary Task • Step {step} of 4
-                  </span>
-                  <h3 style={{ fontSize: 22, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
-                    Urban Wildlife Conservation Brief
-                  </h3>
-                  <div style={{ fontSize: 14, color: "var(--itw-muted)" }}>
-                    Course: Environmental Science • Target: Synthesize 2 evidence points &amp; submit recommendation
-                  </div>
-                </div>
-              </div>
-
-              {step === 1 && (
-                <div style={{ background: "var(--itw-panel-2)", padding: 20, borderRadius: 16, border: "1px solid var(--itw-border)" }}>
-                  <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", marginBottom: 8 }}>
-                    Assignment Objective
-                  </h4>
-                  <p style={{ fontSize: 14.5, color: "var(--itw-text)", lineHeight: 1.6, marginBottom: 16 }}>
-                    Bengaluru's rapid urban expansion has altered local water bodies and tree canopies. Your goal is to review
-                    the research notes in the adjacent tabs, extract at least 2 verified data points, and select the optimal
-                    conservation policy before class finishes.
-                  </p>
-                  <button
-                    type="button"
-                    className="itw-cta itw-cta-dark"
-                    onClick={() => {
-                      setStep(2);
-                      setActiveTab("lakes");
-                    }}
-                  >
-                    Open Research Notes →
-                  </button>
-                </div>
-              )}
-
-              {step === 2 && (
-                <div style={{ background: "var(--itw-panel-2)", padding: 20, borderRadius: 16, border: "1px solid var(--itw-border)" }}>
-                  <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", marginBottom: 8 }}>
-                    Step 2: Collect 2 Crucial Findings
-                  </h4>
-                  <p style={{ fontSize: 14, color: "var(--itw-muted)", marginBottom: 14 }}>
-                    Switch between the <b>Lake Buffer Notes</b> and <b>Tree Canopy Corridors</b> tabs to extract 2 evidence points into this assignment.
-                  </p>
-                  <div style={{ display: "grid", gap: 10, marginBottom: 18 }}>
-                    <div style={{ padding: 12, borderRadius: 10, background: notesExtracted.includes("lakes") ? "rgba(44, 140, 114, 0.15)" : "var(--itw-panel)", border: "1px solid var(--itw-border)" }}>
-                      {notesExtracted.includes("lakes") ? "✓ Lake Buffer Finding: 78% wetland loss; buffer restoration increases bird diversity by 42%." : "⚪ Lake Buffer finding not yet extracted."}
-                    </div>
-                    <div style={{ padding: 12, borderRadius: 10, background: notesExtracted.includes("canopy") ? "rgba(44, 140, 114, 0.15)" : "var(--itw-panel)", border: "1px solid var(--itw-border)" }}>
-                      {notesExtracted.includes("canopy") ? "✓ Canopy Finding: Contiguous native street trees increase pollinator movement by 3.4x." : "⚪ Canopy Corridor finding not yet extracted."}
-                    </div>
-                  </div>
-                  {notesExtracted.length >= 2 ? (
-                    <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep(3)}>
-                      Proceed to Policy Recommendation →
-                    </button>
-                  ) : (
-                    <div style={{ display: "flex", gap: 10 }}>
-                      <button type="button" className="itw-cta itw-cta-line" onClick={() => setActiveTab("lakes")}>
-                        Go to Lake Notes
-                      </button>
-                      <button type="button" className="itw-cta itw-cta-line" onClick={() => setActiveTab("canopy")}>
-                        Go to Tree Notes
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {step === 3 && (
-                <div style={{ background: "var(--itw-panel-2)", padding: 20, borderRadius: 16, border: "1px solid var(--itw-border)" }}>
-                  <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", marginBottom: 8 }}>
-                    Step 3: Select Conservation Recommendation
-                  </h4>
-                  <p style={{ fontSize: 14, color: "var(--itw-muted)", marginBottom: 14 }}>
-                    Based on your extracted evidence, select the evidence-based conservation policy to recommend:
-                  </p>
-                  <div style={{ display: "grid", gap: 12, marginBottom: 20 }}>
-                    <label
-                      style={{
-                        padding: 14,
-                        borderRadius: 12,
-                        background: chosenPolicy === "pave" ? "rgba(210, 115, 86, 0.15)" : "var(--itw-panel)",
-                        border: `1.5px solid ${chosenPolicy === "pave" ? "var(--itw-speech)" : "var(--itw-border)"}`,
-                        cursor: "pointer",
-                        display: "block",
-                      }}
-                    >
-                      <input
-                        type="radio"
-                        name="policy"
-                        value="pave"
-                        checked={chosenPolicy === "pave"}
-                        onChange={() => setChosenPolicy("pave")}
-                        style={{ marginRight: 8 }}
-                      />
-                      <b>Policy A:</b> Pave ornamental concrete walkways around lake edges to boost human recreation footfall.
-                    </label>
-                    <label
-                      style={{
-                        padding: 14,
-                        borderRadius: 12,
-                        background: chosenPolicy === "corridor" ? "rgba(44, 140, 114, 0.15)" : "var(--itw-panel)",
-                        border: `1.5px solid ${chosenPolicy === "corridor" ? "var(--itw-autism)" : "var(--itw-border)"}`,
-                        cursor: "pointer",
-                        display: "block",
-                      }}
-                    >
-                      <input
-                        type="radio"
-                        name="policy"
-                        value="corridor"
-                        checked={chosenPolicy === "corridor"}
-                        onChange={() => setChosenPolicy("corridor")}
-                        style={{ marginRight: 8 }}
-                      />
-                      <b>Policy B:</b> Establish contiguous native canopy corridors connecting restored wetland buffers to enable wildlife migration.
-                    </label>
-                  </div>
-                  <button
-                    type="button"
-                    className="itw-cta itw-cta-dark"
-                    disabled={!chosenPolicy}
-                    onClick={() => setStep(4)}
-                  >
-                    Proceed to Submission →
-                  </button>
-                </div>
-              )}
-
-              {step === 4 && (
-                <div style={{ background: "var(--itw-panel-2)", padding: 22, borderRadius: 16, border: "1px solid var(--itw-border)", textAlign: "center" }}>
-                  <div style={{ fontSize: 32, marginBottom: 8 }} aria-hidden="true">📋</div>
-                  <h4 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", marginBottom: 8 }}>
-                    Assignment Ready for Submission
-                  </h4>
-                  <p style={{ fontSize: 14.5, color: "var(--itw-muted)", maxWidth: "48ch", margin: "0 auto 20px" }}>
-                    You have extracted 2 data points and formulated your conservation policy. Click below to submit your brief to the teacher.
-                  </p>
-                  <button
-                    type="button"
-                    className="itw-cta itw-cta-dark"
-                    style={{ fontSize: 16, padding: "14px 32px" }}
-                    onClick={handleFinish}
-                  >
-                    Save &amp; Submit Assignment ✓
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === "lakes" && (
-            <div style={{ background: "var(--itw-panel-2)", padding: 20, borderRadius: 16, border: "1px solid var(--itw-border)" }}>
-              <div className="itw-desk-return-banner">
-                <div>
-                  🎯 <b>Primary Assignment Goal:</b> Step {step} of 4 — {step === 1 ? "Review brief" : step === 2 ? "Extract 2 research findings" : step === 3 ? "Select policy" : "Submit brief"}
-                </div>
-                <button type="button" className="itw-pill-btn" onClick={() => setActiveTab("assignment")}>
-                  Return to Assignment Tab →
-                </button>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <h4 style={{ fontSize: 18, fontWeight: 800, color: "var(--itw-text)", margin: 0 }}>
-                  Lake Ecosystems &amp; Wetland Buffers
-                </h4>
-                <button type="button" className="itw-pill-btn" onClick={() => setActiveTab("assignment")}>
-                  ← Back to Assignment
-                </button>
-              </div>
-              <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "var(--itw-text)", marginBottom: 16 }}>
-                Studies of Bengaluru water bodies indicate that Bellandur and Varthur wetland buffers have shrunk by 78% since 1970 due to encroachment.
-                However, research by IISc demonstrates that reconnecting marshland vegetative edges increases native waterbird nesting and feeding diversity by 42%.
-              </p>
-              <button
-                type="button"
-                className="itw-cta itw-cta-dark"
-                disabled={notesExtracted.includes("lakes")}
-                onClick={() => {
-                  handleExtractNote("lakes");
-                  setActiveTab("assignment");
-                }}
-              >
-                {notesExtracted.includes("lakes") ? "✓ Note Already Extracted" : "+ Extract Finding to Assignment"}
-              </button>
-            </div>
-          )}
-
-          {activeTab === "canopy" && (
-            <div style={{ background: "var(--itw-panel-2)", padding: 20, borderRadius: 16, border: "1px solid var(--itw-border)" }}>
-              <div className="itw-desk-return-banner">
-                <div>
-                  🎯 <b>Primary Assignment Goal:</b> Step {step} of 4 — {step === 1 ? "Review brief" : step === 2 ? "Extract 2 research findings" : step === 3 ? "Select policy" : "Submit brief"}
-                </div>
-                <button type="button" className="itw-pill-btn" onClick={() => setActiveTab("assignment")}>
-                  Return to Assignment Tab →
-                </button>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <h4 style={{ fontSize: 18, fontWeight: 800, color: "var(--itw-text)", margin: 0 }}>
-                  Urban Tree Canopies &amp; Street Corridors
-                </h4>
-                <button type="button" className="itw-pill-btn" onClick={() => setActiveTab("assignment")}>
-                  ← Back to Assignment
-                </button>
-              </div>
-              <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "var(--itw-text)", marginBottom: 16 }}>
-                Satellite vegetative index mapping reveals that continuous tree canopies along avenue roads (featuring native peepal, banyan, and neem)
-                create essential micro-climates that increase pollinator and urban raptor transit by 3.4x compared to isolated municipal parks.
-              </p>
-              <button
-                type="button"
-                className="itw-cta itw-cta-dark"
-                disabled={notesExtracted.includes("canopy")}
-                onClick={() => {
-                  handleExtractNote("canopy");
-                  setActiveTab("assignment");
-                }}
-              >
-                {notesExtracted.includes("canopy") ? "✓ Note Already Extracted" : "+ Extract Finding to Assignment"}
-              </button>
-            </div>
-          )}
-
-          {activeTab === "chat" && (
-            <div style={{ background: "var(--itw-panel-2)", padding: 20, borderRadius: 16, border: "1px solid var(--itw-border)" }}>
-              <div className="itw-desk-return-banner">
-                <div>
-                  🎯 <b>Primary Assignment Goal:</b> Step {step} of 4 — {step === 1 ? "Review brief" : step === 2 ? "Extract 2 research findings" : step === 3 ? "Select policy" : "Submit brief"}
-                </div>
-                <button type="button" className="itw-pill-btn" onClick={() => setActiveTab("assignment")}>
-                  Return to Assignment Tab →
-                </button>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <h4 style={{ fontSize: 18, fontWeight: 800, color: "var(--itw-text)", margin: 0 }}>
-                  💬 Biology Study Group (Non-essential Chat)
-                </h4>
-                <button type="button" className="itw-pill-btn" onClick={() => setActiveTab("assignment")}>
-                  ← Back to Assignment
-                </button>
-              </div>
-              <div style={{ display: "grid", gap: 10, marginBottom: 16 }}>
-                <div style={{ padding: 10, borderRadius: 8, background: "var(--itw-panel)", fontSize: 13.5 }}>
-                  <b>Ananya:</b> Has anyone started the conclusion section yet?
-                </div>
-                <div style={{ padding: 10, borderRadius: 8, background: "var(--itw-panel)", fontSize: 13.5 }}>
-                  <b>Karan:</b> I think we need to cite the 2022 IISc urban ecology paper.
-                </div>
-                <div style={{ padding: 10, borderRadius: 8, background: "var(--itw-panel)", fontSize: 13.5 }}>
-                  <b>Priya:</b> Don't forget submission window closes right when class ends!
-                </div>
-              </div>
-              <button type="button" className="itw-cta itw-cta-line" onClick={() => setActiveTab("assignment")}>
-                Return to Primary Assignment
-              </button>
-            </div>
-          )}
-
-          {/* Associative Thought Stream Chips (Mode Interrupted) */}
-          {mode === "interrupted" && (
-            <div style={{ marginTop: 20 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", letterSpacing: "0.06em", marginBottom: 6 }}>
-                Associative Thought Streams
-              </div>
-              <div className="itw-tangent-chips">
-                {ADHD_TANGENT_POOL.map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    className="itw-tangent-chip"
-                    onClick={() => handleOpenTangent(t)}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+      {/* Central Reading & Focus Box */}
+      <div className={`itw-adhd-focus-box${focusSpotlight ? " itw-spotlight" : ""}`}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-adhd)", letterSpacing: "0.06em" }}>
+            {currentTask.topic}
+          </span>
+          {mode === "supported" && (
+            <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 999, background: "rgba(140,101,32,0.15)", color: "var(--itw-adhd)" }}>
+              ✨ Focus Spotlight Active
+            </span>
           )}
         </div>
 
-        {/* Sidebar: Either Externalized Checklist or Focus Scaffolding */}
-        <div className="itw-desk-sidebar">
-          <div style={{ fontWeight: 800, fontSize: 14, color: "var(--itw-text)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-            {supportType === "checklist" && mode === "supported" ? "🛡️ Visual Checklist Support" : "Task Status"}
-          </div>
+        <p style={{ fontSize: 16, lineHeight: 1.7, color: "var(--itw-text)", marginBottom: 18 }}>
+          {currentTask.text}
+        </p>
 
-          <div style={{ display: "grid", gap: 8, fontSize: 13 }}>
-            <div style={{ padding: 8, borderRadius: 8, background: step > 1 ? "rgba(44, 140, 114, 0.15)" : "var(--itw-panel)", color: step > 1 ? "var(--itw-autism)" : "var(--itw-text)", fontWeight: step === 1 ? 800 : 500 }}>
-              {step > 1 ? "✓ 1. Assignment Brief" : "• 1. Assignment Brief"}
-            </div>
-            <div style={{ padding: 8, borderRadius: 8, background: notesExtracted.length >= 2 ? "rgba(44, 140, 114, 0.15)" : "var(--itw-panel)", color: notesExtracted.length >= 2 ? "var(--itw-autism)" : "var(--itw-text)", fontWeight: step === 2 ? 800 : 500 }}>
-              {notesExtracted.length >= 2 ? "✓ 2. Notes Extracted (2/2)" : `• 2. Notes Extracted (${notesExtracted.length}/2)`}
-            </div>
-            <div style={{ padding: 8, borderRadius: 8, background: step > 3 ? "rgba(44, 140, 114, 0.15)" : "var(--itw-panel)", color: step > 3 ? "var(--itw-autism)" : "var(--itw-text)", fontWeight: step === 3 ? 800 : 500 }}>
-              {step > 3 ? "✓ 3. Policy Recommendation" : "• 3. Policy Recommendation"}
-            </div>
-            <div style={{ padding: 8, borderRadius: 8, background: "var(--itw-panel)", fontWeight: step === 4 ? 800 : 500 }}>
-              • 4. Save &amp; Submit
-            </div>
+        <div style={{ borderTop: "1px solid var(--itw-border)", paddingTop: 14 }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-muted)", marginBottom: 8 }}>
+            {currentTask.instruction} ({selectedKeywords.length} of 3 selected):
           </div>
-
-          <div style={{ marginTop: "auto", borderTop: "1px solid var(--itw-border)", paddingTop: 12 }}>
-            <div style={{ fontSize: 12, color: "var(--itw-muted)", marginBottom: 4 }}>Attention Metrics</div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-text)" }}>
-              Pings Dismissed: {distractionsDismissed}
-            </div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-text)" }}>
-              Tangents Explored: {tangentsExplored}
-            </div>
+          <div className="itw-adhd-keywords">
+            {currentTask.options.map((kw) => {
+              const isSelected = selectedKeywords.includes(kw);
+              return (
+                <button
+                  key={kw}
+                  type="button"
+                  className={`itw-adhd-keychip${isSelected ? " itw-selected" : ""}`}
+                  onClick={() => handleToggleKeyword(kw)}
+                >
+                  {isSelected ? "✓ " : "+ "} {kw}
+                </button>
+              );
+            })}
           </div>
         </div>
+      </div>
+
+      {/* Bottom Hint */}
+      <div style={{ fontSize: 13, color: "var(--itw-muted)", textAlign: "center", marginTop: 12 }}>
+        {mode === "interrupted"
+          ? "Notice how notifications and wandering thoughts pull your eyes away from finishing a 15-second task."
+          : "With competing pulls filtered out, holding continuous focus requires a fraction of the mental energy."}
       </div>
     </div>
   );
@@ -2871,11 +2744,7 @@ function AdhdModule({ onBack, onNavigate }) {
               Start the Experience →
             </button>
           </div>
-          <div className="itw-flow-letters" aria-hidden="true">
-            {["📄", "🌿", "🌳", "💬", "💭", "🔔"].map((sym, i) => (
-              <span key={i} style={{ animationDelay: `${i * 0.45}s` }}>{sym}</span>
-            ))}
-          </div>
+          <IntroVignette moduleKey="adhd" />
         </div>
       )}
 
@@ -3569,23 +3438,58 @@ const DYSLEXIA_PASSAGE_PAIRS = [
   },
 ];
 
+const ITW_DYS_ORDER_KEY = "itw_dys_order";
+const ITW_DYS_LAST_KEY = "itw_dys_last_pair";
+
+function readJson(store, key) {
+  try { return JSON.parse(store.getItem(key)); } catch { return null; }
+}
+
+function buildDyslexiaOrder(avoidFirst) {
+  const n = DYSLEXIA_PASSAGE_PAIRS.length;
+  const order = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  // never start a new cycle with the pair that just finished
+  if (n > 1 && order[0] === avoidFirst) order.push(order.shift());
+  return order;
+}
+
+/* Shuffled cycle: every pair is used once before any repeats; a reshuffle never
+   starts with the most recently completed pair; the last completed pair is also
+   remembered across browser sessions so a new session does not open on it. */
 function getActiveDyslexiaPairIndex() {
   if (typeof window === "undefined") return 0;
+  const n = DYSLEXIA_PASSAGE_PAIRS.length;
   try {
-    const raw = sessionStorage.getItem("itw_dys_pair_idx");
-    const idx = raw !== null ? parseInt(raw, 10) : 0;
-    return isNaN(idx) ? 0 : idx % DYSLEXIA_PASSAGE_PAIRS.length;
+    let st = readJson(sessionStorage, ITW_DYS_ORDER_KEY);
+    if (!st || !Array.isArray(st.order) || st.order.length !== n || st.pos >= n) {
+      let last = null;
+      try { last = parseInt(localStorage.getItem(ITW_DYS_LAST_KEY), 10); } catch {}
+      st = { order: buildDyslexiaOrder(Number.isNaN(last) ? null : last), pos: 0 };
+      sessionStorage.setItem(ITW_DYS_ORDER_KEY, JSON.stringify(st));
+    }
+    return st.order[st.pos];
   } catch {
-    return 0;
+    // storage unavailable: pick randomly rather than silently reusing pair 0
+    return Math.floor(Math.random() * n);
   }
 }
 
 function advanceActiveDyslexiaPairIndex() {
   if (typeof window === "undefined") return;
   try {
-    const current = getActiveDyslexiaPairIndex();
-    const next = (current + 1) % DYSLEXIA_PASSAGE_PAIRS.length;
-    sessionStorage.setItem("itw_dys_pair_idx", String(next));
+    const st = readJson(sessionStorage, ITW_DYS_ORDER_KEY);
+    if (!st) return;
+    try { localStorage.setItem(ITW_DYS_LAST_KEY, String(st.order[st.pos])); } catch {}
+    st.pos += 1;
+    if (st.pos >= st.order.length) {
+      st.order = buildDyslexiaOrder(st.order[st.order.length - 1]);
+      st.pos = 0;
+    }
+    sessionStorage.setItem(ITW_DYS_ORDER_KEY, JSON.stringify(st));
   } catch {}
 }
 
@@ -3695,7 +3599,11 @@ const DYS_SUPPORT_CHOICES = [
 
 function DyslexiaModule({ onBack, onNavigate }) {
   const { soundOn } = useContext(SettingsContext);
-  const [pairIndex] = useState(() => getActiveDyslexiaPairIndex());
+  const [pairIndex, setPairIndex] = useState(() => getActiveDyslexiaPairIndex());
+  const [readingMode, setReadingMode] = useState("decoding"); // standard | decoding | supported
+  const [letterConfusion, setLetterConfusion] = useState(true);
+  const [visualCrowding, setVisualCrowding] = useState(true);
+  const [syllableChunks, setSyllableChunks] = useState(false);
   const activePair = DYSLEXIA_PASSAGE_PAIRS[pairIndex % DYSLEXIA_PASSAGE_PAIRS.length];
 
   const [step, setStep] = useState("intro"); // intro | instructions | read | questions | result | support | run_supported | questions_supported | explain | next
@@ -3864,6 +3772,43 @@ function DyslexiaModule({ onBack, onNavigate }) {
   const stepIndex = DYS_STEP_INDEX[step];
   const more = MODULES.filter((m) => m.key !== "dyslexia");
 
+
+  // High-fidelity dyslexia simulation: letter crowding, mirror rotation on b/d/p/q/n/u, and phonological decoding friction
+  const renderInteractiveText = (text, mode) => {
+    if (mode === "decoding") {
+      const words = text.split(" ");
+      return (
+        <span className={`itw-reading-passage itw-dyslexia-decoding${visualCrowding ? " itw-crowded" : ""}`}>
+          {words.map((word, wIdx) => {
+            return (
+              <span key={wIdx} className="itw-decoding-word" style={{ marginRight: visualCrowding ? "0.14em" : "0.32em" }}>
+                {Array.from(word).map((char, cIdx) => {
+                  const lower = char.toLowerCase();
+                  const isMirror = ["b", "d", "p", "q", "n", "u"].includes(lower);
+                  // Dynamic subtle flip on mirror letters for visceral decoding friction
+                  const flippedMap = { b: "d", d: "b", p: "q", q: "p", n: "u", u: "n" };
+                  const showFlipped = letterConfusion && isMirror && ((wIdx + cIdx) % 3 === 0);
+                  const displayChar = showFlipped ? (char === lower ? flippedMap[lower] : flippedMap[lower].toUpperCase()) : char;
+
+                  return (
+                    <span
+                      key={cIdx}
+                      className={`itw-decoding-char${isMirror ? " itw-mirror-char" : ""}${showFlipped ? " itw-flipped" : ""}`}
+                      data-orig={char}
+                    >
+                      {syllableChunks && "aeiouy".includes(lower) ? `${displayChar}·` : displayChar}
+                    </span>
+                  );
+                })}
+              </span>
+            );
+          })}
+        </span>
+      );
+    }
+    return <span>{text}</span>;
+  };
+
   return (
     <section className="itw-view itw-module itw-flow" data-accent="dyslexia">
       <FlowCrumbs name="Dyslexia" onBack={onBack} />
@@ -3888,11 +3833,7 @@ function DyslexiaModule({ onBack, onNavigate }) {
               Start the Experience →
             </button>
           </div>
-          <div className="itw-flow-letters" aria-hidden="true">
-            {["a", "b", "d", "p", "q", "n"].map((c, i) => (
-              <span key={i} style={{ animationDelay: `${i * 0.45}s` }}>{c}</span>
-            ))}
-          </div>
+          <IntroVignette moduleKey="dyslexia" />
         </div>
       )}
 
@@ -3947,9 +3888,97 @@ function DyslexiaModule({ onBack, onNavigate }) {
             hud={{ left: "STANDARD READING", right: "UNTIMED" }}
             stageStyle={{ minHeight: "auto", background: "var(--itw-panel)" }}
           >
-            <div className="itw-reading-passage" style={{ fontSize: "1.2rem", lineHeight: 1.8 }}>
-              <span>{activePair.passageA.text}</span>
+            {/* Topic selector in Run 1 */}
+          
+          {/* Interactive Passage Topic Picker */}
+          <div className="itw-passage-picker" role="radiogroup" aria-label="Choose a reading topic">
+            <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", marginRight: 6 }}>
+              📚 Choose Topic:
+            </span>
+            {DYSLEXIA_PASSAGE_PAIRS.map((p, idx) => (
+              <button
+                key={p.pairId}
+                type="button"
+                className={`itw-passage-chip${idx === pairIndex % DYSLEXIA_PASSAGE_PAIRS.length ? " itw-active" : ""}`}
+                onClick={() => {
+                  setPairIndex(idx);
+                  setAnswersRun1(Array(3).fill(null));
+                  setAnswersRun2(Array(3).fill(null));
+                }}
+              >
+                {p.pairTopic}
+              </button>
+            ))}
+          </div>
+
+
+          {/* Perspective Mode Selector */}
+          <div className="itw-mode-bar" role="group" aria-label="Reading perspective mode">
+            <button
+              type="button"
+              className={`itw-mode-pill${readingMode === "standard" ? " itw-active" : ""}`}
+              onClick={() => setReadingMode("standard")}
+            >
+              📖 Standard Fluent Reading
+            </button>
+            <button
+              type="button"
+              className={`itw-mode-pill${readingMode === "decoding" ? " itw-active" : ""}`}
+              onClick={() => setReadingMode("decoding")}
+            >
+              ⚡ Phonological Decoding Friction
+            </button>
+            <button
+              type="button"
+              className={`itw-mode-pill${readingMode === "supported" ? " itw-active" : ""}`}
+              onClick={() => setReadingMode("supported")}
+            >
+              ✨ Supported Accommodations
+            </button>
+          </div>
+
+          {readingMode === "decoding" && (
+            <div style={{ background: "rgba(89, 40, 140, 0.08)", padding: 14, borderRadius: 14, border: "1.5px solid var(--itw-dyslexia)", marginBottom: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
+                <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-dyslexia)" }}>
+                  Decoding Load Options:
+                </span>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    className="itw-pill-btn"
+                    style={{ fontSize: 12, padding: "3px 10px", borderColor: letterConfusion ? "var(--itw-dyslexia)" : "var(--itw-border)" }}
+                    onClick={() => setLetterConfusion(!letterConfusion)}
+                  >
+                    {letterConfusion ? "✓ Mirror Focus (b/d/p/q): ON" : "+ Mirror Focus: OFF"}
+                  </button>
+                  <button
+                    type="button"
+                    className="itw-pill-btn"
+                    style={{ fontSize: 12, padding: "3px 10px", borderColor: visualCrowding ? "var(--itw-dyslexia)" : "var(--itw-border)" }}
+                    onClick={() => setVisualCrowding(!visualCrowding)}
+                  >
+                    {visualCrowding ? "✓ Visual Crowding: ON" : "+ Visual Crowding: OFF"}
+                  </button>
+                  <button
+                    type="button"
+                    className="itw-pill-btn"
+                    style={{ fontSize: 12, padding: "3px 10px", borderColor: syllableChunks ? "var(--itw-dyslexia)" : "var(--itw-border)" }}
+                    onClick={() => setSyllableChunks(!syllableChunks)}
+                  >
+                    {syllableChunks ? "✓ Syllable Breaks: ON" : "+ Syllable Breaks: OFF"}
+                  </button>
+                </div>
+              </div>
+              <div style={{ fontSize: 13, color: "var(--itw-text)", lineHeight: 1.5 }}>
+                Notice the conscious effort required to translate printed letterforms into phonemes. Underlined words contain letters with mirrored geometries (b, d, p, q, n, u) where the phonological network requires more time.
+              </div>
             </div>
+          )}
+
+          <div className="itw-reading-passage" style={{ fontSize: "1.2rem", lineHeight: visualCrowding ? 1.4 : 1.8 }}>
+            {renderInteractiveText(activePair.passageA.text, readingMode)}
+          </div>
           </Viewfinder>
           <div className="itw-flow-nav">
             <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("instructions")}>Back</button>
@@ -4090,6 +4119,28 @@ function DyslexiaModule({ onBack, onNavigate }) {
               <b>{elapsed.toFixed(1)}s</b>
             </div>
           </div>
+
+          {/* Interactive Passage Topic Picker */}
+          <div className="itw-passage-picker" role="radiogroup" aria-label="Choose a reading topic">
+            <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", marginRight: 6 }}>
+              📚 Choose Topic:
+            </span>
+            {DYSLEXIA_PASSAGE_PAIRS.map((p, idx) => (
+              <button
+                key={p.pairId}
+                type="button"
+                className={`itw-passage-chip${idx === pairIndex % DYSLEXIA_PASSAGE_PAIRS.length ? " itw-active" : ""}`}
+                onClick={() => {
+                  setPairIndex(idx);
+                  setAnswersRun1(Array(3).fill(null));
+                  setAnswersRun2(Array(3).fill(null));
+                }}
+              >
+                {p.pairTopic}
+              </button>
+            ))}
+          </div>
+
 
           {/* Functional Accessible Reader Toolbar */}
           <div className="itw-reader-toolbar" role="toolbar" aria-label="Reading accessibility accommodations">
@@ -4308,11 +4359,7 @@ function DyslexiaModule({ onBack, onNavigate }) {
                 is fully intact — decoding is where the friction lives.
               </p>
             </div>
-            <div className="itw-flow-letters itw-flow-letters-sm" aria-hidden="true">
-              {["a", "b", "d", "p", "q", "n"].map((c, i) => (
-                <span key={i} style={{ animationDelay: `${i * 0.45}s` }}>{c}</span>
-              ))}
-            </div>
+            <IntroVignette moduleKey="dyslexia" />
           </div>
 
           {/* Comparative Run Telemetry Card */}
@@ -4592,319 +4639,274 @@ const SUPPORTED_PROMPTS = [
 
 function SpeechSim({
   mode = "fast",
-  supportType = null,
+  supportType = "wait",
   onComplete,
   onAbort,
 }) {
   const { soundOn } = useContext(SettingsContext);
-  const prompts = mode === "supported" ? SUPPORTED_PROMPTS : FAST_PROMPTS;
-  const [roundIdx, setRoundIdx] = useState(0);
-  const [inputVal, setInputVal] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [outputWords, setOutputWords] = useState([]);
-  const [status, setStatus] = useState("ready"); // ready | delivering | done | expired
-  const [timeLeft, setTimeLeft] = useState(prompts[0]?.time || 11);
-  const [timeTotal, setTimeTotal] = useState(prompts[0]?.time || 11);
-  const [note, setNote] = useState("");
-  const [paused, setPaused] = useState(false);
+  const [stage, setStage] = useState("thinking"); // thinking | formulating | delivering | finished
+  const [formulatedWords, setFormulatedWords] = useState([]);
+  const [aacSelection, setAacSelection] = useState([]);
+  const [partnerPatience, setPartnerPatience] = useState(mode === "fast" ? 100 : null);
+  const [partnerInterrupted, setPartnerInterrupted] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const [running, setRunning] = useState(true);
 
-  const genRef = useRef(0);
-  const roundIdxRef = useRef(0);
-  const roundStartRef = useRef(0);
-  const timerIntervalRef = useRef(null);
-  const timeoutsRef = useRef([]);
-  const pausedTimeRef = useRef(0);
-  const resultsRef = useRef([]);
+  const startTimeRef = useRef(0);
+  const timerRef = useRef(null);
+  const onCompleteRef = useRef(onComplete);
 
-  const clearAll = useCallback(() => {
-    clearInterval(timerIntervalRef.current);
-    timeoutsRef.current.forEach(clearTimeout);
-    timeoutsRef.current = [];
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  // Stopwatch timer
+  useEffect(() => {
+    startTimeRef.current = performance.now();
+    timerRef.current = setInterval(() => {
+      setElapsed(parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1)));
+    }, 100);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, []);
 
+  // Impatient listener pressure timer in fast mode
   useEffect(() => {
-    const localGen = genRef;
-    return () => {
-      localGen.current++;
-      clearAll();
-      if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel();
-    };
-  }, [clearAll]);
+    if (mode !== "fast" || !running) return undefined;
 
-  const recordResult = (r) => {
-    resultsRef.current = [...resultsRef.current, r];
-  };
-
-  const beginRoundRef = useRef(null);
-
-  const advance = useCallback((idx) => {
-    if (idx + 1 < prompts.length) beginRoundRef.current?.(idx + 1);
-    else {
-      clearAll();
-      const rs = resultsRef.current;
-      const totalTime = rs.reduce((a, b) => a + (b.timeUsed || 0), 0);
-      const completedTurns = rs.filter((r) => r.success).length;
-      onComplete?.({
-        time: totalTime,
-        turns: prompts.length,
-        completedTurns,
-      });
-    }
-  }, [prompts.length, onComplete, clearAll]);
-
-  const momentPassed = useCallback((idx, gen) => {
-    if (gen !== genRef.current) return;
-    setStatus("expired");
-    setNote("The conversational turn moved forward before you could share.");
-    recordResult({ success: false, timeUsed: prompts[idx].time || 11 });
-    const t = setTimeout(() => {
-      if (gen === genRef.current) advance(idx);
-    }, 1500);
-    timeoutsRef.current.push(t);
-  }, [prompts, advance]);
-
-  const submitAnswer = () => {
-    const value = inputVal.trim();
-    if (!value || submitted || paused) return;
-    setSubmitted(true);
-    setStatus("delivering");
-    const gen = genRef.current;
-    const words = value.split(/\s+/);
-
-    if (mode === "fast") {
-      setNote("Conversational pause — organizing words under rapid turn pressure...");
-      // In fast mode, simulate a brief delay before speech delivery
-      const t1 = setTimeout(() => {
-        if (gen !== genRef.current) return;
-        clearInterval(timerIntervalRef.current);
-        setOutputWords(words.map((w) => ({ text: w })));
-        setStatus("done");
-        setNote("Turn delivered.");
-        if (soundOn) speakText(value, { rate: 0.95, volume: 0.85 });
-        recordResult({
-          success: true,
-          timeUsed: (performance.now() - roundStartRef.current) / 1000,
-        });
-        const t2 = setTimeout(() => {
-          if (gen === genRef.current) advance(roundIdxRef.current);
-        }, 1300);
-        timeoutsRef.current.push(t2);
-      }, 1100);
-      timeoutsRef.current.push(t1);
-    } else {
-      // In supported mode: untimed, relaxed, respectful delivery
-      setNote("Delivering response in an unhurried, attentive conversational space...");
-      const t1 = setTimeout(() => {
-        if (gen !== genRef.current) return;
-        setOutputWords(words.map((w) => ({ text: w })));
-        setStatus("done");
-        setNote("Conversation partner: “Thank you for sharing that with me.”");
-        if (soundOn) speakText(value, { rate: 0.92, volume: 0.85 });
-        recordResult({
-          success: true,
-          timeUsed: (performance.now() - roundStartRef.current) / 1000,
-        });
-        const t2 = setTimeout(() => {
-          if (gen === genRef.current) advance(roundIdxRef.current);
-        }, 1600);
-        timeoutsRef.current.push(t2);
-      }, 700);
-      timeoutsRef.current.push(t1);
-    }
-  };
-
-  const beginRound = useCallback((idx) => {
-    const gen = ++genRef.current;
-    clearAll();
-    roundIdxRef.current = idx;
-    setRoundIdx(idx);
-    setInputVal("");
-    setSubmitted(false);
-    setOutputWords([]);
-    setStatus("ready");
-    setNote("");
-    roundStartRef.current = performance.now();
-
-    if (soundOn && prompts[idx]?.npc) {
-      speakText(prompts[idx].npc, { rate: 0.98, volume: 0.9 });
-    }
-
-    if (mode === "fast") {
-      const total = prompts[idx]?.time || 11;
-      setTimeTotal(total);
-      setTimeLeft(total);
-      timerIntervalRef.current = setInterval(() => {
-        if (gen !== genRef.current || paused) return;
-        const elapsed = (performance.now() - roundStartRef.current) / 1000;
-        const remaining = total - elapsed;
-        if (remaining <= 0) {
-          setTimeLeft(0);
-          clearInterval(timerIntervalRef.current);
-          momentPassed(idx, gen);
-        } else {
-          setTimeLeft(remaining);
+    const interval = setInterval(() => {
+      setPartnerPatience((prev) => {
+        if (prev <= 15 && !partnerInterrupted) {
+          setPartnerInterrupted(true);
+          if (soundOn) audio.cue("flicker");
         }
-      }, 70);
-    }
-  }, [clearAll, mode, momentPassed, prompts, soundOn, paused]);
+        if (prev <= 0) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 2.5;
+      });
+    }, 200);
 
-  useEffect(() => {
-    beginRoundRef.current = beginRound;
-  }, [beginRound]);
+    return () => clearInterval(interval);
+  }, [mode, running, partnerInterrupted, soundOn]);
 
-  useEffect(() => {
-    resultsRef.current = [];
-    queueMicrotask(() => {
-      beginRoundRef.current?.(0);
-    });
-    return () => clearAll();
-  }, [mode, supportType, clearAll]);
+  const TARGET_THOUGHT = "We built a hydraulic crane with syringes, water tubes, and cardboard joints.";
+  const SPEECH_FRAGMENTS = [
+    { text: "W-w-we...", full: "We" },
+    { text: "b-built a...", full: "built a" },
+    { text: "hydrau-...", full: "hydraulic" },
+    { text: "crane with...", full: "crane with" },
+    { text: "syringes...", full: "syringes" },
+    { text: "and water tubes.", full: "and water tubes." },
+  ];
 
-  const togglePause = () => {
-    if (!paused) {
-      clearAll();
-      pausedTimeRef.current = performance.now();
-      setPaused(true);
-    } else {
-      const pauseDuration = performance.now() - pausedTimeRef.current;
-      roundStartRef.current += pauseDuration;
-      setPaused(false);
-      const gen = genRef.current;
-      if (mode === "fast") {
-        timerIntervalRef.current = setInterval(() => {
-          if (gen !== genRef.current) return;
-          const elapsed = (performance.now() - roundStartRef.current) / 1000;
-          const remaining = timeTotal - elapsed;
-          if (remaining <= 0) {
-            setTimeLeft(0);
-            clearInterval(timerIntervalRef.current);
-            momentPassed(roundIdxRef.current, gen);
-          } else {
-            setTimeLeft(remaining);
-          }
-        }, 70);
-      }
+  const AAC_TILES = [
+    { id: "crane", icon: "🏗️", label: "Hydraulic Crane", phrase: "hydraulic crane" },
+    { id: "water", icon: "💧", label: "Syringes & Water", phrase: "syringes and water tubes" },
+    { id: "cardboard", icon: "📦", label: "Cardboard Joints", phrase: "cardboard joints" },
+    { id: "pressure", icon: "⚙️", label: "Water Pressure", phrase: "powered by water pressure" },
+    { id: "project", icon: "💡", label: "Science Exhibition", phrase: "our science exhibition project" },
+    { id: "team", icon: "🤝", label: "Built with Brother", phrase: "built with my brother" },
+  ];
+
+  const handleStepFormulate = (frag) => {
+    if (soundOn) audio.cue("tap");
+    const next = [...formulatedWords, frag];
+    setFormulatedWords(next);
+    setStage("formulating");
+
+    if (next.length >= SPEECH_FRAGMENTS.length) {
+      handleCompleteSpeech("verbal");
     }
   };
 
-  const timerPct = timeTotal && mode === "fast" ? Math.max(0, Math.min(100, (timeLeft / timeTotal) * 100)) : 100;
-  const currentPrompt = prompts[roundIdx];
+  const handleAacTileClick = (tile) => {
+    if (soundOn) {
+      audio.cue("tap");
+      speakText(tile.phrase, { rate: 0.95, volume: 0.9 });
+    }
+    const next = aacSelection.includes(tile.id) ? aacSelection : [...aacSelection, tile.id];
+    setAacSelection(next);
+
+    if (next.length >= 3) {
+      handleCompleteSpeech("aac");
+    }
+  };
+
+  const handleCompleteSpeech = (method) => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setRunning(false);
+    setStage("finished");
+    if (soundOn) audio.cue("slam");
+
+    const finalTime = parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1));
+    onCompleteRef.current?.({
+      time: finalTime,
+      method,
+      interrupted: partnerInterrupted,
+    });
+  };
 
   return (
-    <div className="itw-sim">
-      <div className="itw-media-bar">
-        <div className="itw-media-bar-group">
-          <button
-            type="button"
-            className={`itw-btn-ghost${paused ? " itw-active" : ""}`}
-            onClick={togglePause}
-            aria-label={paused ? "Resume conversation" : "Pause conversation"}
-          >
-            {paused ? "▶ Resume" : "⏸ Pause"}
-          </button>
-          {onAbort && (
-            <button type="button" className="itw-btn-ghost" onClick={onAbort} aria-label="Exit conversation">
-              ✕ Exit
-            </button>
-          )}
-        </div>
-        <div className="itw-media-bar-group">
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--itw-muted)" }}>
-            Turn {roundIdx + 1} of {prompts.length}
+    <div className="itw-speech-arena" role="region" aria-label="Expressive Communication Simulation">
+      {/* Header bar */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div>
+          <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-speech)", letterSpacing: "0.08em" }}>
+            {mode === "fast" ? "Run 1 (Fast-Paced Discussion Circle)" : "Run 2 (Supported Unhurried Communication)"}
           </span>
+          <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
+            Circle Time: &ldquo;Tell the group about your science project.&rdquo;
+          </h3>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)" }}>
+            ⏱️ {elapsed.toFixed(1)}s
+          </span>
+          <button type="button" className="itw-pill-btn" onClick={onAbort}>Exit</button>
         </div>
       </div>
 
-      <Viewfinder
-        hud={{
-          left: paused ? "PAUSED" : mode === "supported" ? "PATIENT PARTNER • UNTIMED" : "FAST PACING",
-          right: `QUESTION ${roundIdx + 1}/${prompts.length}`,
-        }}
-        stageStyle={{ minHeight: "auto", background: "var(--itw-panel)" }}
-      >
-        {mode === "fast" && (
-          <div className="itw-round-timer">
-            <div
-              className="itw-round-timer-fill"
-              style={{
-                width: `${timerPct}%`,
-                background: timerPct < 25 ? "#e5484d" : "var(--itw-speech)",
-              }}
-            />
+      {/* Conversation Partner Banner */}
+      <div className="itw-speech-partner">
+        <div className="itw-partner-avatar">👩‍🏫</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-text)" }}>
+            Teacher &amp; Classroom Circle
           </div>
-        )}
-
-        <div className="itw-speech-scene" style={{ height: 230 }}>
-          {/* Partner Status Pill */}
-          <div className="itw-convo-partner">
-            <div className={`itw-partner-badge${mode === "supported" ? " itw-partner-patient" : ""}`}>
-              {mode === "supported"
-                ? "Patient Conversation Partner • Listening attentively without interruption • Untimed"
-                : "Fast-Paced Group Context • Quick turn window"}
-            </div>
-            <span className="itw-partner-label">
-              {mode === "supported" ? "Take all the time you need — no timer" : "Conversation moving briskly"}
-            </span>
+          <div style={{ fontSize: 14, color: "var(--itw-muted)" }}>
+            {mode === "fast" && !partnerInterrupted && "Waiting for an immediate answer... turn timer running."}
+            {mode === "fast" && partnerInterrupted && (
+              <span style={{ color: "#d9381e", fontWeight: 700 }}>
+                ⚠️ Conversational pressure: &ldquo;Anyone else have an answer? Should we move to the next person?&rdquo;
+              </span>
+            )}
+            {mode === "supported" && "Attentive, unhurried presence: listening with warm eye contact and zero hurry."}
           </div>
-
-          {currentPrompt && (
-            <div className="itw-convo-bubble">
-              {currentPrompt.npc}
+          {mode === "fast" && (
+            <div className="itw-meter-bar" style={{ marginTop: 8 }}>
+              <div
+                className="itw-meter-fill"
+                style={{
+                  width: `${partnerPatience}%`,
+                  background: partnerPatience > 40 ? "var(--itw-speech)" : "#d9381e",
+                }}
+              />
             </div>
           )}
-
-          <div className="itw-speech-status-tag">
-            {status === "delivering"
-              ? "Speaking..."
-              : status === "done"
-              ? "Turn shared"
-              : status === "expired"
-              ? "Turn elapsed"
-              : "Ready to answer"}
-          </div>
         </div>
-      </Viewfinder>
-
-      <div className="itw-sim-controls" style={{ borderTop: "1px solid var(--itw-border)" }}>
-        {!submitted && (
-          <>
-            <input
-              type="text"
-              className="itw-textin"
-              placeholder="Type your answer here..."
-              value={inputVal}
-              onChange={(e) => setInputVal(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && submitAnswer()}
-              disabled={paused || status === "expired"}
-              autoFocus
-            />
-            <button
-              className="itw-btn-primary"
-              onClick={submitAnswer}
-              disabled={paused || !inputVal.trim() || status === "expired"}
-            >
-              Share Response
-            </button>
-          </>
-        )}
       </div>
 
-      <div style={{ padding: "0 18px 20px" }}>
-        <div className="itw-speech-output" style={{ minHeight: 48, fontSize: 20 }}>
-          {outputWords.map((w, i) => (
-            <span key={i}>
-              {w.text}{" "}
-            </span>
-          ))}
+      {/* The Internal Thought (Rich and clear in the speaker's mind) */}
+      <div className="itw-thought-bubble">
+        <div className="itw-thought-label">
+          🧠 The Idea in Your Mind (Completely Clear &amp; Fluent)
         </div>
-        <div className="itw-readout" style={{ marginTop: 8 }}>
-          {note}
+        <div className="itw-thought-text">
+          &ldquo;{TARGET_THOUGHT}&rdquo;
         </div>
+      </div>
+
+      {/* Physical Delivery Canvas */}
+      {mode === "supported" && supportType === "aac" ? (
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-muted)", marginBottom: 8 }}>
+            AAC Multi-Modal Soundboard: Tap concept tiles to speak aloud instantly
+          </div>
+          <div className="itw-aac-grid">
+            {AAC_TILES.map((tile) => {
+              const isSelected = aacSelection.includes(tile.id);
+              return (
+                <button
+                  key={tile.id}
+                  type="button"
+                  className={`itw-aac-tile${isSelected ? " itw-selected" : ""}`}
+                  onClick={() => handleAacTileClick(tile)}
+                >
+                  <span className="itw-aac-icon">{tile.icon}</span>
+                  <span className="itw-aac-label">{tile.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          {aacSelection.length >= 3 && stage !== "finished" && (
+            <div style={{ marginTop: 16, textAlign: "center" }}>
+              <button
+                type="button"
+                className="itw-cta itw-cta-dark"
+                onClick={() => handleCompleteSpeech("aac")}
+              >
+                Complete Statement via AAC ✓
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div>
+          <div className="itw-articulation-box">
+            <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", marginBottom: 6 }}>
+              Verbal Speech Output
+            </div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--itw-text)", minHeight: 28 }}>
+              {formulatedWords.length === 0 ? (
+                <span style={{ color: "var(--itw-muted)", fontStyle: "italic", fontSize: 15 }}>
+                  Assemble and articulate words below against conversational pacing...
+                </span>
+              ) : (
+                formulatedWords.map((w, i) => (
+                  <span key={i} style={{ marginRight: 6, color: "var(--itw-speech)" }}>
+                    {w.text}
+                  </span>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-muted)", marginBottom: 8 }}>
+            {mode === "fast"
+              ? "Articulate words (simulating motor speech planning friction under time pressure):"
+              : "Take your time — form each phrase without rush:"}
+          </div>
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {SPEECH_FRAGMENTS.map((frag, idx) => {
+              const isDone = formulatedWords.length > idx;
+              const isNext = formulatedWords.length === idx;
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  className="itw-pill-btn"
+                  disabled={isDone || !isNext}
+                  onClick={() => handleStepFormulate(frag)}
+                  style={{
+                    padding: "10px 18px",
+                    fontWeight: 700,
+                    borderColor: isNext ? "var(--itw-speech)" : "var(--itw-border)",
+                    background: isDone ? "var(--itw-panel-2)" : isNext ? "rgba(140,66,44,0.12)" : "var(--itw-panel)",
+                    opacity: isDone ? 0.4 : isNext ? 1 : 0.6,
+                  }}
+                >
+                  {isDone ? "✓ " : "+ "} {frag.text}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Takeaway note */}
+      <div style={{ fontSize: 13, color: "var(--itw-muted)", textAlign: "center", marginTop: 20 }}>
+        {mode === "fast"
+          ? "Notice the pressure: the idea was clear in your head the whole time, but motor planning took longer than external conversation allowed."
+          : "When conversation partners provide unhurried wait time and multimodal options, the speaker participates with full dignity."}
       </div>
     </div>
   );
 }
-
 function SpeechModule({ onBack, onNavigate }) {
   const [step, setStep] = useState("intro"); // intro | instructions | run_fast | reflect | support | run_supported | explain | next
   const [chosenSupport, setChosenSupport] = useState("patient_wait");
@@ -4952,11 +4954,7 @@ function SpeechModule({ onBack, onNavigate }) {
               Begin Experience →
             </button>
           </div>
-          <div className="itw-flow-letters" aria-hidden="true">
-            {["🗣️", "💬", "⏳", "❤️", "🌿", "👂"].map((c, i) => (
-              <span key={i} style={{ animationDelay: `${i * 0.45}s`, fontSize: 36 }}>{c}</span>
-            ))}
-          </div>
+          <IntroVignette moduleKey="speech" />
         </div>
       )}
 
@@ -5351,13 +5349,14 @@ const DYSCALC_SUPPORT_CHOICES = [
   },
 ];
 
-function DyscalculiaSim({ mode = "baseline", supportType = "numberline", onComplete, onAbort }) {
+function DyscalculiaSim({ mode = "baseline", supportType = "tenframes", onComplete, onAbort }) {
   const { soundOn } = useContext(SettingsContext);
-  const [flourVal, setFlourVal] = useState(mode === "baseline" ? 200 : 200);
-  const [milkVal, setMilkVal] = useState(mode === "baseline" ? 120 : 120);
-  const [sugarVal, setSugarVal] = useState(mode === "baseline" ? 60 : 60);
+  const [stage, setStage] = useState(1); // 1: naked numerals / subitizing, 2: spatial number line, 3: completed
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [userEstimate, setUserEstimate] = useState(50);
+  const [tenFrameCount, setTenFrameCount] = useState(14);
   const [elapsed, setElapsed] = useState(0);
-  const [calcErrors, setCalcErrors] = useState(0);
+  const [errors, setErrors] = useState(0);
 
   const startTimeRef = useRef(0);
   const timerRef = useRef(null);
@@ -5378,194 +5377,185 @@ function DyscalculiaSim({ mode = "baseline", supportType = "numberline", onCompl
     };
   }, []);
 
-  const handleCheck = () => {
-    // Target for 6 servings (1.5x): flour: 300, milk: 180, sugar: 90
-    // Baseline targets (4 servings): flour: 200, milk: 120, sugar: 60
-    const correct = mode === "baseline"
-      ? (flourVal === 200 && milkVal === 120 && sugarVal === 60)
-      : (flourVal === 300 && milkVal === 180 && sugarVal === 90);
-
-    if (correct) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (soundOn) audio.cue("slam");
-      onCompleteRef.current?.({
-        time: elapsed,
-        calcErrors,
-      });
-    } else {
-      if (soundOn) audio.cue("flicker");
-      setCalcErrors((c) => c + 1);
+  const handleSubitizePick = (val, isCorrect) => {
+    if (soundOn) audio.cue(isCorrect ? "slam" : "flicker");
+    if (!isCorrect) {
+      setErrors((e) => e + 1);
+      return;
     }
+    setSelectedAnswer(val);
+
+    if (timerRef.current) clearInterval(timerRef.current);
+    const finalTime = parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1));
+    onCompleteRef.current?.({
+      time: finalTime,
+      errors,
+      mode,
+    });
   };
 
+  // Ten-Frame calculation
+  const fullFrames = Math.floor(tenFrameCount / 10);
+  const remainder = tenFrameCount % 10;
+
   return (
-    <div className="itw-dyscalc-card" role="region" aria-label="Baking Recipe Scaling Exercise">
+    <div className="itw-dyscalc-arena" role="region" aria-label="Visual Number Sense Arena">
+      {/* Header Bar */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div>
           <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-dyscalculia)", letterSpacing: "0.08em" }}>
-            Cardamom Cookies • {mode === "baseline" ? "4 Servings (Base Recipe)" : "Scale for 6 Guests (1.5×)"}
+            {mode === "baseline" ? "Run 1 (Naked Abstract Numerals)" : "Run 2 (Visual Ten-Frames & Spatial Number Line)"}
           </span>
           <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
-            {mode === "baseline" ? "Measure Base Ingredients" : "Calculate Scaled Ingredients"}
+            {mode === "baseline" ? "The Challenge: Working with Pure Abstract Glyphs" : "The Visual Solution: Grounding Quantity in Space"}
           </h3>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)" }}>
             ⏱️ {elapsed.toFixed(1)}s
           </span>
           <button type="button" className="itw-pill-btn" onClick={onAbort}>Exit</button>
         </div>
       </div>
 
-      <div style={{ display: "grid", gap: 14 }}>
-        {/* Ingredient 1: Flour */}
-        <div className="itw-dyscalc-row">
-          <div>
-            <div style={{ fontWeight: 800, fontSize: 15, color: "var(--itw-text)" }}>🌾 Whole Wheat Flour</div>
-            <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
-              Base (4 servings): 200g • {mode === "baseline" ? "Target: 200g" : "Need for 6 servings: 1.5×"}
+      {mode === "baseline" ? (
+        /* Baseline mode: Demonstrating the friction of naked abstract symbols */
+        <div>
+          <div style={{ background: "var(--itw-panel-2)", padding: 22, borderRadius: 18, border: "1.5px solid var(--itw-border)", margin: "16px 0" }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-dyscalculia)", textTransform: "uppercase", marginBottom: 8 }}>
+              Abstract Numerical Comparison
             </div>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button
-              type="button"
-              className="itw-pill-btn"
-              onClick={() => setFlourVal((v) => Math.max(0, v - (mode === "supported" && supportType === "blocks" ? 50 : 20)))}
-            >
-              -
-            </button>
-            <span style={{ fontFamily: "var(--font-mono)", fontWeight: 800, fontSize: 18, minWidth: 64, textAlign: "center", color: "var(--itw-text)" }}>
-              {flourVal}g
-            </span>
-            <button
-              type="button"
-              className="itw-pill-btn"
-              onClick={() => setFlourVal((v) => v + (mode === "supported" && supportType === "blocks" ? 50 : 20))}
-            >
-              +
-            </button>
+            <p style={{ fontSize: 16, lineHeight: 1.6, color: "var(--itw-text)", marginBottom: 20 }}>
+              To a mind with dyscalculia, numbers like <b>47</b> and <b>74</b> are abstract shapes with no intrinsic visual volume or weight. Mental estimation requires laborious counting rather than automatic subitizing.
+            </p>
+
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 24, margin: "24px 0" }}>
+              <div style={{ padding: "20px 32px", borderRadius: 16, border: "2px solid var(--itw-border)", fontSize: 36, fontFamily: "var(--font-mono)", fontWeight: 800, color: "var(--itw-text)" }}>
+                68
+              </div>
+              <span style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-muted)" }}>vs</span>
+              <div style={{ padding: "20px 32px", borderRadius: 16, border: "2px solid var(--itw-border)", fontSize: 36, fontFamily: "var(--font-mono)", fontWeight: 800, color: "var(--itw-text)" }}>
+                86
+              </div>
+            </div>
+
+            <div style={{ textAlign: "center", marginTop: 20 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--itw-muted)", marginBottom: 12 }}>
+                Quick check: How many 10s are in the larger number?
+              </div>
+              <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
+                {[6, 7, 8, 9].map((val) => (
+                  <button
+                    key={val}
+                    type="button"
+                    className="itw-pill-btn"
+                    style={{ fontSize: 18, padding: "10px 24px", fontWeight: 800 }}
+                    onClick={() => handleSubitizePick(val, val === 8)}
+                  >
+                    {val} tens
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
+      ) : (
+        /* Supported mode: Rich Visual Models (Ten-Frames, Number Line, CRA model) */
+        <div>
+          <div style={{ background: "var(--itw-panel-2)", padding: 22, borderRadius: 18, border: "1.5px solid var(--itw-dyscalculia)", margin: "16px 0" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <span style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-dyscalculia)", textTransform: "uppercase" }}>
+                ✨ Visual Ten-Frame Scaffolding (CRA Concrete Model)
+              </span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  type="button"
+                  className="itw-pill-btn"
+                  onClick={() => setTenFrameCount((c) => Math.max(1, c - 1))}
+                >
+                  - 1
+                </button>
+                <button
+                  type="button"
+                  className="itw-pill-btn"
+                  onClick={() => setTenFrameCount((c) => Math.min(30, c + 1))}
+                >
+                  + 1
+                </button>
+              </div>
+            </div>
 
-        {/* Number Line Support Overlay if active */}
-        {mode === "supported" && supportType === "numberline" && (
-          <div style={{ background: "var(--itw-panel)", padding: 12, borderRadius: 12, border: "1.5px solid var(--itw-dyscalculia)" }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--itw-dyscalculia)", marginBottom: 6 }}>
-              Visual Number Line: 200g + 100g = 300g
-            </div>
-            <div style={{ position: "relative", height: 24, background: "rgba(29, 133, 133, 0.1)", borderRadius: 6 }}>
-              <div style={{ position: "absolute", left: "0%", top: 2, fontSize: 10, fontFamily: "var(--font-mono)" }}>0g</div>
-              <div style={{ position: "absolute", left: "50%", top: 2, fontSize: 10, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)" }}>200g (Base)</div>
-              <div style={{ position: "absolute", left: "75%", top: 2, fontSize: 10, fontFamily: "var(--font-mono)", fontWeight: 800, color: "var(--itw-dyscalculia)" }}>300g (Target)</div>
-            </div>
-          </div>
-        )}
+            <p style={{ fontSize: 15, color: "var(--itw-text)", lineHeight: 1.6, marginBottom: 16 }}>
+              In a Ten-Frame, numbers are organized into instantly recognizable 5-and-10 patterns. Quantity is grasped visually in a glance without counting individual dots!
+            </p>
 
-        {/* Concrete CRA Blocks Overlay if active */}
-        {mode === "supported" && supportType === "blocks" && (
-          <div style={{ background: "var(--itw-panel)", padding: 12, borderRadius: 12, border: "1.5px solid var(--itw-dyscalculia)" }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--itw-dyscalculia)", marginBottom: 6 }}>
-              🧱 Concrete Counter Units (CRA Model): 4 units (200g) + 2 units (100g) = 6 units (300g)
+            {/* Render Ten-Frames */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "center", margin: "16px 0" }}>
+              {Array.from({ length: Math.ceil(tenFrameCount / 10) }).map((_, fIdx) => {
+                const dotsInThisFrame = Math.min(10, tenFrameCount - fIdx * 10);
+                return (
+                  <div key={fIdx} className="itw-tenframe-grid">
+                    {Array.from({ length: 10 }).map((_, cIdx) => (
+                      <div key={cIdx} className="itw-tenframe-cell">
+                        {cIdx < dotsInThisFrame && <span className="itw-tenframe-dot" />}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+              <div style={{ fontSize: 24, fontWeight: 800, fontFamily: "var(--font-mono)", color: "var(--itw-dyscalculia)" }}>
+                = {tenFrameCount} ({fullFrames} ten{fullFrames !== 1 ? "s" : ""} + {remainder} one{remainder !== 1 ? "s" : ""})
+              </div>
             </div>
-            <div className="itw-dyscalc-cra-blocks">
-              <span className="itw-cra-cube">50g</span>
-              <span className="itw-cra-cube">50g</span>
-              <span className="itw-cra-cube">50g</span>
-              <span className="itw-cra-cube">50g</span>
-              <span style={{ fontWeight: 800, color: "var(--itw-dyscalculia)" }}>+</span>
-              <span className="itw-cra-cube" style={{ background: "rgba(44, 140, 114, 0.2)", borderColor: "var(--itw-autism)" }}>50g</span>
-              <span className="itw-cra-cube" style={{ background: "rgba(44, 140, 114, 0.2)", borderColor: "var(--itw-autism)" }}>50g</span>
-              <span style={{ fontWeight: 800, color: "var(--itw-text)", fontSize: 12, marginLeft: 6 }}>= 300g Target</span>
-            </div>
-          </div>
-        )}
 
-        {/* Ratio Deconstruction Scaffold if active */}
-        {mode === "supported" && supportType === "scaffold" && (
-          <div style={{ background: "var(--itw-panel)", padding: 12, borderRadius: 12, border: "1.5px solid var(--itw-dyscalculia)" }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--itw-dyscalculia)", marginBottom: 4 }}>
-              💡 Two-Step Formula: [Base Amount] + [Half of Base] = [1.5× Scaled Target]
+            {/* Interactive Visual Number Line */}
+            <div style={{ borderTop: "1px solid var(--itw-border)", paddingTop: 18, marginTop: 18 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-dyscalculia)", textTransform: "uppercase", marginBottom: 6 }}>
+                Spatial Number Line with Landmark Anchors (0 to 100)
+              </div>
+              <div className="itw-number-line-wrap">
+                <div className="itw-number-track">
+                  <div
+                    className="itw-number-pin"
+                    style={{ left: `${tenFrameCount}%` }}
+                  >
+                    {tenFrameCount}
+                  </div>
+                  {[0, 25, 50, 75, 100].map((anchor) => (
+                    <span
+                      key={anchor}
+                      className="itw-number-anchor"
+                      style={{ left: `${anchor}%` }}
+                    >
+                      {anchor}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
-            <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
-              Flour: 200g + 100g = <b>300g</b> • Milk: 120ml + 60ml = <b>180ml</b> • Sugar: 60g + 30g = <b>90g</b>
-            </div>
-          </div>
-        )}
 
-        {/* Ingredient 2: Milk */}
-        <div className="itw-dyscalc-row">
-          <div>
-            <div style={{ fontWeight: 800, fontSize: 15, color: "var(--itw-text)" }}>🥛 Warm Milk</div>
-            <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
-              Base (4 servings): 120ml • {mode === "baseline" ? "Target: 120ml" : "Need for 6 servings: 1.5×"}
+            <div style={{ textAlign: "center", marginTop: 24 }}>
+              <button
+                type="button"
+                className="itw-cta itw-cta-dark"
+                onClick={() => handleSubitizePick(tenFrameCount, true)}
+              >
+                Confirm Visual Understanding ✓
+              </button>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button
-              type="button"
-              className="itw-pill-btn"
-              onClick={() => setMilkVal((v) => Math.max(0, v - (mode === "supported" && supportType === "blocks" ? 30 : 10)))}
-            >
-              -
-            </button>
-            <span style={{ fontFamily: "var(--font-mono)", fontWeight: 800, fontSize: 18, minWidth: 64, textAlign: "center", color: "var(--itw-text)" }}>
-              {milkVal}ml
-            </span>
-            <button
-              type="button"
-              className="itw-pill-btn"
-              onClick={() => setMilkVal((v) => v + (mode === "supported" && supportType === "blocks" ? 30 : 10))}
-            >
-              +
-            </button>
-          </div>
-        </div>
-
-        {/* Ingredient 3: Raw Sugar */}
-        <div className="itw-dyscalc-row">
-          <div>
-            <div style={{ fontWeight: 800, fontSize: 15, color: "var(--itw-text)" }}>🍯 Unrefined Sugar</div>
-            <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
-              Base (4 servings): 60g • {mode === "baseline" ? "Target: 60g" : "Need for 6 servings: 1.5×"}
-            </div>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button
-              type="button"
-              className="itw-pill-btn"
-              onClick={() => setSugarVal((v) => Math.max(0, v - (mode === "supported" && supportType === "blocks" ? 30 : 10)))}
-            >
-              -
-            </button>
-            <span style={{ fontFamily: "var(--font-mono)", fontWeight: 800, fontSize: 18, minWidth: 64, textAlign: "center", color: "var(--itw-text)" }}>
-              {sugarVal}g
-            </span>
-            <button
-              type="button"
-              className="itw-pill-btn"
-              onClick={() => setSugarVal((v) => v + (mode === "supported" && supportType === "blocks" ? 30 : 10))}
-            >
-              +
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {calcErrors > 0 && (
-        <div style={{ marginTop: 14, color: "var(--itw-speech)", fontSize: 13, fontWeight: 700 }}>
-          ⚠️ Check your proportions: at 1.5x, each ingredient equals its base amount plus half of that base.
         </div>
       )}
 
-      <div style={{ marginTop: 22, display: "flex", justifyContent: "flex-end" }}>
-        <button type="button" className="itw-cta itw-cta-dark" onClick={handleCheck}>
-          Confirm Measurements ✓
-        </button>
+      {/* Footer Reflection */}
+      <div style={{ fontSize: 13, color: "var(--itw-muted)", textAlign: "center", marginTop: 12 }}>
+        {mode === "baseline"
+          ? "Without spatial models, working memory is choked by basic magnitude checks."
+          : "Concrete and visual representations transform abstract symbols into tangible quantities."}
       </div>
     </div>
   );
 }
-
 function DyscalculiaModule({ onBack, onNavigate }) {
   const [step, setStep] = useState("intro");
   const [results, setResults] = useState({ baseline: null, unsupported: null, supported: null });
@@ -5614,11 +5604,7 @@ function DyscalculiaModule({ onBack, onNavigate }) {
               Start the Experience →
             </button>
           </div>
-          <div className="itw-flow-letters" aria-hidden="true">
-            {["1.5×", "300g", "180ml", "½", "¼", "90g"].map((sym, i) => (
-              <span key={i} style={{ animationDelay: `${i * 0.45}s` }}>{sym}</span>
-            ))}
-          </div>
+          <IntroVignette moduleKey="dyscalculia" />
         </div>
       )}
 
@@ -6005,8 +5991,12 @@ const DYSGRAPH_TARGET_WORDS = ["Plants", "absorb", "sunlight", "to", "produce", 
 
 function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplete, onAbort }) {
   const { soundOn } = useContext(SettingsContext);
-  const [typedWords, setTypedWords] = useState([]);
+  const [writtenLetters, setWrittenLetters] = useState([]);
+  const [motorFatigue, setMotorFatigue] = useState(0);
+  const [simplifiedText, setSimplifiedText] = useState("");
+  const [usedVoice, setUsedVoice] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [running, setRunning] = useState(true);
 
   const startTimeRef = useRef(0);
   const timerRef = useRef(null);
@@ -6027,172 +6017,199 @@ function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplet
     };
   }, []);
 
-  const handleAddWord = (word) => {
-    if (soundOn) audio.cue("tap");
-    const nextWords = [...typedWords, word];
-    setTypedWords(nextWords);
+  const MIND_THOUGHT = "The mangrove root network traps river sediment, preventing shoreline erosion while nurturing juvenile marine species.";
+  const TARGET_LETTERS = "The mangrove roots trap river sediment".split("");
 
-    if (nextWords.length >= DYSGRAPH_TARGET_WORDS.length) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (soundOn) audio.cue("slam");
-      onCompleteRef.current?.({
-        time: elapsed,
-        wordsCount: nextWords.length,
-      });
+  const handleWriteStroke = (letter) => {
+    if (soundOn) audio.cue("tap");
+    const nextLetters = [...writtenLetters, letter];
+    setWrittenLetters(nextLetters);
+    const newFatigue = Math.min(100, motorFatigue + 7);
+    setMotorFatigue(newFatigue);
+
+    // If fatigue gets very high, working memory is taxed and the student is forced to simplify!
+    if (newFatigue >= 75 && !simplifiedText) {
+      setSimplifiedText("Roots trap dirt.");
+      if (soundOn) audio.cue("flicker");
+    }
+
+    if (nextLetters.length >= TARGET_LETTERS.length || newFatigue >= 95) {
+      finishSim("manual", nextLetters.length, newFatigue);
     }
   };
 
-  const handleVoiceDictate = () => {
-    if (soundOn) audio.cue("call");
-    setTypedWords(DYSGRAPH_TARGET_WORDS);
+  const handleDictateVoice = () => {
+    if (soundOn) {
+      audio.cue("slam");
+      speakText(MIND_THOUGHT, { rate: 0.95, volume: 0.9 });
+    }
+    setUsedVoice(true);
+    setWrittenLetters(MIND_THOUGHT.split(""));
+    setMotorFatigue(0);
+
+    setTimeout(() => {
+      finishSim("dictation", MIND_THOUGHT.length, 0);
+    }, 1200);
+  };
+
+  const finishSim = (method, charCount, fatigue) => {
     if (timerRef.current) clearInterval(timerRef.current);
+    setRunning(false);
+    const finalTime = parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1));
     onCompleteRef.current?.({
-      time: 2.1,
-      wordsCount: DYSGRAPH_TARGET_WORDS.length,
+      time: finalTime,
+      method,
+      charCount,
+      motorFatigue: fatigue,
+      wasSimplified: Boolean(simplifiedText),
     });
-  };
-
-  const handleSelectChunk = (chunk) => {
-    if (soundOn) audio.cue("tap");
-    const words = chunk.split(" ");
-    const next = [...typedWords, ...words];
-    setTypedWords(next);
-    if (next.length >= DYSGRAPH_TARGET_WORDS.length) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (soundOn) audio.cue("slam");
-      onCompleteRef.current?.({
-        time: elapsed,
-        wordsCount: next.length,
-      });
-    }
   };
 
   return (
     <div className="itw-dysgraph-canvas" role="region" aria-label="Transcription Mechanics Simulation">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+      {/* Top Status Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div>
           <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-dysgraphia)", letterSpacing: "0.08em" }}>
-            Science Notebook • {mode === "baseline" ? "Baseline Writing" : mode === "unsupported" ? "Manual Word Transcription" : "Supported Expression"}
+            {mode === "baseline" ? "Run 1 (Manual Graphomotor Transcription Bottleneck)" : "Run 2 (Supported Speech-to-Text Expression)"}
           </span>
           <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-paper-text)", margin: "4px 0" }}>
-            The Idea in Your Mind: &ldquo;Plants absorb sunlight to produce glucose, releasing oxygen.&rdquo;
+            Science Notebook: Coastal Ecology Hypothesis
           </h3>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-paper-muted)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-paper-muted)" }}>
             ⏱️ {elapsed.toFixed(1)}s
           </span>
           <button type="button" className="itw-pill-btn" onClick={onAbort}>Exit</button>
         </div>
       </div>
 
-      {/* Transcription Output Display */}
-      <div className="itw-dysgraph-output">
-        {typedWords.length === 0 ? (
-          <span style={{ color: "var(--itw-paper-muted)", fontStyle: "italic" }}>
-            {mode === "supported" && supportType === "dictation"
-              ? "Click 'Dictate Sentence' below to speak your ideas aloud without manual typing strain."
-              : "Assemble your sentence below to transcribe your hypothesis..."}
-          </span>
-        ) : (
-          typedWords.map((w, idx) => (
-            <span
-              key={idx}
-              style={{
-                display: "inline-block",
-                marginRight: 6,
-                fontWeight: 600,
-                color: "var(--itw-paper-text)",
-              }}
-            >
-              {w}
+      {/* The Crucial Contrast Split: Mind vs Paper */}
+      <div className="itw-dysgraph-split">
+        {/* Mind Box: Eloquent, rich, advanced biology */}
+        <div className="itw-mind-panel">
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <span style={{ fontSize: 20 }}>🧠</span>
+            <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-dysgraphia)", letterSpacing: "0.06em" }}>
+              The Idea in Your Mind (Oral / Conceptual Mastery)
             </span>
-          ))
-        )}
+          </div>
+          <p style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.6, color: "var(--itw-text)", margin: 0 }}>
+            &ldquo;{MIND_THOUGHT}&rdquo;
+          </p>
+          <div style={{ fontSize: 12, color: "var(--itw-muted)", marginTop: 10 }}>
+            Vocabulary level: Advanced • Conceptual depth: Full • Pacing: Effortless
+          </div>
+        </div>
+
+        {/* Paper Box: The manual transcription friction */}
+        <div className="itw-paper-panel">
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <span style={{ fontSize: 20 }}>✏️</span>
+            <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-paper-muted)", letterSpacing: "0.06em" }}>
+              The Physical Page (Graphomotor Output)
+            </span>
+          </div>
+
+          <div style={{ minHeight: 70, fontSize: 18, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-paper-text)", borderBottom: "2px solid #d4c8ad", paddingBottom: 8 }}>
+            {writtenLetters.length === 0 ? (
+              <span style={{ color: "var(--itw-paper-muted)", fontStyle: "italic", fontSize: 14 }}>
+                {mode === "supported" ? "Click 'Dictate with Voice' below..." : "Form letters below to transcribe..."}
+              </span>
+            ) : (
+              writtenLetters.join("")
+            )}
+          </div>
+
+          {simplifiedText && (
+            <div style={{ marginTop: 10, padding: 8, borderRadius: 8, background: "rgba(217, 56, 30, 0.1)", color: "#b3240e", fontSize: 13, fontWeight: 700 }}>
+              ⚠️ Motor fatigue forced mental simplification: &ldquo;{simplifiedText}&rdquo; (The rich biology thought was abandoned due to hand cramping).
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Input Controls */}
-      <div style={{ marginTop: 20 }}>
-        {mode === "supported" && supportType === "dictation" ? (
-          <div style={{ textAlign: "center", padding: "16px 0" }}>
+      {/* Hand Muscle Fatigue & Motor Load Meter */}
+      <div className="itw-fatigue-meter">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+          <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: motorFatigue > 60 ? "#d9381e" : "var(--itw-dysgraphia)" }}>
+            ⚡ Hand Muscle Strain &amp; Fine-Motor Cognitive Load: {motorFatigue}%
+          </span>
+          <span style={{ fontSize: 12, color: "var(--itw-muted)" }}>
+            {motorFatigue > 70 ? "High Cramping & Working Memory Choke" : "Normal"}
+          </span>
+        </div>
+        <div className="itw-meter-bar">
+          <div
+            className="itw-meter-fill"
+            style={{
+              width: `${motorFatigue}%`,
+              background: motorFatigue > 70 ? "#d9381e" : "var(--itw-dysgraphia)",
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Control Area */}
+      <div style={{ marginTop: 20, textAlign: "center" }}>
+        {mode === "supported" ? (
+          <div>
             <button
               type="button"
               className="itw-cta itw-cta-dark"
-              style={{ fontSize: 16, padding: "14px 28px", display: "inline-flex", alignItems: "center", gap: 8 }}
-              onClick={handleVoiceDictate}
+              style={{ fontSize: 16, padding: "14px 28px", display: "inline-flex", alignItems: "center", gap: 10 }}
+              onClick={handleDictateVoice}
             >
-              🎙️ Dictate Sentence with Voice (Speech-to-Text)
+              🎙️ Dictate Entire Hypothesis with Voice (Speech-to-Text)
             </button>
-            <div style={{ fontSize: 13, color: "var(--itw-paper-muted)", marginTop: 8 }}>
+            <div style={{ fontSize: 13, color: "var(--itw-muted)", marginTop: 8 }}>
               Voice recognition translates your oral fluency directly onto the page, bypassing motor strain.
-            </div>
-          </div>
-        ) : mode === "supported" && supportType === "wordbank" ? (
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-paper-muted)", marginBottom: 8 }}>
-              Sentence Starters &amp; Concept Blocks (Chunked Academic Assembly):
-            </div>
-            <div className="itw-word-bank">
-              {[
-                "Plants absorb sunlight",
-                "to produce glucose",
-                "releasing oxygen",
-              ].map((chunk) => {
-                const words = chunk.split(" ");
-                const isDone = words.every((w) => typedWords.includes(w));
-                return (
-                  <button
-                    key={chunk}
-                    type="button"
-                    className="itw-word-chip"
-                    disabled={isDone}
-                    onClick={() => handleSelectChunk(chunk)}
-                    style={{
-                      background: isDone ? "var(--itw-panel)" : "rgba(178, 89, 40, 0.12)",
-                      borderColor: "var(--itw-dysgraphia)",
-                      fontWeight: 700,
-                    }}
-                  >
-                    + {chunk}
-                  </button>
-                );
-              })}
             </div>
           </div>
         ) : (
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-paper-muted)", marginBottom: 8 }}>
-              {mode === "unsupported" ? "Assemble individual words (simulating fine-motor transcription demands):" : "Select Concept Blocks:"}
+            <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-muted)", marginBottom: 10 }}>
+              Form each letter manually (notice hand fatigue rising with every stroke):
             </div>
-            <div className="itw-word-bank">
-              {DYSGRAPH_TARGET_WORDS.map((word, i) => {
-                const isNext = typedWords.length === i;
-                const isDone = typedWords.length > i;
-                return (
-                  <button
-                    key={word}
-                    type="button"
-                    className="itw-word-chip"
-                    disabled={isDone || (!isNext && mode === "unsupported")}
-                    onClick={() => handleAddWord(word)}
-                    style={{
-                      opacity: isDone ? 0.4 : isNext ? 1 : 0.7,
-                      borderColor: isNext ? "var(--itw-dysgraphia)" : "var(--itw-border)",
-                      fontWeight: isNext ? 800 : 500,
-                    }}
-                  >
-                    {word}
-                  </button>
-                );
-              })}
+            <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 6 }}>
+              {TARGET_LETTERS.slice(writtenLetters.length, writtenLetters.length + 8).map((char, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className="itw-pill-btn"
+                  style={{
+                    fontSize: 16,
+                    padding: "8px 16px",
+                    fontWeight: 800,
+                    fontFamily: "var(--font-mono)",
+                    borderColor: "var(--itw-dysgraphia)",
+                  }}
+                  onClick={() => handleWriteStroke(char)}
+                >
+                  {char === " " ? "[Space]" : char}
+                </button>
+              ))}
+              <button
+                type="button"
+                className="itw-pill-btn"
+                style={{ fontSize: 13, padding: "8px 16px", fontWeight: 700 }}
+                onClick={() => finishSim("manual", writtenLetters.length, motorFatigue)}
+              >
+                Complete Attempt →
+              </button>
             </div>
           </div>
         )}
+      </div>
+
+      {/* Pedagogical Footer */}
+      <div style={{ fontSize: 13, color: "var(--itw-muted)", textAlign: "center", marginTop: 18 }}>
+        Notice the core insight: Dysgraphia is an output transcription barrier, never a thinking barrier.
       </div>
     </div>
   );
 }
-
 function DysgraphiaModule({ onBack, onNavigate }) {
   const [step, setStep] = useState("intro");
   const [results, setResults] = useState({ baseline: null, unsupported: null, supported: null });
@@ -6241,11 +6258,7 @@ function DysgraphiaModule({ onBack, onNavigate }) {
               Start the Experience →
             </button>
           </div>
-          <div className="itw-flow-letters" aria-hidden="true">
-            {["✏️", "📝", "🎙️", "A", "b", "C"].map((sym, i) => (
-              <span key={i} style={{ animationDelay: `${i * 0.45}s` }}>{sym}</span>
-            ))}
-          </div>
+          <IntroVignette moduleKey="dysgraphia" />
         </div>
       )}
 
@@ -6816,11 +6829,7 @@ function AuditoryProcessingModule({ onBack, onNavigate }) {
               Start the Experience →
             </button>
           </div>
-          <div className="itw-flow-letters" aria-hidden="true">
-            {["🎧", "🔊", "💬", "👂", "📢", "🎙️"].map((sym, i) => (
-              <span key={i} style={{ animationDelay: `${i * 0.45}s` }}>{sym}</span>
-            ))}
-          </div>
+          <IntroVignette moduleKey="auditory" />
         </div>
       )}
 
@@ -7495,11 +7504,7 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
               Start the Experience →
             </button>
           </div>
-          <div className="itw-flow-letters" aria-hidden="true">
-            {["🗂️", "📋", "⏱️", "🎒", "✅", "🚀"].map((sym, i) => (
-              <span key={i} style={{ animationDelay: `${i * 0.45}s` }}>{sym}</span>
-            ))}
-          </div>
+          <IntroVignette moduleKey="executive" />
         </div>
       )}
 
@@ -7829,6 +7834,378 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
 
 /* ---------------- Root ---------------- */
 
+
+/* ================= STORIES & PERSPECTIVES EXHIBITS ================= */
+
+function DownSyndromeStory({ onBack, onNavigate }) {
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const PAGES = [
+    {
+      title: "Morning Sunlight & Visual Schedule",
+      subtitle: "8:00 AM • Inclusive Primary School, Chennai",
+      image: "/decor/itw/down-syndrome-story.webp",
+      alt: "Aarav smiling at his visual learning schedule in the morning classroom",
+      quote: "“My visual schedule cards show me the shape of the day. When I see the picture for gardening and painting, I know exactly what to look forward to!”",
+      narrative: "For Aarav (age 9), having clear visual anchors reduces transition anxiety and builds autonomy. Visual memory is often a notable strength in children with Down syndrome — sequencing pictures anchors concepts far faster than spoken instructions alone.",
+      insight: "Visual schedules and predictable routines allow children to navigate complex school days with confidence.",
+      badge: "Visual Anchor Strength",
+    },
+    {
+      title: "Hands in the Soil: Planting Together",
+      subtitle: "10:30 AM • School Learning Garden",
+      image: "/decor/itw/hero-world.webp",
+      alt: "Children working together in the inclusive school garden planting seeds",
+      quote: "“Diya digs the soft earth, and I carefully place the seeds. I like feeling the damp soil with my fingers. When we water them, we cheer together!”",
+      narrative: "Peer-mediated inclusion thrives in cooperative, hands-on tasks. Tactile activities engage motor planning and sensory regulation while fostering authentic social friendships where every child contributes their strengths.",
+      insight: "Real peer inclusion happens through shared meaningful activities, not isolated intervention rooms.",
+      badge: "Cooperative Peer Learning",
+    },
+    {
+      title: "Hands-On Science: Learning by Touching",
+      subtitle: "1:15 PM • Classroom Laboratory Table",
+      image: "/decor/itw/science-lab-story.webp",
+      alt: "Diverse children examining botanical specimens under a microscope in science lab",
+      quote: "“Teacher gives me the real plant and a big magnifying glass! I can count all the leaf veins. My friends come to ask me what the green chloroplasts look like.”",
+      narrative: "Abstract textbook definitions can feel opaque, but concrete multi-sensory manipulatives bridge understanding effortlessly. When concepts are experienced physically, retention and expressive participation soar.",
+      insight: "Concrete-Representational-Abstract (CRA) learning unlocks deep scientific curiosity.",
+      badge: "Multi-Sensory Discovery",
+    },
+    {
+      title: "Celebrating Every Milestone",
+      subtitle: "3:30 PM • Courtyard Farewell",
+      image: "/decor/itw/day-through-my-eyes.webp",
+      alt: "Children walking happily together in the sunny school courtyard at the end of the day",
+      quote: "“My teacher gives me a big smile and high-five. I tied my shoelaces all by myself today! I smiled all the way to the school bus.”",
+      narrative: "Development in Down syndrome is not a race against a rigid timeline; it is a rich journey of steady progress. When schools measure growth by personal milestones rather than uniform speed, children thrive with unshakeable self-worth.",
+      insight: "Dignity, patience, and celebrating authentic milestones form the cornerstone of inclusive education.",
+      badge: "Strength-Based Milestone",
+    },
+  ];
+
+  const page = PAGES[currentPage];
+
+  return (
+    <section className="itw-view itw-module itw-flow" data-accent="autism">
+      <FlowCrumbs name="Down Syndrome Story" onBack={onBack} />
+
+      <div className="itw-story-exhibit">
+        {/* Picture Book Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
+          <div>
+            <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-autism)", letterSpacing: "0.08em" }}>
+              Illustrated Storybook • Page {currentPage + 1} of {PAGES.length}
+            </span>
+            <h2 style={{ fontSize: "clamp(1.6rem, 2.8vw, 2.2rem)", fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
+              {page.title}
+            </h2>
+            <div style={{ fontSize: 14, color: "var(--itw-muted)" }}>
+              {page.subtitle}
+            </div>
+          </div>
+          <button type="button" className="itw-pill-btn" onClick={onBack}>← Back to Experiences</button>
+        </div>
+
+        {/* Page Step Chips */}
+        <div style={{ display: "flex", gap: 8, overflowX: "auto", marginBottom: 16, paddingBottom: 4 }}>
+          {PAGES.map((p, idx) => (
+            <button
+              key={idx}
+              type="button"
+              className={`itw-passage-chip${idx === currentPage ? " itw-active" : ""}`}
+              onClick={() => setCurrentPage(idx)}
+              style={{ whiteSpace: "nowrap" }}
+            >
+              {idx + 1}. {p.title.split(":")[0]}
+            </button>
+          ))}
+        </div>
+
+        {/* Cinematic Illustration Panel */}
+        <div className="itw-story-banner-frame" style={{ position: "relative", borderRadius: 22, overflow: "hidden", minHeight: 380, maxHeight: 440, background: "var(--itw-panel-2)", border: "1.5px solid var(--itw-border)", boxShadow: "0 18px 40px -16px rgba(0,0,0,0.18)" }}>
+          <img
+            src={page.image}
+            alt={page.alt}
+            style={{ width: "100%", height: "100%", maxHeight: 440, objectFit: "cover", objectPosition: "center center", display: "block" }}
+            loading="eager"
+          />
+          <div style={{ position: "absolute", bottom: 14, right: 14, zIndex: 2 }}>
+            <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", padding: "5px 12px", borderRadius: 999, background: "rgba(18,24,18,0.85)", color: "#fff", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.2)" }}>
+              {page.badge}
+            </span>
+          </div>
+        </div>
+
+        {/* Illustrated Story Narrative Card */}
+        <div className="itw-story-body" style={{ marginTop: 20 }}>
+          <div style={{ background: "rgba(44, 140, 114, 0.08)", padding: 22, borderRadius: 18, border: "1.5px solid var(--itw-autism)", marginBottom: 18 }}>
+            <p style={{ fontSize: "1.2rem", lineHeight: 1.6, color: "var(--itw-text)", margin: 0, fontFamily: "var(--font-display)", fontWeight: 700 }}>
+              {page.quote}
+            </p>
+          </div>
+
+          <p style={{ fontSize: 16, lineHeight: 1.7, color: "var(--itw-text)", marginBottom: 16 }}>
+            {page.narrative}
+          </p>
+
+          <div style={{ background: "var(--itw-panel-2)", padding: 16, borderRadius: 14, border: "1px solid var(--itw-border)", marginBottom: 24 }}>
+            <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-autism)", display: "block", marginBottom: 4 }}>
+              💡 Pedagogical Insight
+            </span>
+            <div style={{ fontSize: 14.5, color: "var(--itw-muted)", lineHeight: 1.5 }}>
+              {page.insight}
+            </div>
+          </div>
+
+          {/* Picture Book Page Controls */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, paddingTop: 16, borderTop: "1px solid var(--itw-border)" }}>
+            <button
+              type="button"
+              className="itw-cta itw-cta-line"
+              disabled={currentPage === 0}
+              onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+              style={{ opacity: currentPage === 0 ? 0.4 : 1 }}
+            >
+              ← Previous Moment
+            </button>
+
+            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)" }}>
+              Moment {currentPage + 1} of {PAGES.length}
+            </span>
+
+            {currentPage < PAGES.length - 1 ? (
+              <button
+                type="button"
+                className="itw-cta itw-cta-dark"
+                onClick={() => setCurrentPage((p) => Math.min(PAGES.length - 1, p + 1))}
+              >
+                Next Moment →
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="itw-cta itw-cta-dark"
+                onClick={() => onNavigate("autism")}
+              >
+                Explore Autism Experience →
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function DayThroughMyEyesStory({ onBack, onNavigate }) {
+  const [activePeriod, setActivePeriod] = useState(0);
+  const [activeLens, setActiveLens] = useState("sensory"); // sensory | attention | communication | supported
+
+  const PERIODS = [
+    {
+      time: "8:30 AM",
+      title: "Morning Assembly & Echoing Hallway",
+      image: "/decor/itw/day-through-my-eyes.webp",
+      alt: "Courtyard assembly with hundreds of students under bright morning sun",
+      setting: "300 students standing in rows on polished granite; morning announcements booming through high-mounted horn speakers; bright sunlight glaring off courtyard pavers.",
+      sensory: "The loudspeaker reverberates in my ears like physical pressure. The hum of 300 footsteps on stone creates a wall of white noise where words get lost.",
+      attention: "My eyes are pulled to the flutter of pigeons in the courtyard rafters and the flicker of distant hallway bulbs. Holding attention on announcements requires intense effort.",
+      communication: "The teacher asks me for my homework diary suddenly. The noise makes my throat tighten; finding the words takes longer than the teacher waits.",
+      supported: "✨ Accommodations in action: Noise-dampening acoustic curtains, standing near the calm edge, and visual assembly agenda cards allow full, relaxed participation.",
+    },
+    {
+      time: "10:15 AM",
+      title: "Science Laboratory & Group Project",
+      image: "/decor/itw/science-lab-story.webp",
+      alt: "Diverse children gathered around a wooden table examining microscope and plants",
+      setting: "Tables with glassware, microscopes, and tap water; multiple group conversations happening at once.",
+      sensory: "The smell of methylated spirits and bleach mixes with the clatter of test tubes on slate benches.",
+      attention: "I have 4 ideas for our model simultaneously! Keeping them in sequential order while partners debate is an executive balancing act.",
+      communication: "I know the answer to the hypothesis! But speaking over louder classmates requires more motor planning time than the discussion pause allows.",
+      supported: "✨ Accommodations in action: AAC concept cards, small group roles with clear task breakdowns, and a visual step-by-step experiment board unlock my full scientific insight.",
+    },
+    {
+      time: "12:30 PM",
+      title: "Canteen Lunch & Neem Tree Bench",
+      image: "/decor/itw/hero-world.webp",
+      alt: "Quiet shaded garden bench under lush green trees with gentle sunlight",
+      setting: "Bustling school cafeteria with stainless steel trays, cutlery clatter, and fast-moving peer banter.",
+      sensory: "The scraping of metal chairs on floor tiles and overlapping smells can feel like a sudden wave. A quiet shaded bench under the neem tree restores my equilibrium.",
+      attention: "Social games have unwritten, shifting rules. When someone changes the game halfway, my mind takes time to re-route.",
+      communication: "Relaxed, low-pressure conversations with close friends where no one rushes my sentences make this my favorite time of day.",
+      supported: "✨ Accommodations in action: A quiet sensory garden corner, designated lunch buddy system, and unhurried seating options make lunch a time of genuine restoration.",
+    },
+    {
+      time: "2:15 PM",
+      title: "Reading & Creative Art Studio",
+      image: "/decor/itw/dyslexia-environment.webp",
+      alt: "Warm quiet library with open books and art easels bathed in afternoon light",
+      setting: "Afternoon classroom; students transcribing notes from the blackboard into notebooks.",
+      sensory: "Afternoon heat and fatigue build up; pencil grip feels heavier as hand muscles tire.",
+      attention: "After 5 hours of continuous filtering, my brain's battery is low. Short movement breaks and sensory fidgets restore my focus immediately.",
+      communication: "When the teacher asks me to explain what I wrote, speaking it aloud is 10 times easier than the messy pencil marks on my page.",
+      supported: "✨ Accommodations in action: Speech-to-text dictation, reading rulers with tinted focus overlays, and digital notebooks ensure my academic comprehension is fully recognized.",
+    },
+  ];
+
+  const current = PERIODS[activePeriod];
+
+  return (
+    <section className="itw-view itw-module itw-flow" data-accent="adhd">
+      <FlowCrumbs name="A Day Through My Eyes" onBack={onBack} />
+
+      <div className="itw-story-exhibit">
+        {/* Story Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
+          <div>
+            <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-adhd)", letterSpacing: "0.08em" }}>
+              Interactive Walkthrough • Period {activePeriod + 1} of {PERIODS.length}
+            </span>
+            <h2 style={{ fontSize: "clamp(1.6rem, 2.8vw, 2.2rem)", fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
+              {current.time}: {current.title}
+            </h2>
+            <div style={{ fontSize: 14, color: "var(--itw-muted)" }}>
+              Step through a school day and switch lenses to feel how the environment transforms perception.
+            </div>
+          </div>
+          <button type="button" className="itw-pill-btn" onClick={onBack}>← Back to Experiences</button>
+        </div>
+
+        {/* Period Step Selector */}
+        <div style={{ display: "flex", gap: 8, overflowX: "auto", marginBottom: 16, paddingBottom: 4 }}>
+          {PERIODS.map((p, idx) => (
+            <button
+              key={idx}
+              type="button"
+              className={`itw-passage-chip${idx === activePeriod ? " itw-active" : ""}`}
+              onClick={() => setActivePeriod(idx)}
+              style={{ whiteSpace: "nowrap" }}
+            >
+              {p.time}: {p.title.split("&")[0]}
+            </button>
+          ))}
+        </div>
+
+        {/* Cinematic Illustration Panel for Current Period */}
+        <div className="itw-story-banner-frame" style={{ position: "relative", borderRadius: 22, overflow: "hidden", minHeight: 380, maxHeight: 440, background: "var(--itw-panel-2)", border: "1.5px solid var(--itw-border)", boxShadow: "0 18px 40px -16px rgba(0,0,0,0.18)" }}>
+          <img
+            src={current.image}
+            alt={current.alt}
+            style={{ width: "100%", height: "100%", maxHeight: 440, objectFit: "cover", objectPosition: "center center", display: "block" }}
+            loading="eager"
+          />
+          <div style={{ position: "absolute", bottom: 14, left: 14, zIndex: 2 }}>
+            <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", padding: "5px 12px", borderRadius: 999, background: "rgba(18,24,18,0.85)", color: "#fff", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.2)" }}>
+              📍 {current.time} Environment
+            </span>
+          </div>
+        </div>
+
+        {/* Setting Description */}
+        <div style={{ background: "var(--itw-panel-2)", padding: 18, borderRadius: 16, border: "1px solid var(--itw-border)", margin: "18px 0" }}>
+          <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", marginBottom: 4 }}>
+            Classroom Setting
+          </div>
+          <div style={{ fontSize: 15, color: "var(--itw-text)", lineHeight: 1.6 }}>
+            {current.setting}
+          </div>
+        </div>
+
+        {/* Interactive Perspective Lens Switcher */}
+        <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-text)", marginBottom: 8 }}>
+          Select Perspective Lens:
+        </div>
+        <div className="itw-lens-switcher" role="radiogroup" aria-label="Perspective lenses">
+          <button
+            type="button"
+            className={`itw-lens-btn${activeLens === "sensory" ? " itw-active" : ""}`}
+            onClick={() => setActiveLens("sensory")}
+            style={{ background: activeLens === "sensory" ? "var(--itw-autism)" : undefined }}
+          >
+            🌿 Sensory Lens
+          </button>
+          <button
+            type="button"
+            className={`itw-lens-btn${activeLens === "attention" ? " itw-active" : ""}`}
+            onClick={() => setActiveLens("attention")}
+            style={{ background: activeLens === "attention" ? "var(--itw-adhd)" : undefined }}
+          >
+            🧠 Attention Lens
+          </button>
+          <button
+            type="button"
+            className={`itw-lens-btn${activeLens === "communication" ? " itw-active" : ""}`}
+            onClick={() => setActiveLens("communication")}
+            style={{ background: activeLens === "communication" ? "var(--itw-speech)" : undefined }}
+          >
+            💬 Communication Lens
+          </button>
+          <button
+            type="button"
+            className={`itw-lens-btn${activeLens === "supported" ? " itw-active" : ""}`}
+            onClick={() => setActiveLens("supported")}
+            style={{ background: activeLens === "supported" ? "#2e7d32" : undefined }}
+          >
+            ✨ Supported Inclusion Lens
+          </button>
+        </div>
+
+        {/* Lens Content Box */}
+        <div style={{
+          background: activeLens === "supported" ? "rgba(46, 125, 50, 0.08)" : "var(--itw-panel)",
+          border: activeLens === "supported" ? "2px solid #2e7d32" : "2px solid var(--itw-border)",
+          borderRadius: 18,
+          padding: 22,
+          margin: "18px 0",
+          animation: "itw-app-in 0.25s ease",
+        }}>
+          <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: activeLens === "supported" ? "#2e7d32" : "var(--itw-muted)", marginBottom: 8 }}>
+            {activeLens === "supported" ? "✨ The Power of Environmental Support" : "Inner Experience Under This Lens"}
+          </div>
+          <p style={{ fontSize: 16.5, lineHeight: 1.7, color: "var(--itw-text)", margin: 0, fontFamily: "var(--font-display)", fontWeight: 600 }}>
+            {current[activeLens]}
+          </p>
+        </div>
+
+        {/* Period Navigation Controls */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, paddingTop: 18, borderTop: "1px solid var(--itw-border)" }}>
+          <button
+            type="button"
+            className="itw-cta itw-cta-line"
+            disabled={activePeriod === 0}
+            onClick={() => setActivePeriod((p) => Math.max(0, p - 1))}
+            style={{ opacity: activePeriod === 0 ? 0.4 : 1 }}
+          >
+            ← Previous Period
+          </button>
+
+          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)" }}>
+            Period {activePeriod + 1} of {PERIODS.length}
+          </span>
+
+          {activePeriod < PERIODS.length - 1 ? (
+            <button
+              type="button"
+              className="itw-cta itw-cta-dark"
+              onClick={() => setActivePeriod((p) => Math.min(PERIODS.length - 1, p + 1))}
+            >
+              Next Period →
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="itw-cta itw-cta-dark"
+              onClick={() => onNavigate("autism")}
+            >
+              Try Interactive Simulations →
+            </button>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function InTheirWorld() {
   const [view, setView] = useState(() => {
     if (typeof window !== "undefined") {
@@ -7933,6 +8310,16 @@ export default function InTheirWorld() {
           {view === "executive" && (
             <ModuleErrorBoundary onBack={goBack}>
               <ExecutiveFunctioningModule key="executive" onBack={goBack} onNavigate={navigate} />
+            </ModuleErrorBoundary>
+          )}
+          {view === "downsyndrome" && (
+            <ModuleErrorBoundary onBack={goBack}>
+              <DownSyndromeStory key="downsyndrome" onBack={goBack} onNavigate={navigate} />
+            </ModuleErrorBoundary>
+          )}
+          {view === "dayineyes" && (
+            <ModuleErrorBoundary onBack={goBack}>
+              <DayThroughMyEyesStory key="dayineyes" onBack={goBack} onNavigate={navigate} />
             </ModuleErrorBoundary>
           )}
         </div>

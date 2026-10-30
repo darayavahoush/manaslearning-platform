@@ -29,24 +29,28 @@
   ];
 
 
-  // Cute app icons (viewBox 0 0 110 100)
-  var ICONS = {
-    vaaksiddhi: "<path d=\"M28 70c-10 0-17-7-17-15 0-8 6-14 14-15 2-10 11-17 21-17 9 0 17 5 20 13 9 1 16 8 16 17 0 9-8 17-18 17H28z\" fill=\"#cdf7c4\" stroke=\"#2f9e6a\" stroke-width=\"3.5\" stroke-linejoin=\"round\"/><path d=\"M35 50q4-5 8 0M59 50q4-5 8 0\" fill=\"none\" stroke=\"#1f5e41\" stroke-width=\"3\" stroke-linecap=\"round\"/><ellipse cx=\"33\" cy=\"59\" rx=\"5\" ry=\"3\" fill=\"#ffb3a7\"/><ellipse cx=\"69\" cy=\"59\" rx=\"5\" ry=\"3\" fill=\"#ffb3a7\"/><ellipse cx=\"51\" cy=\"60\" rx=\"3.8\" ry=\"4.6\" fill=\"#2f9e6a\"/><g fill=\"none\" stroke=\"#2f9e6a\" stroke-width=\"3.5\" stroke-linecap=\"round\"><path d=\"M91 42q6 8 0 16\"/><path d=\"M98 36q10 14 0 28\"/></g><path d=\"M20 18l2.2 5 5 2.2-5 2.2-2.2 5-2.2-5-5-2.2 5-2.2z\" fill=\"#f0a321\"/><circle cx=\"62\" cy=\"14\" r=\"3\" fill=\"#fff\" stroke=\"#2f9e6a\" stroke-width=\"2\"/><circle cx=\"72\" cy=\"8\" r=\"2\" fill=\"#fff\" stroke=\"#2f9e6a\" stroke-width=\"2\"/>",
-    vaakify: "<rect x=\"30\" y=\"10\" width=\"40\" height=\"52\" rx=\"20\" fill=\"#ffd9a8\" stroke=\"#e0762a\" stroke-width=\"3.5\"/><circle cx=\"42\" cy=\"34\" r=\"3.2\" fill=\"#6b3d12\"/><circle cx=\"58\" cy=\"34\" r=\"3.2\" fill=\"#6b3d12\"/><path d=\"M44 43q6 7 12 0\" fill=\"none\" stroke=\"#6b3d12\" stroke-width=\"3\" stroke-linecap=\"round\"/><ellipse cx=\"36\" cy=\"41\" rx=\"4.5\" ry=\"2.8\" fill=\"#ffb3a7\"/><ellipse cx=\"64\" cy=\"41\" rx=\"4.5\" ry=\"2.8\" fill=\"#ffb3a7\"/><path d=\"M22 50v4a28 28 0 0 0 56 0v-4\" fill=\"none\" stroke=\"#e0762a\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><path d=\"M50 82v8\" stroke=\"#e0762a\" stroke-width=\"3.5\" stroke-linecap=\"round\"/><rect x=\"36\" y=\"89\" width=\"28\" height=\"6\" rx=\"3\" fill=\"#e0762a\"/><path d=\"M80 18h20a6 6 0 0 1 6 6v14a6 6 0 0 1-6 6H92l-7 7v-7h-5a6 6 0 0 1-6-6V24a6 6 0 0 1 6-6z\" fill=\"#fff\" stroke=\"#e0762a\" stroke-width=\"3\"/><path d=\"M84 31l5 5 10-10\" fill=\"none\" stroke=\"#2f9e6a\" stroke-width=\"3.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"
+  // Official app favicon SVGs (from favicon skill)
+  var FAVICONS = {
+    vaaksiddhi: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -4 122 108"><rect x="-6" y="-4" width="122" height="108" rx="26" fill="#eafbe6"/><path d="M28 70c-10 0-17-7-17-15 0-8 6-14 14-15 2-10 11-17 21-17 9 0 17 5 20 13 9 1 16 8 16 17 0 9-8 17-18 17H28z" fill="#cdf7c4" stroke="#2f9e6a" stroke-width="3.5" stroke-linejoin="round"/><path d="M35 50q4-5 8 0M59 50q4-5 8 0" fill="none" stroke="#1f5e41" stroke-width="3" stroke-linecap="round"/><ellipse cx="33" cy="59" rx="5" ry="3" fill="#ffb3a7"/><ellipse cx="69" cy="59" rx="5" ry="3" fill="#ffb3a7"/><ellipse cx="51" cy="60" rx="3.8" ry="4.6" fill="#2f9e6a"/><g fill="none" stroke="#2f9e6a" stroke-width="3.5" stroke-linecap="round"><path d="M91 42q6 8 0 16"/><path d="M98 36q10 14 0 28"/></g><path d="M20 18l2.2 5 5 2.2-5 2.2-2.2 5-2.2-5-5-2.2 5-2.2z" fill="#f0a321"/><circle cx="62" cy="14" r="3" fill="#fff" stroke="#2f9e6a" stroke-width="2"/><circle cx="72" cy="8" r="2" fill="#fff" stroke="#2f9e6a" stroke-width="2"/></svg>',
+    vaakify: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -4 122 108"><rect x="-6" y="-4" width="122" height="108" rx="26" fill="#fff1d6"/><rect x="30" y="10" width="40" height="52" rx="20" fill="#ffd9a8" stroke="#e0762a" stroke-width="3.5"/><circle cx="42" cy="34" r="3.2" fill="#6b3d12"/><circle cx="58" cy="34" r="3.2" fill="#6b3d12"/><path d="M44 43q6 7 12 0" fill="none" stroke="#6b3d12" stroke-width="3" stroke-linecap="round"/><ellipse cx="36" cy="41" rx="4.5" ry="2.8" fill="#ffb3a7"/><ellipse cx="64" cy="41" rx="4.5" ry="2.8" fill="#ffb3a7"/><path d="M22 50v4a28 28 0 0 0 56 0v-4" fill="none" stroke="#e0762a" stroke-width="3.5" stroke-linecap="round"/><path d="M50 82v8" stroke="#e0762a" stroke-width="3.5" stroke-linecap="round"/><rect x="36" y="89" width="28" height="6" rx="3" fill="#e0762a"/><path d="M80 18h20a6 6 0 0 1 6 6v14a6 6 0 0 1-6 6H92l-7 7v-7h-5a6 6 0 0 1-6-6V24a6 6 0 0 1 6-6z" fill="#fff" stroke="#e0762a" stroke-width="3"/><path d="M84 31l5 5 10-10" fill="none" stroke="#2f9e6a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
   };
 
-  // Screen art: the cute icon on a soft tinted screen (laptop = wide, phone = tall)
+  // Screen art: laptop = real live screenshot of homepage, phone = centered app favicon on clean wallpaper
   function laptopScreen(a) {
-    return '<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice"><rect width="160" height="100" fill="' + a.tint + '"/>' +
-      '<circle cx="18" cy="84" r="26" fill="#fff" opacity=".35"/><circle cx="146" cy="14" r="22" fill="#fff" opacity=".35"/>' +
-      '<svg x="46" y="6" width="68" height="62" viewBox="0 0 110 100">' + ICONS[a.id] + '</svg>' +
-      '<text x="80" y="86" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="800" fill="' + a.accent + '">' + a.name + '</text></svg>';
+    var src = "/decor/" + a.id + "-home-screen.webp";
+    return '<img src="' + src + '" alt="' + esc(a.name) + ' live homepage" style="width:100%;height:100%;object-fit:cover;object-position:top left;display:block" loading="lazy" decoding="async" />';
   }
   function phoneScreen(a) {
-    return '<svg viewBox="0 0 90 180" preserveAspectRatio="xMidYMid slice"><rect width="90" height="180" fill="' + a.tint + '"/>' +
-      '<circle cx="12" cy="150" r="30" fill="#fff" opacity=".35"/><circle cx="82" cy="24" r="22" fill="#fff" opacity=".35"/>' +
-      '<svg x="2" y="40" width="86" height="78" viewBox="0 0 110 100">' + ICONS[a.id] + '</svg>' +
-      '<text x="45" y="140" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="800" fill="' + a.accent + '">' + a.name + '</text></svg>';
+    var fav = FAVICONS[a.id];
+    return '<svg viewBox="0 0 90 180" preserveAspectRatio="xMidYMid slice" style="display:block;width:100%;height:100%">' +
+      '<rect width="90" height="180" fill="' + a.tint + '"/>' +
+      '<circle cx="16" cy="155" r="32" fill="#fff" opacity=".4"/>' +
+      '<circle cx="78" cy="28" r="24" fill="#fff" opacity=".4"/>' +
+      '<rect x="27" y="7" width="36" height="3.5" rx="1.75" fill="rgba(0,0,0,0.18)"/>' +
+      '<g transform="translate(14, 46) scale(0.51)">' + fav + '</g>' +
+      '<text x="45" y="128" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="11" font-weight="800" fill="' + a.accent + '">' + esc(a.name) + '</text>' +
+      '<text x="45" y="142" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8" font-weight="600" fill="rgba(34,34,34,0.55)">Mobile App</text>' +
+      '</svg>';
   }
 
   var CSS =
@@ -184,13 +188,31 @@
 
   function unifyMiloLauncher() {
     var btn = document.querySelector('button[aria-label*="Milo"], button[aria-label*="chat with Milo"], button[aria-label*="Milo the Owl"]');
-    if (!btn || btn.dataset.itwUnified) return;
+    if (!btn) return;
     btn.dataset.itwUnified = "1";
-    btn.style.setProperty("background", "#05b076", "important");
+    btn.style.setProperty("position", "fixed", "important");
+    btn.style.setProperty("bottom", "24px", "important");
+    btn.style.setProperty("right", "24px", "important");
+    btn.style.setProperty("z-index", "9999", "important");
+    btn.style.setProperty("width", "64px", "important");
+    btn.style.setProperty("height", "64px", "important");
+    btn.style.setProperty("border-radius", "9999px", "important");
+    btn.style.setProperty("background", "#fffdf8", "important");
+    btn.style.setProperty("border", "2px solid #05b076", "important");
+    btn.style.setProperty("box-shadow", "0 12px 28px -6px rgba(5,176,118,0.35)", "important");
     btn.style.setProperty("display", "flex", "important");
     btn.style.setProperty("align-items", "center", "important");
     btn.style.setProperty("justify-content", "center", "important");
-    btn.innerHTML = '<div style="width:44px;height:44px;border-radius:9999px;overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 4px rgba(0,0,0,0.15)"><img src="/decor/milo-owl.webp" alt="Milo the Owl" style="width:100%;height:100%;object-fit:cover;display:block" /></div>';
+    btn.style.setProperty("overflow", "visible", "important");
+    btn.style.setProperty("margin", "0", "important");
+    btn.style.setProperty("padding", "0", "important");
+    if (!btn.querySelector('.itw-milo-avatar')) {
+      btn.innerHTML =
+        '<div class="itw-milo-avatar" style="width:52px;height:52px;border-radius:9999px;overflow:hidden;display:flex;align-items:center;justify-content:center;pointer-events:none">' +
+          '<img src="/decor/milo-owl.webp" alt="Milo the Owl" style="width:100%;height:100%;object-fit:cover;border-radius:9999px;display:block" />' +
+        '</div>' +
+        '<span style="position:absolute;top:-2px;right:-2px;width:15px;height:15px;border-radius:9999px;background:#f47522;border:2.5px solid #fff;box-shadow:0 0 6px rgba(244,117,34,0.6);pointer-events:none" aria-hidden="true"></span>';
+    }
   }
 
   function ensure() {

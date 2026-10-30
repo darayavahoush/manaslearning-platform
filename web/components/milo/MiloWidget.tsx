@@ -15,15 +15,19 @@ export default function MiloWidget() {
         <button
           onClick={() => setOpen(true)}
           aria-label="Chat with Milo, learning and speech guide"
-          className="group fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-[#05b076] shadow-lg ring-4 ring-[#05b076]/25 transition-all duration-300 hover:scale-105 hover:ring-[#05b076]/40 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300 pointer-events-auto"
+          className="group fixed bottom-6 right-6 z-50 flex h-16 w-16 items-center justify-center rounded-full bg-[#fffdf8] border-2 border-[#05b076] shadow-xl ring-4 ring-[#05b076]/25 transition-all duration-300 hover:scale-105 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400 pointer-events-auto"
         >
-          <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full shadow-inner">
+          <div className="relative flex h-13 w-13 items-center justify-center overflow-hidden rounded-full p-0.5">
             <img
               src="/decor/milo-owl.webp"
               alt="Milo the Owl"
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover rounded-full"
             />
           </div>
+          <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center pointer-events-none" aria-hidden="true">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#f47522] opacity-75" />
+            <span className="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-white bg-[#f47522]" />
+          </span>
         </button>
       )}
       <section

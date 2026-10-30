@@ -1791,6 +1791,13 @@ function AutismModule({ onBack, onNavigate }) {
 
       {step === "scenario" && (
         <div className="itw-flow-page itw-flow-narrow" key="scenario">
+          <div className="itw-scene-plate">
+            <img src="/decor/itw/autism-environment.webp" alt="School central atrium" className="itw-scene-plate-img" />
+            <div className="itw-scene-plate-overlay">
+              <span className="itw-scene-tag">📍 Setting • School Central Atrium & Cafeteria</span>
+              <p className="itw-scene-caption">Hard tile reflections, overlapping hallway echoes, and bright overhead skylights where sensory inputs arrive all at once.</p>
+            </div>
+          </div>
           <h2 className="itw-flow-title itw-center">Choose an Everyday Setting</h2>
           <p className="itw-flow-lead itw-center">
             Pick a familiar environment to explore how competing sights and sounds interact. You can also compare direct central focus versus peripheral viewing.
@@ -2750,6 +2757,13 @@ function AdhdModule({ onBack, onNavigate }) {
 
       {step === "instructions" && (
         <div className="itw-flow-page itw-flow-narrow" key="instructions">
+          <div className="itw-scene-plate">
+            <img src="/decor/itw/adhd-environment.webp" alt="Bangalore study desk" className="itw-scene-plate-img" />
+            <div className="itw-scene-plate-overlay">
+              <span className="itw-scene-tag">📍 Setting • Bangalore School Study Desk</span>
+              <p className="itw-scene-caption">Friday afternoon homework session: multiple research articles, notebook notes, and constant background notifications.</p>
+            </div>
+          </div>
           <h2 className="itw-flow-title itw-center">Before you begin Run 1</h2>
           <p className="itw-flow-lead itw-center">
             You will act as a student preparing a short brief on <b>Urban Wildlife Conservation</b> in Bengaluru.
@@ -3839,6 +3853,13 @@ function DyslexiaModule({ onBack, onNavigate }) {
 
       {step === "instructions" && (
         <div className="itw-flow-page itw-flow-narrow" key="instructions">
+          <div className="itw-scene-plate">
+            <img src="/decor/itw/dyslexia-environment.webp" alt="School library study corner" className="itw-scene-plate-img" />
+            <div className="itw-scene-plate-overlay">
+              <span className="itw-scene-tag">📍 Setting • Afternoon in the School Library</span>
+              <p className="itw-scene-caption">A quiet library corner bathed in natural light. The joy of curiosity, accompanied by the cognitive work of phonological decoding.</p>
+            </div>
+          </div>
           <h2 className="itw-flow-title itw-center">Before you begin: An honest, evidence-based framing</h2>
           <p className="itw-flow-lead itw-center">
             In the next screen, you will read a short passage at your own pace, followed by three comprehension questions.
@@ -4960,6 +4981,13 @@ function SpeechModule({ onBack, onNavigate }) {
 
       {step === "instructions" && (
         <div className="itw-flow-page itw-flow-narrow" key="instructions">
+          <div className="itw-scene-plate">
+            <img src="/decor/itw/communication-environment.webp" alt="Courtyard communication bench" className="itw-scene-plate-img" />
+            <div className="itw-scene-plate-overlay">
+              <span className="itw-scene-tag">📍 Setting • Courtyard Bench & Classroom</span>
+              <p className="itw-scene-caption">The thoughts are rich and complete. The difference lies between an unhurried, listening conversational partner and a hurried clock.</p>
+            </div>
+          </div>
           <h2 className="itw-flow-title itw-center">Before you begin: Conversational Pacing</h2>
           <p className="itw-flow-lead itw-center">
             In this activity, you will answer two everyday questions in two different conversational environments.
@@ -5610,6 +5638,13 @@ function DyscalculiaModule({ onBack, onNavigate }) {
 
       {step === "instructions" && (
         <div className="itw-flow-page itw-flow-narrow" key="instructions">
+          <div className="itw-scene-plate">
+            <img src="/decor/itw/dyscalculia-environment.webp" alt="Math manipulatives table" className="itw-scene-plate-img" />
+            <div className="itw-scene-plate-overlay">
+              <span className="itw-scene-tag">📍 Setting • Kitchen & Math Resource Table</span>
+              <p className="itw-scene-caption">Measuring ingredients, counting ratios, and scaling recipes: when numbers lack spatial anchors, physical manipulatives bring clarity.</p>
+            </div>
+          </div>
           <h2 className="itw-flow-title itw-center">Before you begin Run 1</h2>
           <p className="itw-flow-lead itw-center">
             You are measuring ingredients for traditional cardamom cookies.
@@ -6264,6 +6299,13 @@ function DysgraphiaModule({ onBack, onNavigate }) {
 
       {step === "instructions" && (
         <div className="itw-flow-page itw-flow-narrow" key="instructions">
+          <div className="itw-scene-plate">
+            <img src="/decor/itw/dysgraphia-environment.webp" alt="Biology class notebook desk" className="itw-scene-plate-img" />
+            <div className="itw-scene-plate-overlay">
+              <span className="itw-scene-tag">📍 Setting • Biology Class Notebook Table</span>
+              <p className="itw-scene-caption">Formulating the hypothesis is effortless; translating the thought into hand muscle motor coordination is where fatigue gathers.</p>
+            </div>
+          </div>
           <h2 className="itw-flow-title itw-center">Before you begin Run 1</h2>
           <p className="itw-flow-lead itw-center">
             You know the biology hypothesis perfectly: <b>&ldquo;Plants absorb sunlight to produce glucose, releasing oxygen.&rdquo;</b>
@@ -6835,6 +6877,13 @@ function AuditoryProcessingModule({ onBack, onNavigate }) {
 
       {step === "instructions" && (
         <div className="itw-flow-page itw-flow-narrow" key="instructions">
+          <div className="itw-scene-plate">
+            <img src="/decor/itw/auditory-processing-environment.webp" alt="Resonant lecture hall" className="itw-scene-plate-img" />
+            <div className="itw-scene-plate-overlay">
+              <span className="itw-scene-tag">📍 Setting • Resonant Classroom & Hallway</span>
+              <p className="itw-scene-caption">Listening across background fan hum, shoe scuffs, and hallway echoes to isolate spoken instructions.</p>
+            </div>
+          </div>
           <h2 className="itw-flow-title itw-center">Before you begin Run 1</h2>
           <p className="itw-flow-lead itw-center">
             You will listen for 3 homework instructions given by the teacher at the end of class.
@@ -7510,6 +7559,13 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
 
       {step === "instructions" && (
         <div className="itw-flow-page itw-flow-narrow" key="instructions">
+          <div className="itw-scene-plate">
+            <img src="/decor/itw/executive-functioning-environment.webp" alt="Morning organization desk" className="itw-scene-plate-img" />
+            <div className="itw-scene-plate-overlay">
+              <span className="itw-scene-tag">📍 Setting • Morning Organization & Planning Desk</span>
+              <p className="itw-scene-caption">Sorting priorities, managing sequential steps, and holding multiple deadlines in active working memory.</p>
+            </div>
+          </div>
           <h2 className="itw-flow-title itw-center">Before you begin Run 1</h2>
           <p className="itw-flow-lead itw-center">
             You will test your prioritization during a busy school morning routine.
@@ -7921,76 +7977,83 @@ function DownSyndromeStory({ onBack, onNavigate }) {
           ))}
         </div>
 
-        {/* Cinematic Illustration Panel */}
-        <div className="itw-story-banner-frame" style={{ position: "relative", borderRadius: 22, overflow: "hidden", minHeight: 380, maxHeight: 440, background: "var(--itw-panel-2)", border: "1.5px solid var(--itw-border)", boxShadow: "0 18px 40px -16px rgba(0,0,0,0.18)" }}>
-          <img
-            src={page.image}
-            alt={page.alt}
-            style={{ width: "100%", height: "100%", maxHeight: 440, objectFit: "cover", objectPosition: "center center", display: "block" }}
-            loading="eager"
-          />
-          <div style={{ position: "absolute", bottom: 14, right: 14, zIndex: 2 }}>
-            <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", padding: "5px 12px", borderRadius: 999, background: "rgba(18,24,18,0.85)", color: "#fff", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.2)" }}>
-              {page.badge}
-            </span>
-          </div>
-        </div>
-
-        {/* Illustrated Story Narrative Card */}
-        <div className="itw-story-body" style={{ marginTop: 20 }}>
-          <div style={{ background: "rgba(44, 140, 114, 0.08)", padding: 22, borderRadius: 18, border: "1.5px solid var(--itw-autism)", marginBottom: 18 }}>
-            <p style={{ fontSize: "1.2rem", lineHeight: 1.6, color: "var(--itw-text)", margin: 0, fontFamily: "var(--font-display)", fontWeight: 700 }}>
-              {page.quote}
-            </p>
-          </div>
-
-          <p style={{ fontSize: 16, lineHeight: 1.7, color: "var(--itw-text)", marginBottom: 16 }}>
-            {page.narrative}
-          </p>
-
-          <div style={{ background: "var(--itw-panel-2)", padding: 16, borderRadius: 14, border: "1px solid var(--itw-border)", marginBottom: 24 }}>
-            <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-autism)", display: "block", marginBottom: 4 }}>
-              💡 Pedagogical Insight
-            </span>
-            <div style={{ fontSize: 14.5, color: "var(--itw-muted)", lineHeight: 1.5 }}>
-              {page.insight}
+        {/* Two-Page Open Storybook Spread */}
+        <div className="itw-storybook-spread">
+          {/* Left Page: Illustration Plate */}
+          <div className="itw-storybook-art-page">
+            <div className="itw-storybook-art-frame">
+              <img
+                src={page.image}
+                alt={page.alt}
+                className="itw-storybook-art-img"
+                loading="eager"
+              />
+              <span className="itw-storybook-art-badge">{page.badge}</span>
+            </div>
+            <div className="itw-storybook-caption-plaque">
+              <span>📍</span>
+              <span>{page.subtitle}</span>
             </div>
           </div>
 
-          {/* Picture Book Page Controls */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, paddingTop: 16, borderTop: "1px solid var(--itw-border)" }}>
+          {/* Right Page: Story Page */}
+          <div className="itw-storybook-text-page">
+            <div className="itw-storybook-chapter-ribbon">
+              <span>Moment {currentPage + 1} of {PAGES.length}</span>
+              <span className="itw-storybook-time-tag">Aarav's Day</span>
+            </div>
+            <h3 className="itw-storybook-page-title">{page.title}</h3>
+
+            <div className="itw-storybook-quote-card">
+              <p>{page.quote}</p>
+            </div>
+
+            <div className="itw-storybook-prose">
+              <p>{page.narrative}</p>
+            </div>
+
+            <div className="itw-storybook-insight-box">
+              <div className="itw-insight-title">
+                <span>💡</span> Pedagogical Insight
+              </div>
+              <p>{page.insight}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Picture Book Page Controls */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, padding: "16px 4px 0", borderTop: "1px solid var(--itw-border)" }}>
+          <button
+            type="button"
+            className="itw-cta itw-cta-line"
+            disabled={currentPage === 0}
+            onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+            style={{ opacity: currentPage === 0 ? 0.4 : 1 }}
+          >
+            ← Previous Moment
+          </button>
+
+          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)" }}>
+            Moment {currentPage + 1} of {PAGES.length}
+          </span>
+
+          {currentPage < PAGES.length - 1 ? (
             <button
               type="button"
-              className="itw-cta itw-cta-line"
-              disabled={currentPage === 0}
-              onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-              style={{ opacity: currentPage === 0 ? 0.4 : 1 }}
+              className="itw-cta itw-cta-dark"
+              onClick={() => setCurrentPage((p) => Math.min(PAGES.length - 1, p + 1))}
             >
-              ← Previous Moment
+              Next Moment →
             </button>
-
-            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)" }}>
-              Moment {currentPage + 1} of {PAGES.length}
-            </span>
-
-            {currentPage < PAGES.length - 1 ? (
-              <button
-                type="button"
-                className="itw-cta itw-cta-dark"
-                onClick={() => setCurrentPage((p) => Math.min(PAGES.length - 1, p + 1))}
-              >
-                Next Moment →
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="itw-cta itw-cta-dark"
-                onClick={() => onNavigate("autism")}
-              >
-                Explore Autism Experience →
-              </button>
-            )}
-          </div>
+          ) : (
+            <button
+              type="button"
+              className="itw-cta itw-cta-dark"
+              onClick={() => onNavigate("autism")}
+            >
+              Explore Autism Experience →
+            </button>
+          )}
         </div>
       </div>
     </section>
@@ -8086,85 +8149,92 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
           ))}
         </div>
 
-        {/* Cinematic Illustration Panel for Current Period */}
-        <div className="itw-story-banner-frame" style={{ position: "relative", borderRadius: 22, overflow: "hidden", minHeight: 380, maxHeight: 440, background: "var(--itw-panel-2)", border: "1.5px solid var(--itw-border)", boxShadow: "0 18px 40px -16px rgba(0,0,0,0.18)" }}>
-          <img
-            src={current.image}
-            alt={current.alt}
-            style={{ width: "100%", height: "100%", maxHeight: 440, objectFit: "cover", objectPosition: "center center", display: "block" }}
-            loading="eager"
-          />
-          <div style={{ position: "absolute", bottom: 14, left: 14, zIndex: 2 }}>
-            <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", padding: "5px 12px", borderRadius: 999, background: "rgba(18,24,18,0.85)", color: "#fff", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.2)" }}>
-              📍 {current.time} Environment
-            </span>
+        {/* Two-Page Open Storybook Spread */}
+        <div className="itw-storybook-spread">
+          {/* Left Page: Period Environment Illustration Plate */}
+          <div className="itw-storybook-art-page">
+            <div className="itw-storybook-art-frame">
+              <img
+                src={current.image}
+                alt={current.alt}
+                className="itw-storybook-art-img"
+                loading="eager"
+              />
+              <span className="itw-storybook-art-badge">📍 {current.time}</span>
+            </div>
+            <div className="itw-storybook-caption-plaque">
+              <span>🏫</span>
+              <span><strong>Setting:</strong> {current.setting}</span>
+            </div>
           </div>
-        </div>
 
-        {/* Setting Description */}
-        <div style={{ background: "var(--itw-panel-2)", padding: 18, borderRadius: 16, border: "1px solid var(--itw-border)", margin: "18px 0" }}>
-          <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", marginBottom: 4 }}>
-            Classroom Setting
-          </div>
-          <div style={{ fontSize: 15, color: "var(--itw-text)", lineHeight: 1.6 }}>
-            {current.setting}
-          </div>
-        </div>
+          {/* Right Page: Perspective Lens & Story Page */}
+          <div className="itw-storybook-text-page">
+            <div className="itw-storybook-chapter-ribbon">
+              <span>Period {activePeriod + 1} • {current.time}</span>
+              <span className="itw-storybook-time-tag">A Day Through My Eyes</span>
+            </div>
+            <h3 className="itw-storybook-page-title">{current.title}</h3>
 
-        {/* Interactive Perspective Lens Switcher */}
-        <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-text)", marginBottom: 8 }}>
-          Select Perspective Lens:
-        </div>
-        <div className="itw-lens-switcher" role="radiogroup" aria-label="Perspective lenses">
-          <button
-            type="button"
-            className={`itw-lens-btn${activeLens === "sensory" ? " itw-active" : ""}`}
-            onClick={() => setActiveLens("sensory")}
-            style={{ background: activeLens === "sensory" ? "var(--itw-autism)" : undefined }}
-          >
-            🌿 Sensory Lens
-          </button>
-          <button
-            type="button"
-            className={`itw-lens-btn${activeLens === "attention" ? " itw-active" : ""}`}
-            onClick={() => setActiveLens("attention")}
-            style={{ background: activeLens === "attention" ? "var(--itw-adhd)" : undefined }}
-          >
-            🧠 Attention Lens
-          </button>
-          <button
-            type="button"
-            className={`itw-lens-btn${activeLens === "communication" ? " itw-active" : ""}`}
-            onClick={() => setActiveLens("communication")}
-            style={{ background: activeLens === "communication" ? "var(--itw-speech)" : undefined }}
-          >
-            💬 Communication Lens
-          </button>
-          <button
-            type="button"
-            className={`itw-lens-btn${activeLens === "supported" ? " itw-active" : ""}`}
-            onClick={() => setActiveLens("supported")}
-            style={{ background: activeLens === "supported" ? "#2e7d32" : undefined }}
-          >
-            ✨ Supported Inclusion Lens
-          </button>
-        </div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-text)", marginTop: 4 }}>
+              Experience through different lenses:
+            </div>
+            <div className="itw-lens-switcher" role="radiogroup" aria-label="Perspective lenses">
+              <button
+                type="button"
+                className={`itw-lens-btn${activeLens === "sensory" ? " itw-active" : ""}`}
+                onClick={() => setActiveLens("sensory")}
+                style={{ background: activeLens === "sensory" ? "var(--itw-autism)" : undefined }}
+              >
+                🌿 Sensory
+              </button>
+              <button
+                type="button"
+                className={`itw-lens-btn${activeLens === "attention" ? " itw-active" : ""}`}
+                onClick={() => setActiveLens("attention")}
+                style={{ background: activeLens === "attention" ? "var(--itw-adhd)" : undefined }}
+              >
+                🧠 Attention
+              </button>
+              <button
+                type="button"
+                className={`itw-lens-btn${activeLens === "communication" ? " itw-active" : ""}`}
+                onClick={() => setActiveLens("communication")}
+                style={{ background: activeLens === "communication" ? "var(--itw-speech)" : undefined }}
+              >
+                💬 Speech
+              </button>
+              <button
+                type="button"
+                className={`itw-lens-btn${activeLens === "supported" ? " itw-active" : ""}`}
+                onClick={() => setActiveLens("supported")}
+                style={{ background: activeLens === "supported" ? "#2e7d32" : undefined }}
+              >
+                ✨ Supported
+              </button>
+            </div>
 
-        {/* Lens Content Box */}
-        <div style={{
-          background: activeLens === "supported" ? "rgba(46, 125, 50, 0.08)" : "var(--itw-panel)",
-          border: activeLens === "supported" ? "2px solid #2e7d32" : "2px solid var(--itw-border)",
-          borderRadius: 18,
-          padding: 22,
-          margin: "18px 0",
-          animation: "itw-app-in 0.25s ease",
-        }}>
-          <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: activeLens === "supported" ? "#2e7d32" : "var(--itw-muted)", marginBottom: 8 }}>
-            {activeLens === "supported" ? "✨ The Power of Environmental Support" : "Inner Experience Under This Lens"}
+            {/* Lens Content Box */}
+            <div className="itw-storybook-quote-card" style={{
+              background: activeLens === "supported" ? "rgba(46, 125, 50, 0.09)" : undefined,
+              borderLeftColor: activeLens === "supported" ? "#2e7d32" : undefined,
+            }}>
+              <p style={{ fontStyle: "normal", fontSize: "1.08rem" }}>
+                {current[activeLens]}
+              </p>
+            </div>
+
+            <div className="itw-storybook-insight-box">
+              <div className="itw-insight-title">
+                <span>💡</span> Observation
+              </div>
+              <p>
+                {activeLens === "supported"
+                  ? "When proactive physical and sensory scaffolding is designed into the space, fatigue drops and learning blooms."
+                  : "Every child experiences sensory and attentional demands differently. A classroom that feels normal to one can demand enormous energy from another."}
+              </p>
+            </div>
           </div>
-          <p style={{ fontSize: 16.5, lineHeight: 1.7, color: "var(--itw-text)", margin: 0, fontFamily: "var(--font-display)", fontWeight: 600 }}>
-            {current[activeLens]}
-          </p>
         </div>
 
         {/* Period Navigation Controls */}

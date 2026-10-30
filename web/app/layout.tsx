@@ -11,12 +11,51 @@ const poppins = Poppins({subsets: ['latin'], weight: ['400', '500', '600', '700'
 const patrick = Patrick_Hand({subsets: ['latin'], weight: '400', variable: '--font-patrick'})
 
 export const metadata: Metadata = {
-  title: {default: 'Manas Learning', template: '%s - Manas Learning'},
-  description: 'Learning, speech and sensory support for children, with free consultations, Milo our AI helper, and interactive experiences that show what a child feels.',
+  title: { default: 'Manas Learning — Child Development & Inclusive Learning Centre', template: '%s — Manas Learning' },
+  description:
+    'Pediatric learning, speech therapy, and sensory support for children in Chennai. Featuring free consultations, Milo our AI learning guide, and interactive simulations of neurodiverse learning experiences.',
+  keywords: [
+    'Manas Learning',
+    'special education Chennai',
+    'child development centre',
+    'speech therapy Chennai',
+    'occupational therapy autism',
+    'dyslexia remedial education',
+    'ADHD attention therapy',
+    'In Their World simulation',
+    'Milo AI learning guide',
+    'VaakSiddhi breathing games',
+    'Vaakify speech practice',
+  ],
+  authors: [{ name: 'Manas Learning' }],
+  metadataBase: new URL('https://www.manaslearning.com'),
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
     apple: '/favicon.ico',
+  },
+  openGraph: {
+    title: 'Manas Learning — Child Development & Inclusive Learning Centre',
+    description:
+      'Pediatric learning, speech, and sensory support for children with free consultations, Milo AI assistant, and empathetic neurodiversity simulations.',
+    url: 'https://www.manaslearning.com',
+    siteName: 'Manas Learning',
+    images: [
+      {
+        url: '/decor/itw/supportive-environment.webp',
+        width: 1376,
+        height: 768,
+        alt: 'Manas Learning supportive environment',
+      },
+    ],
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Manas Learning — Child Development & Inclusive Learning Centre',
+    description: 'Empathetic pediatric therapy, AI learning guidance, and interactive neurodiversity experiences.',
+    images: ['/decor/itw/supportive-environment.webp'],
   },
 }
 

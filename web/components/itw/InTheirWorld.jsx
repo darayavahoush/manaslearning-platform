@@ -639,9 +639,9 @@ const INTRO_VIGNETTES = {
   dyslexia: { src: "/decor/itw/dyslexia-sticker.webp", label: "Phonological Decoding & Fluency" },
   speech: { src: "/decor/itw/speech-sticker.webp", label: "Expressive Communication & AAC" },
   dyscalculia: { src: "/decor/itw/dyscalculia-sticker.webp", label: "Visual Number Sense & Magnitude" },
-  dysgraphia: { src: "/decor/itw/dysgraphia-environment.webp", label: "Graphomotor Pathway & Expression" },
-  auditory: { src: "/decor/itw/auditory-processing-environment.webp", label: "Classroom Acoustic Perception" },
-  executive: { src: "/decor/itw/executive-functioning-environment.webp", label: "Working Memory & Initiation" },
+  dysgraphia: { src: "/decor/itw/dysgraphia-sticker.webp", label: "Graphomotor Pathway & Expression" },
+  auditory: { src: "/decor/itw/auditory-sticker.webp", label: "Classroom Acoustic Perception" },
+  executive: { src: "/decor/itw/executive-sticker.webp", label: "Working Memory & Initiation" },
 };
 
 function IntroVignette({ moduleKey }) {
@@ -7946,114 +7946,143 @@ function DownSyndromeStory({ onBack, onNavigate }) {
       <FlowCrumbs name="Down Syndrome Story" onBack={onBack} />
 
       <div className="itw-story-exhibit">
-        {/* Picture Book Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
+        {/* Story Header (Clean, unhurried, no duplicate titles!) */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
           <div>
             <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-autism)", letterSpacing: "0.08em" }}>
-              Illustrated Storybook • Page {currentPage + 1} of {PAGES.length}
+              Illustrated Children&apos;s Storybook • Aarav&apos;s Day
             </span>
-            <h2 style={{ fontSize: "clamp(1.6rem, 2.8vw, 2.2rem)", fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
-              {page.title}
+            <h2 style={{ fontSize: "clamp(1.5rem, 2.6vw, 2.1rem)", fontWeight: 800, color: "var(--itw-text)", margin: "3px 0 0" }}>
+              A Story of Belonging & Growth
             </h2>
-            <div style={{ fontSize: 14, color: "var(--itw-muted)" }}>
-              {page.subtitle}
-            </div>
           </div>
           <button type="button" className="itw-pill-btn" onClick={onBack}>← Back to Experiences</button>
         </div>
 
-        {/* Page Step Chips */}
-        <div style={{ display: "flex", gap: 8, overflowX: "auto", marginBottom: 16, paddingBottom: 4 }}>
-          {PAGES.map((p, idx) => (
-            <button
-              key={idx}
-              type="button"
-              className={`itw-passage-chip${idx === currentPage ? " itw-active" : ""}`}
-              onClick={() => setCurrentPage(idx)}
-              style={{ whiteSpace: "nowrap" }}
-            >
-              {idx + 1}. {p.title.split(":")[0]}
-            </button>
-          ))}
-        </div>
-
-        {/* Two-Page Open Storybook Spread */}
-        <div className="itw-storybook-spread">
-          {/* Left Page: Illustration Plate */}
-          <div className="itw-storybook-art-page">
-            <div className="itw-storybook-art-frame">
-              <img
-                src={page.image}
-                alt={page.alt}
-                className="itw-storybook-art-img"
-                loading="eager"
-              />
-              <span className="itw-storybook-art-badge">{page.badge}</span>
-            </div>
-            <div className="itw-storybook-caption-plaque">
-              <span>📍</span>
-              <span>{page.subtitle}</span>
-            </div>
+        {/* Physical Storybook Casing */}
+        <div className="itw-storybook-casing">
+          {/* Top Bookmark Ribbon Tabs */}
+          <div className="itw-book-top-tabs" role="tablist" aria-label="Storybook moments">
+            {PAGES.map((p, idx) => (
+              <button
+                key={idx}
+                type="button"
+                role="tab"
+                aria-selected={idx === currentPage}
+                className={`itw-book-tab${idx === currentPage ? " itw-active" : ""}`}
+                onClick={() => setCurrentPage(idx)}
+              >
+                <span>🔖</span>
+                <span>Moment {idx + 1}: {p.title.split(":")[0]}</span>
+              </button>
+            ))}
           </div>
 
-          {/* Right Page: Story Page */}
-          <div className="itw-storybook-text-page">
-            <div className="itw-storybook-chapter-ribbon">
-              <span>Moment {currentPage + 1} of {PAGES.length}</span>
-              <span className="itw-storybook-time-tag">Aarav's Day</span>
-            </div>
-            <h3 className="itw-storybook-page-title">{page.title}</h3>
-
-            <div className="itw-storybook-quote-card">
-              <p>{page.quote}</p>
-            </div>
-
-            <div className="itw-storybook-prose">
-              <p>{page.narrative}</p>
-            </div>
-
-            <div className="itw-storybook-insight-box">
-              <div className="itw-insight-title">
-                <span>💡</span> Pedagogical Insight
+          {/* Open Two-Page Storybook Spread */}
+          <div className="itw-storybook-spread">
+            {/* Left Page: Illustration Plate */}
+            <div className="itw-storybook-art-page itw-page-flip-anim" key={`ds-left-${currentPage}`}>
+              <div className="itw-storybook-art-frame">
+                <img
+                  src={page.image}
+                  alt={page.alt}
+                  className="itw-storybook-art-img"
+                  loading="eager"
+                />
+                <span className="itw-storybook-art-badge">{page.badge}</span>
               </div>
-              <p>{page.insight}</p>
+              <div className="itw-storybook-caption-plaque">
+                <span>📍</span>
+                <span>{page.subtitle}</span>
+              </div>
+              <div className="itw-book-left-folio">
+                <span>Plate {currentPage + 1} of {PAGES.length}</span>
+                <span>Chennai Inclusive Primary</span>
+              </div>
+            </div>
+
+            {/* Book Spine Crease */}
+            <div className="itw-book-spine" aria-hidden="true" />
+
+            {/* Right Page: Story, Quote, Insight & In-Page Turn Navigation */}
+            <div className="itw-storybook-text-page itw-page-flip-anim" key={`ds-right-${currentPage}`}>
+              {/* Curled Paper Dog-Ear */}
+              {currentPage < PAGES.length - 1 && (
+                <div
+                  className="itw-book-corner-curl"
+                  title={`Turn to Page ${currentPage + 2}`}
+                  onClick={() => setCurrentPage((p) => Math.min(PAGES.length - 1, p + 1))}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Turn page"
+                />
+              )}
+
+              <div className="itw-storybook-chapter-ribbon">
+                <span>Moment {currentPage + 1} of {PAGES.length}</span>
+                <span className="itw-storybook-time-tag">Aarav&apos;s Day</span>
+              </div>
+
+              <h3 className="itw-storybook-page-title">{page.title}</h3>
+
+              <div className="itw-storybook-quote-card">
+                <p>{page.quote}</p>
+              </div>
+
+              <div className="itw-storybook-prose">
+                <p>{page.narrative}</p>
+              </div>
+
+              <div className="itw-storybook-insight-box">
+                <div className="itw-insight-title">
+                  <span>💡</span> Pedagogical Insight
+                </div>
+                <p>{page.insight}</p>
+              </div>
+
+              {/* IN-PAGE NAVIGATION (Close by & immediately visible!) */}
+              <div className="itw-book-inpage-nav">
+                <button
+                  type="button"
+                  className="itw-book-turn-btn itw-book-turn-prev"
+                  disabled={currentPage === 0}
+                  onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                >
+                  ← Turn Back
+                </button>
+
+                <div className="itw-book-page-dots" aria-label="Page selection">
+                  {PAGES.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      className={`itw-book-dot${idx === currentPage ? " itw-active" : ""}`}
+                      onClick={() => setCurrentPage(idx)}
+                      aria-label={`Go to page ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+
+                {currentPage < PAGES.length - 1 ? (
+                  <button
+                    type="button"
+                    className="itw-book-turn-btn itw-book-turn-next"
+                    onClick={() => setCurrentPage((p) => Math.min(PAGES.length - 1, p + 1))}
+                  >
+                    Turn Page →
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="itw-book-turn-btn itw-book-turn-next"
+                    onClick={() => onNavigate("autism")}
+                  >
+                    Explore Autism Experience →
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Picture Book Page Controls */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, padding: "16px 4px 0", borderTop: "1px solid var(--itw-border)" }}>
-          <button
-            type="button"
-            className="itw-cta itw-cta-line"
-            disabled={currentPage === 0}
-            onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-            style={{ opacity: currentPage === 0 ? 0.4 : 1 }}
-          >
-            ← Previous Moment
-          </button>
-
-          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)" }}>
-            Moment {currentPage + 1} of {PAGES.length}
-          </span>
-
-          {currentPage < PAGES.length - 1 ? (
-            <button
-              type="button"
-              className="itw-cta itw-cta-dark"
-              onClick={() => setCurrentPage((p) => Math.min(PAGES.length - 1, p + 1))}
-            >
-              Next Moment →
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="itw-cta itw-cta-dark"
-              onClick={() => onNavigate("autism")}
-            >
-              Explore Autism Experience →
-            </button>
-          )}
         </div>
       </div>
     </section>
@@ -8119,157 +8148,186 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
 
       <div className="itw-story-exhibit">
         {/* Story Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
           <div>
             <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-adhd)", letterSpacing: "0.08em" }}>
-              Interactive Walkthrough • Period {activePeriod + 1} of {PERIODS.length}
+              Multi-Sensory Storybook • 4 School Day Periods
             </span>
-            <h2 style={{ fontSize: "clamp(1.6rem, 2.8vw, 2.2rem)", fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
-              {current.time}: {current.title}
+            <h2 style={{ fontSize: "clamp(1.5rem, 2.6vw, 2.1rem)", fontWeight: 800, color: "var(--itw-text)", margin: "3px 0 0" }}>
+              A Day Through My Eyes
             </h2>
-            <div style={{ fontSize: 14, color: "var(--itw-muted)" }}>
-              Step through a school day and switch lenses to feel how the environment transforms perception.
-            </div>
           </div>
           <button type="button" className="itw-pill-btn" onClick={onBack}>← Back to Experiences</button>
         </div>
 
-        {/* Period Step Selector */}
-        <div style={{ display: "flex", gap: 8, overflowX: "auto", marginBottom: 16, paddingBottom: 4 }}>
-          {PERIODS.map((p, idx) => (
-            <button
-              key={idx}
-              type="button"
-              className={`itw-passage-chip${idx === activePeriod ? " itw-active" : ""}`}
-              onClick={() => setActivePeriod(idx)}
-              style={{ whiteSpace: "nowrap" }}
-            >
-              {p.time}: {p.title.split("&")[0]}
-            </button>
-          ))}
-        </div>
-
-        {/* Two-Page Open Storybook Spread */}
-        <div className="itw-storybook-spread">
-          {/* Left Page: Period Environment Illustration Plate */}
-          <div className="itw-storybook-art-page">
-            <div className="itw-storybook-art-frame">
-              <img
-                src={current.image}
-                alt={current.alt}
-                className="itw-storybook-art-img"
-                loading="eager"
-              />
-              <span className="itw-storybook-art-badge">📍 {current.time}</span>
-            </div>
-            <div className="itw-storybook-caption-plaque">
-              <span>🏫</span>
-              <span><strong>Setting:</strong> {current.setting}</span>
-            </div>
+        {/* Physical Storybook Casing */}
+        <div className="itw-storybook-casing">
+          {/* Top Bookmark Ribbon Tabs */}
+          <div className="itw-book-top-tabs" role="tablist" aria-label="School day periods">
+            {PERIODS.map((p, idx) => (
+              <button
+                key={idx}
+                type="button"
+                role="tab"
+                aria-selected={idx === activePeriod}
+                className={`itw-book-tab${idx === activePeriod ? " itw-active" : ""}`}
+                onClick={() => setActivePeriod(idx)}
+              >
+                <span>⏰</span>
+                <span>{p.time}: {p.title.split("&")[0]}</span>
+              </button>
+            ))}
           </div>
 
-          {/* Right Page: Perspective Lens & Story Page */}
-          <div className="itw-storybook-text-page">
-            <div className="itw-storybook-chapter-ribbon">
-              <span>Period {activePeriod + 1} • {current.time}</span>
-              <span className="itw-storybook-time-tag">A Day Through My Eyes</span>
-            </div>
-            <h3 className="itw-storybook-page-title">{current.title}</h3>
-
-            <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-text)", marginTop: 4 }}>
-              Experience through different lenses:
-            </div>
-            <div className="itw-lens-switcher" role="radiogroup" aria-label="Perspective lenses">
-              <button
-                type="button"
-                className={`itw-lens-btn${activeLens === "sensory" ? " itw-active" : ""}`}
-                onClick={() => setActiveLens("sensory")}
-                style={{ background: activeLens === "sensory" ? "var(--itw-autism)" : undefined }}
-              >
-                🌿 Sensory
-              </button>
-              <button
-                type="button"
-                className={`itw-lens-btn${activeLens === "attention" ? " itw-active" : ""}`}
-                onClick={() => setActiveLens("attention")}
-                style={{ background: activeLens === "attention" ? "var(--itw-adhd)" : undefined }}
-              >
-                🧠 Attention
-              </button>
-              <button
-                type="button"
-                className={`itw-lens-btn${activeLens === "communication" ? " itw-active" : ""}`}
-                onClick={() => setActiveLens("communication")}
-                style={{ background: activeLens === "communication" ? "var(--itw-speech)" : undefined }}
-              >
-                💬 Speech
-              </button>
-              <button
-                type="button"
-                className={`itw-lens-btn${activeLens === "supported" ? " itw-active" : ""}`}
-                onClick={() => setActiveLens("supported")}
-                style={{ background: activeLens === "supported" ? "#2e7d32" : undefined }}
-              >
-                ✨ Supported
-              </button>
-            </div>
-
-            {/* Lens Content Box */}
-            <div className="itw-storybook-quote-card" style={{
-              background: activeLens === "supported" ? "rgba(46, 125, 50, 0.09)" : undefined,
-              borderLeftColor: activeLens === "supported" ? "#2e7d32" : undefined,
-            }}>
-              <p style={{ fontStyle: "normal", fontSize: "1.08rem" }}>
-                {current[activeLens]}
-              </p>
-            </div>
-
-            <div className="itw-storybook-insight-box">
-              <div className="itw-insight-title">
-                <span>💡</span> Observation
+          {/* Open Two-Page Storybook Spread */}
+          <div className="itw-storybook-spread">
+            {/* Left Page: Period Environment Illustration Plate */}
+            <div className="itw-storybook-art-page itw-page-flip-anim" key={`eyes-left-${activePeriod}`}>
+              <div className="itw-storybook-art-frame">
+                <img
+                  src={current.image}
+                  alt={current.alt}
+                  className="itw-storybook-art-img"
+                  loading="eager"
+                />
+                <span className="itw-storybook-art-badge">📍 {current.time}</span>
               </div>
-              <p>
-                {activeLens === "supported"
-                  ? "When proactive physical and sensory scaffolding is designed into the space, fatigue drops and learning blooms."
-                  : "Every child experiences sensory and attentional demands differently. A classroom that feels normal to one can demand enormous energy from another."}
-              </p>
+              <div className="itw-storybook-caption-plaque">
+                <span>🏫</span>
+                <span><strong>Setting:</strong> {current.setting}</span>
+              </div>
+              <div className="itw-book-left-folio">
+                <span>Period {activePeriod + 1} of {PERIODS.length}</span>
+                <span>{current.time} Schedule</span>
+              </div>
+            </div>
+
+            {/* Book Spine Crease */}
+            <div className="itw-book-spine" aria-hidden="true" />
+
+            {/* Right Page: Perspective Lens & Story Page */}
+            <div className="itw-storybook-text-page itw-page-flip-anim" key={`eyes-right-${activePeriod}`}>
+              {/* Curled Paper Dog-Ear */}
+              {activePeriod < PERIODS.length - 1 && (
+                <div
+                  className="itw-book-corner-curl"
+                  title={`Turn to Period ${activePeriod + 2}`}
+                  onClick={() => setActivePeriod((p) => Math.min(PERIODS.length - 1, p + 1))}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Turn page"
+                />
+              )}
+
+              <div className="itw-storybook-chapter-ribbon">
+                <span>Period {activePeriod + 1} • {current.time}</span>
+                <span className="itw-storybook-time-tag">A Day Through My Eyes</span>
+              </div>
+
+              <h3 className="itw-storybook-page-title">{current.title}</h3>
+
+              <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-text)", marginTop: 2 }}>
+                Experience through different lenses:
+              </div>
+              <div className="itw-lens-switcher" role="radiogroup" aria-label="Perspective lenses">
+                <button
+                  type="button"
+                  className={`itw-lens-btn${activeLens === "sensory" ? " itw-active" : ""}`}
+                  onClick={() => setActiveLens("sensory")}
+                  style={{ background: activeLens === "sensory" ? "var(--itw-autism)" : undefined }}
+                >
+                  🌿 Sensory
+                </button>
+                <button
+                  type="button"
+                  className={`itw-lens-btn${activeLens === "attention" ? " itw-active" : ""}`}
+                  onClick={() => setActiveLens("attention")}
+                  style={{ background: activeLens === "attention" ? "var(--itw-adhd)" : undefined }}
+                >
+                  🧠 Attention
+                </button>
+                <button
+                  type="button"
+                  className={`itw-lens-btn${activeLens === "communication" ? " itw-active" : ""}`}
+                  onClick={() => setActiveLens("communication")}
+                  style={{ background: activeLens === "communication" ? "var(--itw-speech)" : undefined }}
+                >
+                  💬 Speech
+                </button>
+                <button
+                  type="button"
+                  className={`itw-lens-btn${activeLens === "supported" ? " itw-active" : ""}`}
+                  onClick={() => setActiveLens("supported")}
+                  style={{ background: activeLens === "supported" ? "#2e7d32" : undefined }}
+                >
+                  ✨ Supported
+                </button>
+              </div>
+
+              {/* Lens Content Box */}
+              <div className="itw-storybook-quote-card" style={{
+                background: activeLens === "supported" ? "rgba(46, 125, 50, 0.09)" : undefined,
+                borderLeftColor: activeLens === "supported" ? "#2e7d32" : undefined,
+              }}>
+                <p style={{ fontStyle: "normal", fontSize: "1.06rem" }}>
+                  {current[activeLens]}
+                </p>
+              </div>
+
+              <div className="itw-storybook-insight-box">
+                <div className="itw-insight-title">
+                  <span>💡</span> Observation
+                </div>
+                <p>
+                  {activeLens === "supported"
+                    ? "When proactive physical and sensory scaffolding is designed into the space, fatigue drops and learning blooms."
+                    : "Every child experiences sensory and attentional demands differently. A classroom that feels normal to one can demand enormous energy from another."}
+                </p>
+              </div>
+
+              {/* IN-PAGE NAVIGATION (Close by & immediately visible!) */}
+              <div className="itw-book-inpage-nav">
+                <button
+                  type="button"
+                  className="itw-book-turn-btn itw-book-turn-prev"
+                  disabled={activePeriod === 0}
+                  onClick={() => setActivePeriod((p) => Math.max(0, p - 1))}
+                >
+                  ← Turn Back
+                </button>
+
+                <div className="itw-book-page-dots" aria-label="Period selection">
+                  {PERIODS.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      className={`itw-book-dot${idx === activePeriod ? " itw-active" : ""}`}
+                      onClick={() => setActivePeriod(idx)}
+                      aria-label={`Go to period ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+
+                {activePeriod < PERIODS.length - 1 ? (
+                  <button
+                    type="button"
+                    className="itw-book-turn-btn itw-book-turn-next"
+                    onClick={() => setActivePeriod((p) => Math.min(PERIODS.length - 1, p + 1))}
+                  >
+                    Turn to Next Period →
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="itw-book-turn-btn itw-book-turn-next"
+                    onClick={() => onNavigate("autism")}
+                  >
+                    Try Interactive Simulations →
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Period Navigation Controls */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, paddingTop: 18, borderTop: "1px solid var(--itw-border)" }}>
-          <button
-            type="button"
-            className="itw-cta itw-cta-line"
-            disabled={activePeriod === 0}
-            onClick={() => setActivePeriod((p) => Math.max(0, p - 1))}
-            style={{ opacity: activePeriod === 0 ? 0.4 : 1 }}
-          >
-            ← Previous Period
-          </button>
-
-          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)" }}>
-            Period {activePeriod + 1} of {PERIODS.length}
-          </span>
-
-          {activePeriod < PERIODS.length - 1 ? (
-            <button
-              type="button"
-              className="itw-cta itw-cta-dark"
-              onClick={() => setActivePeriod((p) => Math.min(PERIODS.length - 1, p + 1))}
-            >
-              Next Period →
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="itw-cta itw-cta-dark"
-              onClick={() => onNavigate("autism")}
-            >
-              Try Interactive Simulations →
-            </button>
-          )}
         </div>
       </div>
     </section>

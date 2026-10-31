@@ -20,33 +20,41 @@ const LEAVES = [
 
 export default function ItwLeaves() {
   const [host, setHost] = useState<Element | null>(null)
+  const [isDark, setIsDark] = useState(false)
 
   useEffect(() => {
     let unmounted = false
+    const checkDark = () => {
+      const el = document.querySelector('.itw-root')
+      if (el) {
+        setIsDark(el.classList.contains('itw-dark'))
+      }
+    }
+    checkDark()
+
     const find = () => document.querySelector('.itw-root')
     const el = find()
     if (el) {
       queueMicrotask(() => {
         if (!unmounted) setHost(el)
       })
-      return () => { unmounted = true }
     }
     // The Experience component loads lazily, so wait until its root exists.
     const mo = new MutationObserver(() => {
       const e = find()
       if (e) {
         if (!unmounted) setHost(e)
-        mo.disconnect()
+        checkDark()
       }
     })
-    mo.observe(document.body, {childList: true, subtree: true})
+    mo.observe(document.body, {childList: true, subtree: true, attributes: true, attributeFilter: ['class']})
     return () => {
       unmounted = true
       mo.disconnect()
     }
   }, [])
 
-  if (!host) return null
+  if (!host || isDark) return null
 
   return createPortal(
     <div aria-hidden="true" className="itw-leafwrap">

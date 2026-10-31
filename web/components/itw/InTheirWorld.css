@@ -206,9 +206,11 @@
 
 .itw-accent-word{position:relative;display:inline-block;font-style:normal;color:var(--itw-autism);text-shadow:0 0 34px var(--itw-autism-soft);}
 .itw-squiggle{position:absolute;left:0;bottom:-10px;width:100%;height:14px;color:var(--itw-adhd);filter:drop-shadow(0 2px 3px rgba(140,101,32,.3));}
-.itw-dark .itw-blob-1{background:radial-gradient(circle,rgba(86,210,177,.22),transparent 70%);}
-.itw-dark .itw-blob-2{background:radial-gradient(circle,rgba(210,115,86,.2),transparent 70%);}
-.itw-dark .itw-blob-3{background:radial-gradient(circle,rgba(210,160,86,.18),transparent 70%);}
+.itw-dark .itw-blob,
+.itw-root.itw-dark .itw-blob {
+  display: none !important;
+  opacity: 0 !important;
+}
 
 .itw-bento{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:18px;position:relative;z-index:1;}
 .itw-bento-0{grid-column:span 7;}
@@ -1098,10 +1100,19 @@
 .itw-blob-2 { background: radial-gradient(closest-side, rgba(255,214,120,.42), rgba(255,214,120,0)) !important; }
 .itw-blob-3 { background: radial-gradient(closest-side, rgba(150,200,180,.35), rgba(150,200,180,0)) !important; }
 
-/* keep dark-mode blobs as originally designed (the light override above uses !important) */
-.itw-dark .itw-blob-1{background:radial-gradient(circle,rgba(86,210,177,.22),transparent 70%) !important;}
-.itw-dark .itw-blob-2{background:radial-gradient(circle,rgba(210,115,86,.2),transparent 70%) !important;}
-.itw-dark .itw-blob-3{background:radial-gradient(circle,rgba(210,160,86,.18),transparent 70%) !important;}
+/* In dark mode: completely disable background blobs to prevent murky/scary washes */
+.itw-root.itw-dark .itw-blob,
+.itw-dark .itw-blob,
+.itw-root.itw-dark .itw-blob-1,
+.itw-dark .itw-blob-1,
+.itw-root.itw-dark .itw-blob-2,
+.itw-dark .itw-blob-2,
+.itw-root.itw-dark .itw-blob-3,
+.itw-dark .itw-blob-3 {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
 
 /* ---- Site decor: same illustrations/brushes as the Manas Learning homepage ---- */
 .itw-root::before,
@@ -1113,7 +1124,7 @@
   background:url('/decor/hero-illustration.webp') center/contain no-repeat;
   opacity:.95;
 }
-/* green brush on the left, yellow brush bottom right, leaves in two corners */
+/* green brush on the left, yellow brush bottom right, leaves in two corners (Light Mode) */
 .itw-root::after{
   inset:0;
   background-image:
@@ -1126,9 +1137,20 @@
   background-size:min(32vw,460px) auto, min(34vw,500px) auto, 110px auto, 90px auto;
   opacity:.75;
 }
-/* dark mode: keep it present but quiet */
-.itw-dark.itw-root::before,.itw-dark .itw-root::before{opacity:.5;}
-.itw-dark.itw-root::after,.itw-dark .itw-root::after{opacity:.2;}
+
+/* DARK MODE: completely eliminate light-mode watercolor stains, brush washes & corner leaves */
+.itw-root.itw-dark::before,
+.itw-dark.itw-root::before,
+.itw-dark .itw-root::before,
+.itw-root.itw-dark::after,
+.itw-dark.itw-root::after,
+.itw-dark .itw-root::after {
+  display: none !important;
+  background-image: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
 /* narrow screens: the illustration would sit under the text */
 @media (max-width:1100px){.itw-root::before{display:none;}}
 @media print{.itw-root::before,.itw-root::after{display:none !important;}}
@@ -1148,9 +1170,23 @@
   user-select: none;
   opacity: .8;
 }
-body:has(.itw-dark) .itw-leafimg {
-  filter: hue-rotate(35deg) saturate(.75) brightness(1.35) drop-shadow(0 0 8px rgba(150,230,190,.45));
-  opacity: .55;
+
+/* DARK MODE: completely disable floating/falling leaves (no scary glowing or floating leaves) */
+.itw-root.itw-dark .itw-leafwrap,
+.itw-dark.itw-root .itw-leafwrap,
+.itw-dark .itw-leafwrap,
+body:has(.itw-dark) .itw-leafwrap,
+.itw-root.itw-dark .itw-leafimg,
+.itw-dark .itw-leafimg,
+body:has(.itw-dark) .itw-leafimg,
+.itw-root.itw-dark .leaf-fall,
+.itw-dark .leaf-fall,
+body:has(.itw-dark) .leaf-fall,
+.itw-root.itw-dark .itw-leaf-accent,
+.itw-dark .itw-leaf-accent {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

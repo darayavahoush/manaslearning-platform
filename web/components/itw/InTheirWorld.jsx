@@ -39,7 +39,7 @@ const ACCENT_HEX = {
   landing: "59,130,246",
   autism: "59,130,246",
   adhd: "245,158,11",
-  dyslexia: "89,40,140",
+  dyslexia: "30,117,93",
   speech: "140,66,44",
   dyscalculia: "29,133,133",
   dysgraphia: "178,89,40",
@@ -50,7 +50,7 @@ const ACCENT_HEX_DARK = {
   landing: "86,210,177",
   autism: "86,210,177",
   adhd: "210,160,86",
-  dyslexia: "170,126,221",
+  dyslexia: "52,211,153",
   speech: "210,115,86",
   dyscalculia: "77,208,225",
   dysgraphia: "255,138,101",
@@ -3668,984 +3668,1307 @@ const DYS_SUPPORT_CHOICES = [
   },
 ];
 
+/* ================= DYSLEXIA HIGH-FIDELITY EXPERIENCE (Benchmark Quality) ================= */
+
+function shuffleLetters(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function scrambleDyslexicWord(word) {
+  if (word.length <= 3) return word;
+  const first = word[0];
+  const last = word[word.length - 1];
+  const middle = word.slice(1, -1).split("");
+  shuffleLetters(middle);
+  return first + middle.join("") + last;
+}
+
+function scrambleDyslexicText(text) {
+  return text.replace(/\b([a-zA-Z]{4,})\b/g, (m) => scrambleDyslexicWord(m));
+}
+
+const CONFUSION_MAP = {
+  b: "d", d: "b",
+  p: "q", q: "p",
+  m: "w", w: "m",
+  n: "u", u: "n",
+  B: "D", D: "B",
+  P: "Q", Q: "P",
+};
+
+function confuseDyslexicText(text, probability = 0.35) {
+  return text
+    .split("")
+    .map((ch) => (CONFUSION_MAP[ch] && Math.random() < probability ? CONFUSION_MAP[ch] : ch))
+    .join("");
+}
+
+const DYS_SANDBOX_PRESETS = [
+  "The quick brown fox jumps over the lazy dog.",
+  "Rohan sat under the classroom banyan tree reading his history chapter.",
+  "Please complete questions 4 to 8 in your notebook before tomorrow's lesson.",
+  "The ancient fortress stood proudly above the river bend under the monsoon clouds.",
+];
+
+const DYS_BASE_SCRAMBLE_PASSAGE =
+  "Reading is not an innate biological skill like vision or speech. The human brain was never built to read; instead, it repurposes ancient circuits originally evolved for object recognition and auditory processing. In a dyslexic reader, this neural bridge takes significantly more time and energy to decode each visual syllable.";
+
+const DYS_BASE_CONFUSION_PASSAGE =
+  "When young Kabir began primary school, his teacher noticed he frequently wrote 'boy' as 'doy' and 'pond' as 'qond'. In three-dimensional physical reality, a tea cup remains a cup regardless of whether its handle points left or right. The human visual cortex evolved with this object-invariance property, but our written alphabet demands that directional orientation alters phonetic meaning completely.";
+
+const DYS_BASE_CROWDING_PASSAGE =
+  "Visual crowding occurs when neighboring letters are placed too closely together, causing their features to visually bleed into one another. When letter spacing, word spacing, and line height are expanded, visual clutter diminishes dramatically, allowing the dyslexic eye to isolate each word cleanly.";
+
+const DYS_BASE_BLUR_PASSAGE =
+  "During fluent reading, the eye makes rapid micro-jumps called saccades, fixing on words for a fraction of a second. For dyslexic learners, unstable binocular fixation and transient macular fatigue can cause words to temporarily blur or lose sharpness as the eye tires.";
+
+const DYS_BASE_FLOAT_PASSAGE =
+  "Meares-Irlen syndrome is a perceptual processing condition where high-contrast black text on white paper causes visual distortions, apparent movement, and optical fatigue. Words appear to vibrate, drift across lines, or melt into rivers of whitespace between sentences.";
+
+const DYS_CHALLENGE_PASSAGE =
+  "The young student opened her favourite book and began to read. Each page brought new adventures and wonderful characters to life. She could spend hours lost in stories about brave explorers and magical kingdoms. Reading was her passport to worlds beyond imagination, where anything was possible and every chapter held a new surprise waiting to be discovered.";
+
+const DYS_ACCOMMODATION_PASSAGE =
+  "With systematic phonics instruction, multisensory learning tools, and assistive accommodations like high-contrast color overlays and speech synthesis, dyslexic learners thrive. Their unique cognitive architecture brings extraordinary gifts in spatial thinking, holistic problem-solving, and empathetic storytelling.";
+
 function DyslexiaModule({ onBack, onNavigate }) {
-  const { soundOn } = useContext(SettingsContext);
-  const [pairIndex, setPairIndex] = useState(() => getActiveDyslexiaPairIndex());
-  const [readingMode, setReadingMode] = useState("decoding"); // standard | decoding | supported
-  const [letterConfusion, setLetterConfusion] = useState(true);
-  const [visualCrowding, setVisualCrowding] = useState(true);
-  const [syllableChunks, setSyllableChunks] = useState(false);
-  const activePair = DYSLEXIA_PASSAGE_PAIRS[pairIndex % DYSLEXIA_PASSAGE_PAIRS.length];
+  // Main Top-level Tabs
+  const [activeTab, setActiveTab] = useState("labs"); // labs | challenge | sandbox | accommodations
+  const [labSubTab, setLabSubTab] = useState("scramble"); // scramble | confusion | crowding | blur | floating
 
-  const [step, setStep] = useState("intro"); // intro | instructions | read | questions | result | support | run_supported | questions_supported | explain | next
-  const [elapsed, setElapsed] = useState(0);
-  const [run1Elapsed, setRun1Elapsed] = useState(0);
-  const [run1Score, setRun1Score] = useState(0);
-  const [run2Elapsed, setRun2Elapsed] = useState(0);
-  const [run2Score, setRun2Score] = useState(0);
+  // --- Lab 1: Scramble State ---
+  const [scrambleActive, setScrambleActive] = useState(true);
+  const [scrambleSpeed, setScrambleSpeed] = useState(160); // ms
+  const [scrambledText, setScrambledText] = useState(DYS_BASE_SCRAMBLE_PASSAGE);
 
-  const [answersRun1, setAnswersRun1] = useState(() => Array(3).fill(null));
-  const [answersRun2, setAnswersRun2] = useState(() => Array(3).fill(null));
-  const [chosenSupport, setChosenSupport] = useState("spacing");
+  useEffect(() => {
+    if (activeTab !== "labs" || labSubTab !== "scramble" || !scrambleActive) {
+      setScrambledText(DYS_BASE_SCRAMBLE_PASSAGE);
+      return undefined;
+    }
+    const interval = setInterval(() => {
+      setScrambledText(scrambleDyslexicText(DYS_BASE_SCRAMBLE_PASSAGE));
+    }, scrambleSpeed);
+    return () => clearInterval(interval);
+  }, [activeTab, labSubTab, scrambleActive, scrambleSpeed]);
 
-  // Reader toolbar controls for Run 2
-  const [fontSize, setFontSize] = useState("large"); // normal | large | xlarge
-  const [lineSpacing, setLineSpacing] = useState("relaxed"); // normal | relaxed | spacious
-  const [letterSpacing, setLetterSpacing] = useState("wide"); // normal | wide | xwide
-  const [readingRuler, setReadingRuler] = useState(true);
-  const [rulerY, setRulerY] = useState(48);
+  // --- Lab 2: Mirror Confusion State ---
+  const [confusionActive, setConfusionActive] = useState(true);
+  const [confusedText, setConfusedText] = useState(DYS_BASE_CONFUSION_PASSAGE);
+  const [flippedPairs, setFlippedPairs] = useState({ b: false, p: false, m: false, n: false });
 
-  // Audio Speech Synthesis state
+  const togglePairFlip = (key) => {
+    setFlippedPairs((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  useEffect(() => {
+    if (activeTab !== "labs" || labSubTab !== "confusion" || !confusionActive) {
+      setConfusedText(DYS_BASE_CONFUSION_PASSAGE);
+      return undefined;
+    }
+    const interval = setInterval(() => {
+      setConfusedText(confuseDyslexicText(DYS_BASE_CONFUSION_PASSAGE, 0.35));
+    }, 850);
+    return () => clearInterval(interval);
+  }, [activeTab, labSubTab, confusionActive]);
+
+  // --- Lab 3: Visual Crowding State ---
+  const [crowdLetterSpacing, setCrowdLetterSpacing] = useState(-1.5);
+  const [crowdWordSpacing, setCrowdWordSpacing] = useState(-4);
+  const [crowdLineHeight, setCrowdLineHeight] = useState(1.05);
+
+  const resetCrowding = () => {
+    setCrowdLetterSpacing(-1.5);
+    setCrowdWordSpacing(-4);
+    setCrowdLineHeight(1.05);
+  };
+
+  const applyOptimalSpacing = () => {
+    setCrowdLetterSpacing(1.5);
+    setCrowdWordSpacing(4);
+    setCrowdLineHeight(1.95);
+  };
+
+  // --- Lab 4: Transient Blur State ---
+  const [blurActive, setBlurActive] = useState(true);
+  const [blurMode, setBlurMode] = useState("random"); // random | wave | center
+  const [blurredWordIndexes, setBlurredWordIndexes] = useState(new Set());
+  const blurWords = useMemo(() => DYS_BASE_BLUR_PASSAGE.split(/(\s+)/), []);
+
+  useEffect(() => {
+    if (activeTab !== "labs" || labSubTab !== "blur" || !blurActive) {
+      setBlurredWordIndexes(new Set());
+      return undefined;
+    }
+
+    let pointer = 0;
+    const interval = setInterval(() => {
+      const nonWhitespace = [];
+      blurWords.forEach((w, i) => {
+        if (w.trim()) nonWhitespace.push(i);
+      });
+
+      if (blurMode === "random") {
+        const next = new Set();
+        const count = Math.max(2, Math.floor(nonWhitespace.length * 0.28));
+        for (let i = 0; i < count; i++) {
+          const randIdx = nonWhitespace[Math.floor(Math.random() * nonWhitespace.length)];
+          next.add(randIdx);
+        }
+        setBlurredWordIndexes(next);
+      } else if (blurMode === "wave") {
+        const next = new Set();
+        const center = nonWhitespace[pointer % nonWhitespace.length];
+        nonWhitespace.forEach((idx) => {
+          if (Math.abs(idx - center) > 2) next.add(idx);
+        });
+        pointer = (pointer + 1) % nonWhitespace.length;
+        setBlurredWordIndexes(next);
+      } else if (blurMode === "center") {
+        const next = new Set();
+        const centerIdx = nonWhitespace[Math.floor(nonWhitespace.length / 2)];
+        nonWhitespace.forEach((idx) => {
+          if (Math.abs(idx - centerIdx) < 6) next.add(idx);
+        });
+        setBlurredWordIndexes(next);
+      }
+    }, 280);
+
+    return () => clearInterval(interval);
+  }, [activeTab, labSubTab, blurActive, blurMode, blurWords]);
+
+  // --- Lab 5: Floating River State ---
+  const [floatActive, setFloatActive] = useState(true);
+  const [floatMode, setFloatMode] = useState("vibrate"); // vibrate | drift | wave | chaos
+
+  // --- Tab 2: Timed Reading Challenge State ---
+  const [challengeRunning, setChallengeRunning] = useState(false);
+  const [normalDone, setNormalDone] = useState(false);
+  const [dyslexiaDone, setDyslexiaDone] = useState(false);
+  const [normalTime, setNormalTime] = useState(0);
+  const [dyslexiaTime, setDyslexiaTime] = useState(0);
+  const [challengeDyslexiaText, setChallengeDyslexiaText] = useState(DYS_CHALLENGE_PASSAGE);
+  const challengeStartRef = useRef(0);
+
+  const startChallenge = () => {
+    setChallengeRunning(true);
+    setNormalDone(false);
+    setDyslexiaDone(false);
+    setNormalTime(0);
+    setDyslexiaTime(0);
+    challengeStartRef.current = performance.now();
+  };
+
+  const finishNormal = () => {
+    if (!challengeRunning || normalDone) return;
+    const elapsedSec = ((performance.now() - challengeStartRef.current) / 1000).toFixed(1);
+    setNormalTime(parseFloat(elapsedSec));
+    setNormalDone(true);
+  };
+
+  const finishDyslexia = () => {
+    if (!challengeRunning || dyslexiaDone) return;
+    const elapsedSec = ((performance.now() - challengeStartRef.current) / 1000).toFixed(1);
+    setDyslexiaTime(parseFloat(elapsedSec));
+    setDyslexiaDone(true);
+  };
+
+  // Timer loop for challenge
+  useEffect(() => {
+    if (!challengeRunning) return undefined;
+    if (normalDone && dyslexiaDone) {
+      setChallengeRunning(false);
+      setChallengeDyslexiaText(DYS_CHALLENGE_PASSAGE);
+      return undefined;
+    }
+
+    const timer = setInterval(() => {
+      const now = performance.now();
+      const currentElapsed = ((now - challengeStartRef.current) / 1000).toFixed(1);
+      if (!normalDone) setNormalTime(parseFloat(currentElapsed));
+      if (!dyslexiaDone) setDyslexiaTime(parseFloat(currentElapsed));
+    }, 100);
+
+    return () => clearInterval(timer);
+  }, [challengeRunning, normalDone, dyslexiaDone]);
+
+  // Dyslexia text live scrambler in challenge
+  useEffect(() => {
+    if (!challengeRunning || dyslexiaDone) {
+      if (!challengeRunning) setChallengeDyslexiaText(DYS_CHALLENGE_PASSAGE);
+      return undefined;
+    }
+    const interval = setInterval(() => {
+      const confused = confuseDyslexicText(DYS_CHALLENGE_PASSAGE, 0.3);
+      setChallengeDyslexiaText(scrambleDyslexicText(confused));
+    }, 160);
+    return () => clearInterval(interval);
+  }, [challengeRunning, dyslexiaDone]);
+
+  // --- Tab 3: Sandbox State ---
+  const [sandboxInput, setSandboxInput] = useState(DYS_SANDBOX_PRESETS[0]);
+  const [activeFilters, setActiveFilters] = useState(new Set(["scramble"]));
+  const [sandboxRenderedText, setSandboxRenderedText] = useState(DYS_SANDBOX_PRESETS[0]);
+
+  const toggleFilter = (filterKey) => {
+    setActiveFilters((prev) => {
+      const next = new Set(prev);
+      if (next.has(filterKey)) next.delete(filterKey);
+      else next.add(filterKey);
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    if (activeTab !== "sandbox") return undefined;
+    if (!sandboxInput.trim()) {
+      setSandboxRenderedText("");
+      return undefined;
+    }
+
+    if (!activeFilters.has("scramble") && !activeFilters.has("confusion")) {
+      setSandboxRenderedText(sandboxInput);
+      return undefined;
+    }
+
+    const interval = setInterval(() => {
+      let t = sandboxInput;
+      if (activeFilters.has("confusion")) {
+        t = confuseDyslexicText(t, 0.35);
+      }
+      if (activeFilters.has("scramble")) {
+        t = scrambleDyslexicText(t);
+      }
+      setSandboxRenderedText(t);
+    }, 180);
+
+    return () => clearInterval(interval);
+  }, [activeTab, sandboxInput, activeFilters]);
+
+  // --- Tab 4: Accommodations Studio State ---
+  const [useOpenDyslexic, setUseOpenDyslexic] = useState(false);
+  const [activeTint, setActiveTint] = useState("none"); // none | cream | peach | mint | sky | rose
+  const [readingRulerActive, setReadingRulerActive] = useState(true);
+  const [rulerY, setRulerY] = useState(60);
+  const [spacingBoosted, setSpacingBoosted] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
-  const startRef = useRef(0);
-  const doneRef = useRef(false);
+  const rulerRef = useRef(null);
 
-  // Clean up speech synthesis when navigating away or unmounting
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    if (step !== "run_supported") {
-      if (typeof window !== "undefined" && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-        queueMicrotask(() => {
-          setIsSpeaking(false);
-          setIsPaused(false);
-        });
-      }
-    }
-  }, [step]);
-
-  // Live stopwatch timer for reading runs
-  useEffect(() => {
-    if (step !== "read" && step !== "run_supported") return undefined;
-    doneRef.current = false;
-    startRef.current = performance.now();
-    queueMicrotask(() => setElapsed(0));
-    const tickId = setInterval(() => {
-      const now = (performance.now() - startRef.current) / 1000;
-      setElapsed(now);
-    }, 100);
-    return () => clearInterval(tickId);
-  }, [step]);
-
-  // Finish Run 1 (Standard reading)
-  const finishRun1Reading = () => {
-    if (doneRef.current) return;
-    doneRef.current = true;
-    const t = (performance.now() - startRef.current) / 1000;
-    setRun1Elapsed(t);
-    if (soundOn) audio.tone({ freq: 480, type: "sine", duration: 0.2, gain: 0.1 });
-    setAnswersRun1(Array(3).fill(null));
-    setStep("questions");
+  const handleRulerMouseMove = (e) => {
+    if (!readingRulerActive || !rulerRef.current) return;
+    const rect = rulerRef.current.getBoundingClientRect();
+    const relativeY = Math.max(0, Math.min(e.clientY - rect.top - 18, rect.height - 36));
+    setRulerY(relativeY);
   };
 
-  // Submit Check 1 (Run 1 questions)
-  const submitCheck1 = () => {
-    const questions = activePair.passageA.questions;
-    const correct = answersRun1.filter((a, i) => a === questions[i].correct).length;
-    setRun1Score(correct);
-    if (soundOn) {
-      audio.tone({ freq: 523, type: "sine", duration: 0.16, gain: 0.1 });
-      audio.tone({ freq: 659, type: "sine", duration: 0.2, gain: 0.09, delay: 0.09 });
-    }
-    setStep("result");
-  };
-
-  // Finish Run 2 (Supported reading)
-  const finishRun2Reading = () => {
-    if (doneRef.current) return;
-    doneRef.current = true;
-    const t = (performance.now() - startRef.current) / 1000;
-    setRun2Elapsed(t);
-    if (typeof window !== "undefined" && window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-      setIsPaused(false);
-    }
-    if (soundOn) audio.tone({ freq: 480, type: "sine", duration: 0.2, gain: 0.1 });
-    setAnswersRun2(Array(3).fill(null));
-    setStep("questions_supported");
-  };
-
-  // Submit Check 2 (Run 2 questions)
-  const submitCheck2 = () => {
-    const questions = activePair.passageB.questions;
-    const correct = answersRun2.filter((a, i) => a === questions[i].correct).length;
-    setRun2Score(correct);
-    advanceActiveDyslexiaPairIndex(); // Cycle for next visit
-    if (soundOn) {
-      audio.tone({ freq: 523, type: "sine", duration: 0.16, gain: 0.1 });
-      audio.tone({ freq: 659, type: "sine", duration: 0.2, gain: 0.09, delay: 0.09 });
-    }
-    setStep("explain");
-  };
-
-  // TTS speech functions
-  const playSpeech = (text) => {
+  const playTTS = () => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
+    if (isPaused) {
+      window.speechSynthesis.resume();
+      setIsPaused(false);
+      setIsSpeaking(true);
+      return;
+    }
     window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.95;
-    u.onend = () => {
+    const utterance = new SpeechSynthesisUtterance(DYS_ACCOMMODATION_PASSAGE);
+    utterance.rate = 0.92;
+    utterance.pitch = 1.0;
+    utterance.onend = () => {
       setIsSpeaking(false);
       setIsPaused(false);
     };
-    u.onerror = () => {
+    utterance.onerror = () => {
       setIsSpeaking(false);
       setIsPaused(false);
     };
-    window.speechSynthesis.speak(u);
+    window.speechSynthesis.speak(utterance);
     setIsSpeaking(true);
     setIsPaused(false);
   };
 
-  const pauseSpeech = () => {
+  const pauseTTS = () => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
     window.speechSynthesis.pause();
     setIsPaused(true);
+    setIsSpeaking(false);
   };
 
-  const resumeSpeech = () => {
-    if (typeof window === "undefined" || !window.speechSynthesis) return;
-    window.speechSynthesis.resume();
-    setIsPaused(false);
-  };
-
-  const stopSpeech = () => {
+  const stopTTS = () => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     setIsSpeaking(false);
     setIsPaused(false);
   };
 
-  // Reading ruler pointer tracking
-  const handleRulerMouseMove = (e) => {
-    if (!readingRuler) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const relativeY = Math.max(12, Math.min(e.clientY - rect.top, rect.height - 48));
-    setRulerY(relativeY);
-  };
-
-  // Calculate typography styles
-  const fontSizes = { normal: "1.15rem", large: "1.32rem", xlarge: "1.55rem" };
-  const lineHeights = { normal: 1.65, relaxed: 2.15, spacious: 2.6 };
-  const letterSpacings = { normal: "normal", wide: "0.06em", xwide: "0.12em" };
-
-  const currentTypoStyle = {
-    fontSize: fontSizes[fontSize] || fontSizes.large,
-    lineHeight: lineHeights[lineSpacing] || lineHeights.relaxed,
-    letterSpacing: letterSpacings[letterSpacing] || letterSpacings.wide,
-  };
-
-  const allRun1Answered = answersRun1.every((a) => a !== null);
-  const allRun2Answered = answersRun2.every((a) => a !== null);
-  const stepIndex = DYS_STEP_INDEX[step];
-  const more = MODULES.filter((m) => m.key !== "dyslexia");
-
-
-  // High-fidelity dyslexia simulation: letter crowding, mirror rotation on b/d/p/q/n/u, and phonological decoding friction
-  const renderInteractiveText = (text, mode) => {
-    if (mode === "decoding") {
-      const words = text.split(" ");
-      return (
-        <span className={`itw-reading-passage itw-dyslexia-decoding${visualCrowding ? " itw-crowded" : ""}`}>
-          {words.map((word, wIdx) => {
-            return (
-              <span key={wIdx} className="itw-decoding-word" style={{ marginRight: visualCrowding ? "0.14em" : "0.32em" }}>
-                {Array.from(word).map((char, cIdx) => {
-                  const lower = char.toLowerCase();
-                  const isMirror = ["b", "d", "p", "q", "n", "u"].includes(lower);
-                  // Dynamic subtle flip on mirror letters for visceral decoding friction
-                  const flippedMap = { b: "d", d: "b", p: "q", q: "p", n: "u", u: "n" };
-                  const showFlipped = letterConfusion && isMirror && ((wIdx + cIdx) % 3 === 0);
-                  const displayChar = showFlipped ? (char === lower ? flippedMap[lower] : flippedMap[lower].toUpperCase()) : char;
-
-                  return (
-                    <span
-                      key={cIdx}
-                      className={`itw-decoding-char${isMirror ? " itw-mirror-char" : ""}${showFlipped ? " itw-flipped" : ""}`}
-                      data-orig={char}
-                    >
-                      {syllableChunks && "aeiouy".includes(lower) ? `${displayChar}·` : displayChar}
-                    </span>
-                  );
-                })}
-              </span>
-            );
-          })}
-        </span>
-      );
-    }
-    return <span>{text}</span>;
-  };
+  // Cleanup TTS on tab switch or unmount
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, [activeTab]);
 
   return (
     <section className="itw-view itw-module itw-flow" data-accent="dyslexia">
-      <FlowCrumbs name="Dyslexia" onBack={onBack} />
-      {stepIndex !== undefined && <FlowStepper steps={DYS_STEPS} current={stepIndex} />}
+      {/* Header navigation & title */}
+      <FlowCrumbs name="Dyslexia Simulation Suite" onBack={onBack} />
 
-      {step === "intro" && (
-        <div className="itw-flow-page itw-flow-intro" key="intro">
-          <div>
-            <h2 className="itw-flow-title">Dyslexia</h2>
-            <div className="itw-flow-sub">Reading, Decoding &amp; Access to Meaning</div>
-            <p className="itw-flow-lead">
-              Dyslexia is a language-processing difference that primarily affects phonological decoding and reading fluency.
-              It is not a vision defect or a measure of intelligence. In this experience, you will explore the mental effort
-              involved in decoding text and observe how accommodations transform the reading journey on matched passages.
-            </p>
-            <ul className="itw-flow-meta">
-              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
-              <li><span aria-hidden="true">📖</span> Two parallel reading passages ({activePair.pairTopic})</li>
-              <li><span aria-hidden="true">ℹ️</span> An interactive learning simulation, not a clinical diagnostic tool</li>
-            </ul>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
-              Start the Experience →
-            </button>
-          </div>
-          <IntroVignette moduleKey="dyslexia" />
-        </div>
-      )}
+      <div className="itw-flow-intro" style={{ marginBottom: 20 }}>
+        <span className="itw-kicker">NEURODIVERSITY SIMULATION & PEDAGOGY • DYSLEXIA</span>
+        <h2 className="itw-title" style={{ color: "var(--itw-text)" }}>
+          See Through Dyslexia: The Mechanics of Reading
+        </h2>
+        <p className="itw-lead" style={{ maxWidth: 760 }}>
+          Experience the real-time cognitive overhead of letter scramble, rotational mirror confusion, visual crowding, and transient foveal blur — then explore evidence-based accommodations and neurodiversity superpowers.
+        </p>
+      </div>
 
-      {step === "instructions" && (
-        <div className="itw-flow-page itw-flow-narrow" key="instructions">
-          <div className="itw-scene-plate">
-            <img src="/decor/itw/dyslexia-environment.webp" alt="School library study corner" className="itw-scene-plate-img" />
-            <div className="itw-scene-plate-overlay">
-              <span className="itw-scene-tag">📍 Setting • Afternoon in the School Library</span>
-              <p className="itw-scene-caption">A quiet library corner bathed in natural light. The joy of curiosity, accompanied by the cognitive work of phonological decoding.</p>
-            </div>
-          </div>
-          <h2 className="itw-flow-title itw-center">Before you begin: An honest, evidence-based framing</h2>
-          <p className="itw-flow-lead itw-center">
-            In the next screen, you will read a short passage at your own pace, followed by three comprehension questions.
-          </p>
-          <div
-            style={{
-              background: "rgba(240, 163, 33, 0.08)",
-              border: "1.5px solid var(--itw-dyslexia)",
-              borderRadius: 16,
-              padding: "16px 20px",
-              margin: "20px 0",
-              fontSize: 14.5,
-              lineHeight: 1.6,
-              color: "var(--itw-text)",
-            }}
+      {/* Main 4-Tab Navigation */}
+      <div className="itw-dys-container">
+        <div className="itw-dys-tabs" role="tablist" aria-label="Dyslexia Modules">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "labs"}
+            className={`itw-dys-tab-btn${activeTab === "labs" ? " itw-active" : ""}`}
+            onClick={() => setActiveTab("labs")}
           >
-            <b>International Dyslexia Association Guidance:</b> Dyslexia is a language-based neurobiological difference in phonological processing — the brain's mechanism for mapping written symbols to spoken sounds. It is <i>not</i> an optical vision problem, and letters do not physically swap or move across the page in real life. In this activity, you will read clean, standard text at your own pace to observe how reading time and comprehension interact.
-          </div>
-          <ul className="itw-flow-list">
-            <li><span aria-hidden="true">⏱️</span> Read at your natural, comfortable pace — the task is completely untimed.</li>
-            <li><span aria-hidden="true">🧠</span> Focus on the meaning of the story; comprehension is the real goal of reading.</li>
-            <li><span aria-hidden="true">💛</span> When you are ready, click "I've finished reading".</li>
-          </ul>
-          <div className="itw-flow-nav">
-            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("read")}>Start Reading →</button>
-          </div>
-        </div>
-      )}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <path d="M10 2v7.31L4.2 18.5A2 2 0 0 0 5.8 22h12.4a2 2 0 0 0 1.6-3.5L14 9.31V2" />
+              <path d="M8.5 2h7" />
+              <path d="M7 16h10" />
+            </svg>
+            <span>Simulation Labs</span>
+          </button>
 
-      {step === "read" && (
-        <div className="itw-flow-page itw-flow-narrow" key="read">
-          <div className="itw-flow-readtop">
-            <div>
-              <h2 className="itw-flow-title" style={{ margin: 0 }}>Run 1: Standard Untimed Reading</h2>
-              <span style={{ fontSize: 13, color: "var(--itw-muted)" }}>
-                {activePair.pairTopic} • {activePair.passageA.title} ({activePair.passageA.wordCount} words)
-              </span>
-            </div>
-            <div className="itw-timer" role="status" aria-label="Reading time elapsed">
-              <span>Reading Time</span>
-              <b>{elapsed.toFixed(1)}s</b>
-            </div>
-          </div>
-
-          <Viewfinder
-            hud={{ left: "STANDARD READING", right: "UNTIMED" }}
-            stageStyle={{ minHeight: "auto", background: "var(--itw-panel)" }}
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "challenge"}
+            className={`itw-dys-tab-btn${activeTab === "challenge" ? " itw-active" : ""}`}
+            onClick={() => setActiveTab("challenge")}
           >
-            {/* Topic selector in Run 1 */}
-          
-          {/* Interactive Passage Topic Picker */}
-          <div className="itw-passage-picker" role="radiogroup" aria-label="Choose a reading topic">
-            <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", marginRight: 6 }}>
-              📚 Choose Topic:
-            </span>
-            {DYSLEXIA_PASSAGE_PAIRS.map((p, idx) => (
-              <button
-                key={p.pairId}
-                type="button"
-                className={`itw-passage-chip${idx === pairIndex % DYSLEXIA_PASSAGE_PAIRS.length ? " itw-active" : ""}`}
-                onClick={() => {
-                  setPairIndex(idx);
-                  setAnswersRun1(Array(3).fill(null));
-                  setAnswersRun2(Array(3).fill(null));
-                }}
-              >
-                {p.pairTopic}
-              </button>
-            ))}
-          </div>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            <span>Timed Reading Challenge</span>
+          </button>
 
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "sandbox"}
+            className={`itw-dys-tab-btn${activeTab === "sandbox" ? " itw-active" : ""}`}
+            onClick={() => setActiveTab("sandbox")}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            <span>Try It Yourself (Sandbox)</span>
+          </button>
 
-          {/* Perspective Mode Selector */}
-          <div className="itw-mode-bar" role="group" aria-label="Reading perspective mode">
-            <button
-              type="button"
-              className={`itw-mode-pill${readingMode === "standard" ? " itw-active" : ""}`}
-              onClick={() => setReadingMode("standard")}
-            >
-              📖 Standard Fluent Reading
-            </button>
-            <button
-              type="button"
-              className={`itw-mode-pill${readingMode === "decoding" ? " itw-active" : ""}`}
-              onClick={() => setReadingMode("decoding")}
-            >
-              ⚡ Phonological Decoding Friction
-            </button>
-            <button
-              type="button"
-              className={`itw-mode-pill${readingMode === "supported" ? " itw-active" : ""}`}
-              onClick={() => setReadingMode("supported")}
-            >
-              ✨ Supported Accommodations
-            </button>
-          </div>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "accommodations"}
+            className={`itw-dys-tab-btn${activeTab === "accommodations" ? " itw-active" : ""}`}
+            onClick={() => setActiveTab("accommodations")}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+            <span>Accommodations & Superpowers</span>
+          </button>
+        </div>
 
-          {readingMode === "decoding" && (
-            <div style={{ background: "rgba(89, 40, 140, 0.08)", padding: 14, borderRadius: 14, border: "1.5px solid var(--itw-dyslexia)", marginBottom: 16 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
-                <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-dyslexia)" }}>
-                  Decoding Load Options:
-                </span>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <button
-                    type="button"
-                    className="itw-pill-btn"
-                    style={{ fontSize: 12, padding: "3px 10px", borderColor: letterConfusion ? "var(--itw-dyslexia)" : "var(--itw-border)" }}
-                    onClick={() => setLetterConfusion(!letterConfusion)}
-                  >
-                    {letterConfusion ? "✓ Mirror Focus (b/d/p/q): ON" : "+ Mirror Focus: OFF"}
-                  </button>
-                  <button
-                    type="button"
-                    className="itw-pill-btn"
-                    style={{ fontSize: 12, padding: "3px 10px", borderColor: visualCrowding ? "var(--itw-dyslexia)" : "var(--itw-border)" }}
-                    onClick={() => setVisualCrowding(!visualCrowding)}
-                  >
-                    {visualCrowding ? "✓ Visual Crowding: ON" : "+ Visual Crowding: OFF"}
-                  </button>
-                  <button
-                    type="button"
-                    className="itw-pill-btn"
-                    style={{ fontSize: 12, padding: "3px 10px", borderColor: syllableChunks ? "var(--itw-dyslexia)" : "var(--itw-border)" }}
-                    onClick={() => setSyllableChunks(!syllableChunks)}
-                  >
-                    {syllableChunks ? "✓ Syllable Breaks: ON" : "+ Syllable Breaks: OFF"}
-                  </button>
-                </div>
-              </div>
-              <div style={{ fontSize: 13, color: "var(--itw-text)", lineHeight: 1.5 }}>
-                Notice the conscious effort required to translate printed letterforms into phonemes. Underlined words contain letters with mirrored geometries (b, d, p, q, n, u) where the phonological network requires more time.
-              </div>
+        {/* TAB 1: SIMULATION LABS */}
+        {activeTab === "labs" && (
+          <div className="itw-dys-card">
+            {/* Sub-lab selector */}
+            <div className="itw-dys-subtabs" role="tablist" aria-label="Simulation sub-labs">
+              {[
+                { id: "scramble", label: "1. Letter Scramble" },
+                { id: "confusion", label: "2. Mirror Confusion (b/d, p/q)" },
+                { id: "crowding", label: "3. Visual Crowding" },
+                { id: "blur", label: "4. Transient Blur & Saccades" },
+                { id: "floating", label: "5. Floating River (Irlen)" },
+              ].map((sub) => (
+                <button
+                  key={sub.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={labSubTab === sub.id}
+                  className={`itw-dys-subtab-btn${labSubTab === sub.id ? " itw-active" : ""}`}
+                  onClick={() => setLabSubTab(sub.id)}
+                >
+                  {sub.label}
+                </button>
+              ))}
             </div>
-          )}
 
-          <div className="itw-reading-passage" style={{ fontSize: "1.2rem", lineHeight: visualCrowding ? 1.4 : 1.8 }}>
-            {renderInteractiveText(activePair.passageA.text, readingMode)}
-          </div>
-          </Viewfinder>
-          <div className="itw-flow-nav">
-            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("instructions")}>Back</button>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={finishRun1Reading}>I've finished reading →</button>
-          </div>
-        </div>
-      )}
+            {/* Sub-Lab 1: Letter Scramble */}
+            {labSubTab === "scramble" && (
+              <div>
+                <div className="itw-dys-ctrl-bar">
+                  <div className="itw-dys-ctrl-group">
+                    <button
+                      type="button"
+                      className={`itw-dys-btn-primary${scrambleActive ? "" : " itw-dys-btn-secondary"}`}
+                      onClick={() => setScrambleActive((v) => !v)}
+                    >
+                      {scrambleActive ? "Pause Scramble" : "Start Scramble"}
+                    </button>
 
-      {step === "questions" && (
-        <div className="itw-flow-page itw-flow-narrow" key="questions">
-          <h2 className="itw-flow-title">Check 1: Comprehension Check</h2>
-          <p className="itw-flow-note">The passage is now hidden — answer based on what you remember from {activePair.passageA.title}:</p>
-          <FlowQuestions
-            questions={activePair.passageA.questions}
-            answers={answersRun1}
-            onPick={(qi, oi) => {
-              setAnswersRun1((prev) => {
-                const c = [...prev];
-                c[qi] = oi;
-                return c;
-              });
-            }}
-          />
-          <div className="itw-flow-nav">
-            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("read")}>Back</button>
-            <button type="button" className="itw-cta itw-cta-dark" disabled={!allRun1Answered} onClick={submitCheck1}>
-              Submit Answers →
-            </button>
-          </div>
-        </div>
-      )}
+                    <div className="itw-dys-slider-wrap">
+                      <span>Speed:</span>
+                      <input
+                        type="range"
+                        min="80"
+                        max="400"
+                        step="20"
+                        value={scrambleSpeed}
+                        onChange={(e) => setScrambleSpeed(Number(e.target.value))}
+                        disabled={!scrambleActive}
+                      />
+                      <span className="itw-dys-val-pill">{scrambleSpeed}ms</span>
+                    </div>
+                  </div>
 
-      {step === "result" && (
-        <div className="itw-flow-page itw-flow-narrow itw-center" key="result">
-          <div className="itw-flow-badge" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M6 20V11M12 20V4M18 20v-6" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"/></svg>
-          </div>
-          <h2 className="itw-flow-title">Reflect &amp; Compare: Run 1 Observations</h2>
-          <p className="itw-flow-lead">
-            <b>How did that feel?</b><br />Decoding strain and understanding are two distinct cognitive processes.
-          </p>
-          <div className="itw-flow-box">
-            <p style={{ fontWeight: 700, margin: "0 0 8px", fontSize: 16 }}>Here are your Run 1 observations:</p>
-            <ul className="itw-flow-lines" style={{ textAlign: "left", margin: 0, paddingLeft: 20 }}>
-              <li>You read the passage in <b>{run1Elapsed.toFixed(1)}s</b> and answered <b>{run1Score} of 3</b> questions correctly.</li>
-              <li>When decoding requires intense conscious effort, cognitive bandwidth is diverted away from comprehension and synthesis.</li>
-              <li>In the next step, you will test live accommodations on a fresh companion text from the same topic.</li>
-            </ul>
-          </div>
-          <div className="itw-flow-nav itw-flow-nav-center">
-            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("read")}>
-              Read Run 1 Again
-            </button>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("support")}>
-              Try Supportive Accommodations →
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === "support" && (
-        <div className="itw-flow-page itw-flow-narrow" key="support">
-          <h2 className="itw-flow-title itw-center">Change the environment: Try reading accommodations</h2>
-          <p className="itw-flow-lead itw-center">
-            Children with dyslexia do not lack intelligence — they lack accommodations that mitigate decoding fatigue. Select your primary accommodation focus for Run 2:
-          </p>
-          <div style={{ display: "grid", gap: 14, margin: "24px 0" }}>
-            {DYS_SUPPORT_CHOICES.map((s) => (
-              <label
-                key={s.id}
-                style={{
-                  display: "block",
-                  padding: "16px 20px",
-                  borderRadius: 18,
-                  border: `2px solid ${chosenSupport === s.id ? "var(--itw-dyslexia)" : "var(--itw-border)"}`,
-                  background: chosenSupport === s.id ? "rgba(240, 163, 33, 0.08)" : "var(--itw-panel)",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      textTransform: "uppercase",
-                      fontWeight: 800,
-                      letterSpacing: "0.06em",
-                      padding: "3px 10px",
-                      borderRadius: 99,
-                      background: "var(--itw-panel-2)",
-                      color: "var(--itw-muted)",
-                    }}
-                  >
-                    {s.tag}
+                  <span style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+                    Interior letters scramble while word anchors hold
                   </span>
                 </div>
-                <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
-                <input
-                  type="radio"
-                  name="dyslexia-support"
-                  value={s.id}
-                  checked={chosenSupport === s.id}
-                  onChange={() => {
-                    setChosenSupport(s.id);
-                    if (s.id === "spacing") {
-                      setLineSpacing("relaxed");
-                      setLetterSpacing("wide");
-                    } else if (s.id === "ruler") {
-                      setReadingRuler(true);
-                    }
-                  }}
-                  style={{ display: "none" }}
-                />
-              </label>
-            ))}
-          </div>
-          <div className="itw-flow-nav">
-            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("result")}>Back</button>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_supported")}>
-              Run 2 with Accommodations →
-            </button>
-          </div>
-        </div>
-      )}
 
-      {step === "run_supported" && (
-        <div className="itw-flow-page itw-flow-narrow" key="run_supported">
-          <div className="itw-flow-readtop">
-            <div>
-              <h2 className="itw-flow-title" style={{ margin: 0 }}>Run 2: Reading with Accommodations</h2>
-              <p className="itw-flow-lead" style={{ margin: "4px 0 0", fontSize: 14 }}>
-                Companion text: <b>{activePair.passageB.title}</b> ({activePair.passageB.wordCount} words)
-              </p>
-            </div>
-            <div className="itw-timer" role="status" aria-label="Supported reading time elapsed">
-              <span>Reading Time</span>
-              <b>{elapsed.toFixed(1)}s</b>
-            </div>
-          </div>
-
-          {/* Interactive Passage Topic Picker */}
-          <div className="itw-passage-picker" role="radiogroup" aria-label="Choose a reading topic">
-            <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", marginRight: 6 }}>
-              📚 Choose Topic:
-            </span>
-            {DYSLEXIA_PASSAGE_PAIRS.map((p, idx) => (
-              <button
-                key={p.pairId}
-                type="button"
-                className={`itw-passage-chip${idx === pairIndex % DYSLEXIA_PASSAGE_PAIRS.length ? " itw-active" : ""}`}
-                onClick={() => {
-                  setPairIndex(idx);
-                  setAnswersRun1(Array(3).fill(null));
-                  setAnswersRun2(Array(3).fill(null));
-                }}
-              >
-                {p.pairTopic}
-              </button>
-            ))}
-          </div>
-
-
-          {/* Functional Accessible Reader Toolbar */}
-          <div className="itw-reader-toolbar" role="toolbar" aria-label="Reading accessibility accommodations">
-            <div className="itw-toolbar-group">
-              <span className="itw-toolbar-label">Font Size</span>
-              <div className="itw-toolbar-btn-group" role="group" aria-label="Font size options">
-                <button
-                  type="button"
-                  className={`itw-toolbar-btn${fontSize === "normal" ? " itw-active" : ""}`}
-                  onClick={() => setFontSize("normal")}
-                >
-                  A
-                </button>
-                <button
-                  type="button"
-                  className={`itw-toolbar-btn${fontSize === "large" ? " itw-active" : ""}`}
-                  onClick={() => setFontSize("large")}
-                >
-                  A+
-                </button>
-                <button
-                  type="button"
-                  className={`itw-toolbar-btn${fontSize === "xlarge" ? " itw-active" : ""}`}
-                  onClick={() => setFontSize("xlarge")}
-                >
-                  A++
-                </button>
-              </div>
-            </div>
-
-            <div className="itw-toolbar-group">
-              <span className="itw-toolbar-label">Line Spacing</span>
-              <div className="itw-toolbar-btn-group" role="group" aria-label="Line spacing options">
-                <button
-                  type="button"
-                  className={`itw-toolbar-btn${lineSpacing === "normal" ? " itw-active" : ""}`}
-                  onClick={() => setLineSpacing("normal")}
-                >
-                  1.6x
-                </button>
-                <button
-                  type="button"
-                  className={`itw-toolbar-btn${lineSpacing === "relaxed" ? " itw-active" : ""}`}
-                  onClick={() => setLineSpacing("relaxed")}
-                >
-                  2.1x
-                </button>
-                <button
-                  type="button"
-                  className={`itw-toolbar-btn${lineSpacing === "spacious" ? " itw-active" : ""}`}
-                  onClick={() => setLineSpacing("spacious")}
-                >
-                  2.6x
-                </button>
-              </div>
-            </div>
-
-            <div className="itw-toolbar-group">
-              <span className="itw-toolbar-label">Kerning</span>
-              <div className="itw-toolbar-btn-group" role="group" aria-label="Letter spacing options">
-                <button
-                  type="button"
-                  className={`itw-toolbar-btn${letterSpacing === "normal" ? " itw-active" : ""}`}
-                  onClick={() => setLetterSpacing("normal")}
-                >
-                  Standard
-                </button>
-                <button
-                  type="button"
-                  className={`itw-toolbar-btn${letterSpacing === "wide" ? " itw-active" : ""}`}
-                  onClick={() => setLetterSpacing("wide")}
-                >
-                  Wide
-                </button>
-                <button
-                  type="button"
-                  className={`itw-toolbar-btn${letterSpacing === "xwide" ? " itw-active" : ""}`}
-                  onClick={() => setLetterSpacing("xwide")}
-                >
-                  Extra Wide
-                </button>
-              </div>
-            </div>
-
-            <div className="itw-toolbar-group">
-              <button
-                type="button"
-                className={`itw-toolbar-btn${readingRuler ? " itw-active" : ""}`}
-                style={{ borderRadius: 10, padding: "7px 12px", border: "1px solid var(--itw-border)" }}
-                onClick={() => setReadingRuler(!readingRuler)}
-              >
-                {readingRuler ? "📏 Ruler: ON" : "📏 Ruler: OFF"}
-              </button>
-              {readingRuler && (
-                <div className="itw-toolbar-btn-group" role="group" aria-label="Ruler line adjust">
-                  <button
-                    type="button"
-                    className="itw-toolbar-btn"
-                    onClick={() => setRulerY((y) => Math.max(12, y - 36))}
-                    aria-label="Move reading ruler up"
-                  >
-                    ▲
-                  </button>
-                  <button
-                    type="button"
-                    className="itw-toolbar-btn"
-                    onClick={() => setRulerY((y) => Math.min(260, y + 36))}
-                    aria-label="Move reading ruler down"
-                  >
-                    ▼
-                  </button>
+                <div className="itw-dys-output-stage">
+                  <p>{scrambledText}</p>
                 </div>
+
+                <div className="itw-storybook-insight-box" style={{ marginTop: 18 }}>
+                  <div className="itw-insight-title">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <path d="M9 18h6m-4 4h2m4.6-11.4a7 7 0 1 0-9.2 0c.9.8 1.6 2.2 1.6 3.4h6c0-1.2.7-2.6 1.6-3.4z" />
+                    </svg>
+                    <span>Cognitive Neuroscience of Scrambling</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55 }}>
+                    In typical readers, orthographic mapping connects letter sequences to meaning in ~150 milliseconds. When phonological binding drifts, the reader must decode each letter sequentially rather than reading sight-words, consuming up to 2.5× more glucose energy.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Sub-Lab 2: Mirror Confusion */}
+            {labSubTab === "confusion" && (
+              <div>
+                <div className="itw-dys-ctrl-bar">
+                  <button
+                    type="button"
+                    className={`itw-dys-btn-primary${confusionActive ? "" : " itw-dys-btn-secondary"}`}
+                    onClick={() => setConfusionActive((v) => !v)}
+                  >
+                    {confusionActive ? "Mirror Confusion Active" : "Confusion Paused"}
+                  </button>
+
+                  <span style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+                    Click individual cards below to inspect directional mirroring
+                  </span>
+                </div>
+
+                {/* 3D Flip letter cards */}
+                <div className="itw-dys-confusion-grid">
+                  {[
+                    { key: "b", left: "b", right: "d", label: "Horizontal Flip" },
+                    { key: "p", left: "p", right: "q", label: "Descender Flip" },
+                    { key: "m", left: "m", right: "w", label: "Rotational 180°" },
+                    { key: "n", left: "n", right: "u", label: "Vertical Inversion" },
+                  ].map((card) => (
+                    <div
+                      key={card.key}
+                      className="itw-dys-confusion-card"
+                      onClick={() => togglePairFlip(card.key)}
+                      title="Click to flip letter"
+                    >
+                      <span className={`itw-dys-confusion-letter${flippedPairs[card.key] ? " itw-flip-active" : ""}`}>
+                        {flippedPairs[card.key] ? card.right : card.left}
+                      </span>
+                      <div style={{ textAlign: "left" }}>
+                        <div style={{ fontWeight: 800, fontSize: 13, color: "var(--itw-text)" }}>
+                          {card.left} ↔ {card.right}
+                        </div>
+                        <div style={{ fontSize: 11, color: "var(--itw-muted)" }}>{card.label}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="itw-dys-output-stage">
+                  <p>{confusedText}</p>
+                </div>
+
+                <div className="itw-storybook-insight-box" style={{ marginTop: 18 }}>
+                  <div className="itw-insight-title">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <path d="M9 18h6m-4 4h2m4.6-11.4a7 7 0 1 0-9.2 0c.9.8 1.6 2.2 1.6 3.4h6c0-1.2.7-2.6 1.6-3.4z" />
+                    </svg>
+                    <span>Why Mirroring Happens</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55 }}>
+                    Evolutionary biology wired human vision to recognize 3D predators and tools identically regardless of viewpoint. Reading is the only human task where spatial rotation completely changes symbolic identity (such as 'b' becoming 'd'). Overcoming this natural invariance requires explicit neural remodeling.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Sub-Lab 3: Visual Crowding */}
+            {labSubTab === "crowding" && (
+              <div>
+                <div className="itw-dys-ctrl-bar">
+                  <div className="itw-dys-ctrl-group">
+                    <button type="button" className="itw-dys-btn-secondary" onClick={resetCrowding}>
+                      High Crowding (Collapsed)
+                    </button>
+                    <button type="button" className="itw-dys-btn-primary" onClick={applyOptimalSpacing}>
+                      Optimal Breathing Room
+                    </button>
+                  </div>
+
+                  <span style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+                    Drag sliders to test letter collision vs isolation
+                  </span>
+                </div>
+
+                {/* Live Sliders */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                    gap: 16,
+                    padding: 16,
+                    background: "var(--itw-panel-2)",
+                    borderRadius: 14,
+                    marginBottom: 18,
+                    border: "1.5px solid var(--itw-border)",
+                  }}
+                >
+                  <div className="itw-dys-slider-wrap">
+                    <label style={{ minWidth: 100 }}>Letter Spacing:</label>
+                    <input
+                      type="range"
+                      min="-2.5"
+                      max="4"
+                      step="0.5"
+                      value={crowdLetterSpacing}
+                      onChange={(e) => setCrowdLetterSpacing(parseFloat(e.target.value))}
+                    />
+                    <span className="itw-dys-val-pill">{crowdLetterSpacing}px</span>
+                  </div>
+
+                  <div className="itw-dys-slider-wrap">
+                    <label style={{ minWidth: 100 }}>Word Spacing:</label>
+                    <input
+                      type="range"
+                      min="-6"
+                      max="10"
+                      step="1"
+                      value={crowdWordSpacing}
+                      onChange={(e) => setCrowdWordSpacing(parseFloat(e.target.value))}
+                    />
+                    <span className="itw-dys-val-pill">{crowdWordSpacing}px</span>
+                  </div>
+
+                  <div className="itw-dys-slider-wrap">
+                    <label style={{ minWidth: 90 }}>Line Height:</label>
+                    <input
+                      type="range"
+                      min="1.0"
+                      max="2.4"
+                      step="0.1"
+                      value={crowdLineHeight}
+                      onChange={(e) => setCrowdLineHeight(parseFloat(e.target.value))}
+                    />
+                    <span className="itw-dys-val-pill">{crowdLineHeight.toFixed(2)}x</span>
+                  </div>
+                </div>
+
+                <div
+                  className="itw-dys-output-stage"
+                  style={{
+                    letterSpacing: `${crowdLetterSpacing}px`,
+                    wordSpacing: `${crowdWordSpacing}px`,
+                    lineHeight: crowdLineHeight,
+                  }}
+                >
+                  <p>{DYS_BASE_CROWDING_PASSAGE}</p>
+                </div>
+
+                <div className="itw-storybook-insight-box" style={{ marginTop: 18 }}>
+                  <div className="itw-insight-title">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <path d="M9 18h6m-4 4h2m4.6-11.4a7 7 0 1 0-9.2 0c.9.8 1.6 2.2 1.6 3.4h6c0-1.2.7-2.6 1.6-3.4z" />
+                    </svg>
+                    <span>Clinical Impact of Kerning & Line Spacing</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55 }}>
+                    Research in developmental dyslexia demonstrates that increasing letter and line spacing by just 20% increases reading accuracy by up to 35% in elementary school students without altering font size.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Sub-Lab 4: Transient Blur & Saccades */}
+            {labSubTab === "blur" && (
+              <div>
+                <div className="itw-dys-ctrl-bar">
+                  <div className="itw-dys-ctrl-group">
+                    <button
+                      type="button"
+                      className={`itw-dys-btn-primary${blurActive ? "" : " itw-dys-btn-secondary"}`}
+                      onClick={() => setBlurActive((v) => !v)}
+                    >
+                      {blurActive ? "Blur Active" : "Blur Paused"}
+                    </button>
+
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {[
+                        { id: "random", label: "Random Words" },
+                        { id: "wave", label: "Saccadic Wave" },
+                        { id: "center", label: "Macular Focus Loss" },
+                      ].map((m) => (
+                        <button
+                          key={m.id}
+                          type="button"
+                          className={`itw-dys-btn-toggle${blurMode === m.id ? " itw-active" : ""}`}
+                          onClick={() => setBlurMode(m.id)}
+                        >
+                          {m.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <span style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+                    Simulating binocular instability & tracking fatigue
+                  </span>
+                </div>
+
+                <div className="itw-dys-output-stage">
+                  <p>
+                    {blurWords.map((word, idx) => {
+                      if (!word.trim()) return word;
+                      const isBlurred = blurActive && blurredWordIndexes.has(idx);
+                      return (
+                        <span
+                          key={idx}
+                          className={`itw-dys-blur-word${isBlurred ? " itw-blurred" : ""}`}
+                        >
+                          {word}
+                        </span>
+                      );
+                    })}
+                  </p>
+                </div>
+
+                <div className="itw-storybook-insight-box" style={{ marginTop: 18 }}>
+                  <div className="itw-insight-title">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <path d="M9 18h6m-4 4h2m4.6-11.4a7 7 0 1 0-9.2 0c.9.8 1.6 2.2 1.6 3.4h6c0-1.2.7-2.6 1.6-3.4z" />
+                    </svg>
+                    <span>Saccadic Fixation Instability</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55 }}>
+                    Children with dyslexia often make shorter saccadic jumps and longer fixations, occasionally regressing backwards to re-read blurred syllables. This is why reading rulers and tinted plastic overlays produce immediate relief.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Sub-Lab 5: Floating River of Words */}
+            {labSubTab === "floating" && (
+              <div>
+                <div className="itw-dys-ctrl-bar">
+                  <div className="itw-dys-ctrl-group">
+                    <button
+                      type="button"
+                      className={`itw-dys-btn-primary${floatActive ? "" : " itw-dys-btn-secondary"}`}
+                      onClick={() => setFloatActive((v) => !v)}
+                    >
+                      {floatActive ? "Floating Active" : "Motion Paused"}
+                    </button>
+
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {[
+                        { id: "vibrate", label: "Micro-Tremor" },
+                        { id: "drift", label: "Drift" },
+                        { id: "wave", label: "Wave" },
+                        { id: "chaos", label: "Combined Chaos" },
+                      ].map((m) => (
+                        <button
+                          key={m.id}
+                          type="button"
+                          className={`itw-dys-btn-toggle${floatMode === m.id ? " itw-active" : ""}`}
+                          onClick={() => setFloatMode(m.id)}
+                        >
+                          {m.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <span style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+                    Meares-Irlen visual stress simulation
+                  </span>
+                </div>
+
+                <div className="itw-dys-output-stage">
+                  <p>
+                    {DYS_BASE_FLOAT_PASSAGE.split("").map((ch, idx) => {
+                      if (ch === " ") return " ";
+                      const dx = (Math.sin(idx) * 4).toFixed(1);
+                      const dy = (Math.cos(idx) * 4).toFixed(1);
+                      return (
+                        <span
+                          key={idx}
+                          className={`itw-dys-float-char${floatActive ? ` itw-dys-float-${floatMode}` : ""}`}
+                          style={{
+                            "--i": idx,
+                            "--dx": `${dx}px`,
+                            "--dy": `${dy}px`,
+                          }}
+                        >
+                          {ch}
+                        </span>
+                      );
+                    })}
+                  </p>
+                </div>
+
+                <div className="itw-storybook-insight-box" style={{ marginTop: 18 }}>
+                  <div className="itw-insight-title">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <path d="M9 18h6m-4 4h2m4.6-11.4a7 7 0 1 0-9.2 0c.9.8 1.6 2.2 1.6 3.4h6c0-1.2.7-2.6 1.6-3.4z" />
+                    </svg>
+                    <span>Meares-Irlen Visual Stress Syndrome</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55 }}>
+                    High luminance contrast on standard white paper can overstimulate the magnocellular visual pathway, causing perceived movement, glare, and headaches. Pastel colored page filters calm this hyper-reactivity.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 2: TIMED READING CHALLENGE (BENCHMARK TEST) */}
+        {activeTab === "challenge" && (
+          <div className="itw-dys-card">
+            <div style={{ textAlign: "center", maxWidth: 650, margin: "0 auto 20px" }}>
+              <h3 style={{ fontFamily: "var(--font-display)", fontSize: "1.5rem", marginBottom: 8, color: "var(--itw-text)" }}>
+                Side-by-Side Reading Challenge
+              </h3>
+              <p style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>
+                Test your own reading speed: read the standard text on the left, then try to read the active dyslexia simulation on the right. Compare the exact millisecond delay and cognitive overhead.
+              </p>
+
+              {!challengeRunning && !normalDone && !dyslexiaDone && (
+                <button
+                  type="button"
+                  className="itw-dys-btn-primary"
+                  style={{ marginTop: 12, padding: "12px 28px", fontSize: 15 }}
+                  onClick={startChallenge}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                  <span>Start Reading Challenge</span>
+                </button>
+              )}
+
+              {(normalDone && dyslexiaDone) && (
+                <button
+                  type="button"
+                  className="itw-dys-btn-secondary"
+                  style={{ marginTop: 12 }}
+                  onClick={startChallenge}
+                >
+                  Retry Challenge
+                </button>
               )}
             </div>
 
-            <div className="itw-tts-controls">
-              {!isSpeaking ? (
-                <button
-                  type="button"
-                  className="itw-tts-btn"
-                  onClick={() => playSpeech(activePair.passageB.text)}
-                >
-                  <span>🔊</span> Listen Aloud
-                </button>
-              ) : (
-                <>
-                  {!isPaused ? (
-                    <button type="button" className="itw-tts-btn itw-active" onClick={pauseSpeech}>
-                      <span>⏸</span> Pause
-                    </button>
-                  ) : (
-                    <button type="button" className="itw-tts-btn itw-active" onClick={resumeSpeech}>
-                      <span>▶</span> Resume
+            {/* Side-by-side columns */}
+            <div className="itw-dys-compare-grid">
+              {/* Normal Column */}
+              <div className="itw-dys-compare-col">
+                <div className="itw-dys-col-header">
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "var(--itw-text)" }}>Standard Text</h4>
+                    <span style={{ fontSize: 12, color: "var(--itw-muted)" }}>Clean serif typography</span>
+                  </div>
+                  <div className="itw-dys-timer-pill">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    <span>{normalTime.toFixed(1)}s</span>
+                  </div>
+                </div>
+
+                <div className="itw-dys-passage-box">
+                  <p>{DYS_CHALLENGE_PASSAGE}</p>
+                </div>
+
+                <div style={{ marginTop: 16 }}>
+                  {challengeRunning && !normalDone && (
+                    <button
+                      type="button"
+                      className="itw-dys-btn-primary"
+                      style={{ width: "100%", justifyContent: "center" }}
+                      onClick={finishNormal}
+                    >
+                      I've Finished Reading Standard Text ✓
                     </button>
                   )}
-                  <button type="button" className="itw-tts-btn" onClick={stopSpeech}>
-                    <span>⏹</span> Stop
-                  </button>
-                </>
+                  {normalDone && (
+                    <div style={{ textAlign: "center", fontSize: 13, fontWeight: 700, color: "#1e755d", padding: "10px 0" }}>
+                      ✓ Finished in {normalTime.toFixed(1)}s
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Dyslexia Simulation Column */}
+              <div className="itw-dys-compare-col">
+                <div className="itw-dys-col-header">
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "var(--itw-text)" }}>Dyslexia Simulation</h4>
+                    <span style={{ fontSize: 12, color: "var(--itw-muted)" }}>Live scramble & mirror drift</span>
+                  </div>
+                  <div className="itw-dys-timer-pill">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    <span>{dyslexiaTime.toFixed(1)}s</span>
+                  </div>
+                </div>
+
+                <div className="itw-dys-passage-box">
+                  <p>{challengeDyslexiaText}</p>
+                </div>
+
+                <div style={{ marginTop: 16 }}>
+                  {challengeRunning && !dyslexiaDone && (
+                    <button
+                      type="button"
+                      className="itw-dys-btn-primary"
+                      style={{ width: "100%", justifyContent: "center" }}
+                      onClick={finishDyslexia}
+                    >
+                      I've Finished Reading Dyslexia Text ✓
+                    </button>
+                  )}
+                  {dyslexiaDone && (
+                    <div style={{ textAlign: "center", fontSize: 13, fontWeight: 700, color: "#1e755d", padding: "10px 0" }}>
+                      ✓ Finished in {dyslexiaTime.toFixed(1)}s
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Result Scorecard */}
+            {normalDone && dyslexiaDone && (
+              <div className="itw-dys-result-box">
+                <div className="itw-dys-result-title">
+                  Performance & Cognitive Overhead Analysis
+                </div>
+                <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--itw-text)", margin: 0 }}>
+                  You read the standard text in <span className="itw-dys-result-highlight">{normalTime.toFixed(1)}s</span> and the dyslexia simulation in <span className="itw-dys-result-highlight">{dyslexiaTime.toFixed(1)}s</span>.
+                  {dyslexiaTime > normalTime ? (
+                    <>
+                      {" "}That is <span className="itw-dys-result-highlight">{(dyslexiaTime - normalTime).toFixed(1)} seconds slower</span> (a <span className="itw-dys-result-highlight">+{Math.round(((dyslexiaTime - normalTime) / Math.max(1, normalTime)) * 100)}% cognitive penalty</span>).
+                    </>
+                  ) : (
+                    <> You read both in similar time — notice how much harder your working memory worked to verify the scrambled words!</>
+                  )}
+                </p>
+                <div style={{ marginTop: 12, fontSize: 13.5, color: "var(--itw-muted)", lineHeight: 1.55 }}>
+                  Now imagine enduring this 2.5× cognitive friction across every single paragraph, exam question, and textbook chapter every single school day. Dyslexia is never a measure of intellect — it is the exhaustive fatigue of visual decoding.
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 3: TRY IT YOURSELF SANDBOX */}
+        {activeTab === "sandbox" && (
+          <div className="itw-dys-card">
+            <div style={{ marginBottom: 16 }}>
+              <h3 style={{ fontFamily: "var(--font-display)", fontSize: "1.4rem", marginBottom: 6, color: "var(--itw-text)" }}>
+                Interactive Sandbox: Test Any Sentence
+              </h3>
+              <p style={{ fontSize: 13.5, color: "var(--itw-muted)" }}>
+                Type your child's textbook sentence, a homework instruction, or pick a preset below to see how combined visual effects interact in real time.
+              </p>
+            </div>
+
+            <textarea
+              className="itw-dys-sandbox-input"
+              value={sandboxInput}
+              onChange={(e) => setSandboxInput(e.target.value)}
+              placeholder="Type your own sentence here to test the dyslexia simulation..."
+            />
+
+            {/* Preset chips */}
+            <div className="itw-dys-chips">
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--itw-muted)", alignSelf: "center", marginRight: 4 }}>
+                Presets:
+              </span>
+              {DYS_SANDBOX_PRESETS.map((preset, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className="itw-dys-chip"
+                  onClick={() => setSandboxInput(preset)}
+                >
+                  "{preset.slice(0, 32)}..."
+                </button>
+              ))}
+            </div>
+
+            {/* Multi-filter checkboxes */}
+            <div className="itw-dys-filter-bar">
+              <span style={{ fontSize: 12, fontWeight: 800, color: "var(--itw-text)", textTransform: "uppercase", letterSpacing: "0.06em", alignSelf: "center", marginRight: 8 }}>
+                Combine Effects:
+              </span>
+
+              {[
+                { key: "scramble", label: "Letter Scramble" },
+                { key: "confusion", label: "Mirror Confusion (b/d, p/q)" },
+                { key: "crowding", label: "Visual Crowding (Tight Kerning)" },
+                { key: "blur", label: "Transient Blur" },
+                { key: "floating", label: "Floating Letters (Irlen Stress)" },
+              ].map((f) => (
+                <label key={f.key} className="itw-dys-filter-label">
+                  <input
+                    type="checkbox"
+                    checked={activeFilters.has(f.key)}
+                    onChange={() => toggleFilter(f.key)}
+                  />
+                  <span>{f.label}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* Live rendered sandbox stage */}
+            <div
+              className="itw-dys-output-stage"
+              style={{
+                letterSpacing: activeFilters.has("crowding") ? "-1.8px" : "normal",
+                wordSpacing: activeFilters.has("crowding") ? "-4px" : "normal",
+                lineHeight: activeFilters.has("crowding") ? 1.05 : 1.75,
+              }}
+            >
+              {activeFilters.has("floating") ? (
+                <p>
+                  {sandboxRenderedText.split("").map((ch, idx) => {
+                    if (ch === " ") return " ";
+                    const dx = (Math.sin(idx) * 3).toFixed(1);
+                    const dy = (Math.cos(idx) * 3).toFixed(1);
+                    return (
+                      <span
+                        key={idx}
+                        className="itw-dys-float-char itw-dys-float-vibrate"
+                        style={{ "--i": idx, "--dx": `${dx}px`, "--dy": `${dy}px` }}
+                      >
+                        {ch}
+                      </span>
+                    );
+                  })}
+                </p>
+              ) : activeFilters.has("blur") ? (
+                <p>
+                  {sandboxRenderedText.split(/(\s+)/).map((word, idx) => {
+                    if (!word.trim()) return word;
+                    const shouldBlur = idx % 3 === 0;
+                    return (
+                      <span key={idx} className={`itw-dys-blur-word${shouldBlur ? " itw-blurred" : ""}`}>
+                        {word}
+                      </span>
+                    );
+                  })}
+                </p>
+              ) : (
+                <p>{sandboxRenderedText || "Type something in the box above to see the simulation..."}</p>
               )}
             </div>
           </div>
+        )}
 
-          <Viewfinder
-            hud={{ left: "SUPPORTED READING", right: "LIVE CONTROLS" }}
-            stageStyle={{ minHeight: "auto", background: "var(--itw-panel)" }}
-          >
+        {/* TAB 4: ACCOMMODATIONS & SUPERPOWERS */}
+        {activeTab === "accommodations" && (
+          <div className="itw-dys-card">
+            <div style={{ marginBottom: 18 }}>
+              <span className="itw-kicker">EVIDENCE-BASED CLASSROOM SCAFFOLDS</span>
+              <h3 style={{ fontFamily: "var(--font-display)", fontSize: "1.45rem", marginBottom: 6, color: "var(--itw-text)" }}>
+                Accommodations Studio
+              </h3>
+              <p style={{ fontSize: 13.5, color: "var(--itw-muted)" }}>
+                Try authentic accessibility tools: toggle the OpenDyslexic weighted font, test pastel contrast tints, drag the reading focus ruler, or listen with speech synthesis.
+              </p>
+            </div>
+
+            {/* Accommodation Controls Toolbar */}
+            <div className="itw-dys-ctrl-bar">
+              <div className="itw-dys-ctrl-group">
+                {/* OpenDyslexic Toggle */}
+                <button
+                  type="button"
+                  className={`itw-dys-btn-toggle${useOpenDyslexic ? " itw-active" : ""}`}
+                  onClick={() => setUseOpenDyslexic((v) => !v)}
+                >
+                  {useOpenDyslexic ? "OpenDyslexic Font: ON" : "OpenDyslexic Font: OFF"}
+                </button>
+
+                {/* Spacing Booster */}
+                <button
+                  type="button"
+                  className={`itw-dys-btn-toggle${spacingBoosted ? " itw-active" : ""}`}
+                  onClick={() => setSpacingBoosted((v) => !v)}
+                >
+                  {spacingBoosted ? "Expanded Spacing: ON" : "Expanded Spacing: OFF"}
+                </button>
+
+                {/* Reading Ruler Toggle */}
+                <button
+                  type="button"
+                  className={`itw-dys-btn-toggle${readingRulerActive ? " itw-active" : ""}`}
+                  onClick={() => setReadingRulerActive((v) => !v)}
+                >
+                  {readingRulerActive ? "Reading Ruler: ON" : "Reading Ruler: OFF"}
+                </button>
+              </div>
+
+              {/* Tint Overlays */}
+              <div className="itw-dys-tints">
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--itw-muted)", marginRight: 4 }}>
+                  Color Tint:
+                </span>
+                {[
+                  { id: "none", color: "#ffffff", title: "Default" },
+                  { id: "cream", color: "#faf6eb", title: "Warm Cream" },
+                  { id: "peach", color: "#fef4ea", title: "Soft Peach" },
+                  { id: "mint", color: "#eef9f2", title: "Calming Mint" },
+                  { id: "sky", color: "#eef6fc", title: "Pale Sky" },
+                  { id: "rose", color: "#fdf0f2", title: "Soft Rose" },
+                ].map((tint) => (
+                  <button
+                    key={tint.id}
+                    type="button"
+                    title={tint.title}
+                    className={`itw-dys-tint-btn${activeTint === tint.id ? " itw-active" : ""}`}
+                    style={{ backgroundColor: tint.color }}
+                    onClick={() => setActiveTint(tint.id)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Interactive Reading Box with Ruler Overlay */}
             <div
-              className="itw-reading-wrapper"
-              onMouseMove={handleRulerMouseMove}
-              onTouchMove={(e) => {
-                if (!readingRuler || !e.touches[0]) return;
-                const rect = e.currentTarget.getBoundingClientRect();
-                const relativeY = Math.max(12, Math.min(e.touches[0].clientY - rect.top, rect.height - 48));
-                setRulerY(relativeY);
+              ref={rulerRef}
+              className={`itw-dys-output-stage itw-dys-ruler-zone ${activeTint !== "none" ? `itw-dys-tint-${activeTint}` : ""} ${useOpenDyslexic ? "itw-font-opendyslexic" : ""}`}
+              style={{
+                letterSpacing: spacingBoosted ? "1.2px" : "normal",
+                lineHeight: spacingBoosted ? 1.95 : 1.75,
+                position: "relative",
               }}
+              onMouseMove={handleRulerMouseMove}
             >
-              {readingRuler && (
+              {readingRulerActive && (
                 <div
-                  className="itw-reading-ruler-bar"
-                  style={{ top: rulerY }}
-                  aria-hidden="true"
+                  className="itw-dys-reading-ruler-overlay"
+                  style={{ top: `${rulerY}px` }}
                 />
               )}
-              <div className="itw-reading-passage" style={currentTypoStyle}>
-                <span>{activePair.passageB.text}</span>
-              </div>
-            </div>
-          </Viewfinder>
-
-          <p className="itw-flow-note" style={{ marginTop: 16 }}>
-            When layout, spacing, ruler guidance, or audio tools are provided, the reader is free to engage directly with the ideas rather than wrestling with symbol decoding.
-          </p>
-
-          <div className="itw-flow-nav">
-            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("support")}>Back</button>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={finishRun2Reading}>
-              I've finished reading with support →
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === "questions_supported" && (
-        <div className="itw-flow-page itw-flow-narrow" key="questions_supported">
-          <h2 className="itw-flow-title">Check 2: Supported Reading Comprehension</h2>
-          <p className="itw-flow-note">Answer based on the companion passage you just read ({activePair.passageB.title}):</p>
-          <FlowQuestions
-            questions={activePair.passageB.questions}
-            answers={answersRun2}
-            onPick={(qi, oi) => {
-              setAnswersRun2((prev) => {
-                const c = [...prev];
-                c[qi] = oi;
-                return c;
-              });
-            }}
-          />
-          <div className="itw-flow-nav">
-            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("run_supported")}>Back</button>
-            <button type="button" className="itw-cta itw-cta-dark" disabled={!allRun2Answered} onClick={submitCheck2}>
-              Submit &amp; See Takeaways →
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === "explain" && (
-        <div className="itw-flow-page" key="explain">
-          <div className="itw-flow-intro itw-flow-intro-tight">
-            <div>
-              <h2 className="itw-flow-title">What you just experienced</h2>
-              <p className="itw-flow-lead">
-                Decoding written language is an intensive neurological task. In children with dyslexia, the phonological
-                processing network requires more time and explicit instruction to link letters to sounds. Understanding
-                is fully intact — decoding is where the friction lives.
-              </p>
-            </div>
-            <IntroVignette moduleKey="dyslexia" />
-          </div>
-
-          {/* Comparative Run Telemetry Card */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-              gap: 16,
-              margin: "20px 0 28px",
-            }}
-          >
-            <div
-              style={{
-                padding: "20px 22px",
-                borderRadius: 18,
-                background: "var(--itw-panel)",
-                border: "1.5px solid var(--itw-border)",
-              }}
-            >
-              <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--itw-muted)", marginBottom: 6 }}>
-                Run 1 (Standard Reading)
-              </div>
-              <div style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 24, color: "var(--itw-text)", marginBottom: 4 }}>
-                {run1Elapsed.toFixed(1)}s <span style={{ fontSize: 16, fontWeight: 600, color: "var(--itw-muted)" }}>• {run1Score}/3 correct</span>
-              </div>
-              <p style={{ margin: 0, fontSize: 13, color: "var(--itw-muted)", lineHeight: 1.45 }}>
-                {activePair.passageA.title} without formatting accommodations.
-              </p>
+              <p>{DYS_ACCOMMODATION_PASSAGE}</p>
             </div>
 
-            <div
-              style={{
-                padding: "20px 22px",
-                borderRadius: 18,
-                background: "rgba(89, 40, 140, 0.08)",
-                border: "2px solid var(--itw-dyslexia)",
-              }}
-            >
-              <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--itw-dyslexia)", marginBottom: 6 }}>
-                Run 2 (Supported Reading)
-              </div>
-              <div style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 24, color: "var(--itw-dyslexia)", marginBottom: 4 }}>
-                {run2Elapsed > 0 ? `${run2Elapsed.toFixed(1)}s` : "Accommodated"} <span style={{ fontSize: 16, fontWeight: 600, color: "var(--itw-text)" }}>• {run2Score}/3 correct</span>
-              </div>
-              <p style={{ margin: 0, fontSize: 13, color: "var(--itw-muted)", lineHeight: 1.45 }}>
-                {activePair.passageB.title} with {lineSpacing} spacing, {fontSize} typography{readingRuler ? ", focus ruler" : ""}.
-              </p>
-            </div>
-          </div>
+            {/* Speech Audio Narration Bar */}
+            <div className="itw-dys-audio-bar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e755d" strokeWidth="2.2">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+              </svg>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-text)" }}>
+                Audio Read-Aloud:
+              </span>
 
-          <div className="itw-flow-callout">
-            <b>Dyslexia is not simply seeing letters backwards.</b>
-            <p>
-              It is a language-processing difference that affects reading fluency, decoding, spelling, and automaticity.
-              Intelligence, reasoning, and creativity are unaffected — providing accommodations like audiobooks and extra time
-              ensures those strengths can be realized.
-            </p>
-          </div>
-          <h3 className="itw-flow-h3">You may also notice</h3>
-          <div className="itw-flow-notice">
-            {DYS_NOTICE.map((n) => (
-              <div key={n.text} className="itw-flow-notice-item">
-                <span aria-hidden="true">{n.icon}</span>
-                <p>{n.text}</p>
-              </div>
-            ))}
-          </div>
-          <h3 className="itw-flow-h3">The Data: Indian Studies</h3>
-          <FactsGrid
-            facts={[
-              {
-                num: "~8%",
-                label: "pooled prevalence of Specific Learning Disorders (SLDs) across 6 Indian studies (8,133 children screened, up to 19 years, 95% CI: 4%–11%)",
-                src: "Scaria, Bhaskaran & George (2023), Indian Systematic Review & Meta-Analysis",
-              },
-              {
-                num: "All SLDs",
-                label: "The 8% pooled estimate encompasses reading (dyslexia), writing (dysgraphia), and math (dyscalculia) disorders with marked between-study variation, rather than dyslexia alone",
-                src: "Scaria et al. (2023) systematic review across 6 Indian study cohorts",
-              },
-              {
-                num: "10–15%",
-                label: "of students across diverse Indian classrooms are estimated to benefit from structured, multisensory phonics and accessible text adaptations",
-                src: "Dyslexia Association of India (DAI) Educational Guidelines",
-              },
-            ]}
-            note="An Indian systematic review and meta-analysis estimated the pooled prevalence of Specific Learning Disorders at approximately 8% (95% CI: 4%–11%). This estimate covers reading, writing, and arithmetic-related learning disorders; it is not a dyslexia-specific prevalence estimate."
-            onComplete={() => {}}
-          />
-          <section className="itw-block itw-help-block" style={{ marginTop: 40 }}>
-            <div className="itw-help-head">
-              <div>
-                <div className="itw-help-eyebrow">Evidence-based accommodations</div>
-                <h3 className="itw-help-title">At home and in the classroom</h3>
-              </div>
-            </div>
-            <StrategyTabs
-              home={[
-                "Read aloud together well past the age other kids stop needing it — it protects a love of stories while decoding catches up.",
-                "Use audiobooks and text-to-speech for content, so struggling to decode doesn't block access to ideas.",
-                "Praise effort and strategy, not speed — a slow, correct reader is not behind in intelligence.",
-                "Ask the school about a formal evaluation early; structured, phonics-based intervention works best the sooner it starts.",
-              ]}
-              classroom={[
-                "Give extended time on reading-heavy tests — the accommodation targets decoding speed, not comprehension.",
-                "Offer notes or slides in advance so class time can go to discussion instead of first-pass decoding.",
-                "Never ask a dyslexic student to read aloud cold, in front of the class, without warning.",
-                "Use structured literacy / explicit phonics instruction — it's the intervention with the strongest evidence behind it.",
-              ]}
-            />
-            <HelpFooter />
-          </section>
-          <div className="itw-flow-callout">
-            <b>Dyslexia is not simply seeing letters backwards.</b>
-            <p>
-              It is a language-processing difference that affects reading fluency, decoding, spelling, and automaticity.
-              Intelligence, reasoning, and creativity are unaffected — providing accommodations like audiobooks and extra time
-              ensures those strengths can be realized.
-            </p>
-          </div>
-          <h3 className="itw-flow-h3">You may also notice</h3>
-          <div className="itw-flow-notice">
-            {DYS_NOTICE.map((n) => (
-              <div key={n.text} className="itw-flow-notice-item">
-                <span aria-hidden="true">{n.icon}</span>
-                <p>{n.text}</p>
-              </div>
-            ))}
-          </div>
-          <h3 className="itw-flow-h3">The Data: Indian Studies</h3>
-          <FactsGrid
-            facts={[
-              {
-                num: "~8%",
-                label: "pooled prevalence of Specific Learning Disorders (SLDs) across 6 Indian studies (8,133 children screened, up to 19 years, 95% CI: 4%–11%)",
-                src: "Scaria, Bhaskaran & George (2023), Indian Systematic Review & Meta-Analysis",
-              },
-              {
-                num: "All SLDs",
-                label: "The 8% pooled estimate encompasses reading (dyslexia), writing (dysgraphia), and math (dyscalculia) disorders with marked between-study variation, rather than dyslexia alone",
-                src: "Scaria et al. (2023) systematic review across 6 Indian study cohorts",
-              },
-              {
-                num: "10–15%",
-                label: "of students across diverse Indian classrooms are estimated to benefit from structured, multisensory phonics and accessible text adaptations",
-                src: "Dyslexia Association of India (DAI) Educational Guidelines",
-              },
-            ]}
-            note="An Indian systematic review and meta-analysis estimated the pooled prevalence of Specific Learning Disorders at approximately 8% (95% CI: 4%–11%). This estimate covers reading, writing, and arithmetic-related learning disorders; it is not a dyslexia-specific prevalence estimate."
-            onComplete={() => {}}
-          />
-          <section className="itw-block itw-help-block" style={{ marginTop: 40 }}>
-            <div className="itw-help-head">
-              <div>
-                <div className="itw-help-eyebrow">Evidence-based accommodations</div>
-                <h3 className="itw-help-title">At home and in the classroom</h3>
-              </div>
-            </div>
-            <StrategyTabs
-              home={[
-                "Read aloud together well past the age other kids stop needing it — it protects a love of stories while decoding catches up.",
-                "Use audiobooks and text-to-speech for content, so struggling to decode doesn't block access to ideas.",
-                "Praise effort and strategy, not speed — a slow, correct reader is not behind in intelligence.",
-                "Ask the school about a formal evaluation early; structured, phonics-based intervention works best the sooner it starts.",
-              ]}
-              classroom={[
-                "Give extended time on reading-heavy tests — the accommodation targets decoding speed, not comprehension.",
-                "Offer notes or slides in advance so class time can go to discussion instead of first-pass decoding.",
-                "Never ask a dyslexic student to read aloud cold, in front of the class, without warning.",
-                "Use structured literacy / explicit phonics instruction — it's the intervention with the strongest evidence behind it.",
-              ]}
-            />
-            <HelpFooter />
-          </section>
-          <div className="itw-flow-nav" style={{ marginTop: 32 }}>
-            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("result")}>Back</button>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("next")}>Next Steps →</button>
-          </div>
-        </div>
-      )}
+              <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
+                {!isSpeaking ? (
+                  <button type="button" className="itw-dys-btn-primary" onClick={playTTS}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                    <span>{isPaused ? "Resume Audio" : "Listen to Passage"}</span>
+                  </button>
+                ) : (
+                  <button type="button" className="itw-dys-btn-secondary" onClick={pauseTTS}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <rect x="6" y="4" width="4" height="16" />
+                      <rect x="14" y="4" width="4" height="16" />
+                    </svg>
+                    <span>Pause</span>
+                  </button>
+                )}
 
-      {step === "next" && (
-        <div className="itw-flow-page itw-flow-narrow" key="next">
-          <h2 className="itw-flow-title itw-center">Understanding creates a kinder tomorrow</h2>
-          <p className="itw-flow-lead itw-center">
-            Every child learns differently. If you have concerns about your child's reading or would like professional
-            guidance, early structured support makes all the difference.
-          </p>
-          <div className="itw-flow-nav itw-flow-nav-center">
-            <a className="itw-cta itw-cta-dark" href="/assessments">Take an Assessment →</a>
-            <a className="itw-cta itw-cta-line" href="/consult">Book a Consultation →</a>
-          </div>
-          <h3 className="itw-flow-h3">Explore More Experiences</h3>
-          <div className="itw-flow-more">
-            {more.map((m) => (
-              <button type="button" key={m.key} className="itw-flow-more-card" data-m={m.key} onClick={() => onNavigate(m.key)}>
-                <b>{m.name}</b>
-                <span>{m.tag}</span>
-                <i aria-hidden="true">→</i>
+                {(isSpeaking || isPaused) && (
+                  <button type="button" className="itw-dys-btn-secondary" onClick={stopTTS}>
+                    Stop
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Epidemiological Data Grid */}
+            <div style={{ marginTop: 32 }}>
+              <span className="itw-kicker">EPIDEMIOLOGY & CLINICAL PREVALENCE</span>
+              <h4 style={{ fontFamily: "var(--font-display)", fontSize: "1.3rem", color: "var(--itw-text)", margin: "4px 0 16px" }}>
+                The Scope of Dyslexia
+              </h4>
+
+              <div className="itw-dys-stat-grid">
+                <div className="itw-dys-stat-card">
+                  <div className="itw-dys-stat-num">1 in 5</div>
+                  <div className="itw-dys-stat-label">Students display identifiable dyslexic reading traits (~20% of all learners)</div>
+                </div>
+
+                <div className="itw-dys-stat-card">
+                  <div className="itw-dys-stat-num">80%</div>
+                  <div className="itw-dys-stat-label">Of all diagnosed specific learning differences represent language-based dyslexia</div>
+                </div>
+
+                <div className="itw-dys-stat-card">
+                  <div className="itw-dys-stat-num">2.5×</div>
+                  <div className="itw-dys-stat-label">Higher metabolic brain energy expended during visual decoding vs neurotypical peers</div>
+                </div>
+
+                <div className="itw-dys-stat-card">
+                  <div className="itw-dys-stat-num">40%</div>
+                  <div className="itw-dys-stat-label">Of self-made entrepreneurs and inventors exhibit dyslexic cognitive wiring</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Neurodiversity Strengths & Superpowers */}
+            <div style={{ marginTop: 32 }}>
+              <span className="itw-kicker">MANAS LEARNING STRENGTHS-BASED PARADIGM</span>
+              <h4 style={{ fontFamily: "var(--font-display)", fontSize: "1.3rem", color: "var(--itw-text)", margin: "4px 0 16px" }}>
+                Dyslexic Superpowers: Beyond the Printed Page
+              </h4>
+
+              <div className="itw-dys-strengths-grid">
+                <div className="itw-dys-strength-card">
+                  <div className="itw-dys-strength-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                      <polyline points="2 17 12 22 22 17" />
+                      <polyline points="2 12 12 17 22 12" />
+                    </svg>
+                  </div>
+                  <div className="itw-dys-strength-title">3D Spatial Architecture</div>
+                  <div className="itw-dys-strength-desc">
+                    Extraordinary ability to mentally rotate 3D objects, visualize complex physical structures, and excel in engineering, architecture, and surgery.
+                  </div>
+                </div>
+
+                <div className="itw-dys-strength-card">
+                  <div className="itw-dys-strength-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="2" y1="12" x2="22" y2="12" />
+                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                    </svg>
+                  </div>
+                  <div className="itw-dys-strength-title">Holistic Big-Picture Thinking</div>
+                  <div className="itw-dys-strength-desc">
+                    Spotting cross-disciplinary patterns and systemic connections long before others, enabling transformative entrepreneurial vision.
+                  </div>
+                </div>
+
+                <div className="itw-dys-strength-card">
+                  <div className="itw-dys-strength-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                    </svg>
+                  </div>
+                  <div className="itw-dys-strength-title">Narrative & Creative Empathy</div>
+                  <div className="itw-dys-strength-desc">
+                    Rich imagination, inventive storytelling, and deep emotional resonance when communicating ideas out loud.
+                  </div>
+                </div>
+
+                <div className="itw-dys-strength-card">
+                  <div className="itw-dys-strength-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <circle cx="12" cy="12" r="3" />
+                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                    </svg>
+                  </div>
+                  <div className="itw-dys-strength-title">Lateral Problem Solving</div>
+                  <div className="itw-dys-strength-desc">
+                    Refusing to get trapped in rigid step-by-step algorithms, dyslexic thinkers intuitively discover innovative workarounds.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div style={{ marginTop: 32, display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
+              <a
+                href="/consult"
+                className="itw-dys-btn-primary"
+                style={{ padding: "12px 24px", textDecoration: "none" }}
+              >
+                Book a Specialist Consultation →
+              </a>
+
+              <a
+                href="/assessments"
+                className="itw-dys-btn-secondary"
+                style={{ padding: "12px 24px", textDecoration: "none" }}
+              >
+                Take a Free Clinical Screening
+              </a>
+
+              <button
+                type="button"
+                className="itw-dys-btn-secondary"
+                style={{ padding: "12px 24px" }}
+                onClick={() => onNavigate("speech")}
+              >
+                Next Experience: Speech & Language →
               </button>
-            ))}
+            </div>
           </div>
-          <div className="itw-flow-nav itw-flow-nav-center">
-            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("explain")}>Back</button>
-            <button type="button" className="itw-cta itw-cta-line" onClick={onBack}>All experiences</button>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
+
+      {/* Return to experiences footer */}
+      <div className="itw-flow-nav itw-flow-nav-center" style={{ marginTop: 30 }}>
+        <button type="button" className="itw-cta itw-cta-line" onClick={onBack}>
+          ← Back to All Experiences
+        </button>
+      </div>
     </section>
   );
 }

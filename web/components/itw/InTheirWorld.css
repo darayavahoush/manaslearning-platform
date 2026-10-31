@@ -1,3 +1,5 @@
+@import url('https://fonts.cdnfonts.com/css/opendyslexic');
+
 /*
   In Their World — styles
   Design: a field-observer's case file. You step into a dark, immersive
@@ -35,8 +37,8 @@
   --itw-autism-soft:rgba(59,130,246,.15);
   --itw-adhd:#f59e0b;
   --itw-adhd-soft:rgba(245,158,11,.16);
-  --itw-dyslexia:#59288c;
-  --itw-dyslexia-soft:rgba(89,40,140,.14);
+  --itw-dyslexia:#1e755d;
+  --itw-dyslexia-soft:rgba(30,117,93,.14);
   --itw-speech:#8c422c;
   --itw-speech-soft:rgba(140,66,44,.14);
   --itw-dyscalculia:#1d8585;
@@ -92,8 +94,8 @@
   --itw-autism-soft:rgba(96,165,250,.20);
   --itw-adhd:#fbbf24;
   --itw-adhd-soft:rgba(251,191,36,.20);
-  --itw-dyslexia:#aa7edd;
-  --itw-dyslexia-soft:rgba(170,126,221,.18);
+  --itw-dyslexia:#34d399;
+  --itw-dyslexia-soft:rgba(52,211,153,.20);
   --itw-speech:#d27356;
   --itw-speech-soft:rgba(210,115,86,.18);
   --itw-dyscalculia:#4dd0e1;
@@ -2266,6 +2268,670 @@ body:has(.itw-dark) .itw-leafimg {
     min-height: 200px;
   }
 }
+
+/* ================= DYSLEXIA HIGH-FIDELITY EXPERIENCE ================= */
+
+.itw-dys-container {
+  max-width: 1040px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Tab Navigation */
+.itw-dys-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 6px;
+  background: var(--itw-panel);
+  border: 1.5px solid var(--itw-border);
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.itw-dys-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: var(--itw-muted);
+  font-family: var(--font-display, inherit);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.25, 1);
+  white-space: nowrap;
+}
+
+.itw-dys-tab-btn:hover {
+  color: var(--itw-text);
+  background: rgba(30, 117, 93, 0.08);
+}
+
+.itw-dys-tab-btn.itw-active {
+  background: #1e755d;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(30, 117, 93, 0.28);
+}
+
+/* Card Container */
+.itw-dys-card {
+  background: var(--itw-panel);
+  border: 1.5px solid var(--itw-border);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
+}
+
+/* Scramble & Blur Word Animations */
+.itw-dys-blur-word {
+  display: inline-block;
+  transition: filter 0.28s ease, transform 0.28s ease;
+  will-change: filter;
+}
+
+.itw-dys-blur-word.itw-blurred {
+  filter: blur(3.5px);
+  opacity: 0.65;
+}
+
+/* Floating Letters (Irlen Visual Stress) */
+.itw-dys-float-char {
+  display: inline-block;
+  will-change: transform;
+}
+
+.itw-dys-float-vibrate {
+  animation: itwDysVibrate 0.32s infinite;
+}
+
+.itw-dys-float-drift {
+  animation: itwDysDrift 3.2s ease-in-out infinite;
+}
+
+.itw-dys-float-wave {
+  animation: itwDysWave 2.2s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 0.05s);
+}
+
+.itw-dys-float-chaos {
+  animation: itwDysVibrate 0.32s infinite, itwDysDrift 3.5s ease-in-out infinite, itwDysWave 2s ease-in-out infinite;
+  animation-delay: 0s, calc(var(--i, 0) * 0.08s), calc(var(--i, 0) * 0.04s);
+}
+
+@keyframes itwDysVibrate {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(-1.5px, 1px) rotate(-1deg); }
+  50% { transform: translate(1px, -1.5px) rotate(0.6deg); }
+  75% { transform: translate(-1px, -0.6px) rotate(-0.6deg); }
+}
+
+@keyframes itwDysDrift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(var(--dx, 3px), var(--dy, -3px)); }
+}
+
+@keyframes itwDysWave {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+/* Mirror Confusion Cards */
+.itw-dys-confusion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.itw-dys-confusion-card {
+  background: var(--itw-panel-2);
+  border: 1.5px solid var(--itw-border);
+  border-radius: 14px;
+  padding: 16px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.itw-dys-confusion-card:hover {
+  transform: translateY(-2px);
+  border-color: #1e755d;
+}
+
+.itw-dys-confusion-letter {
+  font-family: var(--font-display, Georgia, serif);
+  font-size: 2.2rem;
+  font-weight: 800;
+  display: inline-block;
+  transition: transform 0.35s ease;
+}
+
+.itw-dys-confusion-letter.itw-flip-active {
+  animation: itwLetterFlip 0.45s ease;
+}
+
+@keyframes itwLetterFlip {
+  0% { transform: scaleX(1); }
+  50% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+/* Timed Reading Challenge Comparison Grid */
+.itw-dys-compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin: 18px 0;
+}
+
+@media (max-width: 768px) {
+  .itw-dys-compare-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.itw-dys-compare-col {
+  display: flex;
+  flex-direction: column;
+  background: var(--itw-panel);
+  border: 1.5px solid var(--itw-border);
+  border-radius: 18px;
+  padding: 20px;
+  position: relative;
+}
+
+.itw-dys-col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--itw-border);
+}
+
+.itw-dys-timer-pill {
+  font-family: var(--font-mono, monospace);
+  font-size: 14px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 99px;
+  background: rgba(30, 117, 93, 0.12);
+  color: #1e755d;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.itw-dys-passage-box {
+  flex: 1;
+  font-family: Georgia, serif;
+  font-size: 1.18rem;
+  line-height: 1.75;
+  color: var(--itw-text);
+  padding: 12px 4px;
+  min-height: 160px;
+}
+
+/* OpenDyslexic typeface font class */
+.itw-font-opendyslexic {
+  font-family: 'OpenDyslexic', sans-serif !important;
+}
+
+/* Reading Ruler Bar */
+.itw-dys-reading-ruler-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 38px;
+  background: rgba(255, 220, 40, 0.22);
+  border-top: 1.5px solid rgba(220, 180, 0, 0.5);
+  border-bottom: 1.5px solid rgba(220, 180, 0, 0.5);
+  pointer-events: none;
+  border-radius: 4px;
+  transition: top 0.08s ease-out;
+  z-index: 10;
+}
+
+/* Colored Tint Overlays */
+.itw-dys-tint-cream { background-color: #faf6eb !important; }
+.itw-dys-tint-peach { background-color: #fef4ea !important; }
+.itw-dys-tint-mint  { background-color: #eef9f2 !important; }
+.itw-dys-tint-sky   { background-color: #eef6fc !important; }
+.itw-dys-tint-rose  { background-color: #fdf0f2 !important; }
+
+/* Stat Highlights */
+.itw-dys-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.itw-dys-stat-card {
+  background: var(--itw-panel-2);
+  border: 1.5px solid var(--itw-border);
+  border-radius: 16px;
+  padding: 18px;
+  text-align: center;
+}
+
+.itw-dys-stat-num {
+  font-family: var(--font-display, inherit);
+  font-size: 2.6rem;
+  font-weight: 900;
+  color: #1e755d;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.itw-dys-stat-label {
+  font-size: 13px;
+  color: var(--itw-muted);
+  line-height: 1.45;
+}
+
+/* Strengths Grid */
+.itw-dys-strengths-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.itw-dys-strength-card {
+  background: var(--itw-panel-2);
+  border: 1.5px solid var(--itw-border);
+  border-radius: 16px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.itw-dys-strength-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(30, 117, 93, 0.12);
+  color: #1e755d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.itw-dys-strength-title {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--itw-text);
+}
+
+.itw-dys-strength-desc {
+  font-size: 13px;
+  color: var(--itw-muted);
+  line-height: 1.5;
+}
+
+/* Sub-lab switcher */
+.itw-dys-subtabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.itw-dys-subtab-btn {
+  padding: 8px 16px;
+  border-radius: 99px;
+  border: 1.5px solid var(--itw-border);
+  background: var(--itw-panel-2);
+  color: var(--itw-muted);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.itw-dys-subtab-btn:hover {
+  border-color: #1e755d;
+  color: var(--itw-text);
+}
+
+.itw-dys-subtab-btn.itw-active {
+  background: #1e755d;
+  border-color: #1e755d;
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(30, 117, 93, 0.25);
+}
+
+/* Control toolbar */
+.itw-dys-ctrl-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--itw-panel-2);
+  border: 1.5px solid var(--itw-border);
+  border-radius: 14px;
+  margin-bottom: 18px;
+}
+
+.itw-dys-ctrl-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.itw-dys-btn-primary {
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: none;
+  background: #1e755d;
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(30, 117, 93, 0.2);
+}
+
+.itw-dys-btn-primary:hover:not(:disabled) {
+  background: #165a47;
+  transform: translateY(-1px);
+}
+
+.itw-dys-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.itw-dys-btn-secondary {
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: 1.5px solid var(--itw-border);
+  background: var(--itw-panel);
+  color: var(--itw-text);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.itw-dys-btn-secondary:hover:not(:disabled) {
+  border-color: #1e755d;
+  color: #1e755d;
+  background: rgba(30, 117, 93, 0.05);
+}
+
+.itw-dys-btn-toggle {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--itw-border);
+  background: var(--itw-panel);
+  color: var(--itw-muted);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.itw-dys-btn-toggle.itw-active {
+  background: #d97706;
+  border-color: #d97706;
+  color: #ffffff;
+}
+
+.itw-dys-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--itw-text);
+  font-weight: 600;
+}
+
+.itw-dys-slider-wrap input[type="range"] {
+  accent-color: #1e755d;
+  cursor: pointer;
+}
+
+.itw-dys-val-pill {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(30, 117, 93, 0.12);
+  color: #1e755d;
+  font-size: 11.5px;
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+}
+
+/* Challenge Result Box */
+.itw-dys-result-box {
+  margin-top: 24px;
+  padding: 22px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(30, 117, 93, 0.08) 0%, rgba(217, 119, 6, 0.08) 100%);
+  border: 1.5px solid rgba(30, 117, 93, 0.35);
+  animation: itwFadeIn 0.4s ease;
+}
+
+.itw-dys-result-title {
+  font-family: var(--font-display, inherit);
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--itw-text);
+  margin-bottom: 10px;
+}
+
+.itw-dys-result-highlight {
+  font-weight: 800;
+  color: #1e755d;
+}
+
+/* Sandbox */
+.itw-dys-sandbox-input {
+  width: 100%;
+  min-height: 100px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1.5px solid var(--itw-border);
+  background: var(--itw-panel-2);
+  color: var(--itw-text);
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.itw-dys-sandbox-input:focus {
+  border-color: #1e755d;
+  box-shadow: 0 0 0 3px rgba(30, 117, 93, 0.15);
+}
+
+.itw-dys-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 16px;
+}
+
+.itw-dys-chip {
+  padding: 5px 12px;
+  border-radius: 99px;
+  border: 1px solid var(--itw-border);
+  background: var(--itw-panel);
+  color: var(--itw-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.itw-dys-chip:hover {
+  border-color: #1e755d;
+  color: var(--itw-text);
+}
+
+.itw-dys-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--itw-panel-2);
+  border: 1.5px solid var(--itw-border);
+  border-radius: 14px;
+  margin-bottom: 16px;
+}
+
+.itw-dys-filter-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--itw-text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.itw-dys-filter-label input[type="checkbox"] {
+  accent-color: #1e755d;
+  cursor: pointer;
+}
+
+.itw-dys-output-stage {
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--itw-panel);
+  border: 1.5px solid var(--itw-border);
+  min-height: 140px;
+  font-family: Georgia, serif;
+  font-size: 1.22rem;
+  line-height: 1.75;
+  color: var(--itw-text);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Reading Ruler Wrapper */
+.itw-dys-ruler-zone {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  user-select: none;
+}
+
+/* Audio Player Bar */
+.itw-dys-audio-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--itw-panel-2);
+  border: 1.5px solid var(--itw-border);
+  margin-top: 14px;
+}
+
+/* Tint selector */
+.itw-dys-tints {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.itw-dys-tint-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 2px solid var(--itw-border);
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.itw-dys-tint-btn:hover,
+.itw-dys-tint-btn.itw-active {
+  transform: scale(1.15);
+  border-color: #1e755d;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+@keyframes itwFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dark mode overrides for high-fidelity dyslexia experience */
+.itw-root.itw-dark .itw-dys-subtab-btn.itw-active {
+  background: #34d399;
+  border-color: #34d399;
+  color: #0f172a;
+}
+
+.itw-root.itw-dark .itw-dys-tab-btn.itw-active {
+  background: #34d399;
+  color: #0f172a !important;
+  box-shadow: 0 4px 14px rgba(52, 211, 153, 0.3);
+}
+
+.itw-root.itw-dark .itw-dys-timer-pill {
+  background: rgba(52, 211, 153, 0.16);
+  color: #34d399;
+}
+
+.itw-root.itw-dark .itw-dys-val-pill {
+  background: rgba(52, 211, 153, 0.16);
+  color: #34d399;
+}
+
+.itw-root.itw-dark .itw-dys-btn-primary {
+  background: #34d399;
+  color: #0f172a;
+  box-shadow: 0 4px 12px rgba(52, 211, 153, 0.25);
+}
+
+.itw-root.itw-dark .itw-dys-btn-primary:hover:not(:disabled) {
+  background: #2dd4bf;
+}
+
+.itw-root.itw-dark .itw-dys-stat-num {
+  color: #34d399;
+}
+
+.itw-root.itw-dark .itw-dys-strength-icon {
+  background: rgba(52, 211, 153, 0.16);
+  color: #34d399;
+}
+
+.itw-root.itw-dark .itw-dys-result-highlight {
+  color: #34d399;
+}
+
+.itw-root.itw-dark .itw-dys-confusion-card:hover {
+  border-color: #34d399;
+}
+
+/* ================= END DYSLEXIA HIGH-FIDELITY EXPERIENCE ================= */
 
 /* ================= IN-SIMULATION SCENE PLATES ================= */
 .itw-scene-plate {

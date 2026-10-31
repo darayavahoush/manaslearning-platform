@@ -206,12 +206,27 @@
     btn.style.setProperty("overflow", "visible", "important");
     btn.style.setProperty("margin", "0", "important");
     btn.style.setProperty("padding", "0", "important");
-    if (!btn.querySelector('.itw-milo-avatar')) {
-      btn.innerHTML =
-        '<div class="itw-milo-avatar" style="width:52px;height:52px;border-radius:9999px;overflow:hidden;display:flex;align-items:center;justify-content:center;pointer-events:none">' +
-          '<img src="/decor/milo-owl.webp" alt="Milo the Owl" style="width:100%;height:100%;object-fit:cover;border-radius:9999px;display:block" />' +
-        '</div>' +
-        '<span style="position:absolute;top:-2px;right:-2px;width:15px;height:15px;border-radius:9999px;background:#f47522;border:2.5px solid #fff;box-shadow:0 0 6px rgba(244,117,34,0.6);pointer-events:none" aria-hidden="true"></span>';
+
+    // Update owl image on the existing React img node without destroying React DOM tree
+    var img = btn.querySelector('img');
+    if (img) {
+      if (img.getAttribute('src') !== '/decor/milo-owl.webp') {
+        img.src = '/decor/milo-owl.webp';
+      }
+      img.style.setProperty("width", "52px", "important");
+      img.style.setProperty("height", "52px", "important");
+      img.style.setProperty("object-fit", "cover", "important");
+      img.style.setProperty("border-radius", "9999px", "important");
+      img.style.setProperty("display", "block", "important");
+    }
+
+    // Add status indicator dot if not present
+    if (!btn.querySelector('.itw-milo-dot')) {
+      var dot = document.createElement('span');
+      dot.className = 'itw-milo-dot';
+      dot.style.cssText = 'position:absolute;top:-2px;right:-2px;width:15px;height:15px;border-radius:9999px;background:#f47522;border:2.5px solid #fff;box-shadow:0 0 6px rgba(244,117,34,0.6);pointer-events:none;z-index:10;';
+      dot.setAttribute('aria-hidden', 'true');
+      btn.appendChild(dot);
     }
   }
 

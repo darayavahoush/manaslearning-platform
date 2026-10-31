@@ -4336,6 +4336,133 @@ body:has(.itw-dark) .leaf-fall,
   to { transform: rotate(360deg); }
 }
 
+/* --- Vocal Strain & Motor Block Styling --- */
+@keyframes itw-vocal-stutter {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  20% { transform: translate(-2px, 1.5px) scale(0.98); }
+  40% { transform: translate(2.5px, -1px) scale(1.02); }
+  60% { transform: translate(-1.5px, -2px) scale(0.97); }
+  80% { transform: translate(2px, 1.5px) scale(1.01); }
+}
+
+.itw-vocal-stutter {
+  animation: itw-vocal-stutter 0.12s ease-in-out infinite;
+}
+
+.itw-stutter-card {
+  padding: 12px 20px;
+  border-radius: 14px;
+  background: var(--itw-panel-2);
+  border: 2px solid var(--itw-speech);
+  font-family: var(--font-mono, monospace);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--itw-speech);
+  margin-bottom: 12px;
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.04em;
+  box-shadow: 0 4px 16px rgba(140, 66, 44, 0.15);
+}
+
+.itw-strain-meter-container {
+  width: 100%;
+  max-width: 380px;
+  margin: 10px 0 16px;
+}
+
+.itw-strain-meter-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--itw-muted);
+  margin-bottom: 6px;
+}
+
+.itw-strain-meter-track {
+  width: 100%;
+  height: 12px;
+  background: var(--itw-border);
+  border-radius: 99px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.12);
+  position: relative;
+}
+
+.itw-strain-meter-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.04s linear, background-color 0.15s ease;
+}
+
+.itw-block-fail-alert {
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: rgba(217, 56, 30, 0.1);
+  border: 1.5px solid rgba(217, 56, 30, 0.35);
+  color: #d9381e;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 12px auto;
+  max-width: 480px;
+  animation: itwFadeIn 0.25s ease;
+}
+
+.itw-root.itw-dark .itw-block-fail-alert {
+  background: rgba(248, 113, 113, 0.15);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #f87171;
+}
+
+/* --- Auditory Processing: SNR & Phonetic Masking --- */
+.itw-snr-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: var(--itw-panel-2);
+  border: 1.5px solid var(--itw-border);
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.itw-snr-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono, monospace);
+  font-weight: 800;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 99px;
+}
+
+.itw-mask-alert-pill {
+  animation: itwFadeIn 0.2s ease;
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  color: #dc2626;
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+.itw-root.itw-dark .itw-mask-alert-pill {
+  background: rgba(248, 113, 113, 0.15);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #f87171;
+}
+
 /* --- Dyscalculia: Scattered Dots Cloud & Ten-Frames --- */
 .itw-scatter-cloud {
   position: relative;

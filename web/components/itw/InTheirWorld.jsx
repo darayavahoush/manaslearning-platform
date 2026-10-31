@@ -148,6 +148,7 @@ class AudioEngine {
     this.master = null;
     this.enabled = false; // Off by default (explicit opt-in only)
     this.drones = new Map();
+    this.loops = new Map();
     this.samples = new Map(); // kind -> decoded AudioBuffer, once loaded
     this.sampleMissing = new Set(); // kinds we've confirmed have no file
     this.samplePending = new Set(); // kinds currently being fetched
@@ -177,6 +178,11 @@ class AudioEngine {
   stopAll() {
     for (const id of Array.from(this.drones.keys())) {
       this.stopDrone(id);
+    }
+    if (this.loops) {
+      for (const id of Array.from(this.loops.keys())) {
+        this.stopLoop(id);
+      }
     }
     if (this.master && this.ctx) {
       try {
@@ -244,6 +250,47 @@ class AudioEngine {
     g.connect(this.master);
     src.start();
     return true;
+  }
+
+  loopSample(id, kind, gain = 0.5) {
+    const ctx = this.ensure();
+    if (!ctx) return false;
+    const buffer = this.samples.get(kind);
+    if (!buffer) {
+      if (!this.sampleMissing.has(kind)) this.loadSample(kind);
+      return false;
+    }
+    this.stopLoop(id);
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    src.loop = true;
+    const g = ctx.createGain();
+    const target = Math.max(0.02, Math.min(1.0, gain)) * 0.55;
+    g.gain.setValueAtTime(0.0001, ctx.currentTime);
+    g.gain.linearRampToValueAtTime(target, ctx.currentTime + 0.2);
+    src.connect(g);
+    g.connect(this.master);
+    src.start();
+    if (!this.loops) this.loops = new Map();
+    this.loops.set(id, { src, g });
+    return true;
+  }
+
+  stopLoop(id) {
+    if (!this.loops || !this.loops.has(id)) return;
+    const item = this.loops.get(id);
+    try {
+      if (this.ctx) {
+        item.g.gain.setValueAtTime(item.g.gain.value, this.ctx.currentTime);
+        item.g.gain.linearRampToValueAtTime(0.0001, this.ctx.currentTime + 0.15);
+        setTimeout(() => {
+          try { item.src.stop(); } catch {}
+        }, 180);
+      } else {
+        item.src.stop();
+      }
+    } catch {}
+    this.loops.delete(id);
   }
 
   tone({ freq = 440, type = "sine", duration = 0.2, gain = 0.14, detune = 0, delay = 0 } = {}) {
@@ -5051,24 +5098,27 @@ const SUPPORTED_PROMPTS = [
 
 function SpeechSim({
   mode = "fast",
-  supportType = "wait",
+  supportType = "patient_wait",
   onComplete,
   onAbort,
 }) {
   const { soundOn } = useContext(SettingsContext);
   const [formulatedWords, setFormulatedWords] = useState([]);
   const [aacSelection, setAacSelection] = useState([]);
-  const [partnerPatience, setPartnerPatience] = useState(mode === "fast" ? 100 : null);
+  const [partnerPatience, setPartnerPatience] = useState(mode === "fast" ? 100 : 100);
   const [partnerInterrupted, setPartnerInterrupted] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(true);
-  const [isPhonating, setIsPhonating] = useState(false);
-  const [phonationProgress, setPhonationProgress] = useState(0);
+  const [isHolding, setIsHolding] = useState(false);
+  const [holdProgress, setHoldProgress] = useState(0);
+  const [failedBlocksCount, setFailedBlocksCount] = useState(0);
+  const [strainNotice, setStrainNotice] = useState(null);
 
   const startTimeRef = useRef(0);
   const timerRef = useRef(null);
-  const phonateIntervalRef = useRef(null);
+  const holdIntervalRef = useRef(null);
   const onCompleteRef = useRef(onComplete);
+  const holdProgressRef = useRef(0);
 
   useEffect(() => {
     onCompleteRef.current = onComplete;
@@ -5092,7 +5142,7 @@ function SpeechSim({
 
     const interval = setInterval(() => {
       setPartnerPatience((prev) => {
-        if (prev <= 18 && !partnerInterrupted) {
+        if (prev <= 24 && !partnerInterrupted) {
           setPartnerInterrupted(true);
           if (soundOn) audio.cue("flicker");
         }
@@ -5100,7 +5150,7 @@ function SpeechSim({
           clearInterval(interval);
           return 0;
         }
-        return prev - 2.2;
+        return prev - 1.4; // 14.2s window
       });
     }, 200);
 
@@ -5110,13 +5160,24 @@ function SpeechSim({
   const TARGET_THOUGHT =
     "We built a hydraulic crane with syringes, water tubes, and cardboard joints.";
   const SPEECH_FRAGMENTS = [
-    { text: "W-w-we...", full: "We" },
-    { text: "b-built a...", full: "built a" },
-    { text: "hydrau-...", full: "hydraulic" },
-    { text: "crane with...", full: "crane with" },
-    { text: "syringes...", full: "syringes" },
-    { text: "and water tubes.", full: "and water tubes." },
+    { text: "W-w-we...", full: "We", onset: "W" },
+    { text: "b-built a...", full: "built a", onset: "b" },
+    { text: "hydrau-...", full: "hydraulic", onset: "hy" },
+    { text: "crane with...", full: "crane with", onset: "cr" },
+    { text: "syringes...", full: "syringes", onset: "syr" },
+    { text: "and water tubes.", full: "and water tubes.", onset: "and" },
   ];
+
+  const currentFrag = formulatedWords.length < SPEECH_FRAGMENTS.length ? SPEECH_FRAGMENTS[formulatedWords.length] : null;
+
+  const getStutterText = (frag, progress) => {
+    if (!frag) return "";
+    if (progress < 25) return `${frag.onset}...`;
+    if (progress < 50) return `${frag.onset}-${frag.onset}...`;
+    if (progress < 75) return `${frag.onset}-${frag.onset}-${frag.onset}...`;
+    if (progress < 99) return `${frag.text} (straining)`;
+    return `${frag.full}!`;
+  };
 
   const AAC_TILES = [
     {
@@ -5188,44 +5249,83 @@ function SpeechSim({
     },
   ];
 
-  // Press & hold or single tap to articulate a phrase
-  const triggerArticulateNext = () => {
-    if (formulatedWords.length >= SPEECH_FRAGMENTS.length) return;
-    const nextFrag = SPEECH_FRAGMENTS[formulatedWords.length];
+  // Press & hold against vocal fold resistance
+  const handleHoldStart = (e) => {
+    e?.preventDefault?.();
+    if (!running || !currentFrag) return;
+    setIsHolding(true);
+    setStrainNotice(null);
+    holdProgressRef.current = 6;
+    setHoldProgress(6);
 
     if (soundOn) {
-      audio.cue("tap");
-      speakText(nextFrag.full, { rate: 0.9, pitch: 1.05 });
+      audio.tone({ freq: 135, type: "sawtooth", duration: 0.1, gain: 0.05 });
     }
 
-    const next = [...formulatedWords, nextFrag];
-    setFormulatedWords(next);
+    const isFast = mode === "fast";
+    // In fast mode, overcoming the motor block takes 1.3s of continuous physical hold (3.1% per 40ms)
+    // In supported mode, it flows gently in 0.35s (10% per 40ms)
+    const increment = isFast ? 3.1 : 10;
 
-    if (next.length >= SPEECH_FRAGMENTS.length) {
-      handleCompleteSpeech("verbal");
-    }
-  };
+    let tickCount = 0;
+    if (holdIntervalRef.current) clearInterval(holdIntervalRef.current);
+    holdIntervalRef.current = setInterval(() => {
+      tickCount++;
+      const nextProgress = Math.min(100, holdProgressRef.current + increment);
+      holdProgressRef.current = nextProgress;
+      setHoldProgress(nextProgress);
 
-  const handleHoldStart = () => {
-    setIsPhonating(true);
-    setPhonationProgress(10);
-    phonateIntervalRef.current = setInterval(() => {
-      setPhonationProgress((p) => {
-        if (p >= 90) {
-          clearInterval(phonateIntervalRef.current);
-          setIsPhonating(false);
-          triggerArticulateNext();
-          return 0;
+      // Acoustic tension buildup
+      if (soundOn && isFast && tickCount % 3 === 0 && nextProgress < 100) {
+        audio.tone({
+          freq: 140 + nextProgress * 1.5,
+          type: "sawtooth",
+          duration: 0.06,
+          gain: 0.045,
+        });
+      }
+
+      if (nextProgress >= 100) {
+        clearInterval(holdIntervalRef.current);
+        setIsHolding(false);
+        setHoldProgress(0);
+        holdProgressRef.current = 0;
+
+        if (soundOn) {
+          audio.cue("tap");
+          speakText(currentFrag.full, { rate: 0.9, pitch: 1.05 });
         }
-        return p + 25;
-      });
-    }, 150);
+
+        const next = [...formulatedWords, currentFrag];
+        setFormulatedWords(next);
+
+        if (next.length >= SPEECH_FRAGMENTS.length) {
+          handleCompleteSpeech("verbal");
+        }
+      }
+    }, 40);
   };
 
-  const handleHoldEnd = () => {
-    if (phonateIntervalRef.current) clearInterval(phonateIntervalRef.current);
-    setIsPhonating(false);
-    setPhonationProgress(0);
+  const handleHoldEnd = (e) => {
+    e?.preventDefault?.();
+    if (!running) return;
+    if (holdIntervalRef.current) clearInterval(holdIntervalRef.current);
+    const progress = holdProgressRef.current;
+
+    if (progress < 100) {
+      if (mode === "fast" && progress > 15) {
+        if (soundOn) {
+          audio.tone({ freq: 105, type: "sawtooth", duration: 0.18, gain: 0.08 });
+        }
+        setFailedBlocksCount((c) => c + 1);
+        setStrainNotice(
+          "⚠️ Motor block persisted: The articulatory spasm resisted release. Hold down continuously through 100% to overcome the block!"
+        );
+      }
+      setHoldProgress(0);
+      holdProgressRef.current = 0;
+      setIsHolding(false);
+    }
   };
 
   const handleAacTileClick = (tile) => {
@@ -5243,7 +5343,7 @@ function SpeechSim({
 
   const handleCompleteSpeech = (method) => {
     if (timerRef.current) clearInterval(timerRef.current);
-    if (phonateIntervalRef.current) clearInterval(phonateIntervalRef.current);
+    if (holdIntervalRef.current) clearInterval(holdIntervalRef.current);
     setRunning(false);
     if (soundOn) audio.cue("slam");
 
@@ -5252,6 +5352,7 @@ function SpeechSim({
       time: finalTime,
       method,
       interrupted: partnerInterrupted,
+      blockCount: failedBlocksCount,
     });
   };
 
@@ -5381,32 +5482,76 @@ function SpeechSim({
               {formulatedWords.length === 0 ? (
                 <span style={{ color: "var(--itw-muted)", fontStyle: "italic", fontSize: 15 }}>
                   {mode === "fast"
-                    ? "Hold down the phonation release button below to articulate against the clock..."
+                    ? "Press and hold the phonation trigger below to push through vocal motor blocks..."
                     : "Take your time — release each syllable naturally at your own pace..."}
                 </span>
               ) : (
                 formulatedWords.map((w, i) => (
                   <span key={i} style={{ color: "var(--itw-speech)", background: "var(--itw-speech-soft)", padding: "2px 8px", borderRadius: 6 }}>
-                    {w.text}
+                    {w.full}
                   </span>
                 ))
               )}
             </div>
           </div>
 
-          {/* Phonation Control Area */}
+          {/* Phonation Control Area with Vocal Strain Mechanics */}
           <div className="itw-phonation-press-area">
-            {formulatedWords.length < SPEECH_FRAGMENTS.length ? (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+            {currentFrag ? (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", maxWidth: 460 }}>
+                {/* Active Stutter Card (Vibrates and stutters while held) */}
+                <div className={`itw-stutter-card${isHolding ? " itw-vocal-stutter" : ""}`}>
+                  {isHolding ? getStutterText(currentFrag, holdProgress) : currentFrag.text}
+                </div>
+
+                {/* Vocal Strain Meter */}
+                <div className="itw-strain-meter-container">
+                  <div className="itw-strain-meter-label">
+                    <span>{mode === "fast" ? "Vocal Motor Resistance / Strain" : "Articulatory Coordination"}</span>
+                    <span>{Math.round(holdProgress)}%</span>
+                  </div>
+                  <div className="itw-strain-meter-track">
+                    <div
+                      className="itw-strain-meter-fill"
+                      style={{
+                        width: `${holdProgress}%`,
+                        background:
+                          holdProgress >= 95
+                            ? "#10b981"
+                            : holdProgress > 45
+                            ? "#ef4444"
+                            : "var(--itw-speech)",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Strain Warning Alert on premature release */}
+                {strainNotice && (
+                  <div className="itw-block-fail-alert">
+                    {strainNotice}
+                  </div>
+                )}
+
+                {/* Physical Phonation Trigger Button - Requires continuous hold */}
                 <button
                   type="button"
-                  className={`itw-phonate-btn${isPhonating ? " itw-charging" : ""}`}
+                  className={`itw-phonate-btn${isHolding ? " itw-charging" : ""}`}
                   onMouseDown={handleHoldStart}
                   onMouseUp={handleHoldEnd}
                   onTouchStart={handleHoldStart}
                   onTouchEnd={handleHoldEnd}
-                  onClick={triggerArticulateNext}
-                  title="Press and hold to overcome motor speech planning delay and release next syllable"
+                  title={
+                    mode === "fast"
+                      ? "Hold down firmly against vocal motor resistance to release the syllable"
+                      : "Hold gently to phonate"
+                  }
+                  style={{
+                    cursor: "pointer",
+                    boxShadow: isHolding
+                      ? "0 0 0 12px rgba(140, 66, 44, 0.3)"
+                      : "0 8px 24px rgba(140, 66, 44, 0.35)",
+                  }}
                 >
                   <div className="itw-breath-ring" />
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -5414,15 +5559,17 @@ function SpeechSim({
                     <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
                   </svg>
                 </button>
-                <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-text)" }}>
-                  {isPhonating
-                    ? `Overcoming vocal motor block (${phonationProgress}%)...`
-                    : `Tap or Hold to Phonate: "${SPEECH_FRAGMENTS[formulatedWords.length].text}"`}
+
+                <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-text)", marginTop: 12 }}>
+                  {isHolding
+                    ? `Overcoming vocal motor block (${Math.round(holdProgress)}%)... Keep holding!`
+                    : `Press & Hold to Phonate: "${currentFrag.text}"`}
                 </div>
-                <div style={{ fontSize: 12, color: "var(--itw-muted)", maxWidth: "42ch" }}>
+
+                <div style={{ fontSize: 12, color: "var(--itw-muted)", maxWidth: "42ch", marginTop: 4, textAlign: "center" }}>
                   {mode === "fast"
-                    ? "Simulates motor speech planning friction: expending physical effort before syllable release while listener time runs out."
-                    : "Generous wait time: release speech with warm presence and zero fear of being interrupted."}
+                    ? "Requires sustained physical effort against motor apraxia/stuttering blocks — releasing early snaps the block back!"
+                    : "Patient listener accommodation: effortless articulation without turn-timer anxiety."}
                 </div>
               </div>
             ) : (
@@ -5588,12 +5735,12 @@ function SpeechModule({ onBack, onNavigate }) {
               }}
             >
               <div style={{ fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--itw-muted)", fontWeight: 700 }}>
-                Total Speaking Time
+                Total Articulation Time
               </div>
               <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-speech)", margin: "8px 0" }}>
                 {results.fast ? `${results.fast.time.toFixed(1)}s` : "—"}
               </div>
-              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>Across 2 conversational turns</div>
+              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>Under conversational clock pressure</div>
             </div>
 
             <div
@@ -5606,13 +5753,33 @@ function SpeechModule({ onBack, onNavigate }) {
               }}
             >
               <div style={{ fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--itw-muted)", fontWeight: 700 }}>
-                Turn Success Rate
+                Motor Blocks Resisted
               </div>
               <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-speech)", margin: "8px 0" }}>
-                {results.fast ? `${results.fast.completedTurns} / ${results.fast.turns}` : "—"}
+                {results.fast ? `${results.fast.blockCount || 0}` : "—"}
               </div>
               <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
-                {results.fast?.completedTurns === results.fast?.turns ? "Completed within window" : "Turns elapsed before delivery"}
+                {results.fast?.blockCount ? "Early releases snapping block back" : "Overcome through hold resistance"}
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: "var(--itw-panel)",
+                border: "1px solid var(--itw-border)",
+                borderRadius: 18,
+                padding: "20px 18px",
+                textAlign: "center",
+              }}
+            >
+              <div style={{ fontSize: 13, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--itw-muted)", fontWeight: 700 }}>
+                Listener Turn Status
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 900, color: results.fast?.interrupted ? "#d9381e" : "var(--itw-speech)", margin: "14px 0 8px" }}>
+                {results.fast ? (results.fast.interrupted ? "Turn Pressure / Interrupted" : "Delivered in Turn") : "—"}
+              </div>
+              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+                {results.fast?.interrupted ? "Listener hurried to next speaker" : "Managed against ticking clock"}
               </div>
             </div>
           </div>
@@ -7320,16 +7487,31 @@ const AUDITORY_INSTRUCTIONS = [
 const TEACHER_FULL_ANNOUNCEMENT =
   "Good morning class. Please listen carefully for tomorrow's 3 assignments: First, read Chapter 4, pages 30 to 35 in your textbook. Second, answer questions 2 and 5 in your blue notebook. Third, bring your project outline for Friday's lab.";
 
+const TEACHER_MASKED_ANNOUNCEMENT =
+  "Good morning class. Please listen carefully for tomorrow's three assignments: First, read chap— pages thirty to thirty five in textbook. Second, answer questions two and five in your— notebook. Third, bring your— outline for Friday lab.";
+
+const AUDITORY_QUIZ_OPTIONS = [
+  { text: "Read Chapter 4, pages 30 to 35 in textbook", correct: true, maskTag: "Target" },
+  { text: "Read Chapter 5, pages 30 to 35 in textbook", correct: false, maskTag: "Decoy: /f/ onset obscured by scrape" },
+  { text: "Answer questions 2 and 5 in blue notebook", correct: true, maskTag: "Target" },
+  { text: "Answer questions 2 and 5 in black notebook", correct: false, maskTag: "Decoy: /bl/ color obscured by rustle" },
+  { text: "Bring your project outline for Friday's lab", correct: true, maskTag: "Target" },
+  { text: "Bring your completed project for Friday's lab", correct: false, maskTag: "Decoy: Format obscured by door slam" },
+];
+
 function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", onComplete, onAbort }) {
   const { soundOn } = useContext(SettingsContext);
   const [selectedItems, setSelectedItems] = useState([]);
   const [elapsed, setElapsed] = useState(0);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [activeSegment, setActiveSegment] = useState(null);
+  const [hasPlayedOnce, setHasPlayedOnce] = useState(false);
+  const [currentMaskNotice, setCurrentMaskNotice] = useState(null);
 
   const startTimeRef = useRef(0);
   const timerRef = useRef(null);
   const noiseIntervalRef = useRef(null);
+  const maskTimeoutsRef = useRef([]);
   const onCompleteRef = useRef(onComplete);
 
   useEffect(() => {
@@ -7348,65 +7530,107 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
     };
   }, []);
 
-  // Audio Playback Engine for Classroom Announcement
-  const playAnnouncement = (customText = null, segmentId = null) => {
-    if (typeof window === "undefined" || !window.speechSynthesis) return;
-    try {
-      if (window.speechSynthesis.paused) window.speechSynthesis.resume();
-      window.speechSynthesis.cancel();
-    } catch {
-      /* ignore */
+  const stopAudioArtifacts = () => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch {}
     }
     if (noiseIntervalRef.current) clearInterval(noiseIntervalRef.current);
+    maskTimeoutsRef.current.forEach((t) => clearTimeout(t));
+    maskTimeoutsRef.current = [];
+    audio.stopLoop("classroom_drone");
+    audio.stopDrone("babble");
+    setIsPlayingAudio(false);
+    setCurrentMaskNotice(null);
+  };
 
+  // Audio Playback Engine for Classroom Announcement with Genuine Phonetic Masking
+  const playAnnouncement = (customText = null, segmentId = null) => {
+    stopAudioArtifacts();
+    audio.ensure();
     setIsPlayingAudio(true);
+    setHasPlayedOnce(true);
     setActiveSegment(segmentId);
 
-    const textToSpeak = customText || TEACHER_FULL_ANNOUNCEMENT;
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-    utterance.rate = 0.92;
-    utterance.pitch = 1.05;
-    utterance.volume = mode === "unsupported" ? 0.7 : 1.0;
+    const isUnsupported = mode === "unsupported";
+    const textToSpeak = customText || (isUnsupported ? TEACHER_MASKED_ANNOUNCEMENT : TEACHER_FULL_ANNOUNCEMENT);
 
-    const voices = window.speechSynthesis.getVoices();
-    if (voices && voices.length > 0) {
-      const match = voices.find(
-        (v) =>
-          v.lang.startsWith("en") &&
-          !v.name.includes("whisper") &&
-          (v.name.includes("Samantha") ||
-            v.name.includes("Daniel") ||
-            v.name.includes("Natural") ||
-            v.name.includes("Google") ||
-            v.name.includes("Karen"))
-      );
-      if (match) utterance.voice = match;
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      try {
+        if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+        window.speechSynthesis.cancel();
+      } catch {}
+
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.rate = isUnsupported ? 0.88 : 0.92;
+      utterance.pitch = 1.05;
+      utterance.volume = isUnsupported ? 0.82 : 1.0;
+
+      const voices = window.speechSynthesis.getVoices();
+      if (voices && voices.length > 0) {
+        const match = voices.find(
+          (v) =>
+            v.lang.startsWith("en") &&
+            !v.name.includes("whisper") &&
+            (v.name.includes("Samantha") ||
+              v.name.includes("Daniel") ||
+              v.name.includes("Natural") ||
+              v.name.includes("Google") ||
+              v.name.includes("Karen"))
+        );
+        if (match) utterance.voice = match;
+      }
+
+      utterance.onend = () => {
+        stopAudioArtifacts();
+      };
+      utterance.onerror = () => {
+        stopAudioArtifacts();
+      };
+
+      window.speechSynthesis.speak(utterance);
     }
 
-    // In unsupported mode, trigger periodic competing background noises to simulate acoustic figure-ground masking
-    if (mode === "unsupported") {
-      const noiseCues = ["scrape", "rustle", "screech", "shout", "argue", "bell"];
+    // In unsupported mode: Layer continuous room noise and synchronized phoneme noise bursts
+    if (isUnsupported && soundOn) {
+      // 1. Continuous HVAC / fan noise loop
+      audio.loopSample("classroom_drone", "hum", 0.7);
+      audio.startDrone("babble", { freqs: [120, 240], type: "triangle" });
+
+      // 2. Synchronized acoustic masking events over critical instructions
+      const t1 = setTimeout(() => {
+        setCurrentMaskNotice("⚠️ Acoustic Mask 1: Scraping chair drowns out Chapter number (/f/ onset)");
+        audio.cue("scrape", 1.4);
+        audio.noiseBurst({ duration: 0.65, gain: 0.32, filterFreq: 1800, type: "bandpass" });
+      }, 2800);
+
+      const t2 = setTimeout(() => {
+        setCurrentMaskNotice("⚠️ Acoustic Mask 2: Desk rustle & chatter drowns notebook color (/bl/ onset)");
+        audio.cue("rustle", 1.3);
+        audio.cue("laugh", 0.85);
+        audio.noiseBurst({ duration: 0.6, gain: 0.28, filterFreq: 1400, type: "bandpass" });
+      }, 5900);
+
+      const t3 = setTimeout(() => {
+        setCurrentMaskNotice("⚠️ Acoustic Mask 3: Heavy door slam drowns out submission format");
+        audio.cue("slam", 1.4);
+        audio.noiseBurst({ duration: 0.65, gain: 0.3, filterFreq: 2200, type: "bandpass" });
+      }, 9100);
+
+      const tClear = setTimeout(() => {
+        setCurrentMaskNotice(null);
+      }, 11500);
+
+      maskTimeoutsRef.current = [t1, t2, t3, tClear];
+
+      // 3. Periodic ambient room chatter
+      const noiseCues = ["scrape", "rustle", "screech", "footsteps", "argue"];
       noiseIntervalRef.current = setInterval(() => {
-        if (soundOn) {
-          const randCue = noiseCues[Math.floor(Math.random() * noiseCues.length)];
-          audio.cue(randCue);
-        }
-      }, 1200);
+        const randCue = noiseCues[Math.floor(Math.random() * noiseCues.length)];
+        audio.cue(randCue, 0.75);
+      }, 1600);
     }
-
-    utterance.onend = () => {
-      setIsPlayingAudio(false);
-      setActiveSegment(null);
-      if (noiseIntervalRef.current) clearInterval(noiseIntervalRef.current);
-    };
-
-    utterance.onerror = () => {
-      setIsPlayingAudio(false);
-      setActiveSegment(null);
-      if (noiseIntervalRef.current) clearInterval(noiseIntervalRef.current);
-    };
-
-    window.speechSynthesis.speak(utterance);
   };
 
   // Auto-play announcement on mount if sound is enabled
@@ -7414,21 +7638,15 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
     if (soundOn) {
       const t = setTimeout(() => {
         playAnnouncement();
-      }, 400);
-      return () => clearTimeout(t);
+      }, 350);
+      return () => {
+        clearTimeout(t);
+        stopAudioArtifacts();
+      };
     }
+    return () => stopAudioArtifacts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [soundOn, mode]);
-
-  // Cleanup audio on unmount
-  useEffect(() => {
-    return () => {
-      if (typeof window !== "undefined" && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
-      if (noiseIntervalRef.current) clearInterval(noiseIntervalRef.current);
-    };
-  }, []);
 
   const handleToggleSelect = (itemText) => {
     if (soundOn) audio.cue("tap");
@@ -7440,24 +7658,29 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
     }
     setSelectedItems(next);
 
-    if (next.length === AUDITORY_INSTRUCTIONS.length) {
+    if (next.length === 3) {
       if (timerRef.current) clearInterval(timerRef.current);
-      if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel();
-      if (noiseIntervalRef.current) clearInterval(noiseIntervalRef.current);
+      stopAudioArtifacts();
       if (soundOn) audio.cue("slam");
+      const correctCount = next.filter((t) => AUDITORY_QUIZ_OPTIONS.find((o) => o.text === t)?.correct).length;
       onCompleteRef.current?.({
         time: elapsed,
         selectedCount: next.length,
+        correctCount,
+        mode,
       });
     }
   };
+
+  const isUnsupported = mode === "unsupported";
+  const isBaseline = mode === "baseline";
 
   return (
     <div className="itw-auditory-classroom" role="region" aria-label="Classroom Auditory Processing Simulation">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
         <div>
           <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-auditory)", letterSpacing: "0.08em" }}>
-            Classroom Announcement • {mode === "baseline" ? "Quiet Setting" : mode === "unsupported" ? "Competing Noise" : "Supported Audio"}
+            Classroom Announcement • {isBaseline ? "Quiet Setting" : isUnsupported ? "Competing Noise" : "Supported Audio"}
           </span>
           <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
             Identify the Teacher's 3 Directions for Tomorrow
@@ -7471,62 +7694,94 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
         </div>
       </div>
 
-      {/* Spoken Announcement Audio Control Card */}
+      {/* Spoken Announcement Audio Control Card with Live SNR Meter */}
       <div
         style={{
           background: "var(--itw-panel-2)",
           border: "1.5px solid var(--itw-border)",
           borderRadius: 16,
-          padding: "16px 20px",
+          padding: "18px 22px",
           marginBottom: 18,
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 14,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button
-            type="button"
-            className="itw-dys-btn-primary"
-            style={{
-              background: "var(--itw-auditory)",
-              padding: "10px 18px",
-              fontSize: 13,
-              boxShadow: "0 4px 12px rgba(44, 82, 130, 0.25)",
-            }}
-            onClick={() => playAnnouncement()}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
-            </svg>
-            <span>{isPlayingAudio ? "Playing Announcement..." : "🔊 Play Teacher's Voice"}</span>
-          </button>
-
-          <span style={{ fontSize: 13, color: isPlayingAudio ? "var(--itw-auditory)" : "var(--itw-muted)", fontWeight: 700 }}>
-            {isPlayingAudio
-              ? (mode === "unsupported" ? "⚠️ Competing acoustic chatter active!" : "Teacher speaking aloud...")
-              : "Click to listen or replay the teacher's instructions"}
-          </span>
-        </div>
-
-        {/* Acoustic Waveform Visualization */}
-        <div className="itw-waveform-bar" style={{ margin: 0 }} aria-hidden="true">
-          {[4, 14, 28, 16, 34, 22, 10, 36, 18, 8, 30, 20, 14, 38, 24, 8].map((h, idx) => (
-            <span
-              key={idx}
-              className="itw-wave-col"
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button
+              type="button"
+              className="itw-dys-btn-primary"
               style={{
-                height: isPlayingAudio ? (mode === "unsupported" ? `${h}px` : `${Math.max(8, h * 0.7)}px`) : "4px",
-                opacity: isPlayingAudio ? 0.9 : 0.3,
-                animation: isPlayingAudio ? `itwWaveMotion 0.6s ease-in-out infinite alternate ${idx * 0.05}s` : "none",
                 background: "var(--itw-auditory)",
+                padding: "11px 20px",
+                fontSize: 13.5,
+                fontWeight: 800,
+                boxShadow: isPlayingAudio ? "0 0 0 6px rgba(44, 82, 130, 0.25)" : "0 4px 14px rgba(44, 82, 130, 0.25)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
               }}
-            />
-          ))}
+              onClick={() => playAnnouncement()}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+              </svg>
+              <span>{isPlayingAudio ? "Playing Voice in Noise..." : hasPlayedOnce ? "🔄 Replay Announcement" : "🔊 Play Teacher's Announcement"}</span>
+            </button>
+
+            <span style={{ fontSize: 13, color: isPlayingAudio ? "var(--itw-auditory)" : "var(--itw-muted)", fontWeight: 700 }}>
+              {isPlayingAudio
+                ? (isUnsupported ? "⚠️ Classroom noise & phonetic masking active!" : "Teacher speaking aloud...")
+                : "Click above to listen or replay the spoken instructions"}
+            </span>
+          </div>
+
+          {/* Acoustic Waveform Visualization */}
+          <div className="itw-waveform-bar" style={{ margin: 0 }} aria-hidden="true">
+            {[6, 18, 32, 16, 36, 26, 12, 38, 22, 10, 32, 24, 16, 38, 28, 12].map((h, idx) => (
+              <span
+                key={idx}
+                className="itw-wave-col"
+                style={{
+                  height: isPlayingAudio ? (isUnsupported ? `${h}px` : `${Math.max(8, h * 0.7)}px`) : "4px",
+                  opacity: isPlayingAudio ? 0.95 : 0.3,
+                  animation: isPlayingAudio ? `itwWaveMotion 0.5s ease-in-out infinite alternate ${idx * 0.04}s` : "none",
+                  background: isPlayingAudio && isUnsupported ? (idx % 2 === 0 ? "#dc2626" : "var(--itw-auditory)") : "var(--itw-auditory)",
+                }}
+              />
+            ))}
+          </div>
         </div>
+
+        {/* Live Signal-to-Noise Ratio (SNR) Meter */}
+        <div className="itw-snr-box">
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontWeight: 800, color: "var(--itw-text)" }}>Signal-to-Noise Ratio (SNR):</span>
+            <span
+              className="itw-snr-badge"
+              style={{
+                background: isUnsupported ? "rgba(220, 38, 38, 0.15)" : "rgba(16, 185, 129, 0.15)",
+                color: isUnsupported ? "#dc2626" : "#10b981",
+                border: `1px solid ${isUnsupported ? "rgba(220, 38, 38, 0.35)" : "rgba(16, 185, 129, 0.35)"}`,
+              }}
+            >
+              {isBaseline ? "🟢 +18 dB (Quiet Direct Voice)" : isUnsupported ? "🔴 -5 dB (Severe Classroom Masking)" : "🟢 +20 dB (FM Microphone Isolation)"}
+            </span>
+          </div>
+          <div style={{ fontSize: 12, color: "var(--itw-muted)" }}>
+            {isBaseline
+              ? "Speech energy is 18 dB above noise floor — phonemes parsed effortlessly."
+              : isUnsupported
+              ? "Speech energy is drowned by 72 dB classroom chatter & scrapes — key phonemes masked."
+              : "Scaffolding bypasses room acoustic figure-ground degradation."}
+          </div>
+        </div>
+
+        {/* Real-time active masking notice */}
+        {currentMaskNotice && (
+          <div className="itw-mask-alert-pill">
+            {currentMaskNotice}
+          </div>
+        )}
       </div>
 
       {/* Visual Captions Overlay if supported with captions */}
@@ -7578,14 +7833,7 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
           Select the 3 correct directions given by the teacher ({selectedItems.length}/3 selected):
         </div>
         <div style={{ display: "grid", gap: 10 }}>
-          {[
-            { text: "Read Chapter 4, pages 30 to 35 in textbook", correct: true },
-            { text: "Read Chapter 5, pages 30 to 35 in textbook", correct: false },
-            { text: "Answer questions 2 and 5 in blue notebook", correct: true },
-            { text: "Answer questions 2 and 3 in blue notebook", correct: false },
-            { text: "Bring your project outline for Friday's lab", correct: true },
-            { text: "Bring your completed project for Friday's lab", correct: false },
-          ].map((opt) => {
+          {AUDITORY_QUIZ_OPTIONS.map((opt) => {
             const isSelected = selectedItems.includes(opt.text);
             return (
               <button
@@ -7595,6 +7843,7 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
                 style={{
                   display: "flex",
                   alignItems: "center",
+                  justifyContent: "space-between",
                   gap: 12,
                   padding: "12px 16px",
                   borderRadius: 12,
@@ -7607,28 +7856,31 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
                   fontSize: 14,
                 }}
               >
-                <span
-                  style={{
-                    width: 20,
-                    height: 20,
-                    borderRadius: 6,
-                    border: `1.5px solid ${isSelected ? "var(--itw-auditory)" : "var(--itw-border)"}`,
-                    background: isSelected ? "var(--itw-auditory)" : "transparent",
-                    color: "#ffffff",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 12,
-                    fontWeight: 800,
-                  }}
-                >
-                  {isSelected ? "✓" : ""}
-                </span>
-                <span>
-                  {mode === "unsupported" && !opt.correct
-                    ? opt.text.replace("Chapter 5", "Chapter [murmur]").replace("questions 2 and 3", "questions [noise]")
-                    : opt.text}
-                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: 6,
+                      border: `1.5px solid ${isSelected ? "var(--itw-auditory)" : "var(--itw-border)"}`,
+                      background: isSelected ? "var(--itw-auditory)" : "transparent",
+                      color: "#ffffff",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 12,
+                      fontWeight: 800,
+                    }}
+                  >
+                    {isSelected ? "✓" : ""}
+                  </span>
+                  <span>{opt.text}</span>
+                </div>
+                {isUnsupported && (
+                  <span style={{ fontSize: 11, color: "var(--itw-muted)", fontWeight: 600 }}>
+                    {opt.maskTag}
+                  </span>
+                )}
               </button>
             );
           })}

@@ -186,55 +186,9 @@
     ).observe(f);
   }
 
-  function unifyMiloLauncher() {
-    var btn = document.querySelector('button[aria-label*="Milo"], button[aria-label*="chat with Milo"], button[aria-label*="Milo the Owl"]');
-    if (!btn) return;
-    btn.dataset.itwUnified = "1";
-    btn.style.setProperty("position", "fixed", "important");
-    btn.style.setProperty("bottom", "24px", "important");
-    btn.style.setProperty("right", "24px", "important");
-    btn.style.setProperty("z-index", "9999", "important");
-    btn.style.setProperty("width", "64px", "important");
-    btn.style.setProperty("height", "64px", "important");
-    btn.style.setProperty("border-radius", "9999px", "important");
-    btn.style.setProperty("background", "#fffdf8", "important");
-    btn.style.setProperty("border", "2px solid #05b076", "important");
-    btn.style.setProperty("box-shadow", "0 12px 28px -6px rgba(5,176,118,0.35)", "important");
-    btn.style.setProperty("display", "flex", "important");
-    btn.style.setProperty("align-items", "center", "important");
-    btn.style.setProperty("justify-content", "center", "important");
-    btn.style.setProperty("overflow", "visible", "important");
-    btn.style.setProperty("margin", "0", "important");
-    btn.style.setProperty("padding", "0", "important");
-
-    // Update owl image on the existing React img node without destroying React DOM tree
-    var img = btn.querySelector('img');
-    if (img) {
-      if (img.getAttribute('src') !== '/decor/milo-owl.webp') {
-        img.src = '/decor/milo-owl.webp';
-      }
-      img.style.setProperty("width", "52px", "important");
-      img.style.setProperty("height", "52px", "important");
-      img.style.setProperty("object-fit", "cover", "important");
-      img.style.setProperty("border-radius", "9999px", "important");
-      img.style.setProperty("display", "block", "important");
-    }
-
-    // Add status indicator dot if not present
-    if (!btn.querySelector('.itw-milo-dot')) {
-      var dot = document.createElement('span');
-      dot.className = 'itw-milo-dot';
-      dot.style.cssText = 'position:absolute;top:-2px;right:-2px;width:15px;height:15px;border-radius:9999px;background:#f47522;border:2.5px solid #fff;box-shadow:0 0 6px rgba(244,117,34,0.6);pointer-events:none;z-index:10;';
-      dot.setAttribute('aria-hidden', 'true');
-      btn.appendChild(dot);
-    }
-  }
-
   function ensure() {
     addNavCss();
     watchFooter();
-    unifyMiloLauncher();
-    setInterval(unifyMiloLauncher, 500);
     var img = document.querySelector('img[alt*="Phonics"]');
     if (!img) return;
     var art = img.closest("article");

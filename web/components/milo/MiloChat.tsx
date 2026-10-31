@@ -8,11 +8,11 @@ const API = process.env.NEXT_PUBLIC_MILO_API || '/api/milo'
 const HUMAN_URL = '/consult'
 
 const STARTERS = [
-  '🧭 Explore In Their World experiences',
+  'Explore In Their World experiences',
   'What is stimming?',
   'What is sensory integration?',
-  '📅 Book a consultation',
-  '🎯 What assessments are available?',
+  'Book a consultation',
+  'What assessments are available?',
 ]
 
 type NavTarget = {
@@ -22,17 +22,17 @@ type NavTarget = {
 }
 
 const NAV_SHORTCUTS: NavTarget[] = [
-  {label: '🧭 In Their World Experiences', url: '/experience', badge: 'Interactive'},
-  {label: '🧠 ADHD: Study Desk', url: '/experience?module=adhd'},
-  {label: '🌿 Autism: Sensory Worlds', url: '/experience?module=autism'},
-  {label: '📖 Dyslexia: Words on Paper', url: '/experience?module=dyslexia'},
-  {label: '💬 Speech & Language', url: '/experience?module=speech'},
-  {label: '🔢 Dyscalculia: Do the Math', url: '/experience?module=dyscalculia'},
-  {label: '✏️ Dysgraphia: Write It Down', url: '/experience?module=dysgraphia'},
-  {label: '🎧 Auditory Processing', url: '/experience?module=auditory'},
-  {label: '🗂️ Executive Functioning', url: '/experience?module=executive'},
-  {label: '📅 Book Consultation', url: '/consult', badge: 'Free'},
-  {label: '🎯 Assessments', url: '/assessments'},
+  {label: 'In Their World Experiences', url: '/experience', badge: 'Interactive'},
+  {label: 'ADHD: Study Desk', url: '/experience?module=adhd'},
+  {label: 'Autism: Sensory Worlds', url: '/experience?module=autism'},
+  {label: 'Dyslexia: Words on Paper', url: '/experience?module=dyslexia'},
+  {label: 'Speech & Language', url: '/experience?module=speech'},
+  {label: 'Dyscalculia: Do the Math', url: '/experience?module=dyscalculia'},
+  {label: 'Dysgraphia: Write It Down', url: '/experience?module=dysgraphia'},
+  {label: 'Auditory Processing', url: '/experience?module=auditory'},
+  {label: 'Executive Functioning', url: '/experience?module=executive'},
+  {label: 'Book Consultation', url: '/consult', badge: 'Free'},
+  {label: 'Assessments', url: '/assessments'},
 ]
 
 function findNavTargets(text: string): NavTarget[] {
@@ -40,39 +40,39 @@ function findNavTargets(text: string): NavTarget[] {
   const found: NavTarget[] = []
 
   if (lower.includes('adhd') || lower.includes('attention') || lower.includes('focus') || lower.includes('tabs')) {
-    found.push({label: '🧠 Try ADHD Experience', url: '/experience?module=adhd'})
+    found.push({label: 'Try ADHD Experience', url: '/experience?module=adhd'})
   }
   if (lower.includes('autism') || lower.includes('sensory') || lower.includes('stimming') || lower.includes('overload')) {
-    found.push({label: '🌿 Try Autism Sensory World', url: '/experience?module=autism'})
+    found.push({label: 'Try Autism Sensory World', url: '/experience?module=autism'})
   }
   if (lower.includes('dyslexia') || lower.includes('reading') || lower.includes('decoding')) {
-    found.push({label: '📖 Try Dyslexia Experience', url: '/experience?module=dyslexia'})
+    found.push({label: 'Try Dyslexia Experience', url: '/experience?module=dyslexia'})
   }
   if (lower.includes('speech') || lower.includes('stutter') || lower.includes('language') || lower.includes('words')) {
-    found.push({label: '💬 Try Speech & Language Experience', url: '/experience?module=speech'})
+    found.push({label: 'Try Speech & Language Experience', url: '/experience?module=speech'})
   }
   if (lower.includes('dyscalculia') || lower.includes('math') || lower.includes('numbers') || lower.includes('calculation')) {
-    found.push({label: '🔢 Try Dyscalculia Experience', url: '/experience?module=dyscalculia'})
+    found.push({label: 'Try Dyscalculia Experience', url: '/experience?module=dyscalculia'})
   }
   if (lower.includes('dysgraphia') || lower.includes('writing') || lower.includes('handwriting') || lower.includes('pencil')) {
-    found.push({label: '✏️ Try Dysgraphia Experience', url: '/experience?module=dysgraphia'})
+    found.push({label: 'Try Dysgraphia Experience', url: '/experience?module=dysgraphia'})
   }
   if (lower.includes('auditory') || lower.includes('hearing') || lower.includes('listening') || lower.includes('noise')) {
-    found.push({label: '🎧 Try Auditory Processing Experience', url: '/experience?module=auditory'})
+    found.push({label: 'Try Auditory Processing Experience', url: '/experience?module=auditory'})
   }
   if (lower.includes('executive') || lower.includes('planning') || lower.includes('priorit') || lower.includes('organis')) {
-    found.push({label: '🗂️ Try Executive Functioning Experience', url: '/experience?module=executive'})
+    found.push({label: 'Try Executive Functioning Experience', url: '/experience?module=executive'})
   }
   if (lower.includes('experience') || lower.includes('in their world') || lower.includes('explore') || lower.includes('simulation')) {
     if (!found.some(f => f.url === '/experience')) {
-      found.unshift({label: '🧭 Explore All Experiences', url: '/experience', badge: 'All 8'})
+      found.unshift({label: 'Explore All Experiences', url: '/experience', badge: 'All 8'})
     }
   }
   if (lower.includes('consult') || lower.includes('therapist') || lower.includes('doctor') || lower.includes('counsel') || lower.includes('appointment')) {
-    found.push({label: '📅 Book a Free Consultation', url: '/consult', badge: 'Direct'})
+    found.push({label: 'Book a Free Consultation', url: '/consult', badge: 'Direct'})
   }
   if (lower.includes('assess') || lower.includes('screening') || lower.includes('test') || lower.includes('diagnos')) {
-    found.push({label: '🎯 View Available Assessments', url: '/assessments'})
+    found.push({label: 'View Available Assessments', url: '/assessments'})
   }
 
   return found.slice(0, 3)
@@ -146,10 +146,10 @@ export default function MiloChat() {
   const [msgs, setMsgs] = useState<Msg[]>([
     {
       role: 'milo',
-      text: 'Hoo-hoo! I’m Milo 🦉 your learning and navigation guide. Ask me questions about sensory needs, ADHD, dyslexia, speech, or let me guide you to any part of our site. I’m right here!',
+      text: 'Hoo-hoo! I’m Milo, your learning and navigation guide. Ask me questions about sensory needs, ADHD, dyslexia, speech, or let me guide you to any part of our site. I’m right here!',
       navTargets: [
-        {label: '🧭 Explore All Experiences', url: '/experience'},
-        {label: '📅 Book Consultation', url: '/consult'},
+        {label: 'Explore All Experiences', url: '/experience'},
+        {label: 'Book Consultation', url: '/consult'},
       ],
     },
   ])
@@ -215,8 +215,8 @@ export default function MiloChat() {
           role: 'milo',
           text: fallbackReply,
           navTargets: targets.length > 0 ? targets : [
-            {label: '🧭 In Their World Experiences', url: '/experience'},
-            {label: '📅 Consultation Booking', url: '/consult'},
+            {label: 'In Their World Experiences', url: '/experience'},
+            {label: 'Consultation Booking', url: '/consult'},
           ],
         },
       ])
@@ -241,11 +241,12 @@ export default function MiloChat() {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background font-patrick">
+    <div className="flex h-full min-h-0 flex-col bg-background font-sans">
       {/* Sound toggle subheader */}
       <div className="flex items-center justify-between border-b border-black/5 bg-emerald-50/50 px-4 py-1.5 text-xs text-foreground/70">
         <span className="flex items-center gap-1.5">
-          <span>🦉</span> <b>Milo Guide</b> · Always unhurried
+          <img src="/decor/milo-owl.webp" alt="Milo" className="h-4 w-4 rounded-full inline-block object-cover shadow-xs" />
+          <b>Milo Guide</b> · Always unhurried
         </span>
         <button
           type="button"
@@ -253,7 +254,24 @@ export default function MiloChat() {
           className="flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-medium text-emerald-800 transition hover:bg-emerald-100/60"
           aria-label={soundEnabled ? 'Mute owl hoot sound' : 'Enable owl hoot sound'}
         >
-          {soundEnabled ? '🔊 Hoot sound ON' : '🔇 Hoot sound OFF'}
+          {soundEnabled ? (
+            <>
+              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+              </svg>
+              <span>Hoot sound ON</span>
+            </>
+          ) : (
+            <>
+              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <line x1="23" y1="9" x2="17" y2="15" />
+                <line x1="17" y1="9" x2="23" y2="15" />
+              </svg>
+              <span>Hoot sound OFF</span>
+            </>
+          )}
         </button>
       </div>
 
@@ -261,16 +279,16 @@ export default function MiloChat() {
         {msgs.map((m, i) => (
           <div key={i} className={`flex gap-2.5 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {m.role === 'milo' && (
-              <div className="mt-0.5 h-8 w-8 shrink-0 overflow-hidden rounded-full border border-card-green/30 bg-emerald-50 shadow-sm" aria-hidden="true">
-                <img src="/decor/milo-owl.webp" alt="" className="h-full w-full object-cover" />
+              <div className="mt-0.5 h-8 w-8 shrink-0 overflow-hidden rounded-full border border-card-green/30 bg-emerald-50 shadow-sm transition-transform duration-500 motion-safe:animate-pulse" aria-hidden="true">
+                <img src="/decor/milo-owl.webp" alt="Milo" className="h-full w-full object-cover" />
               </div>
             )}
             <div className="max-w-[84%]">
               <div
-                className={`rounded-2xl px-4 py-2.5 text-base leading-snug shadow-sm transition-all ${
+                className={`rounded-2xl px-4 py-2.5 text-[14.5px] leading-relaxed shadow-sm transition-all ${
                   m.role === 'user'
-                    ? 'whitespace-pre-wrap rounded-br-md bg-gradient-to-tr from-[#f47522] to-[#fb923c] text-white'
-                    : 'rounded-bl-md border border-black/5 bg-white text-foreground [&_a]:text-primary [&_a]:underline [&_h1]:font-bold [&_h2]:font-bold [&_h3]:font-bold [&_li]:my-1 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_p]:my-2 [&_strong]:font-bold [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5'
+                    ? 'whitespace-pre-wrap rounded-br-md bg-gradient-to-tr from-[#f47522] to-[#fb923c] text-white font-medium'
+                    : 'rounded-bl-md border border-black/5 bg-white text-foreground [&_a]:text-primary [&_a]:underline [&_h1]:font-bold [&_h2]:font-bold [&_h3]:font-bold [&_li]:my-1 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_p]:my-2 [&_strong]:font-semibold [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5'
                 }`}
               >
                 {m.role === 'user' ? m.text : <ReactMarkdown>{m.text}</ReactMarkdown>}
@@ -284,7 +302,7 @@ export default function MiloChat() {
                       key={nIdx}
                       type="button"
                       onClick={() => handleNavigate(nav.url)}
-                      className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 shadow-xs transition hover:bg-emerald-100 hover:text-emerald-950"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 shadow-xs transition hover:bg-emerald-100 hover:text-emerald-950"
                     >
                       <span>{nav.label}</span>
                       {nav.badge && (
@@ -306,9 +324,13 @@ export default function MiloChat() {
                       href={`${API}${s.doc_url.replace(/^\/api/, '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="max-w-full truncate rounded-full border border-card-green/20 bg-card-green/10 px-2.5 py-0.5 text-xs text-foreground/80 hover:bg-card-green/25"
+                      className="inline-flex items-center gap-1 max-w-full truncate rounded-full border border-card-green/20 bg-card-green/10 px-2.5 py-0.5 text-xs text-foreground/80 hover:bg-card-green/25"
                     >
-                      📖 {s.source.replace(/\.[a-z]+$/i, '')}
+                      <svg className="h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                      </svg>
+                      <span className="truncate">{s.source.replace(/\.[a-z]+$/i, '')}</span>
                     </a>
                   ))}
                 </div>
@@ -327,16 +349,22 @@ export default function MiloChat() {
                   <button
                     onClick={() => vote(i, 'up')}
                     aria-label="Helpful"
-                    className={`rounded-full px-2 py-0.5 transition hover:bg-card-green/20 ${m.vote === 'up' ? 'bg-card-green/30 font-bold' : 'opacity-60'}`}
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 transition hover:bg-card-green/20 ${m.vote === 'up' ? 'bg-card-green/30 font-bold' : 'opacity-60'}`}
                   >
-                    👍
+                    <svg className="h-3 w-3 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                    </svg>
+                    <span>Yes</span>
                   </button>
                   <button
                     onClick={() => vote(i, 'down')}
                     aria-label="Not helpful"
-                    className={`rounded-full px-2 py-0.5 transition hover:bg-card-green/20 ${m.vote === 'down' ? 'bg-card-green/30 font-bold' : 'opacity-60'}`}
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 transition hover:bg-card-green/20 ${m.vote === 'down' ? 'bg-card-green/30 font-bold' : 'opacity-60'}`}
                   >
-                    👎
+                    <svg className="h-3 w-3 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3" />
+                    </svg>
+                    <span>No</span>
                   </button>
                 </div>
               )}
@@ -405,7 +433,7 @@ export default function MiloChat() {
             onChange={(e) => setText(e.target.value)}
             maxLength={500}
             placeholder="Ask Milo or ask to navigate somewhere…"
-            className="min-w-0 flex-1 rounded-full border border-black/10 bg-background px-4 py-2.5 text-base outline-none focus:border-card-green focus:ring-2 focus:ring-card-green/30"
+            className="min-w-0 flex-1 rounded-full border border-black/10 bg-background px-4 py-2.5 text-sm outline-none focus:border-card-green focus:ring-2 focus:ring-card-green/30"
           />
           <button
             type="submit"
@@ -413,7 +441,10 @@ export default function MiloChat() {
             aria-label="Send"
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-card-green text-white transition hover:opacity-90 disabled:opacity-40"
           >
-            ➤
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
           </button>
         </div>
         <p className="mt-2 text-center text-[11px] text-foreground/50">Milo shares learning guidance and site navigation, not medical advice.</p>

@@ -607,7 +607,13 @@ const MODULE_ICONS = {
 const SOON_STORIES = [
   {
     key: "downsyndrome",
-    icon: "🌱",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22v-9" />
+        <path d="M9 8a5 5 0 0 1 8-3 5 5 0 0 1-5 8c-3 0-5-2-5-5a5 5 0 0 1 2-4" />
+        <path d="M15 13a4 4 0 0 0-4-4" />
+      </svg>
+    ),
     name: "Down Syndrome & Developmental Pacing",
     sub: "Growing at My Own Pace",
     blurb: "An interactive first-person story of Aarav: celebrating strengths, visual learning, and everyday milestones.",
@@ -617,12 +623,19 @@ const SOON_STORIES = [
   },
   {
     key: "dayineyes",
-    icon: "🎒",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+        <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+        <path d="M8 21v-5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5" />
+        <line x1="8" y1="10" x2="16" y2="10" />
+      </svg>
+    ),
     name: "A Day Through My Eyes",
     sub: "The Inclusive School Day Walkthrough",
     blurb: "Step into an everyday school day and switch between Sensory, Attention, Communication, and Supported Classroom lenses.",
     image: "/decor/itw/day-through-my-eyes.webp",
-    meta: "Multi-Perspective Exhibit",
+    meta: "Perspective Lens Exhibit",
     badge: "Perspective Lens",
   },
 ];
@@ -868,7 +881,29 @@ function SettingsBar({ soundOn, setSoundOn, darkMode, setDarkMode }) {
         aria-pressed={darkMode}
         onClick={() => setDarkMode((v) => !v)}
       >
-        {darkMode ? "☀️ Light mode" : "🌙 Dark mode"}
+        {darkMode ? (
+          <>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ verticalAlign: "-2px", marginRight: 5 }}>
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+            <span>Light mode</span>
+          </>
+        ) : (
+          <>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ verticalAlign: "-2px", marginRight: 5 }}>
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+            <span>Dark mode</span>
+          </>
+        )}
       </button>
       <button
         type="button"
@@ -876,7 +911,24 @@ function SettingsBar({ soundOn, setSoundOn, darkMode, setDarkMode }) {
         aria-pressed={soundOn}
         onClick={() => setSoundOn((v) => !v)}
       >
-        {soundOn ? "🔊 Sound on" : "🔇 Sound off"}
+        {soundOn ? (
+          <>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ verticalAlign: "-2px", marginRight: 5 }}>
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+            </svg>
+            <span>Sound on</span>
+          </>
+        ) : (
+          <>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ verticalAlign: "-2px", marginRight: 5 }}>
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <line x1="23" y1="9" x2="17" y2="15" />
+              <line x1="17" y1="9" x2="23" y2="15" />
+            </svg>
+            <span>Sound off</span>
+          </>
+        )}
       </button>
     </div>
   );
@@ -922,7 +974,12 @@ function HelpFooter() {
   return (
     <div className="itw-help-footer itw-print-hide">
       <button type="button" className="itw-btn-ghost itw-print-btn" onClick={() => window.print()}>
-        🖨️ Print these strategies
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ verticalAlign: "-2px", marginRight: 6 }}>
+          <polyline points="6 9 6 2 18 2 18 9" />
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+          <rect x="6" y="14" width="12" height="8" />
+        </svg>
+        <span>Print these strategies</span>
       </button>
       <a className="itw-manas-cta" href="https://www.manaslearning.com" target="_blank" rel="noreferrer">
         <span>If this felt familiar, Manas Learning works with kids like this every day.</span>
@@ -8042,7 +8099,9 @@ function DownSyndromeStory({ onBack, onNavigate }) {
                 className={`itw-book-tab${idx === currentPage ? " itw-active" : ""}`}
                 onClick={() => turnToPage(idx)}
               >
-                <span>🔖</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                </svg>
                 <span>{MOMENT_TABS[idx]}</span>
               </button>
             ))}
@@ -8080,7 +8139,10 @@ function DownSyndromeStory({ onBack, onNavigate }) {
                 <span className="itw-storybook-art-badge">{page.badge}</span>
               </div>
               <div className="itw-storybook-caption-plaque">
-                <span>📍</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
                 <span>{page.subtitle}</span>
               </div>
               <div className="itw-book-left-folio">
@@ -8129,7 +8191,10 @@ function DownSyndromeStory({ onBack, onNavigate }) {
 
               <div className="itw-storybook-insight-box">
                 <div className="itw-insight-title">
-                  <span>💡</span> Pedagogical Insight
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
+                    <path d="M9 18h6m-4 4h2m4.6-11.4a7 7 0 1 0-9.2 0c.9.8 1.6 2.2 1.6 3.4h6c0-1.2.7-2.6 1.6-3.4z" />
+                  </svg>
+                  <span>Pedagogical Insight</span>
                 </div>
                 <p>{page.insight}</p>
               </div>
@@ -8200,7 +8265,7 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
       sensory: "The loudspeaker reverberates in my ears like physical pressure. The hum of 300 footsteps on stone creates a wall of white noise where words get lost.",
       attention: "My eyes are pulled to the flutter of pigeons in the courtyard rafters and the flicker of distant hallway bulbs. Holding attention on announcements requires intense effort.",
       communication: "The teacher asks me for my homework diary suddenly. The noise makes my throat tighten; finding the words takes longer than the teacher waits.",
-      supported: "✨ Accommodations in action: Noise-dampening acoustic curtains, standing near the calm edge, and visual assembly agenda cards allow full, relaxed participation.",
+      supported: "Accommodations in action: Noise-dampening acoustic curtains, standing near the calm edge, and visual assembly agenda cards allow full, relaxed participation.",
     },
     {
       time: "10:15 AM",
@@ -8211,7 +8276,7 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
       sensory: "The smell of methylated spirits and bleach mixes with the clatter of test tubes on slate benches.",
       attention: "I have 4 ideas for our model simultaneously! Keeping them in sequential order while partners debate is an executive balancing act.",
       communication: "I know the answer to the hypothesis! But speaking over louder classmates requires more motor planning time than the discussion pause allows.",
-      supported: "✨ Accommodations in action: AAC concept cards, small group roles with clear task breakdowns, and a visual step-by-step experiment board unlock my full scientific insight.",
+      supported: "Accommodations in action: AAC concept cards, small group roles with clear task breakdowns, and a visual step-by-step experiment board unlock my full scientific insight.",
     },
     {
       time: "12:30 PM",
@@ -8222,7 +8287,7 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
       sensory: "The scraping of metal chairs on floor tiles and overlapping smells can feel like a sudden wave. A quiet shaded bench under the neem tree restores my equilibrium.",
       attention: "Social games have unwritten, shifting rules. When someone changes the game halfway, my mind takes time to re-route.",
       communication: "Relaxed, low-pressure conversations with close friends where no one rushes my sentences make this my favorite time of day.",
-      supported: "✨ Accommodations in action: A quiet sensory garden corner, designated lunch buddy system, and unhurried seating options make lunch a time of genuine restoration.",
+      supported: "Accommodations in action: A quiet sensory garden corner, designated lunch buddy system, and unhurried seating options make lunch a time of genuine restoration.",
     },
     {
       time: "2:15 PM",
@@ -8233,7 +8298,7 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
       sensory: "Afternoon heat and fatigue build up; pencil grip feels heavier as hand muscles tire.",
       attention: "After 5 hours of continuous filtering, my brain's battery is low. Short movement breaks and sensory fidgets restore my focus immediately.",
       communication: "When the teacher asks me to explain what I wrote, speaking it aloud is 10 times easier than the messy pencil marks on my page.",
-      supported: "✨ Accommodations in action: Speech-to-text dictation, reading rulers with tinted focus overlays, and digital notebooks ensure my academic comprehension is fully recognized.",
+      supported: "Accommodations in action: Speech-to-text dictation, reading rulers with tinted focus overlays, and digital notebooks ensure my academic comprehension is fully recognized.",
     },
   ];
 
@@ -8292,7 +8357,10 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
                 className={`itw-book-tab${idx === activePeriod ? " itw-active" : ""}`}
                 onClick={() => turnToPeriod(idx)}
               >
-                <span>⏰</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
                 <span>{PERIOD_TABS[idx]}</span>
               </button>
             ))}
@@ -8327,10 +8395,18 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
                   className="itw-storybook-art-img"
                   loading="eager"
                 />
-                <span className="itw-storybook-art-badge">📍 {current.time}</span>
+                <span className="itw-storybook-art-badge">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px", marginRight: 3 }}>
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                  {current.time}
+                </span>
               </div>
               <div className="itw-storybook-caption-plaque">
-                <span>🏫</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ verticalAlign: "-1px", flexShrink: 0 }}>
+                  <path d="M3 21h18M5 21V7l8-4 8 4v14M8 10h2m-2 4h2m-2 4h2m6-8h2m-2 4h2m-2 4h2" />
+                </svg>
                 <span><strong>Setting:</strong> {current.setting}</span>
               </div>
               <div className="itw-book-left-folio">
@@ -8369,7 +8445,7 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
 
               <h3 className="itw-storybook-page-title">{current.title}</h3>
 
-              <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-text)", marginTop: 2 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "#1e3325", marginTop: 2 }}>
                 Experience through different lenses:
               </div>
               <div className="itw-lens-switcher" role="radiogroup" aria-label="Perspective lenses">
@@ -8379,7 +8455,11 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
                   onClick={() => setActiveLens("sensory")}
                   style={{ background: activeLens === "sensory" ? "var(--itw-autism)" : undefined }}
                 >
-                  🌿 Sensory
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
+                    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+                    <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+                  </svg>
+                  <span>Sensory</span>
                 </button>
                 <button
                   type="button"
@@ -8387,7 +8467,10 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
                   onClick={() => setActiveLens("attention")}
                   style={{ background: activeLens === "attention" ? "var(--itw-adhd)" : undefined }}
                 >
-                  🧠 Attention
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
+                    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04zM14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04z" />
+                  </svg>
+                  <span>Attention</span>
                 </button>
                 <button
                   type="button"
@@ -8395,7 +8478,10 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
                   onClick={() => setActiveLens("communication")}
                   style={{ background: activeLens === "communication" ? "var(--itw-speech)" : undefined }}
                 >
-                  💬 Speech
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                  <span>Speech</span>
                 </button>
                 <button
                   type="button"
@@ -8403,7 +8489,10 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
                   onClick={() => setActiveLens("supported")}
                   style={{ background: activeLens === "supported" ? "#2e7d32" : undefined }}
                 >
-                  ✨ Supported
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                  <span>Supported</span>
                 </button>
               </div>
 
@@ -8419,7 +8508,10 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
 
               <div className="itw-storybook-insight-box">
                 <div className="itw-insight-title">
-                  <span>💡</span> Observation
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
+                    <path d="M9 18h6m-4 4h2m4.6-11.4a7 7 0 1 0-9.2 0c.9.8 1.6 2.2 1.6 3.4h6c0-1.2.7-2.6 1.6-3.4z" />
+                  </svg>
+                  <span>Observation</span>
                 </div>
                 <p>
                   {activeLens === "supported"

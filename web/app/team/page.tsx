@@ -450,7 +450,16 @@ export default function TeamPortal() {
                   : '#111827',
               }}
             >
-              {currentStaff ? currentStaff.name.charAt(0) : '👥'}
+              {currentStaff ? (
+                currentStaff.name.charAt(0)
+              ) : (
+                <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              )}
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -479,35 +488,53 @@ export default function TeamPortal() {
           <div className="flex flex-wrap gap-1 rounded-xl bg-gray-100 p-1 text-xs font-semibold">
             <button
               onClick={() => setActiveTab('calendar')}
-              className={`rounded-lg px-3.5 py-1.5 transition ${
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 transition ${
                 activeTab === 'calendar' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              📅 Calendar & Appointments ({filteredBookings.length})
+              <svg className="h-3.5 w-3.5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <span>Calendar & Appointments ({filteredBookings.length})</span>
             </button>
             <button
               onClick={() => setActiveTab('availability')}
-              className={`rounded-lg px-3.5 py-1.5 transition ${
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 transition ${
                 activeTab === 'availability' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              ⏰ Weekly Shift Hours
+              <svg className="h-3.5 w-3.5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span>Weekly Shift Hours</span>
             </button>
             <button
               onClick={() => setActiveTab('leaves')}
-              className={`rounded-lg px-3.5 py-1.5 transition ${
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 transition ${
                 activeTab === 'leaves' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              🏖️ Time Off & Leaves
+              <svg className="h-3.5 w-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41m11.32-11.32l1.41-1.41" />
+              </svg>
+              <span>Time Off & Leaves</span>
             </button>
             <button
               onClick={() => setActiveTab('quick-book')}
-              className={`rounded-lg px-3.5 py-1.5 transition ${
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 transition ${
                 activeTab === 'quick-book' ? 'bg-primary text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              ➕ Book / Block Slot
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>Book / Block Slot</span>
             </button>
           </div>
         </div>
@@ -631,8 +658,13 @@ export default function TeamPortal() {
                                 {typeMeta?.title || 'Consultation'}
                               </p>
                               {activeStaffId === 'all' && staffMeta && (
-                                <p className="mt-1 text-[9px] font-semibold text-gray-600 truncate">
-                                  🩺 {staffMeta.name.split(' ')[0]}
+                                <p className="mt-1 inline-flex items-center gap-1 text-[9px] font-semibold text-gray-600 truncate">
+                                  <svg className="h-2.5 w-2.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3" />
+                                    <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4" />
+                                    <circle cx="20" cy="10" r="2" />
+                                  </svg>
+                                  <span>{staffMeta.name.split(' ')[0]}</span>
                                 </p>
                               )}
                             </button>
@@ -660,9 +692,13 @@ export default function TeamPortal() {
                     </div>
                     <button
                       onClick={() => setSelectedBooking(null)}
-                      className="rounded-full bg-gray-100 p-2 text-gray-500 hover:bg-gray-200"
+                      className="rounded-full bg-gray-100 p-2 text-gray-500 hover:bg-gray-200 transition"
+                      aria-label="Close details"
                     >
-                      ✕
+                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
                     </button>
                   </div>
 
@@ -732,8 +768,30 @@ export default function TeamPortal() {
         )}
 
         {/* ================= TAB 2: WEEKLY SHIFT HOURS ================= */}
-        {activeTab === 'availability' && editStaff && (
+        {activeTab === 'availability' && editStaff && data && (
           <div className="mt-6 space-y-6">
+            {/* Specialist Switcher inside Tab 2 */}
+            <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-white p-3.5 shadow-sm border border-gray-100">
+              <span className="text-xs font-bold text-gray-500 mr-1">Select Specialist:</span>
+              {data.staff.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveStaffId(s.id)
+                    setEditStaff(JSON.parse(JSON.stringify(s)))
+                  }}
+                  className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
+                    editStaff.id === s.id
+                      ? 'bg-gray-900 text-white shadow-sm'
+                      : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'
+                  }`}
+                >
+                  {s.name}
+                </button>
+              ))}
+            </div>
+
             <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
               <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 pb-5">
                 <div>
@@ -858,10 +916,14 @@ export default function TeamPortal() {
                                     weeklyHours: editStaff.weeklyHours.filter((_, i) => i !== idx),
                                   })
                                 }}
-                                className="ml-1 text-gray-400 hover:text-red-600"
+                                className="ml-1 text-gray-400 hover:text-red-600 transition p-0.5 inline-flex items-center"
                                 title="Remove slot"
+                                aria-label="Remove slot"
                               >
-                                ✕
+                                <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                  <line x1="18" y1="6" x2="6" y2="18" />
+                                  <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
                               </button>
                             </div>
                           ))
@@ -909,8 +971,30 @@ export default function TeamPortal() {
         )}
 
         {/* ================= TAB 3: TIME OFF & LEAVES ================= */}
-        {activeTab === 'leaves' && editStaff && (
+        {activeTab === 'leaves' && editStaff && data && (
           <div className="mt-6 space-y-6">
+            {/* Specialist Switcher inside Tab 3 */}
+            <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-white p-3.5 shadow-sm border border-gray-100">
+              <span className="text-xs font-bold text-gray-500 mr-1">Select Specialist:</span>
+              {data.staff.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveStaffId(s.id)
+                    setEditStaff(JSON.parse(JSON.stringify(s)))
+                  }}
+                  className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
+                    editStaff.id === s.id
+                      ? 'bg-gray-900 text-white shadow-sm'
+                      : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'
+                  }`}
+                >
+                  {s.name}
+                </button>
+              ))}
+            </div>
+
             <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
               <div className="border-b border-gray-100 pb-5">
                 <h3 className="text-xl font-bold text-gray-900">
@@ -942,9 +1026,13 @@ export default function TeamPortal() {
                         <button
                           type="button"
                           onClick={() => handleDeleteLeave(i)}
-                          className="rounded-lg bg-white p-1.5 text-xs text-gray-400 hover:text-red-600 shadow-sm border border-gray-200"
+                          className="inline-flex items-center gap-1 rounded-lg bg-white px-2 py-1.5 text-xs font-semibold text-gray-500 hover:text-red-600 shadow-sm border border-gray-200 transition"
                         >
-                          ✕ Remove
+                          <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
+                          <span>Remove</span>
                         </button>
                       </div>
                     ))}

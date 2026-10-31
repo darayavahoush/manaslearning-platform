@@ -1374,8 +1374,8 @@ body:has(.itw-dark) .itw-leafimg {
 
 .itw-mcard-banner-wrap {
   width: 100%;
-  height: 220px;
-  aspect-ratio: 16/9;
+  height: 265px;
+  aspect-ratio: 16/10;
   overflow: hidden;
   margin: -26px 0 16px;
   border-radius: 18px 18px 0 0;
@@ -1390,6 +1390,23 @@ body:has(.itw-dark) .itw-leafimg {
   object-position: center center;
   transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.3, 1);
   display: block;
+}
+/* Condition-specific focal alignment: prevents heads and faces from being cropped */
+.itw-mcard[data-m="autism"] .itw-mcard-banner {
+  object-position: center 8% !important;
+}
+.itw-mcard[data-m="adhd"] .itw-mcard-banner {
+  object-position: center 15% !important;
+}
+.itw-mcard[data-m="dyslexia"] .itw-mcard-banner {
+  object-position: center 18% !important;
+}
+.itw-mcard[data-m="speech"] .itw-mcard-banner {
+  object-position: center 20% !important;
+}
+.itw-mcard[data-m="down-syndrome"] .itw-mcard-banner,
+.itw-story-card .itw-mcard-banner {
+  object-position: center 15% !important;
 }
 .itw-mcard:hover .itw-mcard-banner,
 .itw-mcard:focus-visible .itw-mcard-banner {
@@ -1526,12 +1543,26 @@ body:has(.itw-dark) .itw-leafimg {
 
 .itw-storybook-spread {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 22px minmax(0, 1.15fr);
+  grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1.15fr);
   align-items: stretch;
-  background: #fbf7ee !important;
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.2), inset 0 0 24px rgba(0, 0, 0, 0.03);
+  background: linear-gradient(to right, #f6efe2 0%, #fcf9f2 46%, #fdfbf7 54%, #f5ede0 100%) !important;
+  border-radius: 16px;
+  position: relative;
+  /* Authentic 3D stacked book leaves: shows thickness of ~150 leaves */
+  box-shadow:
+    -5px 0 0 #f3ebe0,
+    -9px 0 0 #eae1d0,
+    -13px 0 0 #dfd4bf,
+    -24px 14px 40px rgba(0, 0, 0, 0.35),
+    5px 0 0 #f3ebe0,
+    9px 0 0 #eae1d0,
+    13px 0 0 #dfd4bf,
+    24px 14px 40px rgba(0, 0, 0, 0.35),
+    0 5px 0 #eae1d0,
+    0 9px 0 #dfd4bf,
+    0 18px 30px rgba(0, 0, 0, 0.25);
+  perspective: 1600px;
+  transform-style: preserve-3d;
 }
 
 .itw-book-spine {
@@ -1539,13 +1570,13 @@ body:has(.itw-dark) .itw-leafimg {
   min-height: 100%;
   background: linear-gradient(
     to right,
-    rgba(0, 0, 0, 0.16) 0%,
-    rgba(0, 0, 0, 0.04) 40%,
-    rgba(255, 255, 255, 0.35) 50%,
-    rgba(0, 0, 0, 0.04) 60%,
-    rgba(0, 0, 0, 0.16) 100%
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0.08) 35%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(0, 0, 0, 0.08) 65%,
+    rgba(0, 0, 0, 0.25) 100%
   );
-  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.12);
 }
 
 .itw-storybook-art-page {
@@ -1553,7 +1584,7 @@ body:has(.itw-dark) .itw-leafimg {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: #fbf7ee !important;
+  background: transparent !important;
 }
 
 .itw-storybook-art-frame {
@@ -1863,56 +1894,56 @@ body:has(.itw-dark) .itw-leafimg {
 
 /* ================= 3D PHYSICAL STORYBOOK PAGE TURN EFFECTS ================= */
 .itw-storybook-spread {
-  perspective: 1800px;
+  perspective: 1600px;
   transform-style: preserve-3d;
   position: relative;
 }
 
-/* Page Turn Animation (Next Direction) */
+/* Page Turn Animation (Next Direction): Right leaf lifts up and turns across the spine */
 .itw-page-turn-next {
   transform-origin: left center;
-  animation: itw-page-flip-forward 0.52s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: itw-page-turn-flip-next 0.56s cubic-bezier(0.25, 1, 0.35, 1) both;
 }
-@keyframes itw-page-flip-forward {
+@keyframes itw-page-turn-flip-next {
   0% {
-    transform: perspective(1400px) rotateY(0deg) scale(1);
-    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.04);
+    transform: perspective(1600px) rotateY(0deg);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
   }
-  35% {
-    transform: perspective(1400px) rotateY(-18deg) scale(0.985) translateX(4px);
-    box-shadow: -18px 0 32px rgba(0, 0, 0, 0.22);
+  32% {
+    transform: perspective(1600px) rotateY(-36deg) skewY(1.2deg) scale(0.985);
+    box-shadow: -16px 10px 30px rgba(0, 0, 0, 0.26);
   }
   70% {
-    transform: perspective(1400px) rotateY(-5deg) scale(0.995) translateX(1px);
-    box-shadow: -8px 0 16px rgba(0, 0, 0, 0.1);
+    transform: perspective(1600px) rotateY(-8deg) skewY(0.4deg) scale(0.995);
+    box-shadow: -6px 4px 14px rgba(0, 0, 0, 0.12);
   }
   100% {
-    transform: perspective(1400px) rotateY(0deg) scale(1) translateX(0);
-    box-shadow: none;
+    transform: perspective(1600px) rotateY(0deg) skewY(0deg) scale(1);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
   }
 }
 
-/* Page Turn Animation (Prev Direction) */
+/* Page Turn Animation (Prev Direction): Left leaf flips back over to the right */
 .itw-page-turn-prev {
   transform-origin: right center;
-  animation: itw-page-flip-backward 0.52s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: itw-page-turn-flip-prev 0.56s cubic-bezier(0.25, 1, 0.35, 1) both;
 }
-@keyframes itw-page-flip-backward {
+@keyframes itw-page-turn-flip-prev {
   0% {
-    transform: perspective(1400px) rotateY(0deg) scale(1);
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.04);
+    transform: perspective(1600px) rotateY(0deg);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
   }
-  35% {
-    transform: perspective(1400px) rotateY(18deg) scale(0.985) translateX(-4px);
-    box-shadow: 18px 0 32px rgba(0, 0, 0, 0.22);
+  32% {
+    transform: perspective(1600px) rotateY(36deg) skewY(-1.2deg) scale(0.985);
+    box-shadow: 16px 10px 30px rgba(0, 0, 0, 0.26);
   }
   70% {
-    transform: perspective(1400px) rotateY(5deg) scale(0.995) translateX(-1px);
-    box-shadow: 8px 0 16px rgba(0, 0, 0, 0.1);
+    transform: perspective(1600px) rotateY(8deg) skewY(-0.4deg) scale(0.995);
+    box-shadow: 6px 4px 14px rgba(0, 0, 0, 0.12);
   }
   100% {
-    transform: perspective(1400px) rotateY(0deg) scale(1) translateX(0);
-    box-shadow: none;
+    transform: perspective(1600px) rotateY(0deg) skewY(0deg) scale(1);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
   }
 }
 
@@ -1926,11 +1957,11 @@ body:has(.itw-dark) .itw-leafimg {
     105deg,
     transparent 0%,
     rgba(255, 255, 255, 0.45) 30%,
-    rgba(0, 0, 0, 0.06) 50%,
-    rgba(0, 0, 0, 0.14) 70%,
+    rgba(0, 0, 0, 0.05) 50%,
+    rgba(0, 0, 0, 0.12) 70%,
     transparent 100%
   );
-  animation: itw-sheen-travel 0.52s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: itw-sheen-travel 0.56s cubic-bezier(0.22, 1, 0.36, 1) both;
   z-index: 12;
 }
 @keyframes itw-sheen-travel {
@@ -1955,7 +1986,7 @@ body:has(.itw-dark) .itw-leafimg {
   pointer-events: none;
   border-radius: inherit;
   background: linear-gradient(to left, rgba(0, 0, 0, 0.14) 0%, transparent 65%);
-  animation: itw-crease-pulse 0.52s ease-out both;
+  animation: itw-crease-pulse 0.56s ease-out both;
   z-index: 12;
 }
 @keyframes itw-crease-pulse {
@@ -1965,17 +1996,81 @@ body:has(.itw-dark) .itw-leafimg {
 }
 
 .itw-page-flip-anim {
-  animation: itw-book-page-turn 0.42s cubic-bezier(0.2, 0.8, 0.25, 1) both;
+  animation: itw-book-settle 0.45s ease-out both;
 }
-@keyframes itw-book-page-turn {
+@keyframes itw-book-settle {
   0% {
-    opacity: 0.35;
-    transform: perspective(1100px) rotateY(-8deg) translateX(6px);
+    opacity: 0.88;
+    transform: scale(0.993);
   }
   100% {
     opacity: 1;
-    transform: perspective(1100px) rotateY(0deg) translateX(0);
+    transform: scale(1);
   }
+}
+
+/* Rock-solid Storybook Dark-Mode Contrast Guarantee: Cream leaves ALWAYS have dark ink text! */
+.itw-root.itw-dark .itw-storybook-spread,
+.itw-root.itw-dark .itw-storybook-art-page,
+.itw-root.itw-dark .itw-storybook-text-page {
+  background: linear-gradient(to right, #f6efe2 0%, #fcf9f2 46%, #fdfbf7 54%, #f5ede0 100%) !important;
+  color: #1a2a1e !important;
+}
+
+.itw-root.itw-dark .itw-storybook-page-title,
+.itw-storybook-page-title {
+  color: #101c13 !important;
+}
+
+.itw-root.itw-dark .itw-storybook-quote-card,
+.itw-storybook-quote-card {
+  background: rgba(44, 140, 114, 0.08) !important;
+  border-left: 3.5px solid #2c8c72 !important;
+}
+
+.itw-root.itw-dark .itw-storybook-quote-card p,
+.itw-storybook-quote-card p {
+  color: #142218 !important;
+}
+
+.itw-root.itw-dark .itw-storybook-prose,
+.itw-root.itw-dark .itw-storybook-prose p,
+.itw-storybook-prose,
+.itw-storybook-prose p {
+  color: #1c2b20 !important;
+}
+
+.itw-root.itw-dark .itw-storybook-insight-box,
+.itw-storybook-insight-box {
+  background: #f4ecda !important;
+  border: 1.5px solid rgba(180, 140, 60, 0.38) !important;
+}
+
+.itw-root.itw-dark .itw-storybook-insight-box p,
+.itw-storybook-insight-box p {
+  color: #243328 !important;
+}
+
+.itw-root.itw-dark .itw-insight-title,
+.itw-insight-title {
+  color: #835f12 !important;
+}
+
+.itw-root.itw-dark .itw-storybook-caption-plaque,
+.itw-storybook-caption-plaque {
+  background: rgba(0, 0, 0, 0.04) !important;
+  color: #2a3a2d !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.itw-root.itw-dark .itw-book-left-folio,
+.itw-book-left-folio {
+  color: #637768 !important;
+  border-top-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.itw-root.itw-dark .itw-book-top-tabs {
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
 @media (max-width: 900px) {

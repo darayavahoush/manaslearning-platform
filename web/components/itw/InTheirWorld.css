@@ -2271,6 +2271,49 @@ body:has(.itw-dark) .itw-leafimg {
 
 /* ================= DYSLEXIA HIGH-FIDELITY EXPERIENCE ================= */
 
+.itw-dys-hero-header {
+  max-width: 1040px;
+  width: 100%;
+  margin: 12px auto 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.itw-dys-hero-header .itw-kicker {
+  display: inline-block;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #1e755d;
+  margin-bottom: 2px;
+}
+
+.itw-root.itw-dark .itw-dys-hero-header .itw-kicker {
+  color: #34d399;
+}
+
+.itw-dys-hero-title {
+  font-family: var(--font-display, Georgia, serif);
+  font-size: clamp(1.85rem, 3.5vw, 2.75rem);
+  font-weight: 800;
+  line-height: 1.22;
+  color: var(--itw-text);
+  margin: 0;
+  letter-spacing: -0.015em;
+}
+
+.itw-dys-hero-lead {
+  font-size: clamp(0.96rem, 1.5vw, 1.08rem);
+  line-height: 1.62;
+  color: var(--itw-muted);
+  max-width: 820px;
+  margin: 0;
+}
+
 .itw-dys-container {
   max-width: 1040px;
   margin: 0 auto;

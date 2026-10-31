@@ -4020,12 +4020,12 @@ function DyslexiaModule({ onBack, onNavigate }) {
       {/* Header navigation & title */}
       <FlowCrumbs name="Dyslexia Simulation Suite" onBack={onBack} />
 
-      <div className="itw-flow-intro" style={{ marginBottom: 20 }}>
+      <div className="itw-dys-hero-header">
         <span className="itw-kicker">NEURODIVERSITY SIMULATION & PEDAGOGY • DYSLEXIA</span>
-        <h2 className="itw-title" style={{ color: "var(--itw-text)" }}>
+        <h2 className="itw-dys-hero-title">
           See Through Dyslexia: The Mechanics of Reading
         </h2>
-        <p className="itw-lead" style={{ maxWidth: 760 }}>
+        <p className="itw-dys-hero-lead">
           Experience the real-time cognitive overhead of letter scramble, rotational mirror confusion, visual crowding, and transient foveal blur — then explore evidence-based accommodations and neurodiversity superpowers.
         </p>
       </div>

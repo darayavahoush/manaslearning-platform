@@ -7995,11 +7995,161 @@ function playPageTurnSound(soundOn) {
   }
 }
 
+/* ---------------- 3D Storybook Helpers: Down Syndrome Story ---------------- */
+
+function DsArtPage({
+  page,
+  pageIndex,
+  totalPages,
+  onTurnBack,
+  isCornerCurlActive = true,
+  isTurningFace = false,
+}) {
+  return (
+    <div className="itw-storybook-art-page">
+      {/* Top-Left Corner Curl (Turn Back) */}
+      {!isTurningFace && isCornerCurlActive && pageIndex > 0 && (
+        <div
+          className="itw-book-corner-curl-prev"
+          title={`Turn back to Moment ${pageIndex}`}
+          onClick={onTurnBack}
+          role="button"
+          tabIndex={0}
+          aria-label="Previous moment"
+        />
+      )}
+
+      <div className="itw-storybook-art-frame">
+        <img
+          src={page.image}
+          alt={page.alt}
+          className="itw-storybook-art-img"
+          loading="eager"
+        />
+        <span className="itw-storybook-art-badge">{page.badge}</span>
+      </div>
+      <div className="itw-storybook-caption-plaque">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>
+        <span>{page.subtitle}</span>
+      </div>
+      <div className="itw-book-left-folio">
+        <span>Plate {pageIndex + 1} of {totalPages}</span>
+        <span>Chennai Inclusive Primary</span>
+      </div>
+    </div>
+  );
+}
+
+function DsTextPage({
+  page,
+  pageIndex,
+  totalPages,
+  pages,
+  onTurnPrev,
+  onTurnNext,
+  onNavigateAutism,
+  onSelectPage,
+  isCornerCurlActive = true,
+  isTurningFace = false,
+}) {
+  return (
+    <div className="itw-storybook-text-page">
+      {/* Sweeping Light Sheen on Bending Page */}
+      <div className="itw-page-turn-sheen" aria-hidden="true" />
+
+      {/* Curled Paper Dog-Ear (Top-Right Turn Next) */}
+      {!isTurningFace && isCornerCurlActive && pageIndex < totalPages - 1 && (
+        <div
+          className="itw-book-corner-curl"
+          title={`Turn to Moment ${pageIndex + 2}`}
+          onClick={onTurnNext}
+          role="button"
+          tabIndex={0}
+          aria-label="Turn page"
+        />
+      )}
+
+      <div className="itw-storybook-chapter-ribbon">
+        <span>Moment {pageIndex + 1} of {totalPages}</span>
+        <span className="itw-storybook-time-tag">Aarav&apos;s Day</span>
+      </div>
+
+      <h3 className="itw-storybook-page-title">{page.title}</h3>
+
+      <div className="itw-storybook-quote-card">
+        <p>{page.quote}</p>
+      </div>
+
+      <div className="itw-storybook-prose">
+        <p>{page.narrative}</p>
+      </div>
+
+      <div className="itw-storybook-insight-box">
+        <div className="itw-insight-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
+            <path d="M9 18h6m-4 4h2m4.6-11.4a7 7 0 1 0-9.2 0c.9.8 1.6 2.2 1.6 3.4h6c0-1.2.7-2.6 1.6-3.4z" />
+          </svg>
+          <span>Pedagogical Insight</span>
+        </div>
+        <p>{page.insight}</p>
+      </div>
+
+      {/* IN-PAGE NAVIGATION (Close by & immediately visible!) */}
+      <div className="itw-book-inpage-nav">
+        <button
+          type="button"
+          className="itw-book-turn-btn itw-book-turn-prev"
+          disabled={pageIndex === 0 || isTurningFace}
+          onClick={onTurnPrev}
+        >
+          ← Turn Back
+        </button>
+
+        <div className="itw-book-page-dots" aria-label="Page selection">
+          {pages.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              className={`itw-book-dot${idx === pageIndex ? " itw-active" : ""}`}
+              onClick={() => onSelectPage && onSelectPage(idx)}
+              aria-label={`Go to moment ${idx + 1}`}
+              disabled={isTurningFace}
+            />
+          ))}
+        </div>
+
+        {pageIndex < totalPages - 1 ? (
+          <button
+            type="button"
+            className="itw-book-turn-btn itw-book-turn-next"
+            onClick={onTurnNext}
+            disabled={isTurningFace}
+          >
+            Turn Page →
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="itw-book-turn-btn itw-book-turn-next"
+            onClick={onNavigateAutism}
+            disabled={isTurningFace}
+          >
+            Explore Autism Experience →
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function DownSyndromeStory({ onBack, onNavigate }) {
   const { soundOn } = useContext(SettingsContext);
   const [currentPage, setCurrentPage] = useState(0);
-  const [turnDir, setTurnDir] = useState("next");
-  const [turnKey, setTurnKey] = useState(0);
+  const [turning, setTurning] = useState(null); // null | { from: number, to: number, dir: 'next' | 'prev' }
+  const turningTimerRef = useRef(null);
 
   const PAGES = [
     {
@@ -8045,13 +8195,24 @@ function DownSyndromeStory({ onBack, onNavigate }) {
   ];
 
   const turnToPage = (newPage) => {
+    if (turning) return;
     if (newPage === currentPage || newPage < 0 || newPage >= PAGES.length) return;
     const dir = newPage > currentPage ? "next" : "prev";
-    setTurnDir(dir);
-    setTurnKey((k) => k + 1);
     playPageTurnSound(soundOn);
-    setCurrentPage(newPage);
+    setTurning({ from: currentPage, to: newPage, dir });
+
+    if (turningTimerRef.current) clearTimeout(turningTimerRef.current);
+    turningTimerRef.current = setTimeout(() => {
+      setCurrentPage(newPage);
+      setTurning(null);
+    }, 620);
   };
+
+  useEffect(() => {
+    return () => {
+      if (turningTimerRef.current) clearTimeout(turningTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -8064,7 +8225,7 @@ function DownSyndromeStory({ onBack, onNavigate }) {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentPage]);
+  }, [currentPage, turning]);
 
   const page = PAGES[currentPage];
   const MOMENT_TABS = ["1. Schedule", "2. Garden", "3. Science", "4. Milestone"];
@@ -8098,6 +8259,7 @@ function DownSyndromeStory({ onBack, onNavigate }) {
                 aria-selected={idx === currentPage}
                 className={`itw-book-tab${idx === currentPage ? " itw-active" : ""}`}
                 onClick={() => turnToPage(idx)}
+                disabled={Boolean(turning)}
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
                   <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
@@ -8107,140 +8269,90 @@ function DownSyndromeStory({ onBack, onNavigate }) {
             ))}
           </div>
 
-          {/* Open Two-Page Storybook Spread */}
+          {/* Open Two-Page Storybook Spread with True 3D Page Turn */}
           <div className="itw-storybook-spread">
-            {/* Left Page: Illustration Plate */}
-            <div
-              className={`itw-storybook-art-page ${turnDir === "prev" ? "itw-page-turn-prev" : "itw-page-flip-anim"}`}
-              key={`ds-left-${turnKey}`}
-            >
-              {/* Top-Left Corner Curl (Turn Back) */}
-              {currentPage > 0 && (
-                <div
-                  className="itw-book-corner-curl-prev"
-                  title={`Turn back to Moment ${currentPage}`}
-                  onClick={() => turnToPage(currentPage - 1)}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Previous moment"
-                />
-              )}
-
-              {/* Dynamic crease shadow when turning forward */}
-              {turnDir === "next" && <div className="itw-page-crease-shadow" aria-hidden="true" />}
-
-              <div className="itw-storybook-art-frame">
-                <img
-                  src={page.image}
-                  alt={page.alt}
-                  className="itw-storybook-art-img"
-                  loading="eager"
-                />
-                <span className="itw-storybook-art-badge">{page.badge}</span>
-              </div>
-              <div className="itw-storybook-caption-plaque">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
-                <span>{page.subtitle}</span>
-              </div>
-              <div className="itw-book-left-folio">
-                <span>Plate {currentPage + 1} of {PAGES.length}</span>
-                <span>Chennai Inclusive Primary</span>
-              </div>
-            </div>
+            {/* Stationary Left Page (Shows from page during next turn, to page during prev turn) */}
+            <DsArtPage
+              page={turning ? (turning.dir === "next" ? PAGES[turning.from] : PAGES[turning.to]) : page}
+              pageIndex={turning ? (turning.dir === "next" ? turning.from : turning.to) : currentPage}
+              totalPages={PAGES.length}
+              onTurnBack={() => turnToPage(currentPage - 1)}
+              isCornerCurlActive={!turning}
+            />
 
             {/* Book Spine Crease */}
             <div className="itw-book-spine" aria-hidden="true" />
 
-            {/* Right Page: Story, Quote, Insight & In-Page Turn Navigation */}
-            <div
-              className={`itw-storybook-text-page ${turnDir === "next" ? "itw-page-turn-next" : "itw-page-flip-anim"}`}
-              key={`ds-right-${turnKey}`}
-            >
-              {/* Sweeping Light Sheen on Bending Page */}
-              <div className="itw-page-turn-sheen" aria-hidden="true" />
+            {/* Stationary Right Page (Shows to page during next turn, from page during prev turn) */}
+            <DsTextPage
+              page={turning ? (turning.dir === "next" ? PAGES[turning.to] : PAGES[turning.from]) : page}
+              pageIndex={turning ? (turning.dir === "next" ? turning.to : turning.from) : currentPage}
+              totalPages={PAGES.length}
+              pages={PAGES}
+              onTurnPrev={() => turnToPage(currentPage - 1)}
+              onTurnNext={() => turnToPage(currentPage + 1)}
+              onNavigateAutism={() => onNavigate("autism")}
+              onSelectPage={turnToPage}
+              isCornerCurlActive={!turning}
+            />
 
-              {/* Curled Paper Dog-Ear (Top-Right Turn Next) */}
-              {currentPage < PAGES.length - 1 && (
-                <div
-                  className="itw-book-corner-curl"
-                  title={`Turn to Moment ${currentPage + 2}`}
-                  onClick={() => turnToPage(currentPage + 1)}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Turn page"
-                />
-              )}
+            {/* Dynamic under-shadows on stationary pages */}
+            {turning && turning.dir === "next" && (
+              <div className="itw-under-shadow-left" aria-hidden="true" />
+            )}
+            {turning && turning.dir === "prev" && (
+              <div className="itw-under-shadow-right" aria-hidden="true" />
+            )}
 
-              <div className="itw-storybook-chapter-ribbon">
-                <span>Moment {currentPage + 1} of {PAGES.length}</span>
-                <span className="itw-storybook-time-tag">Aarav&apos;s Day</span>
-              </div>
-
-              <h3 className="itw-storybook-page-title">{page.title}</h3>
-
-              <div className="itw-storybook-quote-card">
-                <p>{page.quote}</p>
-              </div>
-
-              <div className="itw-storybook-prose">
-                <p>{page.narrative}</p>
-              </div>
-
-              <div className="itw-storybook-insight-box">
-                <div className="itw-insight-title">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
-                    <path d="M9 18h6m-4 4h2m4.6-11.4a7 7 0 1 0-9.2 0c.9.8 1.6 2.2 1.6 3.4h6c0-1.2.7-2.6 1.6-3.4z" />
-                  </svg>
-                  <span>Pedagogical Insight</span>
-                </div>
-                <p>{page.insight}</p>
-              </div>
-
-              {/* IN-PAGE NAVIGATION (Close by & immediately visible!) */}
-              <div className="itw-book-inpage-nav">
-                <button
-                  type="button"
-                  className="itw-book-turn-btn itw-book-turn-prev"
-                  disabled={currentPage === 0}
-                  onClick={() => turnToPage(currentPage - 1)}
-                >
-                  ← Turn Back
-                </button>
-
-                <div className="itw-book-page-dots" aria-label="Page selection">
-                  {PAGES.map((_, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      className={`itw-book-dot${idx === currentPage ? " itw-active" : ""}`}
-                      onClick={() => turnToPage(idx)}
-                      aria-label={`Go to moment ${idx + 1}`}
+            {/* 3D Turning Leaf Overlay */}
+            {turning && (
+              <div
+                key={`ds-turning-${turning.from}-${turning.to}`}
+                className={`itw-turning-leaf-layer ${turning.dir === "next" ? "itw-leaf-next" : "itw-leaf-prev"}`}
+              >
+                {/* Front Face of Turning Leaf */}
+                <div className="itw-leaf-face itw-leaf-face-front">
+                  {turning.dir === "next" ? (
+                    <DsTextPage
+                      page={PAGES[turning.from]}
+                      pageIndex={turning.from}
+                      totalPages={PAGES.length}
+                      pages={PAGES}
+                      isTurningFace
                     />
-                  ))}
+                  ) : (
+                    <DsArtPage
+                      page={PAGES[turning.from]}
+                      pageIndex={turning.from}
+                      totalPages={PAGES.length}
+                      isTurningFace
+                    />
+                  )}
+                  <div className="itw-leaf-reflection" aria-hidden="true" />
                 </div>
 
-                {currentPage < PAGES.length - 1 ? (
-                  <button
-                    type="button"
-                    className="itw-book-turn-btn itw-book-turn-next"
-                    onClick={() => turnToPage(currentPage + 1)}
-                  >
-                    Turn Page →
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="itw-book-turn-btn itw-book-turn-next"
-                    onClick={() => onNavigate("autism")}
-                  >
-                    Explore Autism Experience →
-                  </button>
-                )}
+                {/* Back Face of Turning Leaf (Faces viewer after crossing spine) */}
+                <div className="itw-leaf-face itw-leaf-face-back">
+                  {turning.dir === "next" ? (
+                    <DsArtPage
+                      page={PAGES[turning.to]}
+                      pageIndex={turning.to}
+                      totalPages={PAGES.length}
+                      isTurningFace
+                    />
+                  ) : (
+                    <DsTextPage
+                      page={PAGES[turning.to]}
+                      pageIndex={turning.to}
+                      totalPages={PAGES.length}
+                      pages={PAGES}
+                      isTurningFace
+                    />
+                  )}
+                  <div className="itw-leaf-reflection" aria-hidden="true" />
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
@@ -8248,12 +8360,230 @@ function DownSyndromeStory({ onBack, onNavigate }) {
   );
 }
 
+/* ---------------- 3D Storybook Helpers: Day Through My Eyes Story ---------------- */
+
+function EyesArtPage({
+  current,
+  activePeriod,
+  totalPeriods,
+  onTurnBack,
+  isCornerCurlActive = true,
+  isTurningFace = false,
+}) {
+  return (
+    <div className="itw-storybook-art-page">
+      {/* Top-Left Corner Curl (Turn Back) */}
+      {!isTurningFace && isCornerCurlActive && activePeriod > 0 && (
+        <div
+          className="itw-book-corner-curl-prev"
+          title={`Turn back to Period ${activePeriod}`}
+          onClick={onTurnBack}
+          role="button"
+          tabIndex={0}
+          aria-label="Previous period"
+        />
+      )}
+
+      <div className="itw-storybook-art-frame">
+        <img
+          src={current.image}
+          alt={current.alt}
+          className="itw-storybook-art-img"
+          loading="eager"
+        />
+        <span className="itw-storybook-art-badge">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px", marginRight: 3 }}>
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          {current.time}
+        </span>
+      </div>
+      <div className="itw-storybook-caption-plaque">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ verticalAlign: "-1px", flexShrink: 0 }}>
+          <path d="M3 21h18M5 21V7l8-4 8 4v14M8 10h2m-2 4h2m-2 4h2m6-8h2m-2 4h2m-2 4h2" />
+        </svg>
+        <span><strong>Setting:</strong> {current.setting}</span>
+      </div>
+      <div className="itw-book-left-folio">
+        <span>Period {activePeriod + 1} of {totalPeriods}</span>
+        <span>{current.time} Schedule</span>
+      </div>
+    </div>
+  );
+}
+
+function EyesTextPage({
+  current,
+  activePeriod,
+  totalPeriods,
+  periods,
+  activeLens,
+  setActiveLens,
+  onTurnPrev,
+  onTurnNext,
+  onNavigateAutism,
+  onSelectPeriod,
+  isCornerCurlActive = true,
+  isTurningFace = false,
+}) {
+  return (
+    <div className="itw-storybook-text-page">
+      {/* Sweeping Light Sheen on Bending Page */}
+      <div className="itw-page-turn-sheen" aria-hidden="true" />
+
+      {/* Curled Paper Dog-Ear */}
+      {!isTurningFace && isCornerCurlActive && activePeriod < totalPeriods - 1 && (
+        <div
+          className="itw-book-corner-curl"
+          title={`Turn to Period ${activePeriod + 2}`}
+          onClick={onTurnNext}
+          role="button"
+          tabIndex={0}
+          aria-label="Turn page"
+        />
+      )}
+
+      <div className="itw-storybook-chapter-ribbon">
+        <span>Period {activePeriod + 1} • {current.time}</span>
+        <span className="itw-storybook-time-tag">A Day Through My Eyes</span>
+      </div>
+
+      <h3 className="itw-storybook-page-title">{current.title}</h3>
+
+      <div style={{ fontSize: 13, fontWeight: 800, color: "#1e3325", marginTop: 2 }}>
+        Experience through different lenses:
+      </div>
+      <div className="itw-lens-switcher" role="radiogroup" aria-label="Perspective lenses">
+        <button
+          type="button"
+          className={`itw-lens-btn${activeLens === "sensory" ? " itw-active" : ""}`}
+          onClick={() => setActiveLens && setActiveLens("sensory")}
+          style={{ background: activeLens === "sensory" ? "var(--itw-autism)" : undefined }}
+          disabled={isTurningFace}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
+            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+            <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+          </svg>
+          <span>Sensory</span>
+        </button>
+        <button
+          type="button"
+          className={`itw-lens-btn${activeLens === "attention" ? " itw-active" : ""}`}
+          onClick={() => setActiveLens && setActiveLens("attention")}
+          style={{ background: activeLens === "attention" ? "var(--itw-adhd)" : undefined }}
+          disabled={isTurningFace}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
+            <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04zM14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04z" />
+          </svg>
+          <span>Attention</span>
+        </button>
+        <button
+          type="button"
+          className={`itw-lens-btn${activeLens === "communication" ? " itw-active" : ""}`}
+          onClick={() => setActiveLens && setActiveLens("communication")}
+          style={{ background: activeLens === "communication" ? "var(--itw-speech)" : undefined }}
+          disabled={isTurningFace}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          <span>Speech</span>
+        </button>
+        <button
+          type="button"
+          className={`itw-lens-btn${activeLens === "supported" ? " itw-active" : ""}`}
+          onClick={() => setActiveLens && setActiveLens("supported")}
+          style={{ background: activeLens === "supported" ? "#2e7d32" : undefined }}
+          disabled={isTurningFace}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+          </svg>
+          <span>Supported</span>
+        </button>
+      </div>
+
+      {/* Lens Content Box */}
+      <div className="itw-storybook-quote-card" style={{
+        background: activeLens === "supported" ? "rgba(46, 125, 50, 0.09)" : undefined,
+        borderLeftColor: activeLens === "supported" ? "#2e7d32" : undefined,
+      }}>
+        <p style={{ fontStyle: "normal", fontSize: "1.06rem" }}>
+          {current[activeLens]}
+        </p>
+      </div>
+
+      <div className="itw-storybook-insight-box">
+        <div className="itw-insight-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
+            <path d="M9 18h6m-4 4h2m4.6-11.4a7 7 0 1 0-9.2 0c.9.8 1.6 2.2 1.6 3.4h6c0-1.2.7-2.6 1.6-3.4z" />
+          </svg>
+          <span>Observation</span>
+        </div>
+        <p>
+          {activeLens === "supported"
+            ? "When proactive physical and sensory scaffolding is designed into the space, fatigue drops and learning blooms."
+            : "Every child experiences sensory and attentional demands differently. A classroom that feels normal to one can demand enormous energy from another."}
+        </p>
+      </div>
+
+      {/* IN-PAGE NAVIGATION (Close by & immediately visible!) */}
+      <div className="itw-book-inpage-nav">
+        <button
+          type="button"
+          className="itw-book-turn-btn itw-book-turn-prev"
+          disabled={activePeriod === 0 || isTurningFace}
+          onClick={onTurnPrev}
+        >
+          ← Turn Back
+        </button>
+
+        <div className="itw-book-page-dots" aria-label="Period selection">
+          {periods.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              className={`itw-book-dot${idx === activePeriod ? " itw-active" : ""}`}
+              onClick={() => onSelectPeriod && onSelectPeriod(idx)}
+              aria-label={`Go to period ${idx + 1}`}
+              disabled={isTurningFace}
+            />
+          ))}
+        </div>
+
+        {activePeriod < totalPeriods - 1 ? (
+          <button
+            type="button"
+            className="itw-book-turn-btn itw-book-turn-next"
+            onClick={onTurnNext}
+            disabled={isTurningFace}
+          >
+            Turn to Next Period →
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="itw-book-turn-btn itw-book-turn-next"
+            onClick={onNavigateAutism}
+            disabled={isTurningFace}
+          >
+            Try Interactive Simulations →
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function DayThroughMyEyesStory({ onBack, onNavigate }) {
   const { soundOn } = useContext(SettingsContext);
   const [activePeriod, setActivePeriod] = useState(0);
   const [activeLens, setActiveLens] = useState("sensory"); // sensory | attention | communication | supported
-  const [turnDir, setTurnDir] = useState("next");
-  const [turnKey, setTurnKey] = useState(0);
+  const [turning, setTurning] = useState(null); // null | { from: number, to: number, dir: 'next' | 'prev' }
+  const turningTimerRef = useRef(null);
 
   const PERIODS = [
     {
@@ -8303,13 +8633,24 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
   ];
 
   const turnToPeriod = (newPeriod) => {
+    if (turning) return;
     if (newPeriod === activePeriod || newPeriod < 0 || newPeriod >= PERIODS.length) return;
     const dir = newPeriod > activePeriod ? "next" : "prev";
-    setTurnDir(dir);
-    setTurnKey((k) => k + 1);
     playPageTurnSound(soundOn);
-    setActivePeriod(newPeriod);
+    setTurning({ from: activePeriod, to: newPeriod, dir });
+
+    if (turningTimerRef.current) clearTimeout(turningTimerRef.current);
+    turningTimerRef.current = setTimeout(() => {
+      setActivePeriod(newPeriod);
+      setTurning(null);
+    }, 620);
   };
+
+  useEffect(() => {
+    return () => {
+      if (turningTimerRef.current) clearTimeout(turningTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -8322,7 +8663,7 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activePeriod]);
+  }, [activePeriod, turning]);
 
   const current = PERIODS[activePeriod];
   const PERIOD_TABS = ["1. Assembly (8:30 AM)", "2. Science (10:15 AM)", "3. Lunch (12:30 PM)", "4. Studio (2:15 PM)"];
@@ -8356,6 +8697,7 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
                 aria-selected={idx === activePeriod}
                 className={`itw-book-tab${idx === activePeriod ? " itw-active" : ""}`}
                 onClick={() => turnToPeriod(idx)}
+                disabled={Boolean(turning)}
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
                   <circle cx="12" cy="12" r="10" />
@@ -8366,202 +8708,94 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
             ))}
           </div>
 
-          {/* Open Two-Page Storybook Spread */}
+          {/* Open Two-Page Storybook Spread with True 3D Page Turn */}
           <div className="itw-storybook-spread">
-            {/* Left Page: Period Environment Illustration Plate */}
-            <div
-              className={`itw-storybook-art-page ${turnDir === "prev" ? "itw-page-turn-prev" : "itw-page-flip-anim"}`}
-              key={`eyes-left-${turnKey}`}
-            >
-              {/* Top-Left Corner Curl (Turn Back) */}
-              {activePeriod > 0 && (
-                <div
-                  className="itw-book-corner-curl-prev"
-                  title={`Turn back to Period ${activePeriod}`}
-                  onClick={() => turnToPeriod(activePeriod - 1)}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Previous period"
-                />
-              )}
-
-              {/* Dynamic crease shadow when turning forward */}
-              {turnDir === "next" && <div className="itw-page-crease-shadow" aria-hidden="true" />}
-
-              <div className="itw-storybook-art-frame">
-                <img
-                  src={current.image}
-                  alt={current.alt}
-                  className="itw-storybook-art-img"
-                  loading="eager"
-                />
-                <span className="itw-storybook-art-badge">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px", marginRight: 3 }}>
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
-                  {current.time}
-                </span>
-              </div>
-              <div className="itw-storybook-caption-plaque">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ verticalAlign: "-1px", flexShrink: 0 }}>
-                  <path d="M3 21h18M5 21V7l8-4 8 4v14M8 10h2m-2 4h2m-2 4h2m6-8h2m-2 4h2m-2 4h2" />
-                </svg>
-                <span><strong>Setting:</strong> {current.setting}</span>
-              </div>
-              <div className="itw-book-left-folio">
-                <span>Period {activePeriod + 1} of {PERIODS.length}</span>
-                <span>{current.time} Schedule</span>
-              </div>
-            </div>
+            {/* Stationary Left Page (Shows from period during next turn, to period during prev turn) */}
+            <EyesArtPage
+              current={turning ? (turning.dir === "next" ? PERIODS[turning.from] : PERIODS[turning.to]) : current}
+              activePeriod={turning ? (turning.dir === "next" ? turning.from : turning.to) : activePeriod}
+              totalPeriods={PERIODS.length}
+              onTurnBack={() => turnToPeriod(activePeriod - 1)}
+              isCornerCurlActive={!turning}
+            />
 
             {/* Book Spine Crease */}
             <div className="itw-book-spine" aria-hidden="true" />
 
-            {/* Right Page: Perspective Lens & Story Page */}
-            <div
-              className={`itw-storybook-text-page ${turnDir === "next" ? "itw-page-turn-next" : "itw-page-flip-anim"}`}
-              key={`eyes-right-${turnKey}`}
-            >
-              {/* Sweeping Light Sheen on Bending Page */}
-              <div className="itw-page-turn-sheen" aria-hidden="true" />
+            {/* Stationary Right Page (Shows to period during next turn, from period during prev turn) */}
+            <EyesTextPage
+              current={turning ? (turning.dir === "next" ? PERIODS[turning.to] : PERIODS[turning.from]) : current}
+              activePeriod={turning ? (turning.dir === "next" ? turning.to : turning.from) : activePeriod}
+              totalPeriods={PERIODS.length}
+              periods={PERIODS}
+              activeLens={activeLens}
+              setActiveLens={setActiveLens}
+              onTurnPrev={() => turnToPeriod(activePeriod - 1)}
+              onTurnNext={() => turnToPeriod(activePeriod + 1)}
+              onNavigateAutism={() => onNavigate("autism")}
+              onSelectPeriod={turnToPeriod}
+              isCornerCurlActive={!turning}
+            />
 
-              {/* Curled Paper Dog-Ear */}
-              {activePeriod < PERIODS.length - 1 && (
-                <div
-                  className="itw-book-corner-curl"
-                  title={`Turn to Period ${activePeriod + 2}`}
-                  onClick={() => turnToPeriod(activePeriod + 1)}
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Turn page"
-                />
-              )}
+            {/* Dynamic under-shadows on stationary pages */}
+            {turning && turning.dir === "next" && (
+              <div className="itw-under-shadow-left" aria-hidden="true" />
+            )}
+            {turning && turning.dir === "prev" && (
+              <div className="itw-under-shadow-right" aria-hidden="true" />
+            )}
 
-              <div className="itw-storybook-chapter-ribbon">
-                <span>Period {activePeriod + 1} • {current.time}</span>
-                <span className="itw-storybook-time-tag">A Day Through My Eyes</span>
-              </div>
-
-              <h3 className="itw-storybook-page-title">{current.title}</h3>
-
-              <div style={{ fontSize: 13, fontWeight: 800, color: "#1e3325", marginTop: 2 }}>
-                Experience through different lenses:
-              </div>
-              <div className="itw-lens-switcher" role="radiogroup" aria-label="Perspective lenses">
-                <button
-                  type="button"
-                  className={`itw-lens-btn${activeLens === "sensory" ? " itw-active" : ""}`}
-                  onClick={() => setActiveLens("sensory")}
-                  style={{ background: activeLens === "sensory" ? "var(--itw-autism)" : undefined }}
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
-                    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
-                    <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
-                  </svg>
-                  <span>Sensory</span>
-                </button>
-                <button
-                  type="button"
-                  className={`itw-lens-btn${activeLens === "attention" ? " itw-active" : ""}`}
-                  onClick={() => setActiveLens("attention")}
-                  style={{ background: activeLens === "attention" ? "var(--itw-adhd)" : undefined }}
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
-                    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04zM14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04z" />
-                  </svg>
-                  <span>Attention</span>
-                </button>
-                <button
-                  type="button"
-                  className={`itw-lens-btn${activeLens === "communication" ? " itw-active" : ""}`}
-                  onClick={() => setActiveLens("communication")}
-                  style={{ background: activeLens === "communication" ? "var(--itw-speech)" : undefined }}
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                  </svg>
-                  <span>Speech</span>
-                </button>
-                <button
-                  type="button"
-                  className={`itw-lens-btn${activeLens === "supported" ? " itw-active" : ""}`}
-                  onClick={() => setActiveLens("supported")}
-                  style={{ background: activeLens === "supported" ? "#2e7d32" : undefined }}
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                  </svg>
-                  <span>Supported</span>
-                </button>
-              </div>
-
-              {/* Lens Content Box */}
-              <div className="itw-storybook-quote-card" style={{
-                background: activeLens === "supported" ? "rgba(46, 125, 50, 0.09)" : undefined,
-                borderLeftColor: activeLens === "supported" ? "#2e7d32" : undefined,
-              }}>
-                <p style={{ fontStyle: "normal", fontSize: "1.06rem" }}>
-                  {current[activeLens]}
-                </p>
-              </div>
-
-              <div className="itw-storybook-insight-box">
-                <div className="itw-insight-title">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
-                    <path d="M9 18h6m-4 4h2m4.6-11.4a7 7 0 1 0-9.2 0c.9.8 1.6 2.2 1.6 3.4h6c0-1.2.7-2.6 1.6-3.4z" />
-                  </svg>
-                  <span>Observation</span>
-                </div>
-                <p>
-                  {activeLens === "supported"
-                    ? "When proactive physical and sensory scaffolding is designed into the space, fatigue drops and learning blooms."
-                    : "Every child experiences sensory and attentional demands differently. A classroom that feels normal to one can demand enormous energy from another."}
-                </p>
-              </div>
-
-              {/* IN-PAGE NAVIGATION (Close by & immediately visible!) */}
-              <div className="itw-book-inpage-nav">
-                <button
-                  type="button"
-                  className="itw-book-turn-btn itw-book-turn-prev"
-                  disabled={activePeriod === 0}
-                  onClick={() => turnToPeriod(activePeriod - 1)}
-                >
-                  ← Turn Back
-                </button>
-
-                <div className="itw-book-page-dots" aria-label="Period selection">
-                  {PERIODS.map((_, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      className={`itw-book-dot${idx === activePeriod ? " itw-active" : ""}`}
-                      onClick={() => turnToPeriod(idx)}
-                      aria-label={`Go to period ${idx + 1}`}
+            {/* 3D Turning Leaf Overlay */}
+            {turning && (
+              <div
+                key={`eyes-turning-${turning.from}-${turning.to}`}
+                className={`itw-turning-leaf-layer ${turning.dir === "next" ? "itw-leaf-next" : "itw-leaf-prev"}`}
+              >
+                {/* Front Face of Turning Leaf */}
+                <div className="itw-leaf-face itw-leaf-face-front">
+                  {turning.dir === "next" ? (
+                    <EyesTextPage
+                      current={PERIODS[turning.from]}
+                      activePeriod={turning.from}
+                      totalPeriods={PERIODS.length}
+                      periods={PERIODS}
+                      activeLens={activeLens}
+                      isTurningFace
                     />
-                  ))}
+                  ) : (
+                    <EyesArtPage
+                      current={PERIODS[turning.from]}
+                      activePeriod={turning.from}
+                      totalPeriods={PERIODS.length}
+                      isTurningFace
+                    />
+                  )}
+                  <div className="itw-leaf-reflection" aria-hidden="true" />
                 </div>
 
-                {activePeriod < PERIODS.length - 1 ? (
-                  <button
-                    type="button"
-                    className="itw-book-turn-btn itw-book-turn-next"
-                    onClick={() => turnToPeriod(activePeriod + 1)}
-                  >
-                    Turn to Next Period →
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="itw-book-turn-btn itw-book-turn-next"
-                    onClick={() => onNavigate("autism")}
-                  >
-                    Try Interactive Simulations →
-                  </button>
-                )}
+                {/* Back Face of Turning Leaf (Faces viewer after crossing spine) */}
+                <div className="itw-leaf-face itw-leaf-face-back">
+                  {turning.dir === "next" ? (
+                    <EyesArtPage
+                      current={PERIODS[turning.to]}
+                      activePeriod={turning.to}
+                      totalPeriods={PERIODS.length}
+                      isTurningFace
+                    />
+                  ) : (
+                    <EyesTextPage
+                      current={PERIODS[turning.to]}
+                      activePeriod={turning.to}
+                      totalPeriods={PERIODS.length}
+                      periods={PERIODS}
+                      activeLens={activeLens}
+                      isTurningFace
+                    />
+                  )}
+                  <div className="itw-leaf-reflection" aria-hidden="true" />
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

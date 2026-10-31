@@ -1543,7 +1543,7 @@ body:has(.itw-dark) .itw-leafimg {
 
 .itw-storybook-spread {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1.15fr);
+  grid-template-columns: 1fr 1fr;
   align-items: stretch;
   background: linear-gradient(to right, #f6efe2 0%, #fcf9f2 46%, #fdfbf7 54%, #f5ede0 100%) !important;
   border-radius: 16px;
@@ -1561,20 +1561,25 @@ body:has(.itw-dark) .itw-leafimg {
     0 5px 0 #eae1d0,
     0 9px 0 #dfd4bf,
     0 18px 30px rgba(0, 0, 0, 0.25);
-  perspective: 1600px;
+  perspective: 2400px;
   transform-style: preserve-3d;
 }
 
 .itw-book-spine {
-  height: 100%;
-  min-height: 100%;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 12px);
+  width: 24px;
+  pointer-events: none;
+  z-index: 10;
   background: linear-gradient(
     to right,
-    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0.24) 0%,
     rgba(0, 0, 0, 0.08) 35%,
     rgba(255, 255, 255, 0.5) 50%,
     rgba(0, 0, 0, 0.08) 65%,
-    rgba(0, 0, 0, 0.25) 100%
+    rgba(0, 0, 0, 0.24) 100%
   );
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.12);
 }
@@ -1892,127 +1897,184 @@ body:has(.itw-dark) .itw-leafimg {
   border-color: transparent !important;
 }
 
-/* ================= 3D PHYSICAL STORYBOOK PAGE TURN EFFECTS ================= */
-.itw-storybook-spread {
-  perspective: 1600px;
+/* ================= GENUINE 3D PAGE TURN FLIPPER ================= */
+.itw-turning-leaf-layer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 40;
+  pointer-events: none;
   transform-style: preserve-3d;
-  position: relative;
+  box-sizing: border-box;
 }
 
-/* Page Turn Animation (Next Direction): Right leaf lifts up and turns across the spine */
-.itw-page-turn-next {
+/* When turning NEXT: leaf is anchored at center spine and swings 180deg from right to left */
+.itw-turning-leaf-layer.itw-leaf-next {
+  left: 50%;
+  right: 0;
+  width: 50%;
   transform-origin: left center;
-  animation: itw-page-turn-flip-next 0.56s cubic-bezier(0.25, 1, 0.35, 1) both;
-}
-@keyframes itw-page-turn-flip-next {
-  0% {
-    transform: perspective(1600px) rotateY(0deg);
-    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  }
-  32% {
-    transform: perspective(1600px) rotateY(-36deg) skewY(1.2deg) scale(0.985);
-    box-shadow: -16px 10px 30px rgba(0, 0, 0, 0.26);
-  }
-  70% {
-    transform: perspective(1600px) rotateY(-8deg) skewY(0.4deg) scale(0.995);
-    box-shadow: -6px 4px 14px rgba(0, 0, 0, 0.12);
-  }
-  100% {
-    transform: perspective(1600px) rotateY(0deg) skewY(0deg) scale(1);
-    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  }
+  animation: itw-flip-3d-forward 0.62s cubic-bezier(0.32, 0.08, 0.24, 1) forwards;
 }
 
-/* Page Turn Animation (Prev Direction): Left leaf flips back over to the right */
-.itw-page-turn-prev {
+/* When turning PREV: leaf is anchored at center spine and swings 180deg from left to right */
+.itw-turning-leaf-layer.itw-leaf-prev {
+  left: 0;
+  right: 50%;
+  width: 50%;
   transform-origin: right center;
-  animation: itw-page-turn-flip-prev 0.56s cubic-bezier(0.25, 1, 0.35, 1) both;
-}
-@keyframes itw-page-turn-flip-prev {
-  0% {
-    transform: perspective(1600px) rotateY(0deg);
-    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  }
-  32% {
-    transform: perspective(1600px) rotateY(36deg) skewY(-1.2deg) scale(0.985);
-    box-shadow: 16px 10px 30px rgba(0, 0, 0, 0.26);
-  }
-  70% {
-    transform: perspective(1600px) rotateY(8deg) skewY(-0.4deg) scale(0.995);
-    box-shadow: 6px 4px 14px rgba(0, 0, 0, 0.12);
-  }
-  100% {
-    transform: perspective(1600px) rotateY(0deg) skewY(0deg) scale(1);
-    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-  }
+  animation: itw-flip-3d-backward 0.62s cubic-bezier(0.32, 0.08, 0.24, 1) forwards;
 }
 
-/* Sweeping Light Sheen on Bending Page */
-.itw-page-turn-sheen {
+/* Front & back faces inside the turning leaf */
+.itw-leaf-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: #fbf8f0 !important;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.itw-leaf-face-front {
+  border-radius: 0 16px 16px 0;
+  z-index: 2;
+}
+
+.itw-leaf-prev .itw-leaf-face-front {
+  border-radius: 16px 0 0 16px;
+}
+
+.itw-leaf-face-back {
+  transform: rotateY(180deg);
+  border-radius: 16px 0 0 16px;
+  z-index: 1;
+}
+
+.itw-leaf-prev .itw-leaf-face-back {
+  border-radius: 0 16px 16px 0;
+}
+
+/* Dynamic moving light sheen / paper curl reflection */
+.itw-leaf-reflection {
   position: absolute;
   inset: 0;
   pointer-events: none;
   border-radius: inherit;
-  background: linear-gradient(
-    105deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.45) 30%,
-    rgba(0, 0, 0, 0.05) 50%,
-    rgba(0, 0, 0, 0.12) 70%,
-    transparent 100%
-  );
-  animation: itw-sheen-travel 0.56s cubic-bezier(0.22, 1, 0.36, 1) both;
-  z-index: 12;
+  z-index: 50;
 }
-@keyframes itw-sheen-travel {
+
+.itw-leaf-next .itw-leaf-face-front .itw-leaf-reflection {
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.16) 0%, rgba(255, 255, 255, 0.35) 25%, transparent 60%);
+  animation: itw-reflection-sweep 0.65s ease-in-out forwards;
+}
+
+.itw-leaf-next .itw-leaf-face-back .itw-leaf-reflection {
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.16) 0%, rgba(255, 255, 255, 0.35) 25%, transparent 60%);
+  animation: itw-reflection-sweep 0.65s ease-in-out forwards;
+}
+
+@keyframes itw-reflection-sweep {
+  0% { opacity: 0; transform: translateX(-15%); }
+  45% { opacity: 1; transform: translateX(10%); }
+  100% { opacity: 0; transform: translateX(40%); }
+}
+
+/* 3D Realistic Paper Turn Forward (Right to Left across the Spine) */
+@keyframes itw-flip-3d-forward {
   0% {
-    opacity: 0;
-    transform: translateX(-40%);
+    transform: perspective(2400px) rotateY(0deg) skewY(0deg);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
   }
-  30% {
-    opacity: 1;
-    transform: translateX(10%);
+  26% {
+    transform: perspective(2400px) rotateY(-45deg) skewY(2deg) scale(0.985);
+    box-shadow: -16px 12px 35px rgba(0, 0, 0, 0.28);
+  }
+  55% {
+    transform: perspective(2400px) rotateY(-115deg) skewY(-1.5deg) scale(0.985);
+    box-shadow: -22px 14px 45px rgba(0, 0, 0, 0.34);
+  }
+  86% {
+    transform: perspective(2400px) rotateY(-168deg) skewY(-0.4deg) scale(0.997);
+    box-shadow: -8px 6px 20px rgba(0, 0, 0, 0.18);
   }
   100% {
-    opacity: 0;
-    transform: translateX(110%);
+    transform: perspective(2400px) rotateY(-180deg) skewY(0deg) scale(1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   }
 }
 
-/* Dynamic Crease Shadow on Opposite Page */
-.itw-page-crease-shadow {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  background: linear-gradient(to left, rgba(0, 0, 0, 0.14) 0%, transparent 65%);
-  animation: itw-crease-pulse 0.56s ease-out both;
-  z-index: 12;
+/* 3D Realistic Paper Turn Backward (Left to Right across the Spine) */
+@keyframes itw-flip-3d-backward {
+  0% {
+    transform: perspective(2400px) rotateY(0deg) skewY(0deg);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  }
+  26% {
+    transform: perspective(2400px) rotateY(45deg) skewY(-2deg) scale(0.985);
+    box-shadow: 16px 12px 35px rgba(0, 0, 0, 0.28);
+  }
+  55% {
+    transform: perspective(2400px) rotateY(115deg) skewY(1.5deg) scale(0.985);
+    box-shadow: 22px 14px 45px rgba(0, 0, 0, 0.34);
+  }
+  86% {
+    transform: perspective(2400px) rotateY(168deg) skewY(0.4deg) scale(0.997);
+    box-shadow: 8px 6px 20px rgba(0, 0, 0, 0.18);
+  }
+  100% {
+    transform: perspective(2400px) rotateY(180deg) skewY(0deg) scale(1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
 }
-@keyframes itw-crease-pulse {
+
+/* Under-shadow on stationary pages during turning */
+.itw-under-shadow-left {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 50%;
+  width: 50%;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent 50%, rgba(0, 0, 0, 0.18) 100%);
+  animation: itw-under-shadow-landing 0.62s ease-in-out forwards;
+  z-index: 25;
+}
+
+.itw-under-shadow-right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  right: 0;
+  width: 50%;
+  pointer-events: none;
+  background: linear-gradient(to left, transparent 50%, rgba(0, 0, 0, 0.18) 100%);
+  animation: itw-under-shadow-lifting 0.62s ease-in-out forwards;
+  z-index: 25;
+}
+
+@keyframes itw-under-shadow-landing {
   0% { opacity: 0; }
-  35% { opacity: 0.9; }
+  50% { opacity: 0.12; }
+  85% { opacity: 0.65; }
   100% { opacity: 0; }
 }
 
-.itw-page-flip-anim {
-  animation: itw-book-settle 0.45s ease-out both;
-}
-@keyframes itw-book-settle {
-  0% {
-    opacity: 0.88;
-    transform: scale(0.993);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
+@keyframes itw-under-shadow-lifting {
+  0% { opacity: 0.75; }
+  40% { opacity: 0.35; }
+  80% { opacity: 0.08; }
+  100% { opacity: 0; }
 }
 
 /* Rock-solid Storybook Dark-Mode Contrast Guarantee: Cream leaves ALWAYS have dark ink text! */
 .itw-root.itw-dark .itw-storybook-spread,
 .itw-root.itw-dark .itw-storybook-art-page,
-.itw-root.itw-dark .itw-storybook-text-page {
+.itw-root.itw-dark .itw-storybook-text-page,
+.itw-root.itw-dark .itw-leaf-face {
   background: linear-gradient(to right, #f6efe2 0%, #fcf9f2 46%, #fdfbf7 54%, #f5ede0 100%) !important;
   color: #1a2a1e !important;
 }
@@ -2082,8 +2144,11 @@ body:has(.itw-dark) .itw-leafimg {
     grid-template-columns: 1fr;
     border-radius: 14px;
   }
-  .itw-book-spine {
-    display: none;
+  .itw-book-spine,
+  .itw-turning-leaf-layer,
+  .itw-under-shadow-left,
+  .itw-under-shadow-right {
+    display: none !important;
   }
   .itw-storybook-art-page {
     padding: 18px 16px 12px;

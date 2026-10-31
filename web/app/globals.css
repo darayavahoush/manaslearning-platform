@@ -46,3 +46,71 @@ input, textarea, button { font-family: inherit; }
 }
 .leaf-fall { animation: leaf-fall linear infinite; will-change: transform; }
 @media (prefers-reduced-motion: reduce) { .leaf-fall { animation-duration: 30s !important; } }
+
+/* DARK MODE SUPPRESSION: Absolutely no falling leaves or watercolor effects in dark mode */
+html.dark .itw-global-falling-leaves,
+html.dark .leaf-fall,
+body.itw-dark .itw-global-falling-leaves,
+body.itw-dark .leaf-fall,
+.dark .itw-global-falling-leaves,
+.dark .leaf-fall,
+.itw-dark .itw-global-falling-leaves,
+.itw-dark .leaf-fall {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  animation: none !important;
+}
+
+/* Site-wide footer dark mode support */
+html.dark .itw-main-footer,
+body.itw-dark .itw-main-footer,
+.itw-dark .itw-main-footer {
+  background-color: #0e120a !important;
+  border-top: 1px solid #232c1c !important;
+}
+
+html.dark .itw-main-footer .itw-footer-text,
+body.itw-dark .itw-main-footer .itw-footer-text,
+.itw-dark .itw-main-footer .itw-footer-text,
+html.dark .itw-main-footer p,
+body.itw-dark .itw-main-footer p,
+.itw-dark .itw-main-footer p {
+  color: #a7b19d !important;
+}
+
+html.dark .itw-main-footer .itw-footer-link,
+body.itw-dark .itw-main-footer .itw-footer-link,
+.itw-dark .itw-main-footer .itw-footer-link,
+html.dark .itw-main-footer a,
+body.itw-dark .itw-main-footer a,
+.itw-dark .itw-main-footer a {
+  color: #eef1ea !important;
+}
+
+html.dark .itw-main-footer .itw-footer-link:hover,
+body.itw-dark .itw-main-footer .itw-footer-link:hover,
+.itw-dark .itw-main-footer .itw-footer-link:hover,
+html.dark .itw-main-footer a:hover,
+body.itw-dark .itw-main-footer a:hover,
+.itw-dark .itw-main-footer a:hover {
+  color: #34d399 !important;
+}
+
+html.dark .itw-main-footer .itw-footer-sub,
+body.itw-dark .itw-main-footer .itw-footer-sub,
+.itw-dark .itw-main-footer .itw-footer-sub {
+  color: #7c8672 !important;
+}
+
+html.dark .itw-main-footer .itw-footer-sub a,
+body.itw-dark .itw-main-footer .itw-footer-sub a,
+.itw-dark .itw-main-footer .itw-footer-sub a {
+  color: #7c8672 !important;
+}
+
+html.dark .itw-main-footer .itw-footer-sub a:hover,
+body.itw-dark .itw-main-footer .itw-footer-sub a:hover,
+.itw-dark .itw-main-footer .itw-footer-sub a:hover {
+  color: #34d399 !important;
+}

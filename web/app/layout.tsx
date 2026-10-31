@@ -96,7 +96,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
 
         {children}
 
-        <footer className="relative w-full bg-card-yellow/30">
+        <footer className="itw-main-footer relative w-full bg-card-yellow/30 dark:bg-[#0e120a] dark:border-t dark:border-[#232c1c] transition-colors duration-300">
           <div className="container mx-auto px-4 py-10 md:px-6 md:py-14 lg:px-8">
             <div className="flex flex-col gap-8 lg:flex-row lg:justify-between lg:gap-16">
               <div className="space-y-6 lg:max-w-md">
@@ -106,33 +106,33 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
                     <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label} className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white transition-colors ${s.bg}`}><s.Icon size={18} /></a>
                   ))}
                 </div>
-                <div className="space-y-3 text-lg text-black">
+                <div className="itw-footer-text space-y-3 text-lg text-black dark:text-[#a7b19d]">
                   <p className="leading-relaxed">10G, Sapphire, Olympia Opaline, OMR, Navalur<br />Chennai, Tamilnadu, India - 600130.</p>
-                  <p>Enquiry: <a className="underline hover:text-card-blue" href="mailto:support@manaslearning.com">support@manaslearning.com</a><br />
-                    <a className="hover:text-card-blue" href="tel:+919884031293">(+91) 988-403-1293</a></p>
+                  <p>Enquiry: <a className="underline hover:text-card-blue dark:text-[#34d399] dark:hover:text-[#6ee7b7]" href="mailto:support@manaslearning.com">support@manaslearning.com</a><br />
+                    <a className="hover:text-card-blue dark:text-[#34d399] dark:hover:text-[#6ee7b7]" href="tel:+919884031293">(+91) 988-403-1293</a></p>
                 </div>
               </div>
               <div className="flex gap-16 md:gap-24">
                 <nav aria-label="Footer navigation">
-                  <ul className="space-y-3 text-xl text-black">
+                  <ul className="space-y-3 text-xl text-black dark:text-[#eef1ea]">
                     {[['Assessments', LIVE + '/assessments'], ['Know More', LIVE + '/conditions'], ['About', '/#about'], ['Services', '/#services'], ['Experience', '/experience'], ['Blogs', LIVE + '/blogs'], ['Videos', LIVE + '/videos'], ['Locate Centres', 'https://www.google.com/maps/search/?api=1&query=Olympia+Opaline+Navalur+Chennai']].map(([l, h]) => (
-                      <li key={l}><a href={h} className="hover:text-card-blue">{l}</a></li>
+                      <li key={l}><a href={h} className="itw-footer-link hover:text-card-blue dark:hover:text-[#34d399] transition-colors">{l}</a></li>
                     ))}
                   </ul>
                 </nav>
                 <nav aria-label="Footer consultation">
-                  <ul className="space-y-3 text-xl text-black">
+                  <ul className="space-y-3 text-xl text-black dark:text-[#eef1ea]">
                     {[['Free Consultation', '/consult'], ['Expert Consultation', '/consult'], ['Ask Milo', '/milo'], ['Join Community', 'https://chat.whatsapp.com/IeobE2Zx5HMBft0xQEK7Vh?mode=gi_t']].map(([l, h]) => (
-                      <li key={l}><a href={h} className="hover:text-card-blue">{l}</a></li>
+                      <li key={l}><a href={h} className="itw-footer-link hover:text-card-blue dark:hover:text-[#34d399] transition-colors">{l}</a></li>
                     ))}
                   </ul>
                 </nav>
               </div>
             </div>
-            <div className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-sm text-black/70">
+            <div className="itw-footer-sub mt-10 flex flex-wrap gap-x-6 gap-y-2 text-sm text-black/70 dark:text-[#7c8672]">
               <span>© <Year /> Manas Learning. All rights reserved.</span>
               {[['Terms of Service', '/terms-of-service'], ['Privacy Policy', '/privacy-policy'], ['Cancellation and Refund Policy', '/cancellation-refund-policy'], ['Delete your account', '/delete-your-account']].map(([l, h]) => (
-                <a key={l} href={LIVE + h} className="underline hover:text-card-blue">{l}</a>
+                <a key={l} href={LIVE + h} className="underline hover:text-card-blue dark:hover:text-[#34d399] transition-colors">{l}</a>
               ))}
             </div>
           </div>

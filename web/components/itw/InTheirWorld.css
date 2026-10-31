@@ -107,11 +107,7 @@
   --itw-executive:#81c784;
   --itw-executive-soft:rgba(129,199,132,.18);
 
-  background:
-    radial-gradient(1100px 640px at 90% -10%, rgba(86,210,177,.1), transparent 60%),
-    radial-gradient(900px 620px at -6% 105%, rgba(210,115,86,.09), transparent 60%),
-    radial-gradient(700px 500px at 45% 40%, rgba(210,160,86,.05), transparent 65%),
-    var(--itw-bg);
+  background: var(--itw-bg) !important;
 }
 .itw-root *{box-sizing:border-box;}
 .itw-root ::selection{background:var(--itw-accent);color:#fff;}
@@ -126,6 +122,12 @@
 .itw-ambient{
   position:absolute;inset:0;z-index:0;pointer-events:none;transition:background 700ms ease;
   background:radial-gradient(900px 560px at 82% -8%, var(--itw-glow, transparent), transparent 62%);
+}
+.itw-root.itw-dark .itw-ambient,
+.itw-dark .itw-ambient {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
 /* ---------- shell ---------- */
@@ -376,7 +378,18 @@
   .itw-viewfinder-stage::before{animation:none !important;}
 }
 
-.itw-foot-note{margin-top:52px;padding-top:20px;border-top:1px solid var(--itw-border);font-size:12.5px;color:var(--itw-muted-dim);}
+.itw-foot-note{
+  margin-top:52px;padding-top:24px;padding-bottom:16px;
+  border-top:1px solid var(--itw-border);
+  font-size:13px;line-height:1.6;text-align:center;
+  max-width:860px;margin-left:auto;margin-right:auto;
+  color:var(--itw-muted-dim);
+}
+.itw-root.itw-dark .itw-foot-note,
+.itw-dark .itw-foot-note{
+  border-top:1px solid #232c1c !important;
+  color:#a7b19d !important;
+}
 
 /* ---------- module shell ---------- */
 .itw-module{padding-top:36px;}
@@ -1004,10 +1017,57 @@
 .itw-toggle-btn{
   background:var(--itw-panel);border:1.5px solid var(--itw-border);color:var(--itw-text);
   padding:8px 16px;border-radius:99px;font-size:12.5px;font-family:var(--font-body);font-weight:700;cursor:pointer;
+  display:inline-flex;align-items:center;gap:4px;
   transition:border-color .15s ease, color .15s ease, background .15s ease, box-shadow .15s ease;
 }
-.itw-toggle-btn.itw-active{border-color:var(--itw-accent);color:#fff;background:var(--itw-accent);box-shadow:0 8px 18px -8px var(--itw-accent-soft);}
+.itw-toggle-btn.itw-active{
+  border-color:var(--itw-accent);color:#fff;background:var(--itw-accent);
+  box-shadow:0 8px 18px -8px var(--itw-accent-soft);
+}
 .itw-toggle-btn:not(.itw-active){color:var(--itw-muted);}
+
+/* DARK MODE: refined dark pills, zero electric blue */
+.itw-root.itw-dark .itw-toggle-btn,
+.itw-dark .itw-toggle-btn{
+  background:#1e2519 !important;border:1.5px solid #39442f !important;
+  color:#a7b19d !important;box-shadow:none !important;
+}
+.itw-root.itw-dark .itw-toggle-btn:hover,
+.itw-dark .itw-toggle-btn:hover{
+  background:#252e1f !important;border-color:#4f5f42 !important;color:#eef1ea !important;
+}
+/* Active theme toggle in dark mode: warm amber capsule with subtle glow */
+.itw-root.itw-dark .itw-theme-toggle.itw-active,
+.itw-dark .itw-theme-toggle.itw-active,
+.itw-root.itw-dark .itw-theme-toggle.itw-dark-active,
+.itw-dark .itw-theme-toggle.itw-dark-active{
+  background:rgba(251,191,36,.12) !important;
+  border-color:#fbbf24 !important;
+  color:#fbbf24 !important;
+  box-shadow:0 0 14px rgba(251,191,36,.22) !important;
+}
+.itw-root.itw-dark .itw-theme-toggle.itw-active:hover,
+.itw-dark .itw-theme-toggle.itw-active:hover{
+  background:rgba(251,191,36,.20) !important;
+  color:#fde68a !important;
+}
+/* Active sound toggle in dark mode: emerald pill */
+.itw-root.itw-dark .itw-sound-toggle.itw-active,
+.itw-dark .itw-sound-toggle.itw-active{
+  background:rgba(52,211,153,.14) !important;
+  border-color:#34d399 !important;
+  color:#34d399 !important;
+  box-shadow:0 0 14px rgba(52,211,153,.22) !important;
+}
+.itw-root.itw-dark .itw-sound-toggle.itw-active:hover,
+.itw-dark .itw-sound-toggle.itw-active:hover{
+  background:rgba(52,211,153,.22) !important;
+  color:#a7f3d0 !important;
+}
+.itw-root.itw-dark .itw-sound-toggle:not(.itw-active),
+.itw-dark .itw-sound-toggle:not(.itw-active){
+  background:#1e2519 !important;border-color:#39442f !important;color:#a7b19d !important;
+}
 
 /* ================= Rating card (reflection, not a grade) ================= */
 .itw-rating-card{

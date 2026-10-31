@@ -940,13 +940,14 @@ function SettingsBar({ soundOn, setSoundOn, darkMode, setDarkMode }) {
     <div className="itw-settings-bar">
       <button
         type="button"
-        className={`itw-toggle-btn${darkMode ? " itw-active" : ""}`}
+        className={`itw-toggle-btn itw-theme-toggle${darkMode ? " itw-active itw-dark-active" : ""}`}
         aria-pressed={darkMode}
         onClick={() => setDarkMode((v) => !v)}
+        title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
       >
         {darkMode ? (
           <>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ verticalAlign: "-2px", marginRight: 5 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-2px", marginRight: 6 }}>
               <circle cx="12" cy="12" r="5" />
               <line x1="12" y1="1" x2="12" y2="3" />
               <line x1="12" y1="21" x2="12" y2="23" />
@@ -961,7 +962,7 @@ function SettingsBar({ soundOn, setSoundOn, darkMode, setDarkMode }) {
           </>
         ) : (
           <>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ verticalAlign: "-2px", marginRight: 5 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-2px", marginRight: 6 }}>
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             </svg>
             <span>Dark mode</span>
@@ -970,13 +971,14 @@ function SettingsBar({ soundOn, setSoundOn, darkMode, setDarkMode }) {
       </button>
       <button
         type="button"
-        className={`itw-toggle-btn${soundOn ? " itw-active" : ""}`}
+        className={`itw-toggle-btn itw-sound-toggle${soundOn ? " itw-active" : ""}`}
         aria-pressed={soundOn}
         onClick={() => setSoundOn((v) => !v)}
+        title={soundOn ? "Mute audio" : "Enable audio"}
       >
         {soundOn ? (
           <>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ verticalAlign: "-2px", marginRight: 5 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-2px", marginRight: 6 }}>
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
               <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
             </svg>
@@ -9935,8 +9937,17 @@ export default function InTheirWorld() {
     window.localStorage.setItem("itw-dark-mode", darkMode ? "1" : "0");
     const prevBg = document.body.style.background;
     document.body.style.background = darkMode ? "#14180f" : "#fdf8ee";
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+      document.body.classList.add("itw-dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      document.body.classList.remove("itw-dark");
+    }
     return () => {
       document.body.style.background = prevBg;
+      document.documentElement.classList.remove("dark");
+      document.body.classList.remove("itw-dark");
     };
   }, [darkMode]);
 

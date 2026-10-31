@@ -13,7 +13,7 @@ const LEAVES = [
 
 export function FallingLeaves() {
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden dark:hidden itw-global-falling-leaves">
       {LEAVES.map((l, i) => (
         <img
           key={i} src="/decor/leaf.webp" alt=""

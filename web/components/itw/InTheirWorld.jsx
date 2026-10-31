@@ -455,13 +455,29 @@ class AudioEngine {
 
 const audio = new AudioEngine();
 
-function speakText(text, { rate = 1, pitch = 1, volume = 0.85 } = {}) {
+function speakText(text, { rate = 1, pitch = 1, volume = 0.9 } = {}) {
   if (typeof window === "undefined" || !window.speechSynthesis || !text) return;
   try {
+    if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+    window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.rate = rate;
     u.pitch = pitch;
     u.volume = volume;
+    const voices = window.speechSynthesis.getVoices();
+    if (voices && voices.length > 0) {
+      const match = voices.find(
+        (v) =>
+          v.lang.startsWith("en") &&
+          !v.name.includes("whisper") &&
+          (v.name.includes("Samantha") ||
+            v.name.includes("Daniel") ||
+            v.name.includes("Natural") ||
+            v.name.includes("Google") ||
+            v.name.includes("Karen"))
+      );
+      if (match) u.voice = match;
+    }
     window.speechSynthesis.speak(u);
   } catch {
     /* speech synthesis unavailable — visual/audio-tone feedback still works */
@@ -1036,20 +1052,6 @@ function FactsConveyor({ facts, onComplete }) {
       setIdx(0);
     });
   }, [factsKey]);
-
-  // Read each fact aloud as it comes up on the belt, if sound is on and
-  // the section has actually scrolled into view.
-  useEffect(() => {
-    if (!soundOn || !inView) return;
-    const f = facts[idx];
-    if (!f) return;
-    if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel();
-    speakText(`${f.num}. ${f.label}`, { rate: 1.02, volume: 0.55 });
-    return () => {
-      if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idx, soundOn, factsKey, inView]);
 
   const handleEnd = () => {
     if (paused) return;
@@ -1834,9 +1836,9 @@ function AutismModule({ onBack, onNavigate }) {
               lights, a chair scraping, and conversations across the room can all arrive at full volume at once.
             </p>
             <ul className="itw-flow-meta">
-              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
-              <li><span aria-hidden="true">🎧</span> Sound is off by default; you have full control</li>
-              <li><span aria-hidden="true">ℹ️</span> An empathy learning experience, not a diagnostic tool</li>
+              <li><span aria-hidden="true">•</span> Takes 2–3 minutes</li>
+              <li><span aria-hidden="true">•</span> Sound is off by default; you have full control</li>
+              <li><span aria-hidden="true">•</span> An empathy learning experience, not a diagnostic tool</li>
             </ul>
             <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("scenario")}>
               Begin the Journey →
@@ -2800,9 +2802,9 @@ function AdhdModule({ onBack, onNavigate }) {
               stray thoughts, and tangential curiosities compete for working memory requires constant, exhausting effort.
             </p>
             <ul className="itw-flow-meta">
-              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
+              <li><span aria-hidden="true">•</span> Takes 2–3 minutes</li>
               <li><span aria-hidden="true">🖥️</span> First-person desk workspace simulation</li>
-              <li><span aria-hidden="true">🛡️</span> Not a diagnostic test</li>
+              <li><span aria-hidden="true">•</span> Not a diagnostic test</li>
             </ul>
             <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
               Start the Experience →
@@ -2826,9 +2828,9 @@ function AdhdModule({ onBack, onNavigate }) {
             You will act as a student preparing a short brief on <b>Urban Wildlife Conservation</b> in Bengaluru.
           </p>
           <ul className="itw-flow-list">
-            <li><span aria-hidden="true">1️⃣</span> Read the brief, check notes in adjacent tabs, and extract 2 key data points.</li>
-            <li><span aria-hidden="true">2️⃣</span> Select an evidence-based conservation policy and submit the assignment.</li>
-            <li><span aria-hidden="true">🌿</span> In this first run, your digital environment is completely quiet and uninterrupted.</li>
+            <li><span aria-hidden="true">•</span> Read the brief, check notes in adjacent tabs, and extract 2 key data points.</li>
+            <li><span aria-hidden="true">•</span> Select an evidence-based conservation policy and submit the assignment.</li>
+            <li><span aria-hidden="true">•</span> In this first run, your digital environment is completely quiet and uninterrupted.</li>
           </ul>
 
           <div style={{ margin: "24px 0", background: "var(--itw-panel)", padding: 18, borderRadius: 16, border: "1px solid var(--itw-border)" }}>
@@ -2895,9 +2897,9 @@ function AdhdModule({ onBack, onNavigate }) {
             {" "}Now, attempt the assignment under everyday conditions where notifications, chat pings, and internal thoughts compete for attention.
           </p>
           <ul className="itw-flow-list">
-            <li><span aria-hidden="true">🔔</span> Notification toasts and group chat pings will appear around your workspace.</li>
-            <li><span aria-hidden="true">💭</span> Associative wandering thoughts may tempt you to branch into side tabs.</li>
-            <li><span aria-hidden="true">🧠</span> Notice how much cognitive effort is spent re-orienting back to where you left off.</li>
+            <li><span aria-hidden="true">•</span> Notification toasts and group chat pings will appear around your workspace.</li>
+            <li><span aria-hidden="true">•</span> Associative wandering thoughts may tempt you to branch into side tabs.</li>
+            <li><span aria-hidden="true">•</span> Notice how much cognitive effort is spent re-orienting back to where you left off.</li>
           </ul>
           <div className="itw-flow-nav">
             <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("run_baseline")}>Back to Run 1</button>
@@ -3577,19 +3579,28 @@ function FlowCrumbs({ name, onBack }) {
 }
 
 function FlowStepper({ steps, current }) {
+  const currentStep = steps[current] || steps[0];
   return (
-    <ol className="itw-stepper" aria-label="Progress">
-      {steps.map((s, i) => (
-        <li
-          key={s.key}
-          className={`itw-step${i === current ? " itw-step-on" : ""}${i < current ? " itw-step-done" : ""}`}
-          aria-current={i === current ? "step" : undefined}
-        >
-          <span className="itw-step-dot">{i + 1}</span>
-          <span className="itw-step-label">{s.label}</span>
-        </li>
-      ))}
-    </ol>
+    <div className="itw-stepper-wrap">
+      <ol className="itw-stepper" aria-label="Progress">
+        {steps.map((s, i) => (
+          <li
+            key={s.key}
+            className={`itw-step${i === current ? " itw-step-on" : ""}${i < current ? " itw-step-done" : ""}`}
+            aria-current={i === current ? "step" : undefined}
+          >
+            <span className="itw-step-dot">{i + 1}</span>
+          </li>
+        ))}
+      </ol>
+      {currentStep && (
+        <div className="itw-stepper-current-pill">
+          <span className="itw-stepper-pill-count">Step {current + 1} of {steps.length}</span>
+          <span className="itw-stepper-pill-sep">•</span>
+          <span className="itw-stepper-pill-label">{currentStep.label}</span>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -5045,16 +5056,18 @@ function SpeechSim({
   onAbort,
 }) {
   const { soundOn } = useContext(SettingsContext);
-  const [stage, setStage] = useState("thinking"); // thinking | formulating | delivering | finished
   const [formulatedWords, setFormulatedWords] = useState([]);
   const [aacSelection, setAacSelection] = useState([]);
   const [partnerPatience, setPartnerPatience] = useState(mode === "fast" ? 100 : null);
   const [partnerInterrupted, setPartnerInterrupted] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(true);
+  const [isPhonating, setIsPhonating] = useState(false);
+  const [phonationProgress, setPhonationProgress] = useState(0);
 
   const startTimeRef = useRef(0);
   const timerRef = useRef(null);
+  const phonateIntervalRef = useRef(null);
   const onCompleteRef = useRef(onComplete);
 
   useEffect(() => {
@@ -5079,7 +5092,7 @@ function SpeechSim({
 
     const interval = setInterval(() => {
       setPartnerPatience((prev) => {
-        if (prev <= 15 && !partnerInterrupted) {
+        if (prev <= 18 && !partnerInterrupted) {
           setPartnerInterrupted(true);
           if (soundOn) audio.cue("flicker");
         }
@@ -5087,14 +5100,15 @@ function SpeechSim({
           clearInterval(interval);
           return 0;
         }
-        return prev - 2.5;
+        return prev - 2.2;
       });
     }, 200);
 
     return () => clearInterval(interval);
   }, [mode, running, partnerInterrupted, soundOn]);
 
-  const TARGET_THOUGHT = "We built a hydraulic crane with syringes, water tubes, and cardboard joints.";
+  const TARGET_THOUGHT =
+    "We built a hydraulic crane with syringes, water tubes, and cardboard joints.";
   const SPEECH_FRAGMENTS = [
     { text: "W-w-we...", full: "We" },
     { text: "b-built a...", full: "built a" },
@@ -5105,29 +5119,119 @@ function SpeechSim({
   ];
 
   const AAC_TILES = [
-    { id: "crane", icon: "🏗️", label: "Hydraulic Crane", phrase: "hydraulic crane" },
-    { id: "water", icon: "💧", label: "Syringes & Water", phrase: "syringes and water tubes" },
-    { id: "cardboard", icon: "📦", label: "Cardboard Joints", phrase: "cardboard joints" },
-    { id: "pressure", icon: "⚙️", label: "Water Pressure", phrase: "powered by water pressure" },
-    { id: "project", icon: "💡", label: "Science Exhibition", phrase: "our science exhibition project" },
-    { id: "team", icon: "🤝", label: "Built with Brother", phrase: "built with my brother" },
+    {
+      id: "crane",
+      label: "Hydraulic Crane",
+      phrase: "hydraulic crane",
+      svg: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M4 22h16M7 22V6l10-4M17 2v10M17 12h-4" />
+        </svg>
+      ),
+    },
+    {
+      id: "water",
+      label: "Syringes & Water",
+      phrase: "syringes and water tubes",
+      svg: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="m18 2 4 4M17 7l3-3M19 9 8.7 19.3c-.4.4-1 .6-1.6.6H3v-4.1c0-.6.2-1.2.6-1.6L14 3.9" />
+          <path d="m9 9 6 6" />
+        </svg>
+      ),
+    },
+    {
+      id: "cardboard",
+      label: "Cardboard Joints",
+      phrase: "cardboard joints",
+      svg: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+          <line x1="12" y1="22.08" x2="12" y2="12" />
+        </svg>
+      ),
+    },
+    {
+      id: "pressure",
+      label: "Water Pressure",
+      phrase: "powered by water pressure",
+      svg: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="10" />
+          <path d="m12 6 2 6-4 2" />
+        </svg>
+      ),
+    },
+    {
+      id: "project",
+      label: "Science Exhibition",
+      phrase: "our science exhibition project",
+      svg: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
+          <path d="M9 18h6M10 22h4" />
+        </svg>
+      ),
+    },
+    {
+      id: "team",
+      label: "Built with Brother",
+      phrase: "built with my brother",
+      svg: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      ),
+    },
   ];
 
-  const handleStepFormulate = (frag) => {
-    if (soundOn) audio.cue("tap");
-    const next = [...formulatedWords, frag];
+  // Press & hold or single tap to articulate a phrase
+  const triggerArticulateNext = () => {
+    if (formulatedWords.length >= SPEECH_FRAGMENTS.length) return;
+    const nextFrag = SPEECH_FRAGMENTS[formulatedWords.length];
+
+    if (soundOn) {
+      audio.cue("tap");
+      speakText(nextFrag.full, { rate: 0.9, pitch: 1.05 });
+    }
+
+    const next = [...formulatedWords, nextFrag];
     setFormulatedWords(next);
-    setStage("formulating");
 
     if (next.length >= SPEECH_FRAGMENTS.length) {
       handleCompleteSpeech("verbal");
     }
   };
 
+  const handleHoldStart = () => {
+    setIsPhonating(true);
+    setPhonationProgress(10);
+    phonateIntervalRef.current = setInterval(() => {
+      setPhonationProgress((p) => {
+        if (p >= 90) {
+          clearInterval(phonateIntervalRef.current);
+          setIsPhonating(false);
+          triggerArticulateNext();
+          return 0;
+        }
+        return p + 25;
+      });
+    }, 150);
+  };
+
+  const handleHoldEnd = () => {
+    if (phonateIntervalRef.current) clearInterval(phonateIntervalRef.current);
+    setIsPhonating(false);
+    setPhonationProgress(0);
+  };
+
   const handleAacTileClick = (tile) => {
     if (soundOn) {
       audio.cue("tap");
-      speakText(tile.phrase, { rate: 0.95, volume: 0.9 });
+      speakText(tile.phrase, { rate: 0.95, volume: 0.95 });
     }
     const next = aacSelection.includes(tile.id) ? aacSelection : [...aacSelection, tile.id];
     setAacSelection(next);
@@ -5139,8 +5243,8 @@ function SpeechSim({
 
   const handleCompleteSpeech = (method) => {
     if (timerRef.current) clearInterval(timerRef.current);
+    if (phonateIntervalRef.current) clearInterval(phonateIntervalRef.current);
     setRunning(false);
-    setStage("finished");
     if (soundOn) audio.cue("slam");
 
     const finalTime = parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1));
@@ -5157,15 +5261,19 @@ function SpeechSim({
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div>
           <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-speech)", letterSpacing: "0.08em" }}>
-            {mode === "fast" ? "Run 1 (Fast-Paced Discussion Circle)" : "Run 2 (Supported Unhurried Communication)"}
+            {mode === "fast" ? "Run 1 (Paced Circle: Turn-Taking Pressure)" : "Run 2 (Supported Unhurried Communication)"}
           </span>
           <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
-            Circle Time: &ldquo;Tell the group about your science project.&rdquo;
+            Discussion Circle: &ldquo;Tell the class about your science project.&rdquo;
           </h3>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)" }}>
-            ⏱️ {elapsed.toFixed(1)}s
+          <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)", display: "flex", alignItems: "center", gap: 6 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            {elapsed.toFixed(1)}s
           </span>
           <button type="button" className="itw-pill-btn" onClick={onAbort}>Exit</button>
         </div>
@@ -5173,16 +5281,21 @@ function SpeechSim({
 
       {/* Conversation Partner Banner */}
       <div className="itw-speech-partner">
-        <div className="itw-partner-avatar">👩‍🏫</div>
+        <div className="itw-partner-avatar">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--itw-speech)" strokeWidth="2.5">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-text)" }}>
             Teacher &amp; Classroom Circle
           </div>
           <div style={{ fontSize: 14, color: "var(--itw-muted)" }}>
-            {mode === "fast" && !partnerInterrupted && "Waiting for an immediate answer... turn timer running."}
+            {mode === "fast" && !partnerInterrupted && "Expecting an immediate rapid answer... listener turn window closing."}
             {mode === "fast" && partnerInterrupted && (
               <span style={{ color: "#d9381e", fontWeight: 700 }}>
-                ⚠️ Conversational pressure: &ldquo;Anyone else have an answer? Should we move to the next person?&rdquo;
+                ⚠️ Conversational pressure: &ldquo;Anyone else have an answer? Should we move on to the next person?&rdquo;
               </span>
             )}
             {mode === "supported" && "Attentive, unhurried presence: listening with warm eye contact and zero hurry."}
@@ -5193,7 +5306,8 @@ function SpeechSim({
                 className="itw-meter-fill"
                 style={{
                   width: `${partnerPatience}%`,
-                  background: partnerPatience > 40 ? "var(--itw-speech)" : "#d9381e",
+                  background: partnerPatience > 35 ? "var(--itw-speech)" : "#d9381e",
+                  transition: "width 0.2s linear, background-color 0.2s",
                 }}
               />
             </div>
@@ -5203,19 +5317,25 @@ function SpeechSim({
 
       {/* The Internal Thought (Rich and clear in the speaker's mind) */}
       <div className="itw-thought-bubble">
-        <div className="itw-thought-label">
-          🧠 The Idea in Your Mind (Completely Clear &amp; Fluent)
+        <div className="itw-thought-label" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M12 2a8 8 0 0 0-8 8c0 3 2 5.5 4 7v3h8v-3c2-1.5 4-4 4-7a8 8 0 0 0-8-8z" />
+          </svg>
+          The Idea in Your Mind (Completely Clear &amp; Fluent)
         </div>
         <div className="itw-thought-text">
           &ldquo;{TARGET_THOUGHT}&rdquo;
         </div>
+        <div style={{ fontSize: 12, color: "var(--itw-muted)", marginTop: 6 }}>
+          Zero formulation difficulty: the entire concept is fully visual, vivid, and understood.
+        </div>
       </div>
 
       {/* Physical Delivery Canvas */}
-      {mode === "supported" && supportType === "aac" ? (
+      {mode === "supported" && supportType === "multimodal" ? (
         <div>
           <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-muted)", marginBottom: 8 }}>
-            AAC Multi-Modal Soundboard: Tap concept tiles to speak aloud instantly
+            Multi-Modal AAC Communication Soundboard: Tap concept cards to speak aloud instantly
           </div>
           <div className="itw-aac-grid">
             {AAC_TILES.map((tile) => {
@@ -5227,20 +5347,20 @@ function SpeechSim({
                   className={`itw-aac-tile${isSelected ? " itw-selected" : ""}`}
                   onClick={() => handleAacTileClick(tile)}
                 >
-                  <span className="itw-aac-icon">{tile.icon}</span>
+                  <span className="itw-aac-icon" style={{ color: "var(--itw-speech)" }}>{tile.svg}</span>
                   <span className="itw-aac-label">{tile.label}</span>
                 </button>
               );
             })}
           </div>
-          {aacSelection.length >= 3 && stage !== "finished" && (
-            <div style={{ marginTop: 16, textAlign: "center" }}>
+          {aacSelection.length >= 3 && (
+            <div style={{ marginTop: 18, textAlign: "center" }}>
               <button
                 type="button"
                 className="itw-cta itw-cta-dark"
                 onClick={() => handleCompleteSpeech("aac")}
               >
-                Complete Statement via AAC ✓
+                Complete Statement via Multi-Modal Cards ✓
               </button>
             </div>
           )}
@@ -5248,17 +5368,25 @@ function SpeechSim({
       ) : (
         <div>
           <div className="itw-articulation-box">
-            <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", marginBottom: 6 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                <line x1="12" y1="19" x2="12" y2="23" />
+                <line x1="8" y1="23" x2="16" y2="23" />
+              </svg>
               Verbal Speech Output
             </div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--itw-text)", minHeight: 28 }}>
+            <div style={{ fontSize: 19, fontWeight: 700, color: "var(--itw-text)", minHeight: 32, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
               {formulatedWords.length === 0 ? (
                 <span style={{ color: "var(--itw-muted)", fontStyle: "italic", fontSize: 15 }}>
-                  Assemble and articulate words below against conversational pacing...
+                  {mode === "fast"
+                    ? "Hold down the phonation release button below to articulate against the clock..."
+                    : "Take your time — release each syllable naturally at your own pace..."}
                 </span>
               ) : (
                 formulatedWords.map((w, i) => (
-                  <span key={i} style={{ marginRight: 6, color: "var(--itw-speech)" }}>
+                  <span key={i} style={{ color: "var(--itw-speech)", background: "var(--itw-speech-soft)", padding: "2px 8px", borderRadius: 6 }}>
                     {w.text}
                   </span>
                 ))
@@ -5266,44 +5394,60 @@ function SpeechSim({
             </div>
           </div>
 
-          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-muted)", marginBottom: 8 }}>
-            {mode === "fast"
-              ? "Articulate words (simulating motor speech planning friction under time pressure):"
-              : "Take your time — form each phrase without rush:"}
-          </div>
-
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {SPEECH_FRAGMENTS.map((frag, idx) => {
-              const isDone = formulatedWords.length > idx;
-              const isNext = formulatedWords.length === idx;
-              return (
+          {/* Phonation Control Area */}
+          <div className="itw-phonation-press-area">
+            {formulatedWords.length < SPEECH_FRAGMENTS.length ? (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
                 <button
-                  key={idx}
                   type="button"
-                  className="itw-pill-btn"
-                  disabled={isDone || !isNext}
-                  onClick={() => handleStepFormulate(frag)}
-                  style={{
-                    padding: "10px 18px",
-                    fontWeight: 700,
-                    borderColor: isNext ? "var(--itw-speech)" : "var(--itw-border)",
-                    background: isDone ? "var(--itw-panel-2)" : isNext ? "rgba(140,66,44,0.12)" : "var(--itw-panel)",
-                    opacity: isDone ? 0.4 : isNext ? 1 : 0.6,
-                  }}
+                  className={`itw-phonate-btn${isPhonating ? " itw-charging" : ""}`}
+                  onMouseDown={handleHoldStart}
+                  onMouseUp={handleHoldEnd}
+                  onTouchStart={handleHoldStart}
+                  onTouchEnd={handleHoldEnd}
+                  onClick={triggerArticulateNext}
+                  title="Press and hold to overcome motor speech planning delay and release next syllable"
                 >
-                  {isDone ? "✓ " : "+ "} {frag.text}
+                  <div className="itw-breath-ring" />
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                  </svg>
                 </button>
-              );
-            })}
+                <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-text)" }}>
+                  {isPhonating
+                    ? `Overcoming vocal motor block (${phonationProgress}%)...`
+                    : `Tap or Hold to Phonate: "${SPEECH_FRAGMENTS[formulatedWords.length].text}"`}
+                </div>
+                <div style={{ fontSize: 12, color: "var(--itw-muted)", maxWidth: "42ch" }}>
+                  {mode === "fast"
+                    ? "Simulates motor speech planning friction: expending physical effort before syllable release while listener time runs out."
+                    : "Generous wait time: release speech with warm presence and zero fear of being interrupted."}
+                </div>
+              </div>
+            ) : (
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "#10b981", marginBottom: 10 }}>
+                  ✓ Statement Formulated &amp; Delivered
+                </div>
+                <button
+                  type="button"
+                  className="itw-cta itw-cta-dark"
+                  onClick={() => handleCompleteSpeech("verbal")}
+                >
+                  Complete Statement →
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {/* Takeaway note */}
-      <div style={{ fontSize: 13, color: "var(--itw-muted)", textAlign: "center", marginTop: 20 }}>
+      <div style={{ fontSize: 13, color: "var(--itw-muted)", textAlign: "center", marginTop: 22 }}>
         {mode === "fast"
-          ? "Notice the pressure: the idea was clear in your head the whole time, but motor planning took longer than external conversation allowed."
-          : "When conversation partners provide unhurried wait time and multimodal options, the speaker participates with full dignity."}
+          ? "Notice the profound friction: the concept was 100% complete in your mind, but physical motor timing collided with fast-paced classroom expectations."
+          : "When listeners offer unhurried wait time and multi-modal dignity, communication flows without anxiety."}
       </div>
     </div>
   );
@@ -5347,9 +5491,9 @@ function SpeechModule({ onBack, onNavigate }) {
               In this activity, you will experience how pacing and listener behavior completely reshape the communication experience.
             </p>
             <ul className="itw-flow-meta">
-              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
-              <li><span aria-hidden="true">💬</span> A conversational exchange comparing fast pacing vs. patient listening</li>
-              <li><span aria-hidden="true">ℹ️</span> An educational simulation, not a clinical diagnostic tool</li>
+              <li><span aria-hidden="true">•</span> Takes 2–3 minutes</li>
+              <li><span aria-hidden="true">•</span> A conversational exchange comparing fast pacing vs. patient listening</li>
+              <li><span aria-hidden="true">•</span> An educational simulation, not a clinical diagnostic tool</li>
             </ul>
             <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
               Begin Experience →
@@ -5390,9 +5534,9 @@ function SpeechModule({ onBack, onNavigate }) {
             pressure versus how patient partners foster psychological safety and dignity.
           </div>
           <ul className="itw-flow-list">
-            <li><span aria-hidden="true">💬</span> Type a short answer and click “Share Response”.</li>
-            <li><span aria-hidden="true">⏳</span> In Run 1, observe the pressure of a rapid, ticking turn window.</li>
-            <li><span aria-hidden="true">👂</span> In Run 2, experience unhurried listening with no timers counting down.</li>
+            <li><span aria-hidden="true">•</span> Type a short answer and click “Share Response”.</li>
+            <li><span aria-hidden="true">•</span> In Run 1, observe the pressure of a rapid, ticking turn window.</li>
+            <li><span aria-hidden="true">•</span> In Run 2, experience unhurried listening with no timers counting down.</li>
           </ul>
           <div className="itw-flow-nav">
             <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
@@ -5757,12 +5901,26 @@ const DYSCALC_SUPPORT_CHOICES = [
   },
 ];
 
+const SCATTERED_DOT_COORDS = [
+  { x: 16, y: 28 },
+  { x: 26, y: 68 },
+  { x: 38, y: 22 },
+  { x: 48, y: 58 },
+  { x: 62, y: 32 },
+  { x: 74, y: 72 },
+  { x: 84, y: 26 },
+  { x: 32, y: 82 },
+  { x: 58, y: 18 },
+  { x: 14, y: 62 },
+  { x: 70, y: 52 },
+  { x: 86, y: 64 },
+  { x: 44, y: 42 },
+]; // Exactly 13 scattered dots
+
 function DyscalculiaSim({ mode = "baseline", supportType = "tenframes", onComplete, onAbort }) {
   const { soundOn } = useContext(SettingsContext);
-  const [stage, setStage] = useState(1); // 1: naked numerals / subitizing, 2: spatial number line, 3: completed
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [userEstimate, setUserEstimate] = useState(50);
-  const [tenFrameCount, setTenFrameCount] = useState(14);
+  const [countedDots, setCountedDots] = useState([]);
+  const [tenFrameCount, setTenFrameCount] = useState(13);
   const [elapsed, setElapsed] = useState(0);
   const [errors, setErrors] = useState(0);
 
@@ -5785,13 +5943,19 @@ function DyscalculiaSim({ mode = "baseline", supportType = "tenframes", onComple
     };
   }, []);
 
+  const handleDotClick = (idx) => {
+    if (soundOn) audio.cue("tap");
+    if (!countedDots.includes(idx)) {
+      setCountedDots([...countedDots, idx]);
+    }
+  };
+
   const handleSubitizePick = (val, isCorrect) => {
     if (soundOn) audio.cue(isCorrect ? "slam" : "flicker");
     if (!isCorrect) {
       setErrors((e) => e + 1);
       return;
     }
-    setSelectedAnswer(val);
 
     if (timerRef.current) clearInterval(timerRef.current);
     const finalTime = parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1));
@@ -5812,58 +5976,86 @@ function DyscalculiaSim({ mode = "baseline", supportType = "tenframes", onComple
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div>
           <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-dyscalculia)", letterSpacing: "0.08em" }}>
-            {mode === "baseline" ? "Run 1 (Naked Abstract Numerals)" : "Run 2 (Visual Ten-Frames & Spatial Number Line)"}
+            {mode === "baseline" ? "Run 1 (Unstructured Quantity: The Subitizing Barrier)" : "Run 2 (Visual Ten-Frames: Instant Spatial Quantity)"}
           </span>
           <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
-            {mode === "baseline" ? "The Challenge: Working with Pure Abstract Glyphs" : "The Visual Solution: Grounding Quantity in Space"}
+            {mode === "baseline" ? "Can You Tell the Quantity at a Single Glance?" : "The Visual Solution: Grounding Quantity in Structured Space"}
           </h3>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)" }}>
-            ⏱️ {elapsed.toFixed(1)}s
+          <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)", display: "flex", alignItems: "center", gap: 6 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            {elapsed.toFixed(1)}s
           </span>
           <button type="button" className="itw-pill-btn" onClick={onAbort}>Exit</button>
         </div>
       </div>
 
       {mode === "baseline" ? (
-        /* Baseline mode: Demonstrating the friction of naked abstract symbols */
+        /* Baseline mode: Demonstrating the friction of unanchored quantity */
         <div>
           <div style={{ background: "var(--itw-panel-2)", padding: 22, borderRadius: 18, border: "1.5px solid var(--itw-border)", margin: "16px 0" }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-dyscalculia)", textTransform: "uppercase", marginBottom: 8 }}>
-              Abstract Numerical Comparison
+            <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-dyscalculia)", textTransform: "uppercase", marginBottom: 6 }}>
+              Visual Quantity Estimation Challenge
             </div>
-            <p style={{ fontSize: 16, lineHeight: 1.6, color: "var(--itw-text)", marginBottom: 20 }}>
-              To a mind with dyscalculia, numbers like <b>47</b> and <b>74</b> are abstract shapes with no intrinsic visual volume or weight. Mental estimation requires laborious counting rather than automatic subitizing.
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--itw-text)", margin: "0 0 14px" }}>
+              In dyscalculia, the brain does not automatically &ldquo;see&rdquo; quantity without structure. Look at the scattered dots below. Without counting one by one, can you instantly tell how many there are?
             </p>
 
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 24, margin: "24px 0" }}>
-              <div style={{ padding: "20px 32px", borderRadius: 16, border: "2px solid var(--itw-border)", fontSize: 36, fontFamily: "var(--font-mono)", fontWeight: 800, color: "var(--itw-text)" }}>
-                68
-              </div>
-              <span style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-muted)" }}>vs</span>
-              <div style={{ padding: "20px 32px", borderRadius: 16, border: "2px solid var(--itw-border)", fontSize: 36, fontFamily: "var(--font-mono)", fontWeight: 800, color: "var(--itw-text)" }}>
-                86
-              </div>
+            {/* Scattered Dots Box */}
+            <div className="itw-scatter-cloud" title="Tap dots to count if needed">
+              {SCATTERED_DOT_COORDS.map((dot, idx) => {
+                const isCounted = countedDots.includes(idx);
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    className={`itw-scatter-dot${isCounted ? " itw-counted" : ""}`}
+                    style={{ left: `${dot.x}%`, top: `${dot.y}%` }}
+                    onClick={() => handleDotClick(idx)}
+                    aria-label={`Dot ${idx + 1}`}
+                  />
+                );
+              })}
             </div>
 
-            <div style={{ textAlign: "center", marginTop: 20 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--itw-muted)", marginBottom: 12 }}>
-                Quick check: How many 10s are in the larger number?
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: 520, margin: "10px auto 20px", fontSize: 13, color: "var(--itw-muted)" }}>
+              <span>Tapped to count: <b>{countedDots.length}</b> / 13</span>
+              <button
+                type="button"
+                className="itw-pill-btn"
+                style={{ fontSize: 11, padding: "4px 10px" }}
+                onClick={() => setCountedDots([])}
+              >
+                Reset Count
+              </button>
+            </div>
+
+            <div style={{ textAlign: "center", marginTop: 14 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: "var(--itw-text)", marginBottom: 12 }}>
+                How many dots are in the cloud?
               </div>
-              <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
-                {[6, 7, 8, 9].map((val) => (
+              <div style={{ display: "flex", justifyContent: "center", gap: 14 }}>
+                {[11, 13, 15].map((val) => (
                   <button
                     key={val}
                     type="button"
                     className="itw-pill-btn"
-                    style={{ fontSize: 18, padding: "10px 24px", fontWeight: 800 }}
-                    onClick={() => handleSubitizePick(val, val === 8)}
+                    style={{ fontSize: 18, padding: "10px 28px", fontWeight: 800 }}
+                    onClick={() => handleSubitizePick(val, val === 13)}
                   >
-                    {val} tens
+                    {val} Dots
                   </button>
                 ))}
               </div>
+              {errors > 0 && (
+                <div style={{ color: "#d9381e", fontSize: 13, fontWeight: 700, marginTop: 10 }}>
+                  Not quite — without spatial structure, counting is prone to misjudging. Try counting the dots or recount!
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -5873,9 +6065,10 @@ function DyscalculiaSim({ mode = "baseline", supportType = "tenframes", onComple
           <div style={{ background: "var(--itw-panel-2)", padding: 22, borderRadius: 18, border: "1.5px solid var(--itw-dyscalculia)", margin: "16px 0" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
               <span style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-dyscalculia)", textTransform: "uppercase" }}>
-                ✨ Visual Ten-Frame Scaffolding (CRA Concrete Model)
+                ✨ Standard 5×2 Ten-Frames (Concrete Visual Scaffolding)
               </span>
-              <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--itw-muted)" }}>Adjust count:</span>
                 <button
                   type="button"
                   className="itw-pill-btn"
@@ -5886,7 +6079,7 @@ function DyscalculiaSim({ mode = "baseline", supportType = "tenframes", onComple
                 <button
                   type="button"
                   className="itw-pill-btn"
-                  onClick={() => setTenFrameCount((c) => Math.min(30, c + 1))}
+                  onClick={() => setTenFrameCount((c) => Math.min(20, c + 1))}
                 >
                   + 1
                 </button>
@@ -5894,30 +6087,34 @@ function DyscalculiaSim({ mode = "baseline", supportType = "tenframes", onComple
             </div>
 
             <p style={{ fontSize: 15, color: "var(--itw-text)", lineHeight: 1.6, marginBottom: 16 }}>
-              In a Ten-Frame, numbers are organized into instantly recognizable 5-and-10 patterns. Quantity is grasped visually in a glance without counting individual dots!
+              Here is the <b>exact same quantity (13)</b> organized inside standard Ten-Frames ($5 \times 2$ grid). Because 10 is full and 3 are in the second frame, your visual system registers <b>10 + 3 = 13 in under 1 second</b> without counting!
             </p>
 
             {/* Render Ten-Frames */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "center", margin: "16px 0" }}>
+            <div className="itw-tenframe-container">
               {Array.from({ length: Math.ceil(tenFrameCount / 10) }).map((_, fIdx) => {
                 const dotsInThisFrame = Math.min(10, tenFrameCount - fIdx * 10);
                 return (
-                  <div key={fIdx} className="itw-tenframe-grid">
-                    {Array.from({ length: 10 }).map((_, cIdx) => (
-                      <div key={cIdx} className="itw-tenframe-cell">
-                        {cIdx < dotsInThisFrame && <span className="itw-tenframe-dot" />}
-                      </div>
-                    ))}
+                  <div key={fIdx} className="itw-tenframe-box">
+                    <div className="itw-tenframe-label">Frame {fIdx + 1} ({dotsInThisFrame}/10)</div>
+                    <div className="itw-tenframe-grid" style={{ margin: 0 }}>
+                      {Array.from({ length: 10 }).map((_, cIdx) => (
+                        <div key={cIdx} className="itw-tenframe-cell">
+                          {cIdx < dotsInThisFrame && <span className="itw-tenframe-dot" />}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 );
               })}
-              <div style={{ fontSize: 24, fontWeight: 800, fontFamily: "var(--font-mono)", color: "var(--itw-dyscalculia)" }}>
-                = {tenFrameCount} ({fullFrames} ten{fullFrames !== 1 ? "s" : ""} + {remainder} one{remainder !== 1 ? "s" : ""})
-              </div>
+            </div>
+
+            <div style={{ textAlign: "center", fontSize: 22, fontWeight: 800, fontFamily: "var(--font-mono)", color: "var(--itw-dyscalculia)", margin: "14px 0" }}>
+              = {tenFrameCount} ({fullFrames} ten{fullFrames !== 1 ? "s" : ""} + {remainder} one{remainder !== 1 ? "s" : ""})
             </div>
 
             {/* Interactive Visual Number Line */}
-            <div style={{ borderTop: "1px solid var(--itw-border)", paddingTop: 18, marginTop: 18 }}>
+            <div style={{ borderTop: "1px solid var(--itw-border)", paddingTop: 16, marginTop: 16 }}>
               <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-dyscalculia)", textTransform: "uppercase", marginBottom: 6 }}>
                 Spatial Number Line with Landmark Anchors (0 to 100)
               </div>
@@ -5925,15 +6122,15 @@ function DyscalculiaSim({ mode = "baseline", supportType = "tenframes", onComple
                 <div className="itw-number-track">
                   <div
                     className="itw-number-pin"
-                    style={{ left: `${tenFrameCount}%` }}
+                    style={{ left: `${(tenFrameCount / 20) * 100}%` }}
                   >
                     {tenFrameCount}
                   </div>
-                  {[0, 25, 50, 75, 100].map((anchor) => (
+                  {[0, 5, 10, 15, 20].map((anchor) => (
                     <span
                       key={anchor}
                       className="itw-number-anchor"
-                      style={{ left: `${anchor}%` }}
+                      style={{ left: `${(anchor / 20) * 100}%` }}
                     >
                       {anchor}
                     </span>
@@ -5948,7 +6145,7 @@ function DyscalculiaSim({ mode = "baseline", supportType = "tenframes", onComple
                 className="itw-cta itw-cta-dark"
                 onClick={() => handleSubitizePick(tenFrameCount, true)}
               >
-                Confirm Visual Understanding ✓
+                Confirm Instant Recognition (13) ✓
               </button>
             </div>
           </div>
@@ -5956,10 +6153,10 @@ function DyscalculiaSim({ mode = "baseline", supportType = "tenframes", onComple
       )}
 
       {/* Footer Reflection */}
-      <div style={{ fontSize: 13, color: "var(--itw-muted)", textAlign: "center", marginTop: 12 }}>
+      <div style={{ fontSize: 13, color: "var(--itw-muted)", textAlign: "center", marginTop: 14 }}>
         {mode === "baseline"
-          ? "Without spatial models, working memory is choked by basic magnitude checks."
-          : "Concrete and visual representations transform abstract symbols into tangible quantities."}
+          ? "Notice how unstructured dots required 4+ seconds of active manual counting — exactly what abstract numbers feel like in dyscalculia."
+          : "Notice how Ten-Frames ground abstract numbers in spatial geometry, enabling instant recognition without counting."}
       </div>
     </div>
   );
@@ -6004,9 +6201,9 @@ function DyscalculiaModule({ onBack, onNavigate }) {
               creates intense cognitive fatigue, turning everyday cooking, budgeting, or time-tracking into an uphill struggle.
             </p>
             <ul className="itw-flow-meta">
-              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
+              <li><span aria-hidden="true">•</span> Takes 2–3 minutes</li>
               <li><span aria-hidden="true">🔢</span> Everyday recipe scaling task</li>
-              <li><span aria-hidden="true">🛡️</span> Empathy exercise, not a diagnostic test</li>
+              <li><span aria-hidden="true">•</span> Empathy exercise, not a diagnostic test</li>
             </ul>
             <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
               Start the Experience →
@@ -6030,9 +6227,9 @@ function DyscalculiaModule({ onBack, onNavigate }) {
             You are measuring ingredients for traditional cardamom cookies.
           </p>
           <ul className="itw-flow-list">
-            <li><span aria-hidden="true">🥣</span> In Run 1, simply adjust the ingredient amounts to match the base recipe for 4 servings.</li>
-            <li><span aria-hidden="true">📏</span> In Run 2, you will experience the cognitive friction of scaling that recipe for 6 people without visual aids.</li>
-            <li><span aria-hidden="true">💡</span> In Run 3, test how visual number lines and concrete scaffolding relieve mathematical strain.</li>
+            <li><span aria-hidden="true">•</span> In Run 1, simply adjust the ingredient amounts to match the base recipe for 4 servings.</li>
+            <li><span aria-hidden="true">•</span> In Run 2, you will experience the cognitive friction of scaling that recipe for 6 people without visual aids.</li>
+            <li><span aria-hidden="true">•</span> In Run 3, test how visual number lines and concrete scaffolding relieve mathematical strain.</li>
           </ul>
           <div className="itw-flow-nav">
             <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
@@ -6060,8 +6257,8 @@ function DyscalculiaModule({ onBack, onNavigate }) {
             Two extra guests have joined! You must now scale the recipe from 4 servings to 6 servings (a 1.5× multiplier).
           </p>
           <ul className="itw-flow-list">
-            <li><span aria-hidden="true">🧠</span> Calculate 1.5× for 200g flour, 120ml milk, and 60g sugar mentally.</li>
-            <li><span aria-hidden="true">⚠️</span> Notice how holding mental arithmetic calculations without visual models strains working memory.</li>
+            <li><span aria-hidden="true">•</span> Calculate 1.5× for 200g flour, 120ml milk, and 60g sugar mentally.</li>
+            <li><span aria-hidden="true">•</span> Notice how holding mental arithmetic calculations without visual models strains working memory.</li>
           </ul>
           <div className="itw-flow-nav">
             <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("run_baseline")}>Back to Run 1</button>
@@ -6432,31 +6629,48 @@ function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplet
     };
   }, []);
 
-  const MIND_THOUGHT = "The mangrove root network traps river sediment, preventing shoreline erosion while nurturing juvenile marine species.";
+  const MIND_THOUGHT =
+    "The mangrove root network traps river sediment, preventing shoreline erosion while nurturing juvenile marine species.";
   const TARGET_LETTERS = "The mangrove roots trap river sediment".split("");
+  const CONCEPT_TILES = [
+    "Mangrove root network",
+    "Traps river sediment",
+    "Prevents shoreline erosion",
+    "Nurtures marine juveniles",
+  ];
 
   const handleWriteStroke = (letter) => {
     if (soundOn) audio.cue("tap");
     const nextLetters = [...writtenLetters, letter];
     setWrittenLetters(nextLetters);
-    const newFatigue = Math.min(100, motorFatigue + 7);
+    const newFatigue = Math.min(100, motorFatigue + 8);
     setMotorFatigue(newFatigue);
 
     // If fatigue gets very high, working memory is taxed and the student is forced to simplify!
-    if (newFatigue >= 75 && !simplifiedText) {
+    if (newFatigue >= 64 && !simplifiedText) {
       setSimplifiedText("Roots trap dirt.");
       if (soundOn) audio.cue("flicker");
     }
 
-    if (nextLetters.length >= TARGET_LETTERS.length || newFatigue >= 95) {
+    if (nextLetters.length >= TARGET_LETTERS.length || newFatigue >= 96) {
       finishSim("manual", nextLetters.length, newFatigue);
+    }
+  };
+
+  const handleWordBankClick = (tileText) => {
+    if (soundOn) audio.cue("tap");
+    const phrase = writtenLetters.length === 0 ? tileText : ` ${tileText}`;
+    const nextLetters = [...writtenLetters, ...phrase.split("")];
+    setWrittenLetters(nextLetters);
+    if (nextLetters.length >= 45) {
+      finishSim("wordbank", nextLetters.length, 12);
     }
   };
 
   const handleDictateVoice = () => {
     if (soundOn) {
       audio.cue("slam");
-      speakText(MIND_THOUGHT, { rate: 0.95, volume: 0.9 });
+      speakText(MIND_THOUGHT, { rate: 0.95, volume: 0.95 });
     }
     setUsedVoice(true);
     setWrittenLetters(MIND_THOUGHT.split(""));
@@ -6486,15 +6700,19 @@ function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplet
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div>
           <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-dysgraphia)", letterSpacing: "0.08em" }}>
-            {mode === "baseline" ? "Run 1 (Manual Graphomotor Transcription Bottleneck)" : "Run 2 (Supported Speech-to-Text Expression)"}
+            {mode === "baseline" ? "Run 1 (Manual Graphomotor Transcription Bottleneck)" : "Run 2 (Supported Expression)"}
           </span>
-          <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-paper-text)", margin: "4px 0" }}>
+          <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
             Science Notebook: Coastal Ecology Hypothesis
           </h3>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-paper-muted)" }}>
-            ⏱️ {elapsed.toFixed(1)}s
+          <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)", display: "flex", alignItems: "center", gap: 6 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            {elapsed.toFixed(1)}s
           </span>
           <button type="button" className="itw-pill-btn" onClick={onAbort}>Exit</button>
         </div>
@@ -6505,7 +6723,9 @@ function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplet
         {/* Mind Box: Eloquent, rich, advanced biology */}
         <div className="itw-mind-panel">
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <span style={{ fontSize: 20 }}>🧠</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--itw-dysgraphia)" strokeWidth="2.5">
+              <path d="M12 2a8 8 0 0 0-8 8c0 3 2 5.5 4 7v3h8v-3c2-1.5 4-4 4-7a8 8 0 0 0-8-8z" />
+            </svg>
             <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-dysgraphia)", letterSpacing: "0.06em" }}>
               The Idea in Your Mind (Oral / Conceptual Mastery)
             </span>
@@ -6514,23 +6734,25 @@ function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplet
             &ldquo;{MIND_THOUGHT}&rdquo;
           </p>
           <div style={{ fontSize: 12, color: "var(--itw-muted)", marginTop: 10 }}>
-            Vocabulary level: Advanced • Conceptual depth: Full • Pacing: Effortless
+            Conceptual depth: Advanced • Academic vocabulary: Rich • Formulation time: &lt;1.5s
           </div>
         </div>
 
         {/* Paper Box: The manual transcription friction */}
-        <div className="itw-paper-panel">
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <span style={{ fontSize: 20 }}>✏️</span>
-            <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-paper-muted)", letterSpacing: "0.06em" }}>
-              The Physical Page (Graphomotor Output)
+        <div className="itw-notebook-lined">
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+            </svg>
+            <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", letterSpacing: "0.06em" }}>
+              The Ruled School Notebook Page (Graphomotor Output)
             </span>
           </div>
 
-          <div style={{ minHeight: 70, fontSize: 18, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-paper-text)", borderBottom: "2px solid #d4c8ad", paddingBottom: 8 }}>
+          <div style={{ minHeight: 64, fontSize: 17, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-text)", borderBottom: "2px solid #d4c8ad", paddingBottom: 6 }}>
             {writtenLetters.length === 0 ? (
-              <span style={{ color: "var(--itw-paper-muted)", fontStyle: "italic", fontSize: 14 }}>
-                {mode === "supported" ? "Click 'Dictate with Voice' below..." : "Form letters below to transcribe..."}
+              <span style={{ color: "var(--itw-muted)", fontStyle: "italic", fontSize: 14 }}>
+                {mode === "supported" ? "Choose voice dictation or concept cards below..." : "Form letters below to manually transcribe..."}
               </span>
             ) : (
               writtenLetters.join("")
@@ -6538,8 +6760,8 @@ function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplet
           </div>
 
           {simplifiedText && (
-            <div style={{ marginTop: 10, padding: 8, borderRadius: 8, background: "rgba(217, 56, 30, 0.1)", color: "#b3240e", fontSize: 13, fontWeight: 700 }}>
-              ⚠️ Motor fatigue forced mental simplification: &ldquo;{simplifiedText}&rdquo; (The rich biology thought was abandoned due to hand cramping).
+            <div style={{ marginTop: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(217, 56, 30, 0.12)", color: "#b3240e", fontSize: 13, fontWeight: 700, border: "1px solid rgba(217, 56, 30, 0.3)" }}>
+              ⚠️ Working memory overloaded by hand cramping: The brilliant biology hypothesis is abandoned. The student settles for: &ldquo;{simplifiedText}&rdquo;
             </div>
           )}
         </div>
@@ -6548,11 +6770,14 @@ function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplet
       {/* Hand Muscle Fatigue & Motor Load Meter */}
       <div className="itw-fatigue-meter">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: motorFatigue > 60 ? "#d9381e" : "var(--itw-dysgraphia)" }}>
-            ⚡ Hand Muscle Strain &amp; Fine-Motor Cognitive Load: {motorFatigue}%
+          <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: motorFatigue > 60 ? "#d9381e" : "var(--itw-dysgraphia)", display: "flex", alignItems: "center", gap: 6 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+            Fine-Motor Hand Strain &amp; Cognitive Load: {motorFatigue}%
           </span>
           <span style={{ fontSize: 12, color: "var(--itw-muted)" }}>
-            {motorFatigue > 70 ? "High Cramping & Working Memory Choke" : "Normal"}
+            {motorFatigue > 60 ? "High Hand Fatigue & Working Memory Choke" : "Normal"}
           </span>
         </div>
         <div className="itw-meter-bar">
@@ -6560,7 +6785,8 @@ function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplet
             className="itw-meter-fill"
             style={{
               width: `${motorFatigue}%`,
-              background: motorFatigue > 70 ? "#d9381e" : "var(--itw-dysgraphia)",
+              background: motorFatigue > 60 ? "#d9381e" : "var(--itw-dysgraphia)",
+              transition: "width 0.2s linear, background-color 0.2s",
             }}
           />
         </div>
@@ -6570,22 +6796,50 @@ function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplet
       <div style={{ marginTop: 20, textAlign: "center" }}>
         {mode === "supported" ? (
           <div>
-            <button
-              type="button"
-              className="itw-cta itw-cta-dark"
-              style={{ fontSize: 16, padding: "14px 28px", display: "inline-flex", alignItems: "center", gap: 10 }}
-              onClick={handleDictateVoice}
-            >
-              🎙️ Dictate Entire Hypothesis with Voice (Speech-to-Text)
-            </button>
-            <div style={{ fontSize: 13, color: "var(--itw-muted)", marginTop: 8 }}>
-              Voice recognition translates your oral fluency directly onto the page, bypassing motor strain.
-            </div>
+            {supportType === "dictation" ? (
+              <div>
+                <button
+                  type="button"
+                  className="itw-cta itw-cta-dark"
+                  style={{ fontSize: 16, padding: "14px 28px", display: "inline-flex", alignItems: "center", gap: 10 }}
+                  onClick={handleDictateVoice}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                    <line x1="12" y1="19" x2="12" y2="23" />
+                  </svg>
+                  Dictate Full Hypothesis with Voice (Speech-to-Text)
+                </button>
+                <div style={{ fontSize: 13, color: "var(--itw-muted)", marginTop: 8 }}>
+                  Speech recognition transcribes your oral mastery directly onto the page with 0% hand fatigue.
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-muted)", marginBottom: 10 }}>
+                  Tap Concept &amp; Sentence Tiles to Assemble:
+                </div>
+                <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 8 }}>
+                  {CONCEPT_TILES.map((t, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      className="itw-pill-btn"
+                      style={{ fontSize: 13, padding: "10px 16px", fontWeight: 700, borderColor: "var(--itw-dysgraphia)" }}
+                      onClick={() => handleWordBankClick(t)}
+                    >
+                      + {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div>
             <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-muted)", marginBottom: 10 }}>
-              Form each letter manually (notice hand fatigue rising with every stroke):
+              Form each letter stroke manually (notice hand fatigue rising with every letter):
             </div>
             <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 6 }}>
               {TARGET_LETTERS.slice(writtenLetters.length, writtenLetters.length + 8).map((char, i) => (
@@ -6620,7 +6874,7 @@ function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplet
 
       {/* Pedagogical Footer */}
       <div style={{ fontSize: 13, color: "var(--itw-muted)", textAlign: "center", marginTop: 18 }}>
-        Notice the core insight: Dysgraphia is an output transcription barrier, never a thinking barrier.
+        Core Insight: Dysgraphia is a physical output barrier, never a cognitive or reasoning barrier.
       </div>
     </div>
   );
@@ -6665,9 +6919,9 @@ function DysgraphiaModule({ onBack, onNavigate }) {
               pathway turns writing into an agonizing physical slog, creating hand cramps and disjointed output.
             </p>
             <ul className="itw-flow-meta">
-              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
-              <li><span aria-hidden="true">✏️</span> Transcription bottleneck simulation</li>
-              <li><span aria-hidden="true">🛡️</span> Empathy exercise, not a diagnostic test</li>
+              <li><span aria-hidden="true">•</span> Takes 2–3 minutes</li>
+              <li><span aria-hidden="true">•</span> Transcription bottleneck simulation</li>
+              <li><span aria-hidden="true">•</span> Empathy exercise, not a diagnostic test</li>
             </ul>
             <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
               Start the Experience →
@@ -6691,9 +6945,9 @@ function DysgraphiaModule({ onBack, onNavigate }) {
             You know the biology hypothesis perfectly: <b>&ldquo;Plants absorb sunlight to produce glucose, releasing oxygen.&rdquo;</b>
           </p>
           <ul className="itw-flow-list">
-            <li><span aria-hidden="true">🧠</span> Notice how clear, fluent, and effortless the idea feels in your mind.</li>
-            <li><span aria-hidden="true">✍️</span> In Run 2, experience what happens when the mechanical transcription channel is heavily constrained.</li>
-            <li><span aria-hidden="true">🎙️</span> In Run 3, test voice dictation to see how motor bypass accommodations unlock true student potential.</li>
+            <li><span aria-hidden="true">•</span> Notice how clear, fluent, and effortless the idea feels in your mind.</li>
+            <li><span aria-hidden="true">•</span> In Run 2, experience what happens when the mechanical transcription channel is heavily constrained.</li>
+            <li><span aria-hidden="true">•</span> In Run 3, test voice dictation to see how motor bypass accommodations unlock true student potential.</li>
           </ul>
           <div className="itw-flow-nav">
             <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
@@ -6711,9 +6965,9 @@ function DysgraphiaModule({ onBack, onNavigate }) {
             You must now physically transcribe the exact sentence into your science notebook.
           </p>
           <ul className="itw-flow-list">
-            <li><span aria-hidden="true">✍️</span> Transcribe the full scientific sentence into your notebook word by word.</li>
-            <li><span aria-hidden="true">🧠</span> Notice how the conscious mechanical focus of transcription drains working memory away from the science concepts.</li>
-            <li><span aria-hidden="true">🛡️</span> In Run 3, test assistive supports (speech-to-text or concept blocks) that bypass this bottleneck.</li>
+            <li><span aria-hidden="true">•</span> Transcribe the full scientific sentence into your notebook word by word.</li>
+            <li><span aria-hidden="true">•</span> Notice how the conscious mechanical focus of transcription drains working memory away from the science concepts.</li>
+            <li><span aria-hidden="true">•</span> In Run 3, test assistive supports (speech-to-text or concept blocks) that bypass this bottleneck.</li>
           </ul>
           <div className="itw-flow-nav">
             <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("instructions")}>Back</button>
@@ -7063,19 +7317,26 @@ const AUDITORY_INSTRUCTIONS = [
   { id: "lab", text: "Bring your project outline for Friday's lab", noiseVersion: "Bring your [cough] outline for [bell] lab", decoys: ["Bring your completed project for Friday's lab", "Bring your lab kit for Thursday's lab"] },
 ];
 
+const TEACHER_FULL_ANNOUNCEMENT =
+  "Good morning class. Please listen carefully for tomorrow's 3 assignments: First, read Chapter 4, pages 30 to 35 in your textbook. Second, answer questions 2 and 5 in your blue notebook. Third, bring your project outline for Friday's lab.";
+
 function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", onComplete, onAbort }) {
   const { soundOn } = useContext(SettingsContext);
   const [selectedItems, setSelectedItems] = useState([]);
   const [elapsed, setElapsed] = useState(0);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [activeSegment, setActiveSegment] = useState(null);
 
   const startTimeRef = useRef(0);
   const timerRef = useRef(null);
+  const noiseIntervalRef = useRef(null);
   const onCompleteRef = useRef(onComplete);
 
   useEffect(() => {
     onCompleteRef.current = onComplete;
   }, [onComplete]);
 
+  // Stopwatch timer
   useEffect(() => {
     startTimeRef.current = performance.now();
     timerRef.current = setInterval(() => {
@@ -7084,6 +7345,88 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  // Audio Playback Engine for Classroom Announcement
+  const playAnnouncement = (customText = null, segmentId = null) => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    try {
+      if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+      window.speechSynthesis.cancel();
+    } catch {
+      /* ignore */
+    }
+    if (noiseIntervalRef.current) clearInterval(noiseIntervalRef.current);
+
+    setIsPlayingAudio(true);
+    setActiveSegment(segmentId);
+
+    const textToSpeak = customText || TEACHER_FULL_ANNOUNCEMENT;
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.rate = 0.92;
+    utterance.pitch = 1.05;
+    utterance.volume = mode === "unsupported" ? 0.7 : 1.0;
+
+    const voices = window.speechSynthesis.getVoices();
+    if (voices && voices.length > 0) {
+      const match = voices.find(
+        (v) =>
+          v.lang.startsWith("en") &&
+          !v.name.includes("whisper") &&
+          (v.name.includes("Samantha") ||
+            v.name.includes("Daniel") ||
+            v.name.includes("Natural") ||
+            v.name.includes("Google") ||
+            v.name.includes("Karen"))
+      );
+      if (match) utterance.voice = match;
+    }
+
+    // In unsupported mode, trigger periodic competing background noises to simulate acoustic figure-ground masking
+    if (mode === "unsupported") {
+      const noiseCues = ["scrape", "rustle", "screech", "shout", "argue", "bell"];
+      noiseIntervalRef.current = setInterval(() => {
+        if (soundOn) {
+          const randCue = noiseCues[Math.floor(Math.random() * noiseCues.length)];
+          audio.cue(randCue);
+        }
+      }, 1200);
+    }
+
+    utterance.onend = () => {
+      setIsPlayingAudio(false);
+      setActiveSegment(null);
+      if (noiseIntervalRef.current) clearInterval(noiseIntervalRef.current);
+    };
+
+    utterance.onerror = () => {
+      setIsPlayingAudio(false);
+      setActiveSegment(null);
+      if (noiseIntervalRef.current) clearInterval(noiseIntervalRef.current);
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // Auto-play announcement on mount if sound is enabled
+  useEffect(() => {
+    if (soundOn) {
+      const t = setTimeout(() => {
+        playAnnouncement();
+      }, 400);
+      return () => clearTimeout(t);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [soundOn, mode]);
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      if (noiseIntervalRef.current) clearInterval(noiseIntervalRef.current);
     };
   }, []);
 
@@ -7099,6 +7442,8 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
 
     if (next.length === AUDITORY_INSTRUCTIONS.length) {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel();
+      if (noiseIntervalRef.current) clearInterval(noiseIntervalRef.current);
       if (soundOn) audio.cue("slam");
       onCompleteRef.current?.({
         time: elapsed,
@@ -7126,35 +7471,109 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
         </div>
       </div>
 
-      {/* Acoustic Waveform Visualization */}
-      <div className="itw-waveform-bar" aria-hidden="true">
-        {[4, 12, 28, 16, 34, 22, 10, 36, 18, 8, 30, 20, 14, 38, 24, 8].map((h, idx) => (
-          <span
-            key={idx}
-            className="itw-wave-col"
+      {/* Spoken Announcement Audio Control Card */}
+      <div
+        style={{
+          background: "var(--itw-panel-2)",
+          border: "1.5px solid var(--itw-border)",
+          borderRadius: 16,
+          padding: "16px 20px",
+          marginBottom: 18,
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 14,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <button
+            type="button"
+            className="itw-dys-btn-primary"
             style={{
-              height: mode === "unsupported" ? `${h}px` : `${Math.max(6, h * 0.5)}px`,
-              opacity: mode === "unsupported" ? 0.9 : 0.4,
-              animationDelay: `${idx * 0.08}s`,
+              background: "var(--itw-auditory)",
+              padding: "10px 18px",
+              fontSize: 13,
+              boxShadow: "0 4px 12px rgba(44, 82, 130, 0.25)",
             }}
-          />
-        ))}
+            onClick={() => playAnnouncement()}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+            </svg>
+            <span>{isPlayingAudio ? "Playing Announcement..." : "🔊 Play Teacher's Voice"}</span>
+          </button>
+
+          <span style={{ fontSize: 13, color: isPlayingAudio ? "var(--itw-auditory)" : "var(--itw-muted)", fontWeight: 700 }}>
+            {isPlayingAudio
+              ? (mode === "unsupported" ? "⚠️ Competing acoustic chatter active!" : "Teacher speaking aloud...")
+              : "Click to listen or replay the teacher's instructions"}
+          </span>
+        </div>
+
+        {/* Acoustic Waveform Visualization */}
+        <div className="itw-waveform-bar" style={{ margin: 0 }} aria-hidden="true">
+          {[4, 14, 28, 16, 34, 22, 10, 36, 18, 8, 30, 20, 14, 38, 24, 8].map((h, idx) => (
+            <span
+              key={idx}
+              className="itw-wave-col"
+              style={{
+                height: isPlayingAudio ? (mode === "unsupported" ? `${h}px` : `${Math.max(8, h * 0.7)}px`) : "4px",
+                opacity: isPlayingAudio ? 0.9 : 0.3,
+                animation: isPlayingAudio ? `itwWaveMotion 0.6s ease-in-out infinite alternate ${idx * 0.05}s` : "none",
+                background: "var(--itw-auditory)",
+              }}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Visual Captions Overlay if supported */}
+      {/* Visual Captions Overlay if supported with captions */}
       {mode === "supported" && supportType === "captions" && (
-        <div className="itw-captions-display">
+        <div className="itw-captions-display" style={{ marginBottom: 18 }}>
           <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-auditory)", marginBottom: 4 }}>
-            📝 Live Whiteboard Captions:
+            Live Whiteboard Captions:
           </div>
-          <div style={{ fontWeight: 700 }}>
+          <div style={{ fontWeight: 700, fontSize: 14.5 }}>
             &ldquo;Tomorrow's homework: 1) Read chapter 4 pages 30 to 35, 2) Answer questions 2 and 5 in blue notebook, 3) Bring project outline for Friday lab.&rdquo;
           </div>
         </div>
       )}
 
+      {/* Segmented Chunking Controls if supported with chunking */}
+      {mode === "supported" && supportType === "chunking" && (
+        <div style={{ marginBottom: 18, background: "var(--itw-panel-2)", padding: 14, borderRadius: 14, border: "1.5px solid var(--itw-border)" }}>
+          <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-auditory)", marginBottom: 8 }}>
+            Segmented Verbal Chunks (Listen to One Step at a Time):
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {[
+              { id: "c1", label: "Step 1: Reading Assignment", text: "First, read Chapter 4, pages 30 to 35 in your textbook." },
+              { id: "c2", label: "Step 2: Notebook Questions", text: "Second, answer questions 2 and 5 in your blue notebook." },
+              { id: "c3", label: "Step 3: Friday Lab Outline", text: "Third, bring your project outline for Friday's lab." },
+            ].map((chunk) => (
+              <button
+                key={chunk.id}
+                type="button"
+                className="itw-dys-btn-secondary"
+                style={{
+                  fontSize: 12.5,
+                  padding: "8px 14px",
+                  borderColor: activeSegment === chunk.id ? "var(--itw-auditory)" : "var(--itw-border)",
+                  background: activeSegment === chunk.id ? "rgba(44, 82, 130, 0.1)" : "var(--itw-panel)",
+                }}
+                onClick={() => playAnnouncement(chunk.text, chunk.id)}
+              >
+                🔊 {chunk.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Instruction Selection Options */}
-      <div style={{ marginTop: 18 }}>
+      <div style={{ marginTop: 12 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)", marginBottom: 10 }}>
           Select the 3 correct directions given by the teacher ({selectedItems.length}/3 selected):
         </div>
@@ -7188,7 +7607,23 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
                   fontSize: 14,
                 }}
               >
-                <span style={{ fontSize: 16 }}>{isSelected ? "☑️" : "⚪"}</span>
+                <span
+                  style={{
+                    width: 20,
+                    height: 20,
+                    borderRadius: 6,
+                    border: `1.5px solid ${isSelected ? "var(--itw-auditory)" : "var(--itw-border)"}`,
+                    background: isSelected ? "var(--itw-auditory)" : "transparent",
+                    color: "#ffffff",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 12,
+                    fontWeight: 800,
+                  }}
+                >
+                  {isSelected ? "✓" : ""}
+                </span>
                 <span>
                   {mode === "unsupported" && !opt.correct
                     ? opt.text.replace("Chapter 5", "Chapter [murmur]").replace("questions 2 and 3", "questions [noise]")
@@ -7243,9 +7678,9 @@ function AuditoryProcessingModule({ onBack, onNavigate }) {
               For children with auditory processing differences, separating speech from noise requires tremendous cognitive effort.
             </p>
             <ul className="itw-flow-meta">
-              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
-              <li><span aria-hidden="true">🎧</span> Speech-in-noise perception exercise</li>
-              <li><span aria-hidden="true">🛡️</span> Empathy exercise, not an audiometric test</li>
+              <li><span aria-hidden="true">•</span> Takes 2–3 minutes</li>
+              <li><span aria-hidden="true">•</span> Speech-in-noise perception exercise</li>
+              <li><span aria-hidden="true">•</span> Empathy exercise, not an audiometric test</li>
             </ul>
             <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
               Start the Experience →
@@ -7269,9 +7704,9 @@ function AuditoryProcessingModule({ onBack, onNavigate }) {
             You will listen for 3 homework instructions given by the teacher at the end of class.
           </p>
           <ul className="itw-flow-list">
-            <li><span aria-hidden="true">🌿</span> In Run 1, the classroom is completely quiet, making speech identification straightforward.</li>
-            <li><span aria-hidden="true">📢</span> In Run 2, you will experience acoustic figure-ground competition amidst classroom murmurs.</li>
-            <li><span aria-hidden="true">📝</span> In Run 3, test live captions and audio isolation to see how environmental supports restore clarity.</li>
+            <li><span aria-hidden="true">•</span> In Run 1, the classroom is completely quiet, making speech identification straightforward.</li>
+            <li><span aria-hidden="true">•</span> In Run 2, you will experience acoustic figure-ground competition amidst classroom murmurs.</li>
+            <li><span aria-hidden="true">•</span> In Run 3, test live captions and audio isolation to see how environmental supports restore clarity.</li>
           </ul>
           <div className="itw-flow-nav">
             <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
@@ -7299,9 +7734,9 @@ function AuditoryProcessingModule({ onBack, onNavigate }) {
             The bell is about to ring. Students are packing books, chairs are moving, and hallway voices blend with the announcement.
           </p>
           <ul className="itw-flow-list">
-            <li><span aria-hidden="true">🎧</span> Crucial phonemes and words will be masked by ambient chatter.</li>
-            <li><span aria-hidden="true">⚠️</span> Look out for phonetically similar decoys (e.g. Chapter 4 vs Chapter 5).</li>
-            <li><span aria-hidden="true">🧠</span> Notice how listening in noise drains working memory away from actually retaining the content.</li>
+            <li><span aria-hidden="true">•</span> Crucial phonemes and words will be masked by ambient chatter.</li>
+            <li><span aria-hidden="true">•</span> Look out for phonetically similar decoys (e.g. Chapter 4 vs Chapter 5).</li>
+            <li><span aria-hidden="true">•</span> Notice how listening in noise drains working memory away from actually retaining the content.</li>
           </ul>
           <div className="itw-flow-nav">
             <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("run_baseline")}>Back to Run 1</button>
@@ -7689,7 +8124,11 @@ function ExecutiveFunctioningSim({ mode = "baseline", supportType = "nnl", onCom
       const missing = task.requires.filter((r) => !completedTasks.includes(r));
       if (missing.length > 0) {
         if (soundOn) audio.cue("flicker");
-        setErrorMsg("ℹ️ Sequence Guidance: Packing the backpack requires the signed permission slip and completed math sheet first.");
+        const missingNames = missing
+          .map((mId) => EXEC_TASKS.find((t) => t.id === mId)?.title)
+          .filter(Boolean)
+          .join(" AND ");
+        setErrorMsg(`Blocked Dependency: "${task.title}" requires completing [${missingNames}] first.`);
         return;
       }
     }
@@ -7720,39 +8159,53 @@ function ExecutiveFunctioningSim({ mode = "baseline", supportType = "nnl", onCom
             Morning Routine • 7:30 AM (Bus in 25 mins)
           </span>
           <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
-            {mode === "baseline" ? "Single Action Step" : "Prioritize & Complete All 5 Tasks"}
+            {mode === "baseline" ? "Run 1: Single Structured Action Step" : "Prioritize & Complete All 5 Tasks"}
           </h3>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)" }}>
-            ⏱️ {elapsed.toFixed(1)}s
+          <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)", display: "flex", alignItems: "center", gap: 6 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            {elapsed.toFixed(1)}s
           </span>
           <button type="button" className="itw-pill-btn" onClick={onAbort}>Exit</button>
         </div>
       </div>
 
       {errorMsg && (
-        <div style={{ background: "var(--itw-adhd-soft)", border: "1.5px solid var(--itw-adhd)", borderRadius: 12, padding: "10px 14px", color: "var(--itw-text)", fontSize: 13.5, fontWeight: 700, marginBottom: 14 }}>
-          {errorMsg}
+        <div style={{ background: "rgba(217, 56, 30, 0.1)", border: "1.5px solid rgba(217, 56, 30, 0.4)", borderRadius: 12, padding: "12px 16px", color: "#b3240e", fontSize: 13.5, fontWeight: 700, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          <span>{errorMsg}</span>
         </div>
       )}
 
       {/* Visual Dependency Map Overlay if active */}
       {mode === "supported" && supportType === "roadmap" && (
-        <div className="itw-dep-map">
-          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-executive)", marginBottom: 8 }}>
-            🗺️ Visual Dependency Map (What Depends on What):
+        <div className="itw-dep-map" style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-executive)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <circle cx="6" cy="6" r="3" />
+              <circle cx="18" cy="18" r="3" />
+              <line x1="6" y1="9" x2="6" y2="18" />
+              <line x1="6" y1="18" x2="18" y2="18" />
+            </svg>
+            Visual Dependency Sequence Roadmap (Prerequisites Identified)
           </div>
-          <div className="itw-dep-item" style={{ background: "rgba(46, 125, 50, 0.08)" }}>
-            <span>1. Sign Permission Slip</span>
-            <span style={{ fontWeight: 800, color: "var(--itw-executive)" }}>➔</span>
+          <div className="itw-dep-item" style={{ background: "rgba(46, 125, 50, 0.08)", marginBottom: 6 }}>
+            <span>1. Sign Field Trip Slip</span>
+            <span style={{ fontWeight: 800, color: "var(--itw-executive)" }}>→</span>
             <span>4. Pack Backpack</span>
-            <span style={{ fontWeight: 800, color: "var(--itw-executive)" }}>➔</span>
-            <span>Ready for 7:55 AM School Bus</span>
+            <span style={{ fontWeight: 800, color: "var(--itw-executive)" }}>→</span>
+            <span>Ready for School Bus</span>
           </div>
           <div className="itw-dep-item" style={{ background: "rgba(46, 125, 50, 0.08)" }}>
             <span>2. Complete Math Homework</span>
-            <span style={{ fontWeight: 800, color: "var(--itw-executive)" }}>➔</span>
+            <span style={{ fontWeight: 800, color: "var(--itw-executive)" }}>→</span>
             <span>4. Pack Backpack</span>
           </div>
         </div>
@@ -7762,7 +8215,7 @@ function ExecutiveFunctioningSim({ mode = "baseline", supportType = "nnl", onCom
       {mode === "supported" && supportType === "one_step" && nextPendingTask && (
         <div style={{ background: "var(--itw-panel)", border: "2px solid var(--itw-executive)", borderRadius: 16, padding: 24, textAlign: "center", margin: "16px 0" }}>
           <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-executive)", letterSpacing: "0.08em", marginBottom: 6 }}>
-            🛡️ One-Next-Step Scaffolding: Focus Only on This
+            One-Next-Step Scaffolding: Focus Exclusively on This Action
           </div>
           <h4 style={{ fontSize: 22, fontWeight: 800, color: "var(--itw-text)", marginBottom: 8 }}>
             {nextPendingTask.title}
@@ -7782,10 +8235,13 @@ function ExecutiveFunctioningSim({ mode = "baseline", supportType = "nnl", onCom
 
       {/* Now / Next / Later 3-Column Board */}
       {mode === "supported" && supportType === "nnl" && (
-        <div className="itw-nnl-container">
-          <div className="itw-nnl-col">
-            <div className="itw-nnl-col-header" style={{ color: "var(--itw-executive)" }}>
-              <span>⚡ NOW (Immediate)</span>
+        <div className="itw-nnl-kanban">
+          <div className="itw-kanban-col">
+            <div className="itw-kanban-header">
+              <span className="itw-kanban-title" style={{ color: "var(--itw-executive)" }}>
+                1. NOW (Immediate)
+              </span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--itw-muted)" }}>Do First</span>
             </div>
             {EXEC_TASKS.filter((t) => t.category === "prereq").map((task) => {
               const isDone = completedTasks.includes(task.id);
@@ -7793,21 +8249,28 @@ function ExecutiveFunctioningSim({ mode = "baseline", supportType = "nnl", onCom
                 <button
                   key={task.id}
                   type="button"
-                  className={`itw-exec-task-card${isDone ? " itw-task-done" : ""}`}
+                  className={`itw-dep-task-card${isDone ? " itw-completed" : ""}`}
                   disabled={isDone}
                   onClick={() => handleTaskClick(task)}
-                  style={{ marginBottom: 10 }}
                 >
-                  <div style={{ fontWeight: 800, fontSize: 14 }}>{task.title}</div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: isDone ? "#10b981" : "var(--itw-executive)" }}>
+                      {isDone ? "✓ Completed" : "Ready to Start"}
+                    </span>
+                  </div>
+                  <div style={{ fontWeight: 800, fontSize: 14, color: "var(--itw-text)" }}>{task.title}</div>
                   <div style={{ fontSize: 12, color: "var(--itw-muted)" }}>{task.desc}</div>
                 </button>
               );
             })}
           </div>
 
-          <div className="itw-nnl-col">
-            <div className="itw-nnl-col-header" style={{ color: "var(--itw-autism)" }}>
-              <span>📦 NEXT (Unlocked)</span>
+          <div className="itw-kanban-col">
+            <div className="itw-kanban-header">
+              <span className="itw-kanban-title" style={{ color: "var(--itw-autism)" }}>
+                2. NEXT (Dependencies)
+              </span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--itw-muted)" }}>Unlocks next</span>
             </div>
             {EXEC_TASKS.filter((t) => t.category === "next").map((task) => {
               const isDone = completedTasks.includes(task.id);
@@ -7816,21 +8279,28 @@ function ExecutiveFunctioningSim({ mode = "baseline", supportType = "nnl", onCom
                 <button
                   key={task.id}
                   type="button"
-                  className={`itw-exec-task-card${isDone ? " itw-task-done" : ""}${!isReady && !isDone ? " itw-task-locked" : ""}`}
+                  className={`itw-dep-task-card${isDone ? " itw-completed" : ""}${!isReady && !isDone ? " itw-locked" : ""}`}
                   disabled={isDone}
                   onClick={() => handleTaskClick(task)}
-                  style={{ marginBottom: 10 }}
                 >
-                  <div style={{ fontWeight: 800, fontSize: 14 }}>{task.title}</div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: isDone ? "#10b981" : isReady ? "var(--itw-autism)" : "var(--itw-muted)" }}>
+                      {isDone ? "✓ Completed" : isReady ? "Unlocked & Ready" : "Locked: Requires 1 & 2"}
+                    </span>
+                  </div>
+                  <div style={{ fontWeight: 800, fontSize: 14, color: "var(--itw-text)" }}>{task.title}</div>
                   <div style={{ fontSize: 12, color: "var(--itw-muted)" }}>{task.desc}</div>
                 </button>
               );
             })}
           </div>
 
-          <div className="itw-nnl-col">
-            <div className="itw-nnl-col-header" style={{ color: "var(--itw-speech)" }}>
-              <span>🌅 LATER (Routine)</span>
+          <div className="itw-kanban-col">
+            <div className="itw-kanban-header">
+              <span className="itw-kanban-title" style={{ color: "var(--itw-speech)" }}>
+                3. LATER (Departure)
+              </span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "var(--itw-muted)" }}>Before bus</span>
             </div>
             {EXEC_TASKS.filter((t) => t.category === "routine").map((task) => {
               const isDone = completedTasks.includes(task.id);
@@ -7838,12 +8308,16 @@ function ExecutiveFunctioningSim({ mode = "baseline", supportType = "nnl", onCom
                 <button
                   key={task.id}
                   type="button"
-                  className={`itw-exec-task-card${isDone ? " itw-task-done" : ""}`}
+                  className={`itw-dep-task-card${isDone ? " itw-completed" : ""}`}
                   disabled={isDone}
                   onClick={() => handleTaskClick(task)}
-                  style={{ marginBottom: 10 }}
                 >
-                  <div style={{ fontWeight: 800, fontSize: 14 }}>{task.title}</div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: isDone ? "#10b981" : "var(--itw-speech)" }}>
+                      {isDone ? "✓ Completed" : "Ready"}
+                    </span>
+                  </div>
+                  <div style={{ fontWeight: 800, fontSize: 14, color: "var(--itw-text)" }}>{task.title}</div>
                   <div style={{ fontSize: 12, color: "var(--itw-muted)" }}>{task.desc}</div>
                 </button>
               );
@@ -7867,8 +8341,25 @@ function ExecutiveFunctioningSim({ mode = "baseline", supportType = "nnl", onCom
                 onClick={() => handleTaskClick(task)}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: isDone ? "var(--itw-executive)" : "var(--itw-muted)" }}>
-                    {isDone ? "✓ Done" : isLocked ? "🔒 Prerequisite needed" : "Ready to Start"}
+                  <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: isDone ? "#10b981" : isLocked ? "#d9381e" : "var(--itw-executive)", display: "flex", alignItems: "center", gap: 5 }}>
+                    {isDone ? (
+                      <>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Done
+                      </>
+                    ) : isLocked ? (
+                      <>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        Prerequisite needed
+                      </>
+                    ) : (
+                      "Ready to Start"
+                    )}
                   </span>
                   <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 99, background: "var(--itw-panel-2)", color: "var(--itw-muted)" }}>
                     {task.category}
@@ -7925,9 +8416,9 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
               everything feels equally urgent, leading to hesitation and difficulty determining where to start rather than a lack of motivation.
             </p>
             <ul className="itw-flow-meta">
-              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
-              <li><span aria-hidden="true">🗂️</span> Morning routine prioritization exercise</li>
-              <li><span aria-hidden="true">🛡️</span> Empathy exercise, not a diagnostic test</li>
+              <li><span aria-hidden="true">•</span> Takes 2–3 minutes</li>
+              <li><span aria-hidden="true">•</span> Morning routine prioritization exercise</li>
+              <li><span aria-hidden="true">•</span> Empathy exercise, not a diagnostic test</li>
             </ul>
             <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
               Start the Experience →
@@ -7951,9 +8442,9 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
             You will test your prioritization during a busy school morning routine.
           </p>
           <ul className="itw-flow-list">
-            <li><span aria-hidden="true">🌿</span> In Run 1, you will complete a single structured action to understand the interface.</li>
-            <li><span aria-hidden="true">🗂️</span> In Run 2, you will manage 5 competing tasks with hidden dependencies and time pressure.</li>
-            <li><span aria-hidden="true">🛡️</span> In Run 3, test how Now / Next / Later boards and Visual Dependency Maps provide actionable clarity.</li>
+            <li><span aria-hidden="true">•</span> In Run 1, you will complete a single structured action to understand the interface.</li>
+            <li><span aria-hidden="true">•</span> In Run 2, you will manage 5 competing tasks with hidden dependencies and time pressure.</li>
+            <li><span aria-hidden="true">•</span> In Run 3, test how Now / Next / Later boards and Visual Dependency Maps provide actionable clarity.</li>
           </ul>
           <div className="itw-flow-nav">
             <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
@@ -7981,8 +8472,8 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
             It is 7:30 AM. The school bus arrives in 25 minutes. 5 competing tasks are on your list, and some require prerequisites!
           </p>
           <ul className="itw-flow-list">
-            <li><span aria-hidden="true">🎒</span> You cannot pack your backpack until the field trip slip is signed and math homework is finished.</li>
-            <li><span aria-hidden="true">⚠️</span> Notice how holding dependencies in working memory while sequencing tasks creates cognitive friction.</li>
+            <li><span aria-hidden="true">•</span> You cannot pack your backpack until the field trip slip is signed and math homework is finished.</li>
+            <li><span aria-hidden="true">•</span> Notice how holding dependencies in working memory while sequencing tasks creates cognitive friction.</li>
           </ul>
           <div className="itw-flow-nav">
             <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("run_baseline")}>Back to Run 1</button>
@@ -8493,8 +8984,8 @@ function DownSyndromeStory({ onBack, onNavigate }) {
     {
       title: "Morning Sunlight & Visual Schedule",
       subtitle: "8:00 AM • Inclusive Primary School, Chennai",
-      image: "/decor/itw/down-syndrome-story.webp",
-      alt: "Aarav smiling at his visual learning schedule in the morning classroom",
+      image: "/decor/itw/down-syndrome-story-1.webp",
+      alt: "Aarav smiling at his visual learning schedule cards in the morning classroom",
       quote: "“My visual schedule cards show me the shape of the day. When I see the picture for gardening and painting, I know exactly what to look forward to!”",
       narrative: "For Aarav (age 9), having clear visual anchors reduces transition anxiety and builds autonomy. Visual memory is often a notable strength in children with Down syndrome — sequencing pictures anchors concepts far faster than spoken instructions alone.",
       insight: "Visual schedules and predictable routines allow children to navigate complex school days with confidence.",
@@ -8503,8 +8994,8 @@ function DownSyndromeStory({ onBack, onNavigate }) {
     {
       title: "Hands in the Soil: Planting Together",
       subtitle: "10:30 AM • School Learning Garden",
-      image: "/decor/itw/hero-world.webp",
-      alt: "Children working together in the inclusive school garden planting seeds",
+      image: "/decor/itw/down-syndrome-story-2.webp",
+      alt: "Aarav and Diya working happily together in the school garden planting seeds in terracotta pots",
       quote: "“Diya digs the soft earth, and I carefully place the seeds. I like feeling the damp soil with my fingers. When we water them, we cheer together!”",
       narrative: "Peer-mediated inclusion thrives in cooperative, hands-on tasks. Tactile activities engage motor planning and sensory regulation while fostering authentic social friendships where every child contributes their strengths.",
       insight: "Real peer inclusion happens through shared meaningful activities, not isolated intervention rooms.",
@@ -8513,8 +9004,8 @@ function DownSyndromeStory({ onBack, onNavigate }) {
     {
       title: "Hands-On Science: Learning by Touching",
       subtitle: "1:15 PM • Classroom Laboratory Table",
-      image: "/decor/itw/science-lab-story.webp",
-      alt: "Diverse children examining botanical specimens under a microscope in science lab",
+      image: "/decor/itw/down-syndrome-story-3.webp",
+      alt: "Aarav and classmates examining botanical leaf specimens through a large magnifying glass",
       quote: "“Teacher gives me the real plant and a big magnifying glass! I can count all the leaf veins. My friends come to ask me what the green chloroplasts look like.”",
       narrative: "Abstract textbook definitions can feel opaque, but concrete multi-sensory manipulatives bridge understanding effortlessly. When concepts are experienced physically, retention and expressive participation soar.",
       insight: "Concrete-Representational-Abstract (CRA) learning unlocks deep scientific curiosity.",
@@ -8523,8 +9014,8 @@ function DownSyndromeStory({ onBack, onNavigate }) {
     {
       title: "Celebrating Every Milestone",
       subtitle: "3:30 PM • Courtyard Farewell",
-      image: "/decor/itw/day-through-my-eyes.webp",
-      alt: "Children walking happily together in the sunny school courtyard at the end of the day",
+      image: "/decor/itw/down-syndrome-story-4.webp",
+      alt: "Aarav celebrating tying his shoelaces with a proud high-five with his teacher in the school courtyard",
       quote: "“My teacher gives me a big smile and high-five. I tied my shoelaces all by myself today! I smiled all the way to the school bus.”",
       narrative: "Development in Down syndrome is not a race against a rigid timeline; it is a rich journey of steady progress. When schools measure growth by personal milestones rather than uniform speed, children thrive with unshakeable self-worth.",
       insight: "Dignity, patience, and celebrating authentic milestones form the cornerstone of inclusive education.",

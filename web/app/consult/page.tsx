@@ -26,6 +26,7 @@ function Step({n, title, children}: {n: number; title: string; children: ReactNo
 export default function Consult() {
   const [types, setTypes] = useState<T[]>([])
   const [t, setT] = useState<T | null>(null)
+  const [isIepUnlocked, setIsIepUnlocked] = useState(false)
   const [today, setToday] = useState('')
   const [month, setMonth] = useState('')
   const [avail, setAvail] = useState<Record<string, number>>({})
@@ -42,9 +43,18 @@ export default function Consult() {
     setToday(td); setMonth(td.slice(0, 7))
     const q = new URLSearchParams(window.location.search)
     if (q.get('embed')) { const h = document.querySelector('header') as HTMLElement | null; if (h) h.style.display = 'none' }
+    const iepAllowed = q.get('type') === 'iep-consultation' || q.get('iep') === 'true' || q.get('from') === 'dashboard' || q.get('assessment') === 'paid'
+    setIsIepUnlocked(iepAllowed)
+
     fetch('/api/types').then((r) => r.json()).then((list: T[]) => {
       setTypes(list)
-      setT(list.find((x) => x.id === q.get('type')) || list.find((x) => x.id === 'free-counselling') || list[0] || null)
+      const initial =
+        (iepAllowed && list.find((x) => x.id === 'iep-consultation')) ||
+        (q.get('type') && list.find((x) => x.id === q.get('type') && x.id !== 'iep-consultation')) ||
+        list.find((x) => x.id === 'free-counselling') ||
+        list[0] ||
+        null
+      setT(initial)
     })
   }, [])
 
@@ -87,11 +97,13 @@ export default function Consult() {
   const daysIn = month ? new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5)), 0)).getUTCDate() : 0
   const cells: (string | null)[] = [...Array(lead).fill(null), ...Array.from({length: daysIn}, (_, i) => `${month}-${String(i + 1).padStart(2, '0')}`)]
 
+  const visibleTypes = types.filter((x) => x.id !== 'iep-consultation' || isIepUnlocked)
+
   return (
     <>
-      <section className="relative overflow-hidden bg-gradient-to-b from-amber/25 via-cream to-background px-5 pb-10 pt-12 text-center">
+      <section className="relative overflow-hidden bg-gradient-to-b from-accent-green/20 via-cream to-background px-5 pb-10 pt-12 text-center">
         <span className="relative inline-block px-8 py-2">
-          <img src="/decor/brush-yellow.webp" alt="" aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full select-none object-fill opacity-70" />
+          <img src="/decor/brush-green.webp" alt="" aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full select-none object-fill opacity-80" />
           <h1 className="relative font-patrick text-5xl text-primary sm:text-6xl">Book a consultation</h1>
         </span>
         <p className="mx-auto mt-3 max-w-xl text-text-brown">Talk to our team about your child’s learning journey. Choose a session, pick a time that suits you, and confirm by email.</p>
@@ -102,16 +114,63 @@ export default function Consult() {
 
       <main className="mx-auto -mt-2 grid max-w-4xl gap-6 px-5 pb-8">
         <Step n={1} title="Choose a session">
-          <div className="grid gap-3 sm:grid-cols-3">
-            {types.map((x) => (
-              <button key={x.id} onClick={() => setT(x)} className={`rounded-2xl border-2 p-4 text-left transition ${t?.id === x.id ? 'border-primary bg-primary/5 shadow-md' : 'border-cream-dark bg-cream hover:border-amber'}`}>
-                <img src={`/decor/${x.id.replace(/-/g, '_')}.webp`} alt="" className="mb-3 max-h-44 w-full rounded-xl object-contain" onError={(e) => { e.currentTarget.style.display = 'none' }} />
-                <div className="font-semibold text-text-brown">{x.title}</div>
-                <div className="mt-1 text-xs text-brown-light">{x.durationMins} min · <span className="font-semibold text-card-green">{x.priceINR ? `₹${x.priceINR}` : 'Free'}</span></div>
-                {x.description && <p className="mt-2 line-clamp-3 text-xs text-brown-light">{x.description}</p>}
+          {isIepUnlocked && (
+            <div className="mb-4 flex items-center gap-2.5 rounded-2xl border border-emerald-300 bg-emerald-50/90 px-4 py-3 text-xs font-semibold text-emerald-900 shadow-sm">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-white text-[11px]">★</span>
+              <span>Individualized Education Programme (IEP) Consultation Unlocked — Directly linked with your paid assessment profile.</span>
+            </div>
+          )}
+
+          <div className={`grid gap-4 ${visibleTypes.length === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-3'}`}>
+            {visibleTypes.map((x) => (
+              <button
+                key={x.id}
+                onClick={() => setT(x)}
+                className={`group relative flex flex-col overflow-hidden rounded-2xl border-2 p-4 text-left transition duration-200 ${
+                  t?.id === x.id ? 'border-primary bg-primary/5 shadow-lg' : 'border-cream-dark bg-cream hover:border-amber hover:shadow-md'
+                }`}
+              >
+                <div className="relative mb-3 aspect-[4/3] w-full overflow-hidden rounded-xl bg-white shadow-inner">
+                  <img
+                    src={`/decor/${x.id.replace(/-/g, '_')}.webp`}
+                    alt={x.title}
+                    className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                    onError={(e) => { e.currentTarget.style.display = 'none' }}
+                  />
+                  {x.id === 'iep-consultation' && (
+                    <span className="absolute top-2.5 right-2.5 rounded-full bg-emerald-700 px-2.5 py-0.5 text-[10px] font-bold text-white shadow">
+                      Dashboard Exclusive
+                    </span>
+                  )}
+                </div>
+                <div className="font-semibold text-text-brown text-base">{x.title}</div>
+                <div className="mt-1 text-xs text-brown-light">
+                  {x.durationMins} min · <span className="font-semibold text-card-green">{x.priceINR ? `₹${x.priceINR}` : 'Free'}</span>
+                </div>
+                {x.description && <p className="mt-2 text-xs text-brown-light line-clamp-2">{x.description}</p>}
               </button>
             ))}
           </div>
+
+          {!isIepUnlocked && (
+            <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-emerald-200/80 bg-[#f4faf6] p-4 text-xs text-text-brown">
+              <div className="flex items-start gap-2.5">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-bold text-white">i</span>
+                <div>
+                  <span className="font-semibold text-emerald-950">Looking for an IEP Consultation?</span>
+                  <p className="mt-0.5 text-text-brown/80">
+                    Individualized Education Programme (IEP) planning sessions are unlocked directly from your parent dashboard after completing a comprehensive paid assessment.
+                  </p>
+                </div>
+              </div>
+              <a
+                href="https://www.manaslearning.com/login"
+                className="shrink-0 inline-flex items-center justify-center rounded-full bg-emerald-700 px-4 py-2 text-xs font-bold text-white transition hover:bg-emerald-800 shadow-sm"
+              >
+                Parent Login →
+              </a>
+            </div>
+          )}
         </Step>
 
         <Step n={2} title="Pick a day and time">

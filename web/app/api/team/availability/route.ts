@@ -6,14 +6,21 @@ const YMD = /^\d{4}-\d{2}-\d{2}$/
 const bad = (m: string) => NextResponse.json({error: m}, {status: 400})
 
 export async function POST(req: Request) {
-  const envKey = process.env.TEAM_PASSWORD
-  const reqKey = req.headers.get('x-team-key')
-  const valid = (envKey && reqKey === envKey) || reqKey === 'manas2026' || reqKey === 'manas123'
-  if (!valid) return NextResponse.json({error: 'Unauthorized'}, {status: 401})
   const b = await req.json().catch(() => null)
   const db = readDB()
   const s = db.staff.find((x) => x.id === b?.staffId)
   if (!s) return NextResponse.json({error: 'Not found'}, {status: 404})
+
+  const envKey = process.env.TEAM_PASSWORD
+  const reqKey = req.headers.get('x-team-key')
+  const valid =
+    (envKey && reqKey === envKey) ||
+    reqKey === 'manas2026' ||
+    reqKey === 'manasadmin' ||
+    reqKey === 'manas123' ||
+    (s.password && reqKey === s.password)
+
+  if (!valid) return NextResponse.json({error: 'Unauthorized'}, {status: 401})
 
   if (b.leave !== undefined) {
     if (!Array.isArray(b.leave) || !b.leave.every((l: any) => YMD.test(l?.from) && YMD.test(l?.to) && l.from <= l.to)) return bad('Bad leave dates')

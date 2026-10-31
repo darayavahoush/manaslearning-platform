@@ -8020,6 +8020,10 @@ function DsArtPage({
       )}
 
       <div className="itw-storybook-art-frame">
+        <div className="itw-photo-corner itw-corner-tl" aria-hidden="true" />
+        <div className="itw-photo-corner itw-corner-tr" aria-hidden="true" />
+        <div className="itw-photo-corner itw-corner-bl" aria-hidden="true" />
+        <div className="itw-photo-corner itw-corner-br" aria-hidden="true" />
         <img
           src={page.image}
           alt={page.alt}
@@ -8083,8 +8087,19 @@ function DsTextPage({
         <p>{page.quote}</p>
       </div>
 
+      <div className="itw-story-flourish" aria-hidden="true">
+        <svg viewBox="0 0 160 18" width="160" height="18" fill="none">
+          <path d="M10 9 C40 2, 60 16, 80 9 C100 2, 120 16, 150 9" stroke="#b48c3c" strokeWidth="1.2" strokeLinecap="round" />
+          <circle cx="80" cy="9" r="2.8" fill="#b48c3c" />
+          <path d="M73 9 C76 5, 80 3, 80 3 C80 3, 84 5, 87 9 C84 13, 80 15, 80 15 C80 15, 76 13, 73 9 Z" fill="rgba(180,140,60,0.35)" />
+        </svg>
+      </div>
+
       <div className="itw-storybook-prose">
-        <p>{page.narrative}</p>
+        <p>
+          <span className="itw-story-dropcap">{page.narrative.charAt(0)}</span>
+          {page.narrative.slice(1)}
+        </p>
       </div>
 
       <div className="itw-storybook-insight-box">
@@ -8205,7 +8220,7 @@ function DownSyndromeStory({ onBack, onNavigate }) {
     turningTimerRef.current = setTimeout(() => {
       setCurrentPage(newPage);
       setTurning(null);
-    }, 620);
+    }, 570);
   };
 
   useEffect(() => {
@@ -8271,6 +8286,11 @@ function DownSyndromeStory({ onBack, onNavigate }) {
 
           {/* Open Two-Page Storybook Spread with True 3D Page Turn */}
           <div className="itw-storybook-spread">
+            {/* Silk Bookmark Ribbon Draped Over Top Spine */}
+            <div className="itw-silk-ribbon" aria-hidden="true">
+              <div className="itw-silk-ribbon-tail" />
+            </div>
+
             {/* Stationary Left Page (Shows from page during next turn, to page during prev turn) */}
             <DsArtPage
               page={turning ? (turning.dir === "next" ? PAGES[turning.from] : PAGES[turning.to]) : page}
@@ -8385,6 +8405,10 @@ function EyesArtPage({
       )}
 
       <div className="itw-storybook-art-frame">
+        <div className="itw-photo-corner itw-corner-tl" aria-hidden="true" />
+        <div className="itw-photo-corner itw-corner-tr" aria-hidden="true" />
+        <div className="itw-photo-corner itw-corner-bl" aria-hidden="true" />
+        <div className="itw-photo-corner itw-corner-br" aria-hidden="true" />
         <img
           src={current.image}
           alt={current.alt}
@@ -8512,8 +8536,17 @@ function EyesTextPage({
         borderLeftColor: activeLens === "supported" ? "#2e7d32" : undefined,
       }}>
         <p style={{ fontStyle: "normal", fontSize: "1.06rem" }}>
-          {current[activeLens]}
+          <span className="itw-story-dropcap">{current[activeLens]?.charAt(0)}</span>
+          {current[activeLens]?.slice(1)}
         </p>
+      </div>
+
+      <div className="itw-story-flourish" aria-hidden="true">
+        <svg viewBox="0 0 160 18" width="160" height="18" fill="none">
+          <path d="M10 9 C40 2, 60 16, 80 9 C100 2, 120 16, 150 9" stroke="#b48c3c" strokeWidth="1.2" strokeLinecap="round" />
+          <circle cx="80" cy="9" r="2.8" fill="#b48c3c" />
+          <path d="M73 9 C76 5, 80 3, 80 3 C80 3, 84 5, 87 9 C84 13, 80 15, 80 15 C80 15, 76 13, 73 9 Z" fill="rgba(180,140,60,0.35)" />
+        </svg>
       </div>
 
       <div className="itw-storybook-insight-box">
@@ -8643,7 +8676,7 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
     turningTimerRef.current = setTimeout(() => {
       setActivePeriod(newPeriod);
       setTurning(null);
-    }, 620);
+    }, 570);
   };
 
   useEffect(() => {
@@ -8710,6 +8743,11 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
 
           {/* Open Two-Page Storybook Spread with True 3D Page Turn */}
           <div className="itw-storybook-spread">
+            {/* Silk Bookmark Ribbon Draped Over Top Spine */}
+            <div className="itw-silk-ribbon" aria-hidden="true">
+              <div className="itw-silk-ribbon-tail" />
+            </div>
+
             {/* Stationary Left Page (Shows from period during next turn, to period during prev turn) */}
             <EyesArtPage
               current={turning ? (turning.dir === "next" ? PERIODS[turning.from] : PERIODS[turning.to]) : current}

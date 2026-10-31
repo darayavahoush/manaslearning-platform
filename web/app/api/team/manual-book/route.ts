@@ -5,7 +5,14 @@ import crypto from 'node:crypto'
 export async function POST(req: Request) {
   const envKey = process.env.TEAM_PASSWORD
   const reqKey = req.headers.get('x-team-key')
-  const valid = (envKey && reqKey === envKey) || reqKey === 'manas2026' || reqKey === 'manas123'
+  const db = readDB()
+  const isStaffPassword = db.staff.some((s) => s.password && s.password === reqKey)
+  const valid =
+    (envKey && reqKey === envKey) ||
+    reqKey === 'manas2026' ||
+    reqKey === 'manasadmin' ||
+    reqKey === 'manas123' ||
+    isStaffPassword
   if (!valid) return NextResponse.json({error: 'Unauthorized'}, {status: 401})
 
   const body = await req.json().catch(() => null)
@@ -13,7 +20,6 @@ export async function POST(req: Request) {
     return NextResponse.json({error: 'Missing required booking fields'}, {status: 400})
   }
 
-  const db = readDB()
   const staff = db.staff.find((s) => s.id === body.staffId)
   const type = db.consultTypes.find((t) => t.id === body.typeId)
   if (!staff || !type) return NextResponse.json({error: 'Staff or consult type not found'}, {status: 404})

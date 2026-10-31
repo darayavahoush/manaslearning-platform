@@ -3,7 +3,18 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 export type ConsultType = {id: string; title: string; description: string; durationMins: number; bufferMins: number; priceINR: number; minNoticeHours: number; maxDaysAhead: number; active: boolean}
-export type Staff = {id: string; name: string; email: string; role: string; active: boolean; consultTypeIds: string[]; weeklyHours: {day: number; start: string; end: string}[]; leave: {from: string; to: string}[]}
+export type Staff = {
+  id: string
+  name: string
+  email: string
+  role: string
+  active: boolean
+  consultTypeIds: string[]
+  weeklyHours: { day: number; start: string; end: string }[]
+  leave: { from: string; to: string }[]
+  password?: string
+  phone?: string
+}
 export type Booking = {id: string; typeId: string; staffId: string; startAt: string; endAt: string; blockEnd: number; status: string; parentName: string; email: string; phone: string; childName: string; childAge: string; concern: string; createdAt: string; confirmToken?: string; expiresAt?: number}
 export type DB = {consultTypes: ConsultType[]; staff: Staff[]; bookings: Booking[]}
 
@@ -17,11 +28,11 @@ const seed: DB = {
     {id: 'iep-consultation', title: 'IEP Consultation', description: 'Plan an Individualised Education Programme for your child.', durationMins: 45, bufferMins: 15, priceINR: 0, minNoticeHours: 12, maxDaysAhead: 30, active: true},
   ],
   staff: [
-    {id: 'dr-manasi', name: 'Dr. Manasi Valluri', email: 'manasi@manaslearning.com', role: 'Founder & Developmental Specialist', active: true, consultTypeIds: ['free-counselling', 'expert-consultation', 'iep-consultation'], weeklyHours: hoursStandard, leave: []},
-    {id: 'ananya-sridhar', name: 'Ananya Sridhar', email: 'ananya@manaslearning.com', role: 'Senior Special Educator & Remedial Specialist', active: true, consultTypeIds: ['free-counselling', 'expert-consultation', 'iep-consultation'], weeklyHours: hoursStandard, leave: []},
-    {id: 'dr-radhika', name: 'Dr. Radhika Sharma', email: 'radhika@manaslearning.com', role: 'Occupational Therapist & Sensory Specialist', active: true, consultTypeIds: ['free-counselling', 'expert-consultation'], weeklyHours: hoursStandard, leave: []},
-    {id: 'kavitha-s', name: 'Kavitha Sundaram', email: 'kavitha@manaslearning.com', role: 'Speech-Language Pathologist', active: true, consultTypeIds: ['free-counselling', 'expert-consultation'], weeklyHours: hoursStandard, leave: []},
-    {id: 'arun-kumar', name: 'Arun Kumar', email: 'arun@manaslearning.com', role: 'Clinical Child Psychologist', active: true, consultTypeIds: ['free-counselling', 'expert-consultation', 'iep-consultation'], weeklyHours: hoursStandard, leave: []},
+    {id: 'dr-manasi', name: 'Dr. Manasi Valluri', email: 'manasi@manaslearning.com', role: 'Founder & Developmental Specialist', active: true, consultTypeIds: ['free-counselling', 'expert-consultation', 'iep-consultation'], weeklyHours: hoursStandard, leave: [], password: 'manasi123'},
+    {id: 'ananya-sridhar', name: 'Ananya Sridhar', email: 'ananya@manaslearning.com', role: 'Senior Special Educator & Remedial Specialist', active: true, consultTypeIds: ['free-counselling', 'expert-consultation', 'iep-consultation'], weeklyHours: hoursStandard, leave: [], password: 'ananya123'},
+    {id: 'dr-radhika', name: 'Dr. Radhika Sharma', email: 'radhika@manaslearning.com', role: 'Occupational Therapist & Sensory Specialist', active: true, consultTypeIds: ['free-counselling', 'expert-consultation'], weeklyHours: hoursStandard, leave: [], password: 'radhika123'},
+    {id: 'kavitha-s', name: 'Kavitha Sundaram', email: 'kavitha@manaslearning.com', role: 'Speech-Language Pathologist', active: true, consultTypeIds: ['free-counselling', 'expert-consultation'], weeklyHours: hoursStandard, leave: [], password: 'kavitha123'},
+    {id: 'arun-kumar', name: 'Arun Kumar', email: 'arun@manaslearning.com', role: 'Clinical Child Psychologist', active: true, consultTypeIds: ['free-counselling', 'expert-consultation', 'iep-consultation'], weeklyHours: hoursStandard, leave: [], password: 'arun123'},
   ],
   bookings: [],
 }

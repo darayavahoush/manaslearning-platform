@@ -36,9 +36,9 @@ function scrollToId(id) {
 }
 
 const ACCENT_HEX = {
-  landing: "44,140,114",
-  autism: "44,140,114",
-  adhd: "140,101,32",
+  landing: "59,130,246",
+  autism: "59,130,246",
+  adhd: "245,158,11",
   dyslexia: "89,40,140",
   speech: "140,66,44",
   dyscalculia: "29,133,133",
@@ -672,7 +672,7 @@ function SoonCard({ c, onSelect }) {
         <div className="itw-mcard-top">
           <div className="itw-mcard-icon" aria-hidden="true">{c.icon}</div>
           <div>
-            <div className="itw-tag" style={{ background: "rgba(44, 140, 114, 0.12)", color: "var(--itw-autism)" }}>
+            <div className="itw-tag" style={{ background: "var(--itw-autism-soft)", color: "var(--itw-autism)" }}>
               {c.badge || "Interactive"}
             </div>
             <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)", marginTop: 2 }}>{c.sub}</div>
@@ -2656,7 +2656,7 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
             {currentTask.topic}
           </span>
           {mode === "supported" && (
-            <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 999, background: "rgba(140,101,32,0.15)", color: "var(--itw-adhd)" }}>
+            <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 999, background: "var(--itw-adhd-soft)", color: "var(--itw-adhd)" }}>
               ✨ Focus Spotlight Active
             </span>
           )}
@@ -2792,7 +2792,7 @@ function AdhdModule({ onBack, onNavigate }) {
                     padding: "10px 12px",
                     borderRadius: 12,
                     border: `2px solid ${intensity === opt.id ? "var(--itw-adhd)" : "var(--itw-border)"}`,
-                    background: intensity === opt.id ? "rgba(140, 101, 32, 0.12)" : "var(--itw-panel-2)",
+                    background: intensity === opt.id ? "var(--itw-adhd-soft)" : "var(--itw-panel-2)",
                     color: "var(--itw-text)",
                     cursor: "pointer",
                     textAlign: "center",
@@ -2947,7 +2947,7 @@ function AdhdModule({ onBack, onNavigate }) {
                   padding: "16px 20px",
                   borderRadius: 18,
                   border: `2px solid ${chosenSupport === s.id ? "var(--itw-adhd)" : "var(--itw-border)"}`,
-                  background: chosenSupport === s.id ? "rgba(140, 101, 32, 0.08)" : "var(--itw-panel)",
+                  background: chosenSupport === s.id ? "var(--itw-adhd-soft)" : "var(--itw-panel)",
                   cursor: "pointer",
                   transition: "all 0.2s ease",
                 }}
@@ -7352,7 +7352,7 @@ function ExecutiveFunctioningSim({ mode = "baseline", supportType = "nnl", onCom
       </div>
 
       {errorMsg && (
-        <div style={{ background: "rgba(140, 101, 32, 0.12)", border: "1.5px solid var(--itw-adhd)", borderRadius: 12, padding: "10px 14px", color: "var(--itw-text)", fontSize: 13.5, fontWeight: 700, marginBottom: 14 }}>
+        <div style={{ background: "var(--itw-adhd-soft)", border: "1.5px solid var(--itw-adhd)", borderRadius: 12, padding: "10px 14px", color: "var(--itw-text)", fontSize: 13.5, fontWeight: 700, marginBottom: 14 }}>
           {errorMsg}
         </div>
       )}

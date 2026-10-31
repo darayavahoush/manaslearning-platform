@@ -10,10 +10,15 @@ const LIVE = process.env.LIVE_ORIGIN || 'https://www.manaslearning.com'
 const OWN = [
   '/consult', '/milo', '/experience', '/confirm', '/team',
   '/api/types', '/api/availability', '/api/slots', '/api/book', '/api/confirm', '/api/team', '/api/milo',
-  '/web-static', '/logo.png', '/decor', '/_next/static/immutable', '/sounds', '/videos',
+  '/web-static', '/logo.png', '/decor', '/_next/static/immutable', '/sounds',
   '/_next/webpack-hmr', '/__nextjs',
 ]
-const owns = (p: string) => OWN.some((o) => p === o || p.startsWith(o + '/'))
+const owns = (p: string) => {
+  if (OWN.some((o) => p === o || p.startsWith(o + '/'))) return true
+  // Static media video files stored in public/videos
+  if (p.startsWith('/videos/') && /\.(mp4|webm|ogg|mov)$/i.test(p)) return true
+  return false
+}
 
 const BOOKING = /https:(?:\\?\/){2}(?:calendly\.com\/manasivalluri\/expert-consultation|calendar\.app\.google\/Exsr5Uj7nEH67iKC6)[^"'\\<\s)]*/g
 const SKIP_REQ = ['host', 'connection', 'content-length', 'accept-encoding', 'origin', 'referer']

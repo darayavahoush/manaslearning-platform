@@ -9,7 +9,7 @@ export type DB = {consultTypes: ConsultType[]; staff: Staff[]; bookings: Booking
 
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data')
 const FILE = path.join(DATA_DIR, 'db.json')
-const hours = [1, 2, 3, 4, 5, 6].map((day) => ({day, start: '10:00', end: '17:00'}))
+const hoursStandard = [1, 2, 3, 4, 5].map((day) => ({day, start: '10:00', end: '17:00'})).concat([{day: 6, start: '10:00', end: '14:00'}])
 const seed: DB = {
   consultTypes: [
     {id: 'free-counselling', title: 'Free Counselling', description: 'A first conversation about your child and how we can help.', durationMins: 30, bufferMins: 10, priceINR: 0, minNoticeHours: 12, maxDaysAhead: 30, active: true},
@@ -17,8 +17,11 @@ const seed: DB = {
     {id: 'iep-consultation', title: 'IEP Consultation', description: 'Plan an Individualised Education Programme for your child.', durationMins: 45, bufferMins: 15, priceINR: 0, minNoticeHours: 12, maxDaysAhead: 30, active: true},
   ],
   staff: [
-    {id: 'demo-a', name: 'Demo Consultant A', email: 'a@example.com', role: 'Child Psychologist', active: true, consultTypeIds: ['free-counselling', 'expert-consultation', 'iep-consultation'], weeklyHours: hours, leave: []},
-    {id: 'demo-b', name: 'Demo Consultant B', email: 'b@example.com', role: 'Special Educator', active: true, consultTypeIds: ['free-counselling', 'iep-consultation'], weeklyHours: hours, leave: []},
+    {id: 'dr-manasi', name: 'Dr. Manasi Valluri', email: 'manasi@manaslearning.com', role: 'Founder & Developmental Specialist', active: true, consultTypeIds: ['free-counselling', 'expert-consultation', 'iep-consultation'], weeklyHours: hoursStandard, leave: []},
+    {id: 'ananya-sridhar', name: 'Ananya Sridhar', email: 'ananya@manaslearning.com', role: 'Senior Special Educator & Remedial Specialist', active: true, consultTypeIds: ['free-counselling', 'expert-consultation', 'iep-consultation'], weeklyHours: hoursStandard, leave: []},
+    {id: 'dr-radhika', name: 'Dr. Radhika Sharma', email: 'radhika@manaslearning.com', role: 'Occupational Therapist & Sensory Specialist', active: true, consultTypeIds: ['free-counselling', 'expert-consultation'], weeklyHours: hoursStandard, leave: []},
+    {id: 'kavitha-s', name: 'Kavitha Sundaram', email: 'kavitha@manaslearning.com', role: 'Speech-Language Pathologist', active: true, consultTypeIds: ['free-counselling', 'expert-consultation'], weeklyHours: hoursStandard, leave: []},
+    {id: 'arun-kumar', name: 'Arun Kumar', email: 'arun@manaslearning.com', role: 'Clinical Child Psychologist', active: true, consultTypeIds: ['free-counselling', 'expert-consultation', 'iep-consultation'], weeklyHours: hoursStandard, leave: []},
   ],
   bookings: [],
 }

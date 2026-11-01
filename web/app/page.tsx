@@ -42,7 +42,7 @@ export default function Home() {
       <section id="experience" className="container mx-auto scroll-mt-28 px-4 py-16 lg:px-8">
         <div className="mx-auto max-w-3xl space-y-3 text-center">
           <h2 className={h2}>Experience what they feel</h2>
-          <p className={sub}>A checklist gives you the facts. These four short simulations put you inside a child&apos;s morning for a few minutes, then show the Indian data and what helps.</p>
+          <p className={sub}>A checklist gives you the facts. These interactive experiences put you inside a child&apos;s morning for a few minutes, then show the Indian data and what helps.</p>
         </div>
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {FEELS.map((f) => (

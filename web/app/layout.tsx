@@ -13,7 +13,7 @@ const patrick = Patrick_Hand({subsets: ['latin'], weight: '400', variable: '--fo
 export const metadata: Metadata = {
   title: { default: 'Manas Learning — Child Development & Inclusive Learning Centre', template: '%s — Manas Learning' },
   description:
-    'Pediatric learning, speech therapy, and sensory support for children in Chennai. Featuring free consultations, Milo our AI learning guide, and interactive simulations of neurodiverse learning experiences.',
+    'Pediatric learning, speech therapy, and sensory support for children in Chennai. Featuring free consultations, Milo our AI learning guide, and interactive explorations of neurodiverse learning experiences.',
   keywords: [
     'Manas Learning',
     'special education Chennai',
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     'occupational therapy autism',
     'dyslexia remedial education',
     'ADHD attention therapy',
-    'In Their World simulation',
+    'In Their World experience',
     'Milo AI learning guide',
     'VaakSiddhi breathing games',
     'Vaakify speech practice',
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Manas Learning — Child Development & Inclusive Learning Centre',
     description:
-      'Pediatric learning, speech, and sensory support for children with free consultations, Milo AI assistant, and empathetic neurodiversity simulations.',
+      'Pediatric learning, speech, and sensory support for children with free consultations, Milo AI assistant, and empathetic neurodiversity learning experiences.',
     url: 'https://www.manaslearning.com',
     siteName: 'Manas Learning',
     images: [

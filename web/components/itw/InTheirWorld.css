@@ -3,7 +3,7 @@
 /*
   In Their World — styles
   Design: a field-observer's case file. You step into a dark, immersive
-  "viewfinder" to run each simulation, then step back out into a warm
+  "viewfinder" to run each activity, then step back out into a warm
   paper case-file for the data and strategies that follow. All selectors
   are scoped under .itw-root and prefixed itw- so this drops into an
   existing site without leaking styles. Fonts load via <link> in index.html.
@@ -3340,7 +3340,7 @@ body:has(.itw-dark) .leaf-fall,
 
 /* ================= END DYSLEXIA HIGH-FIDELITY EXPERIENCE ================= */
 
-/* ================= IN-SIMULATION SCENE PLATES ================= */
+/* ================= IN-ACTIVITY SCENE PLATES ================= */
 .itw-scene-plate {
   position: relative;
   width: 100%;

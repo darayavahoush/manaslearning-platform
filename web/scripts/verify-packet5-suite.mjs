@@ -4,7 +4,7 @@ import path from "node:path";
 
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const PORT = 9225;
-const DOCS_DIR = "/Users/ananyasridhar/work/vaakbot/web/docs/itw/screenshots";
+const DOCS_DIR = path.resolve(__dirname, "../docs/itw/screenshots");
 
 if (!fs.existsSync(DOCS_DIR)) {
   fs.mkdirSync(DOCS_DIR, { recursive: true });
@@ -157,14 +157,20 @@ async function main() {
   // 1. Landing Page Test
   console.log("\n1. Testing Landing Page (/experience)...");
   await cdp.send("Page.navigate", { url: "http://localhost:3000/experience" });
-  await sleep(1500);
-
-  const cardCountRes = await cdp.send("Runtime.evaluate", {
-    expression: `document.querySelectorAll('.itw-mcard').length`,
-    returnByValue: true,
-  });
-  console.log(`Found ${cardCountRes.result.value} module cards on landing page.`);
-  results.push({ test: "8 Module Cards Rendered", passed: cardCountRes.result.value >= 8 });
+  
+  // Wait for dynamic component hydration
+  let cardCount = 0;
+  for (let i = 0; i < 20; i++) {
+    const res = await cdp.send("Runtime.evaluate", {
+      expression: `document.querySelectorAll('.itw-mcard').length`,
+      returnByValue: true,
+    });
+    cardCount = res?.result?.value || 0;
+    if (cardCount >= 8) break;
+    await sleep(500);
+  }
+  console.log(`Found ${cardCount} module cards on landing page.`);
+  results.push({ test: "8 Module Cards Rendered", passed: cardCount >= 8 });
 
   await capture("Landing Page (2x2 Editorial Grid)", "packet5-landing-editorial-grid.png", 1440, 900);
   await checkReflowAt320("Landing Page");

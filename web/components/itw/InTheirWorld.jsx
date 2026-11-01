@@ -17,7 +17,7 @@ import QuietCorner from "./media/QuietCorner";
 /* ============================================================
    In Their World
    A field guide for parents & teachers — four short interactive
-   simulations (autism, ADHD, dyslexia, speech/language), each
+   modules (autism, ADHD, dyslexia, speech/language), each
    framed as a task you attempt and get rated on, with synthesized
    ambient audio, plus real prevalence data (US/global AND India)
    and practical strategies.
@@ -59,7 +59,7 @@ const ACCENT_HEX_DARK = {
 };
 
 /* ---------------- Error boundary ----------------
-   A runtime error inside any one module (a bad simulation state, a
+   A runtime error inside any one module (an unexpected component state, a
    malformed fact, whatever) used to blank the whole screen with no way
    back. This catches it at the module level and offers a way out instead. */
 class ModuleErrorBoundary extends React.Component {
@@ -753,7 +753,7 @@ const SOON_STORIES = [
     ),
     name: "Down Syndrome & Developmental Pacing",
     sub: "Growing at My Own Pace",
-    blurb: "An interactive first-person story of Aarav: celebrating strengths, visual learning, and everyday milestones.",
+    blurb: "An illustrated story celebrating Aarav's strengths, visual learning style, and everyday classroom milestones.",
     image: "/decor/itw/down-syndrome-story.webp",
     meta: "Interactive Story Experience",
     badge: "Illustrated Story",
@@ -770,7 +770,7 @@ const SOON_STORIES = [
     ),
     name: "A Day Through My Eyes",
     sub: "The Inclusive School Day Walkthrough",
-    blurb: "Step into an everyday school day and switch between Sensory, Attention, Communication, and Supported Classroom lenses.",
+    blurb: "Explore an everyday school day and switch between Sensory, Attention, Communication, and Supported Classroom lenses.",
     image: "/decor/itw/day-through-my-eyes.webp",
     meta: "Perspective Lens Exhibit",
     badge: "Perspective Lens",
@@ -779,7 +779,7 @@ const SOON_STORIES = [
 
 const HOW_STEPS = [
   { n: 1, title: "Choose an experience", text: "Select a topic to explore." },
-  { n: 2, title: "Try the activity", text: "Step into a short, everyday scenario." },
+  { n: 2, title: "Try the activity", text: "Engage with a short, everyday classroom scenario." },
   { n: 3, title: "Understand what it may mean", text: "See key insights and ways to support." },
 ];
 
@@ -1280,8 +1280,8 @@ function FactsGrid({ facts, note, onComplete }) {
   );
 }
 
-/* ---------------- Viewfinder (signature element — the "step into their
-   world" viewport, with a live HUD readout, wraps every sim stage) ---------------- */
+/* ---------------- Viewfinder (signature element — experiential viewport,
+   with a live HUD readout, wraps every activity stage) ---------------- */
 
 function Viewfinder({ hud, stageStyle, children }) {
   return (
@@ -1304,7 +1304,7 @@ function Viewfinder({ hud, stageStyle, children }) {
   );
 }
 
-/* ================= AUTISM: sensory overload simulator ================= */
+/* ================= AUTISM: Sensory Processing & Environmental Accommodations ================= */
 
 // Concrete sensory events, each with its own icon and its own synthesized
 // sound (see AudioEngine.cue) — this is what's actually competing for
@@ -1426,8 +1426,8 @@ const AUTISM_SUPPORT_CHOICES = [
   {
     id: "ear_defenders",
     title: "Sensory Ear Defenders / Noise Reduction",
-    subtitle: "Simulated in-app audio dampening (~80%)",
-    desc: "Applies software audio attenuation to background sounds, demonstrating how dampening auditory overload frees mental focus. (Note: real ear defender attenuation varies by frequency rating).",
+    subtitle: "In-app audio volume reduction",
+    desc: "Reduces the volume of synthetic audio cues in this exercise to illustrate the relief of lowering sensory intensity. Note: In-app software volume reduction is not equivalent to physical acoustic ear defenders or active noise-cancelling headphones.",
     tag: "Auditory Scaffolding",
   },
   {
@@ -1797,7 +1797,7 @@ function AutismSim({
         >
           <span style={{ fontSize: 16 }}>🛡️</span>
           <span>
-            {supportType === "ear_defenders" && "Sensory Ear Defenders Active: Competing audio attenuated by 80%."}
+            {supportType === "ear_defenders" && "Sensory Ear Defenders Active: Background audio volume lowered in-app."}
             {supportType === "visual_calm" && "Visual Focus Filter Active: Competing visual decoys reduced to 1."}
             {supportType === "quiet_corner" && "Predictable Quiet Space: Generous unhurried time limit and softer contrast."}
           </span>
@@ -2508,7 +2508,7 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
     timerIntervalRef.current = null;
   }, []);
 
-  // Simulation stopwatch
+  // Activity stopwatch
   useEffect(() => {
     startTimeRef.current = performance.now();
     timerIntervalRef.current = setInterval(() => {
@@ -2941,7 +2941,7 @@ function AdhdModule({ onBack, onNavigate }) {
             </p>
             <ul className="itw-flow-meta">
               <li><span aria-hidden="true">•</span> Takes 2–3 minutes</li>
-              <li><span aria-hidden="true">🖥️</span> First-person desk workspace exploration</li>
+              <li><span aria-hidden="true">🖥️</span> Interactive desk workspace exploration</li>
               <li><span aria-hidden="true">•</span> Not a diagnostic test</li>
             </ul>
             <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
@@ -4623,7 +4623,7 @@ const SPEECH_SCENARIOS = [
       {
         id: "direct_address",
         label: "Address Student Directly",
-        desc: "Speak directly to Ananya at eye level, rather than talking about her to an assistant or parent.",
+        desc: "Address Ananya directly, while respecting her preferred position, gaze, communication method, and device.",
       },
       {
         id: "device_autonomy",
@@ -4648,7 +4648,7 @@ const SPEECH_SCENARIOS = [
     student: "Kavi (Grade 5)",
     topic: "Chemistry Investigation • Litmus Acid-Base Test",
     context: "The teacher checks in with Kavi during a chemistry lab where blue litmus paper turns red in lemon juice.",
-    barrierDescription: "A compound three-part question asked in rapid succession overloads working memory; rapid rephrasing adds competing verbal input before thoughts can be organized.",
+    barrierDescription: "A compound three-part question asked in rapid succession can add verbal demands and make it harder for some learners to organize a response; rapid rephrasing adds competing verbal input before thoughts can be assembled.",
     practices: [
       {
         id: "clear_prompt",
@@ -4872,24 +4872,24 @@ function getSpeechDialogue(scenarioId, activePractices) {
   if (procTime && visualAnchor) {
     turns.push({
       speaker: "Teacher & Environment (Patient Silence + Visual Support)",
-      text: "(Teacher pauses calmly for 6 seconds and gestures to the color-coded pH scale on the laboratory bench. Kavi observes the strip and chart.)",
+      text: "(Teacher allows an unhurried pause and gestures to the color-coded pH scale on the laboratory bench. Kavi observes the strip and chart.)",
       isSuccess: true,
     });
   } else if (!procTime && !visualAnchor) {
     turns.push({
       speaker: "Teacher (Rapid Rephrasing Without Visuals)",
-      text: "(After 1.5 seconds) 'Was it acid or base, Kavi? Come on, is it sour? Quick, answer before the bell!'",
+      text: "(Interrupts before the learner has time to respond) 'Was it acid or base, Kavi? Come on, is it sour? Quick, answer before the bell!'",
       isAlert: true,
     });
   } else if (procTime && !visualAnchor) {
     turns.push({
       speaker: "Teacher (Patient Silence Without Visuals)",
-      text: "(Teacher waits calmly, but without pointing to any visual diagram or vocabulary card on the table.)",
+      text: "(Teacher allows an unhurried pause, but without pointing to any visual diagram or vocabulary card on the table.)",
     });
   } else {
     turns.push({
       speaker: "Teacher (Interrupting Despite Visuals)",
-      text: "(Points to the chart, but immediately interrupts after 1 second: 'Acid or base? Quick!')",
+      text: "(Points to the chart, but interrupts before the learner has time to formulate a response: 'Acid or base? Quick!')",
       isAlert: true,
     });
   }
@@ -5382,18 +5382,18 @@ function SpeechModule({ onBack, onNavigate }) {
           <FactsGrid
             facts={[
               {
-                num: "Clinical Caseload",
-                label: "Fluency disorders represent ~7%–10% of pediatric outpatient speech-language caseloads at specialized tertiary clinical centers like the All India Institute of Speech and Hearing (AIISH, Mysore). This reflects a clinical presentation denominator among clients seeking care, rather than general community prevalence.",
-                src: "All India Institute of Speech and Hearing (AIISH Mysore) Annual Clinical Registry",
+                num: "1.68% Regional Cohort",
+                label: "A localized epidemiological survey of 3,437 school children aged 6–15 years in Dakshina Kannada district, Karnataka, identified speech and fluency differences in 1.68% of the cohort. Researchers emphasize that this district-level finding reflects a specific regional survey and should not be cited as a national prevalence estimate, which remains under-documented across diverse Indian states.",
+                src: "Kumar et al. (2023), Epidemiological Survey of Speech and Language Disorders in School-Going Children, Journal of Indian Speech Language & Hearing Association, DOI: 10.4103/jisha.jisha_19_22",
               },
               {
-                num: "1%–1.5%",
-                label: "Estimated community prevalence of developmental stuttering in Indian primary school populations. In multilingual classrooms, speech-language pathologists emphasize distinguishing natural bilingual formulation pauses from clinical speech sound or fluency disorders.",
-                src: "National Institute for the Empowerment of Persons with Multiple Disabilities (Divyangjan) (NIEPMD), Chennai & AIISH",
+                num: "Multilingual Classrooms",
+                label: "In multilingual Indian classroom settings, speech-language pathologists highlight the importance of distinguishing natural bilingual formulation pauses, code-switching delays, and second-language lexical retrieval from developmental speech sound or fluency disorders.",
+                src: "All India Institute of Speech and Hearing (AIISH) Clinical Guidelines",
               },
               {
-                num: "RPwD Act 2016",
-                label: "Sections 16 and 17 mandate inclusive education and the promotion of augmentative and alternative modes of communication (AAC). Formal exam modifications (e.g. compensatory time or scribes) require certified benchmark disability documentation under Ministry/board guidelines.",
+                num: "RPwD Act (Sec 16 & 17)",
+                label: "Sections 16 and 17 of the Rights of Persons with Disabilities Act 2016 mandate inclusive education and the promotion of augmentative and alternative modes of communication (AAC). Formal school board examination accommodations (such as compensatory extra time or an adult scribe) require certified benchmark disability documentation under RPwD Act guidelines.",
                 src: "Rights of Persons with Disabilities Act (2016) & DEPwD Guidelines",
               },
             ]}
@@ -5934,19 +5934,19 @@ function DyscalculiaModule({ onBack, onNavigate }) {
           <FactsGrid
             facts={[
               {
-                num: "3%–6% Cohort Range",
-                label: "Localized Indian primary school studies (e.g., Ramaa & Gowramma, Mysore, N=664; Karande et al., Mumbai pediatric clinics) identify mathematical learning difficulties in approximately 3%–6% of evaluated cohorts. National epidemiological data disaggregated specifically for dyscalculia remains limited across diverse educational boards.",
-                src: "Indian Journal of Pediatrics / Ramaa & Gowramma (Dyscalculia in Primary School Cohorts)",
+                num: "5.5%–6.0% Mysore Cohorts",
+                label: "In a systematic primary school study in Mysore, Ramaa & Gowramma (2002) reported dyscalculia in two distinct samples: 5.98% (15 out of 251 students in grades 3–4) in Study 1, and 5.54% (78 out of 1,408 screened students) in Study 2. These localized primary school cohort findings provide empirical evidence from South India, but do not represent a national prevalence figure. (Broader SLD studies, such as Karande et al., evaluated learning disabilities collectively rather than dyscalculia specifically).",
+                src: "Ramaa, S., & Gowramma, I. P. (2002). A systematic study of dyscalculia among primary school children. Dyslexia, 8(4), 206–222. DOI: 10.1002/dys.225",
               },
               {
-                num: "NCERT Math Kits",
-                label: "The National Curriculum Framework (NCF) and NCERT position papers on the teaching of mathematics recommend concrete manipulative kits, geoboards, and fraction strips to anchor numerical concepts in primary schooling.",
-                src: "NCERT National Focus Group Position Paper on Teaching of Mathematics",
+                num: "NCERT Math Lab Kits",
+                label: "The NCERT National Focus Group on Teaching of Mathematics (NCF 2005 position paper, Section 3.2 'Mathematics for All') recommends concrete manipulative materials—such as fraction strips, geoboards, bead frames, and base-ten blocks—to anchor conceptual quantity relations before introducing abstract numerical operations.",
+                src: "NCERT National Focus Group Position Paper on Teaching of Mathematics (NCF 2005)",
               },
               {
-                num: "CBSE CwD Rules",
-                label: "CBSE examination circulars for Candidates with Disabilities (CwD) permit specific accommodations (such as simple arithmetic calculators or extra time) for candidates with certified benchmark dyscalculia under RPwD Act rules, subject to valid medical/UDID board documentation.",
-                src: "CBSE Examination Bye-Laws for Candidates with Benchmark Disabilities",
+                num: "CBSE Circular 2020 / Rule 24",
+                label: "CBSE Circular No. CBSE/Coord/2020 (dated 22.01.2020) permits basic, simple arithmetic calculators (without memory or algebraic keys) specifically for Candidates with Disabilities (CwD) with certified dyscalculia in Class X and XII examinations. General accommodations such as compensatory extra time (20 min/hour) or scribe services under Rule 24 require certified benchmark disability documentation under the RPwD Act 2016, approved on an individual basis.",
+                src: "CBSE Circular No. CBSE/Coord/2020 & Examination Bye-Laws Rule 24",
               },
             ]}
             note="Clinical and educational psychologists stress that difficulty with rapid mental arithmetic does not reflect logical reasoning ability. Structured visual tools unlock deep problem-solving capacity."
@@ -7492,7 +7492,7 @@ function ProjectPlanningDeskWorkspace() {
           </h3>
           <p style={{ fontSize: 14, color: "var(--itw-muted)", margin: 0, maxWidth: "68ch" }}>
             Preparing a 5-step science presentation about urban wetland restoration.
-            Explore how visual horizons, natural workflow maps, and micro-chunking prevent cognitive overload.
+            Explore how visual horizons, natural workflow maps, and micro-chunking support multi-step planning and make workflow expectations visible.
           </p>
         </div>
 
@@ -8192,7 +8192,7 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
             <h2 className="itw-flow-title">The Project Planning Desk</h2>
             <div className="itw-flow-sub">Task Initiation, Working Memory Offloading &amp; Visual Horizons</div>
             <p className="itw-flow-lead" style={{ margin: 0 }}>
-              Executive function is the brain's coordination suite for prioritizing, estimating duration, and sequencing multi-step goals.
+              Executive functioning involves distributed brain networks supporting goal prioritization, working memory, and sequencing multi-step tasks.
               Explore how visual horizons, chunking, and natural workflow maps relieve cognitive friction.
             </p>
           </div>
@@ -8213,7 +8213,7 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
       {tab === "explain" && (
         <div className="itw-flow-page itw-flow-narrow" key="explain">
           <h2 className="itw-flow-title itw-center">Understanding Executive Functioning &amp; Cognitive Initiation</h2>
-          <div className="itw-flow-sub itw-center">The Prefrontal Cortex Coordination Suite</div>
+          <div className="itw-flow-sub itw-center">Distributed Executive Brain Networks</div>
 
           <p className="itw-flow-lead">
             Executive functioning encompasses the mental processes that enable us to plan, focus attention, remember instructions,
@@ -8224,9 +8224,9 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, margin: "20px 0" }}>
             <div style={{ padding: 18, borderRadius: 14, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)" }}>
               <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-executive)" }}>Mechanism 1</span>
-              <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0 6px" }}>Task Initiation vs. Procrastination</h4>
+              <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0 6px" }}>Task Initiation &amp; First Micro-Steps</h4>
               <p style={{ fontSize: 13, color: "var(--itw-muted)", margin: 0, lineHeight: 1.5 }}>
-                Initiation requires generating internal activation energy. Breaking a task into micro-actions (e.g. &ldquo;write just 1 sentence&rdquo;) reduces the cognitive threshold to begin.
+                Initiating an unfamiliar or multi-step task involves coordinating attention, working memory, and goal selection across distributed brain networks. Breaking complex work into concrete first actions (such as &ldquo;draft 1 inquiry sentence&rdquo;) helps make the immediate step clear and manageable.
               </p>
             </div>
 
@@ -8234,7 +8234,7 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
               <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-executive)" }}>Mechanism 2</span>
               <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0 6px" }}>Externalizing Working Memory</h4>
               <p style={{ fontSize: 13, color: "var(--itw-muted)", margin: 0, lineHeight: 1.5 }}>
-                Holding 5 future deadlines in your head creates chronic mental fatigue. Now / Next / Later boards offload memory storage onto the physical environment.
+                Holding multiple upcoming steps and shifting deadlines in mind places heavy demands on working memory. Visual planning tools like Now / Next / Later boards externalize structure into the physical workspace, helping make sequence and expectations visible while acknowledging that individual planning preferences vary.
               </p>
             </div>
           </div>
@@ -8243,19 +8243,19 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
           <FactsGrid
             facts={[
               {
-                num: "Cognitive Domain",
-                label: "Executive functioning encompasses prefrontal regulatory processes (task initiation, working memory, cognitive flexibility) rather than a standalone diagnostic label. In Indian pediatric and school mental health literature, localized studies (such as the BRIEF-P preschool cohort study in urban Bengaluru, N=412) show that executive coordination differences co-occur across ADHD, specific learning differences, and sensory profiles.",
-                src: "Indian Journal of Pediatrics / Developmental-Behavioral Pediatrics",
+                num: "Preschool Cohort Norms",
+                label: "Executive functioning comprises distributed neural processes—including working memory, inhibitory control, and cognitive flexibility—rather than a single brain control center or standalone diagnostic label. In India, Selvam et al. (2018) established BRIEF-P executive function norms in a cohort of 412 typically-developing urban preschool children aged 2–5 in Bengaluru, evaluating associations with nutritional status. (This normative study did not assess ADHD, learning difference, or sensory profile co-occurrence rates).",
+                src: "Selvam, S., et al. (2018), Development of norms for executive functions in typically-developing Indian urban preschool children, Child Neuropsychology, 24(5), 652–671. DOI: 10.1080/09297049.2016.1254761",
               },
               {
-                num: "Visual Horizons",
-                label: "Pedagogical research shows that externalizing working memory demands through physical Now / Next / Later horizons and visual micro-chunking significantly reduces task initiation inertia and decision fatigue.",
-                src: "Journal of Applied Behavior Analysis & Inclusive Pedagogy",
+                num: "Visual Scaffolding",
+                label: "Visual planning tools—such as Now / Next / Later horizons, milestone checklists, and visible timers—serve as practical supports that externalize working memory demands and make task expectations visible. Educators note that individual planning preferences and effectiveness vary among learners.",
+                src: "Pedagogical Scaffolding & Universal Design for Learning (UDL) Guidelines",
               },
               {
-                num: "CBSE Accommodations",
-                label: "CBSE inclusive education framework provisions permit structured accommodations such as compensatory time, visual assistance, and rest breaks for students with certified disabilities under RPwD Act rules.",
-                src: "Central Board of Secondary Education (CBSE) Inclusive Framework",
+                num: "CBSE Rule 24 / CwD circulars",
+                label: "CBSE Examination Bye-Laws Rule 24 and relevant CwD circulars provide specific exam accommodations—such as compensatory extra time (20 minutes per hour of examination) or adult reader/scribe facilities—for students with certified benchmark disabilities under RPwD Act criteria upon formal school application and medical board documentation. Concessions are individually approved entitlements rather than blanket automatic packages.",
+                src: "CBSE Examination Bye-Laws Rule 24 / Circular No. CBSE/Coord/2019/13523",
               },
             ]}
             note="Developmental pediatricians emphasize replacing moralizing language ('lazy', 'careless') with compassionate structural scaffolding ('What is our very first micro-step?')."
@@ -9235,6 +9235,24 @@ export default function InTheirWorld() {
     document.documentElement.style.scrollBehavior = "smooth";
     return () => {
       document.documentElement.style.scrollBehavior = prev;
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleUrlChange = () => {
+      const p = new URLSearchParams(window.location.search);
+      const mod = p.get("module") || window.location.hash.replace("#", "");
+      if (mod && ["autism", "adhd", "dyslexia", "speech", "dyscalculia", "dysgraphia", "auditory", "executive"].includes(mod)) {
+        setView(mod);
+      } else if (!mod) {
+        setView("landing");
+      }
+    };
+    window.addEventListener("popstate", handleUrlChange);
+    window.addEventListener("hashchange", handleUrlChange);
+    return () => {
+      window.removeEventListener("popstate", handleUrlChange);
+      window.removeEventListener("hashchange", handleUrlChange);
     };
   }, []);
 

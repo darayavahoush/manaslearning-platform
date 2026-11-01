@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
- * IN THEIR WORLD — PACKET 9.1 VERIFICATION SUITE
- * Targeted tests for Speech & Language, Dyscalculia, Executive Functioning,
+ * IN THEIR WORLD — STATIC SOURCE REGRESSION SUITE
+ * Static source-text assertions for Speech & Language, Dyscalculia, Executive Functioning,
  * global terminology, representation consistency, and accessibility semantics.
+ * Note: This script performs static source analysis; runtime browser interactions are tested separately.
  */
 
 import fs from 'node:fs';
@@ -13,7 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '../..');
 
-console.log('=== IN THEIR WORLD: PACKET 9.1 TARGETED VERIFICATION SUITE ===\n');
+console.log('=== IN THEIR WORLD: STATIC SOURCE REGRESSION SUITE ===\n');
 
 let failedTests = 0;
 let passedTests = 0;
@@ -69,9 +70,9 @@ assert(itwJsx.includes('speechSynthesis.speak(utterance)'), 'Calls Web Speech AP
 assert(itwJsx.includes('aria-live="polite"'), 'Accessible aria-live region present for speech status announcements');
 
 // Check Speech Indian Statistics & RPwD scope
-assert(itwJsx.includes('National Institute for the Empowerment of Persons with Multiple Disabilities (Divyangjan) (NIEPMD), Chennai'), 'Correct full NIEPMD institutional name cited');
-assert(itwJsx.includes('clinical presentation denominator among clients seeking care, rather than general community prevalence'), 'AIISH tertiary clinical caseload explicitly distinguished from community prevalence');
-assert(itwJsx.includes('Sections 16 and 17 mandate inclusive education and the promotion of augmentative and alternative modes of communication (AAC)'), 'RPwD Act Sections 16 & 17 correctly cited');
+assert(itwJsx.includes('Kumar et al. (2023)'), 'Dakshina Kannada school survey (Kumar et al. 2023) cited for regional 1.68% cohort');
+assert(itwJsx.includes('3,437 school children aged 6–15 years in Dakshina Kannada district'), 'Dakshina Kannada sample size and age range cited accurately');
+assert(itwJsx.includes('Sections 16 and 17 of the Rights of Persons with Disabilities Act 2016'), 'RPwD Act Sections 16 & 17 correctly cited');
 assert(itwJsx.includes('require certified benchmark disability documentation'), 'Formal exam accommodations scope correctly stated as requiring benchmark certification');
 
 // ----------------------------------------------------
@@ -98,9 +99,11 @@ assert(itwJsx.includes('original: 6') && itwJsx.includes('target: 12'), 'Mint le
 
 // Check research citations
 assert(!itwJsx.includes('NIMHANS Child & Adolescent Psychiatry Epidemiology Studies'), 'Removed unsupported NIMHANS dyscalculia prevalence citation');
-assert(itwJsx.includes('Ramaa & Gowramma'), 'Ramaa & Gowramma Mysore primary school study cited with cohort range');
+assert(itwJsx.includes('Ramaa & Gowramma (2002)'), 'Ramaa & Gowramma Mysore primary school study cited with DOI');
+assert(itwJsx.includes('5.98% (15 out of 251 students in grades 3–4) in Study 1, and 5.54% (78 out of 1,408 screened students) in Study 2'), 'Ramaa & Gowramma two distinct study cohorts reported separately');
+assert(!itwJsx.includes('N=664'), 'Unsupported combined N=664 figure removed');
 assert(itwJsx.includes('NCERT National Focus Group Position Paper on Teaching of Mathematics'), 'NCERT math kit guidance cited');
-assert(itwJsx.includes('CBSE Examination Bye-Laws for Candidates with Benchmark Disabilities'), 'CBSE CwD rules cited with benchmark disability eligibility');
+assert(itwJsx.includes('CBSE Circular No. CBSE/Coord/2020'), 'CBSE Circular 2020 calculator exemption and Rule 24 cited');
 
 // ----------------------------------------------------
 // TEST 4: Executive Functioning — The Project Planning Desk
@@ -140,7 +143,12 @@ assert(itwJsx.includes('Illustrative Planning Time Blocks'), 'Time blocks explic
 assert(!itwJsx.includes('Paced break recommended after'), 'Removed rigid "Paced break recommended after" claim');
 
 // Check Research Citations
-assert(itwJsx.includes('BRIEF-P preschool cohort study in urban Bengaluru, N=412'), 'BRIEF-P study cited with exact sample size and preschool population constraint');
+assert(itwJsx.includes('Selvam, S., et al. (2018)'), 'Selvam et al. 2018 Child Neuropsychology study cited with DOI');
+assert(itwJsx.includes('cohort of 412 typically-developing urban preschool children aged 2–5 in Bengaluru'), 'BRIEF-P study cited with exact sample size and preschool population constraint');
+assert(!itwJsx.includes('Journal of Applied Behavior Analysis & Inclusive Pedagogy'), 'Phantom journal label removed');
+assert(!itwJsx.includes('The Prefrontal Cortex Coordination Suite'), 'Replaced single-centre coordination suite label');
+assert(!itwJsx.includes('internal activation energy'), 'Replaced internal activation energy phrase');
+assert(itwJsx.includes('Distributed Executive Brain Networks'), 'Accurate distributed executive networks heading present');
 assert(!itwJsx.includes('reduce task refusal and transition distress by over 60%'), 'Removed unsupported "over 60%" claim');
 
 // ----------------------------------------------------
@@ -155,6 +163,6 @@ console.log('=======================================================');
 if (failedTests > 0) {
   process.exit(1);
 } else {
-  console.log('🎉 ALL PACKET 9.1 UNIT & COMPLIANCE CHECKS PASSED!\n');
+  console.log('🎉 ALL STATIC SOURCE REGRESSION CHECKS PASSED!\n');
   process.exit(0);
 }

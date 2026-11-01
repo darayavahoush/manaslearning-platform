@@ -158,6 +158,10 @@ class AudioEngine {
     this.enabled = Boolean(val);
     if (!this.enabled) {
       this.stopAll();
+    } else if (this.master && this.ctx) {
+      const now = this.ctx.currentTime;
+      this.master.gain.cancelScheduledValues(now);
+      this.master.gain.setValueAtTime(0.25, now);
     }
   }
 
@@ -168,10 +172,16 @@ class AudioEngine {
       if (!Ctx) return null;
       this.ctx = new Ctx();
       this.master = this.ctx.createGain();
-      this.master.gain.value = 0.12; // Master safety volume ceiling
+      this.master.gain.value = 0.25; // Master safety volume ceiling
       this.master.connect(this.ctx.destination);
     }
     if (this.ctx.state === "suspended") this.ctx.resume();
+    // Restore master volume if previously ramped to near-zero by stopAll
+    if (this.master && this.master.gain.value < 0.05) {
+      const now = this.ctx.currentTime;
+      this.master.gain.cancelScheduledValues(now);
+      this.master.gain.setValueAtTime(0.25, now);
+    }
     return this.ctx;
   }
 
@@ -198,22 +208,23 @@ class AudioEngine {
     const ctx = this.ensure();
     if (!ctx || !this.master) return;
     const now = ctx.currentTime;
-    const target = Math.max(0.0001, Math.min(0.12, val));
+    const target = Math.max(0.0001, Math.min(0.25, val));
     this.master.gain.cancelScheduledValues(now);
     this.master.gain.setValueAtTime(this.master.gain.value, now);
     this.master.gain.linearRampToValueAtTime(target, now + Math.max(0.15, rampSec));
   }
 
-  // Fetches the real clip for this kind from the Hugging Face dataset
-  // (see SOUND_FILE_EXT below for the exact filename/extension of each).
-  // Fire-and-forget: the first time a kind is cued with no file yet
-  // loaded, this kicks off a fetch in the background and the synthesized
-  // fallback plays for *that* cue; once the fetch resolves (or fails),
-  // later cues of the same kind either play the real clip or stop trying.
   loadSample(kind) {
     if (this.samples.has(kind) || this.sampleMissing.has(kind) || this.samplePending.has(kind)) return;
-    const ctx = this.ensure();
-    if (!ctx) return;
+    if (typeof window === "undefined") return;
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    if (!this.ctx) {
+      this.ctx = new Ctx();
+      this.master = this.ctx.createGain();
+      this.master.gain.value = 0.25;
+      this.master.connect(this.ctx.destination);
+    }
     const ext = SOUND_FILE_EXT[kind];
     if (!ext) {
       this.sampleMissing.add(kind);
@@ -225,7 +236,7 @@ class AudioEngine {
         if (!res.ok) throw new Error("missing");
         return res.arrayBuffer();
       })
-      .then((buf) => ctx.decodeAudioData(buf))
+      .then((buf) => this.ctx.decodeAudioData(buf))
       .then((decoded) => {
         this.samples.set(kind, decoded);
         this.samplePending.delete(kind);
@@ -237,42 +248,80 @@ class AudioEngine {
   }
 
   playSample(kind, gain = 1) {
-    const ctx = this.ctx;
+    const ctx = this.ensure();
+    if (!ctx) return false;
+    const playBuf = (buffer) => {
+      try {
+        const src = ctx.createBufferSource();
+        src.buffer = buffer;
+        const g = ctx.createGain();
+        const target = Math.max(0.08, Math.min(1.5, gain)) * 0.85;
+        g.gain.setValueAtTime(0.0001, ctx.currentTime);
+        g.gain.linearRampToValueAtTime(target, ctx.currentTime + 0.04);
+        src.connect(g);
+        g.connect(this.master);
+        src.start();
+      } catch {}
+    };
+
     const buffer = this.samples.get(kind);
-    if (!ctx || !buffer) return false;
-    const src = ctx.createBufferSource();
-    src.buffer = buffer;
-    const g = ctx.createGain();
-    const target = Math.max(0.05, Math.min(1.0, gain)) * 0.7;
-    g.gain.setValueAtTime(0.0001, ctx.currentTime);
-    g.gain.linearRampToValueAtTime(target, ctx.currentTime + 0.16);
-    src.connect(g);
-    g.connect(this.master);
-    src.start();
+    if (buffer) {
+      playBuf(buffer);
+      return true;
+    }
+    const ext = SOUND_FILE_EXT[kind] || "mp3";
+    fetch(`/sounds/${kind}.${ext}`)
+      .then((res) => (res.ok ? res.arrayBuffer() : null))
+      .then((buf) => (buf ? ctx.decodeAudioData(buf) : null))
+      .then((decoded) => {
+        if (decoded) {
+          this.samples.set(kind, decoded);
+          playBuf(decoded);
+        }
+      })
+      .catch(() => {});
     return true;
   }
 
   loopSample(id, kind, gain = 0.5) {
     const ctx = this.ensure();
     if (!ctx) return false;
-    const buffer = this.samples.get(kind);
-    if (!buffer) {
-      if (!this.sampleMissing.has(kind)) this.loadSample(kind);
-      return false;
-    }
     this.stopLoop(id);
-    const src = ctx.createBufferSource();
-    src.buffer = buffer;
-    src.loop = true;
-    const g = ctx.createGain();
-    const target = Math.max(0.02, Math.min(1.0, gain)) * 0.55;
-    g.gain.setValueAtTime(0.0001, ctx.currentTime);
-    g.gain.linearRampToValueAtTime(target, ctx.currentTime + 0.2);
-    src.connect(g);
-    g.connect(this.master);
-    src.start();
-    if (!this.loops) this.loops = new Map();
-    this.loops.set(id, { src, g });
+
+    const playLoop = (buffer) => {
+      try {
+        const src = ctx.createBufferSource();
+        src.buffer = buffer;
+        src.loop = true;
+        const g = ctx.createGain();
+        const target = Math.max(0.05, Math.min(1.2, gain)) * 0.75;
+        g.gain.setValueAtTime(0.0001, ctx.currentTime);
+        g.gain.linearRampToValueAtTime(target, ctx.currentTime + 0.15);
+        src.connect(g);
+        g.connect(this.master);
+        src.start();
+        if (!this.loops) this.loops = new Map();
+        this.loops.set(id, { src, g });
+      } catch {}
+    };
+
+    const buffer = this.samples.get(kind);
+    if (buffer) {
+      playLoop(buffer);
+      return true;
+    }
+
+    const ext = SOUND_FILE_EXT[kind] || "mp3";
+    fetch(`/sounds/${kind}.${ext}`)
+      .then((res) => (res.ok ? res.arrayBuffer() : null))
+      .then((buf) => (buf ? ctx.decodeAudioData(buf) : null))
+      .then((decoded) => {
+        if (decoded) {
+          this.samples.set(kind, decoded);
+          playLoop(decoded);
+        }
+      })
+      .catch(() => {});
     return true;
   }
 
@@ -502,29 +551,54 @@ class AudioEngine {
 
 const audio = new AudioEngine();
 
+let cachedVoices = [];
+if (typeof window !== "undefined" && window.speechSynthesis) {
+  cachedVoices = window.speechSynthesis.getVoices() || [];
+  window.speechSynthesis.onvoiceschanged = () => {
+    cachedVoices = window.speechSynthesis.getVoices() || [];
+  };
+}
+
+function findIndianVoice() {
+  if (typeof window === "undefined" || !window.speechSynthesis) return null;
+  const voices = cachedVoices.length > 0 ? cachedVoices : (window.speechSynthesis.getVoices() || []);
+  if (!voices || voices.length === 0) return null;
+
+  // 1. Direct Indian English match: lang is en-IN or en_IN
+  const inLang = voices.find((v) => {
+    const l = (v.lang || "").toLowerCase().replace("_", "-");
+    return l === "en-in" || l.startsWith("en-in");
+  });
+  if (inLang) return inLang;
+
+  // 2. Specific Indian voice names (macOS Rishi/Lekha/Veena, Windows Heera/Ravi/Neerja, Android/Chrome)
+  const indianKeywords = ["rishi", "lekha", "veena", "neerja", "heera", "ravi", "prabhat", "kavya", "geeta", "india", "indian"];
+  const nameMatch = voices.find((v) => {
+    const n = (v.name || "").toLowerCase();
+    return indianKeywords.some((kw) => n.includes(kw));
+  });
+  if (nameMatch) return nameMatch;
+
+  // 3. Fallback: English voice
+  return voices.find((v) => {
+    const l = (v.lang || "").toLowerCase();
+    const n = (v.name || "").toLowerCase();
+    return l.startsWith("en") && !n.includes("whisper");
+  }) || voices[0];
+}
+
 function speakText(text, { rate = 1, pitch = 1, volume = 0.9 } = {}) {
   if (typeof window === "undefined" || !window.speechSynthesis || !text) return;
   try {
     if (window.speechSynthesis.paused) window.speechSynthesis.resume();
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-IN";
     u.rate = rate;
     u.pitch = pitch;
     u.volume = volume;
-    const voices = window.speechSynthesis.getVoices();
-    if (voices && voices.length > 0) {
-      const match = voices.find(
-        (v) =>
-          v.lang.startsWith("en") &&
-          !v.name.includes("whisper") &&
-          (v.name.includes("Samantha") ||
-            v.name.includes("Daniel") ||
-            v.name.includes("Natural") ||
-            v.name.includes("Google") ||
-            v.name.includes("Karen"))
-      );
-      if (match) u.voice = match;
-    }
+    const match = findIndianVoice();
+    if (match) u.voice = match;
     window.speechSynthesis.speak(u);
   } catch {
     /* speech synthesis unavailable — visual/audio-tone feedback still works */
@@ -7509,6 +7583,7 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
   const [activeSegment, setActiveSegment] = useState(null);
   const [hasPlayedOnce, setHasPlayedOnce] = useState(false);
   const [currentMaskNotice, setCurrentMaskNotice] = useState(null);
+  const [detectedVoiceName, setDetectedVoiceName] = useState("");
 
   const startTimeRef = useRef(0);
   const timerRef = useRef(null);
@@ -7519,6 +7594,20 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
   useEffect(() => {
     onCompleteRef.current = onComplete;
   }, [onComplete]);
+
+  // Voice detection on mount & voice change
+  useEffect(() => {
+    const resolveVoice = () => {
+      const v = findIndianVoice();
+      if (v) {
+        setDetectedVoiceName(v.name);
+      }
+    };
+    resolveVoice();
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = resolveVoice;
+    }
+  }, []);
 
   // Stopwatch timer
   useEffect(() => {
@@ -7547,10 +7636,19 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
     setCurrentMaskNotice(null);
   };
 
-  // Audio Playback Engine for Classroom Announcement with Genuine Phonetic Masking
+  // Audio Playback Engine for Classroom Announcement with Genuine Phonetic Masking in Indian Accent
   const playAnnouncement = (customText = null, segmentId = null) => {
     stopAudioArtifacts();
-    audio.ensure();
+
+    // 1. Explicitly enable and prime the Web Audio Engine for classroom acoustics
+    audio.setEnabled(true);
+    const ctx = audio.ensure();
+    if (ctx && audio.master) {
+      const now = ctx.currentTime;
+      audio.master.gain.cancelScheduledValues(now);
+      audio.master.gain.setValueAtTime(0.32, now); // Audibly clear
+    }
+
     setIsPlayingAudio(true);
     setHasPlayedOnce(true);
     setActiveSegment(segmentId);
@@ -7565,73 +7663,69 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
       } catch {}
 
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.rate = isUnsupported ? 0.88 : 0.92;
+      utterance.lang = "en-IN"; // Target Indian English phonetics
+      utterance.rate = isUnsupported ? 0.90 : 0.94;
       utterance.pitch = 1.05;
-      utterance.volume = isUnsupported ? 0.82 : 1.0;
+      utterance.volume = 1.0;
 
-      const voices = window.speechSynthesis.getVoices();
-      if (voices && voices.length > 0) {
-        const match = voices.find(
-          (v) =>
-            v.lang.startsWith("en") &&
-            !v.name.includes("whisper") &&
-            (v.name.includes("Samantha") ||
-              v.name.includes("Daniel") ||
-              v.name.includes("Natural") ||
-              v.name.includes("Google") ||
-              v.name.includes("Karen"))
-        );
-        if (match) utterance.voice = match;
+      const indianVoice = findIndianVoice();
+      if (indianVoice) {
+        utterance.voice = indianVoice;
+        setDetectedVoiceName(indianVoice.name);
       }
 
       utterance.onend = () => {
         stopAudioArtifacts();
       };
-      utterance.onerror = () => {
+      utterance.onerror = (err) => {
+        console.warn("TTS error:", err);
         stopAudioArtifacts();
       };
 
-      window.speechSynthesis.speak(utterance);
+      try {
+        window.speechSynthesis.speak(utterance);
+      } catch {}
     }
 
-    // In unsupported mode: Layer continuous room noise and synchronized phoneme noise bursts
-    if (isUnsupported && soundOn) {
-      // 1. Continuous HVAC / fan noise loop
-      audio.loopSample("classroom_drone", "hum", 0.7);
-      audio.startDrone("babble", { freqs: [120, 240], type: "triangle" });
+    // 2. In unsupported mode: Layer continuous room noise and synchronized phoneme noise bursts
+    if (isUnsupported) {
+      // (A) Continuous ambient classroom drone: HVAC hum + low student murmurs
+      audio.loopSample("classroom_drone", "hum", 0.92);
+      audio.startDrone("babble", { freqs: [110, 220, 330], type: "triangle" });
 
-      // 2. Synchronized acoustic masking events over critical instructions
+      // (B) Synchronized acoustic masking events over critical instructions
       const t1 = setTimeout(() => {
         setCurrentMaskNotice("⚠️ Acoustic Mask 1: Scraping chair drowns out Chapter number (/f/ onset)");
-        audio.cue("scrape", 1.4);
-        audio.noiseBurst({ duration: 0.65, gain: 0.32, filterFreq: 1800, type: "bandpass" });
-      }, 2800);
+        audio.cue("scrape", 1.6);
+        audio.noiseBurst({ duration: 0.75, gain: 0.38, filterFreq: 1800, type: "bandpass" });
+      }, 2700);
 
       const t2 = setTimeout(() => {
         setCurrentMaskNotice("⚠️ Acoustic Mask 2: Desk rustle & chatter drowns notebook color (/bl/ onset)");
-        audio.cue("rustle", 1.3);
-        audio.cue("laugh", 0.85);
-        audio.noiseBurst({ duration: 0.6, gain: 0.28, filterFreq: 1400, type: "bandpass" });
-      }, 5900);
+        audio.cue("rustle", 1.5);
+        audio.cue("laugh", 1.1);
+        audio.noiseBurst({ duration: 0.7, gain: 0.35, filterFreq: 1400, type: "bandpass" });
+      }, 5800);
 
       const t3 = setTimeout(() => {
         setCurrentMaskNotice("⚠️ Acoustic Mask 3: Heavy door slam drowns out submission format");
-        audio.cue("slam", 1.4);
-        audio.noiseBurst({ duration: 0.65, gain: 0.3, filterFreq: 2200, type: "bandpass" });
-      }, 9100);
+        audio.cue("slam", 1.6);
+        audio.cue("argue", 1.1);
+        audio.noiseBurst({ duration: 0.75, gain: 0.38, filterFreq: 2200, type: "bandpass" });
+      }, 9000);
 
       const tClear = setTimeout(() => {
         setCurrentMaskNotice(null);
-      }, 11500);
+      }, 12000);
 
       maskTimeoutsRef.current = [t1, t2, t3, tClear];
 
-      // 3. Periodic ambient room chatter
+      // (C) Periodic ambient student sounds (footsteps, paper shuffles, whispers)
       const noiseCues = ["scrape", "rustle", "screech", "footsteps", "argue"];
       noiseIntervalRef.current = setInterval(() => {
         const randCue = noiseCues[Math.floor(Math.random() * noiseCues.length)];
-        audio.cue(randCue, 0.75);
-      }, 1600);
+        audio.cue(randCue, 0.85);
+      }, 1500);
     }
   };
 
@@ -7707,34 +7801,71 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
         }}
       >
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 14 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <button
-              type="button"
-              className="itw-dys-btn-primary"
-              style={{
-                background: "var(--itw-auditory)",
-                padding: "11px 20px",
-                fontSize: 13.5,
-                fontWeight: 800,
-                boxShadow: isPlayingAudio ? "0 0 0 6px rgba(44, 82, 130, 0.25)" : "0 4px 14px rgba(44, 82, 130, 0.25)",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-              }}
-              onClick={() => playAnnouncement()}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
-              </svg>
-              <span>{isPlayingAudio ? "Playing Voice in Noise..." : hasPlayedOnce ? "🔄 Replay Announcement" : "🔊 Play Teacher's Announcement"}</span>
-            </button>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <button
+                type="button"
+                className="itw-dys-btn-primary"
+                style={{
+                  background: "var(--itw-auditory)",
+                  padding: "11px 20px",
+                  fontSize: 13.5,
+                  fontWeight: 800,
+                  boxShadow: isPlayingAudio ? "0 0 0 6px rgba(44, 82, 130, 0.25)" : "0 4px 14px rgba(44, 82, 130, 0.25)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+                onClick={() => playAnnouncement()}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+                </svg>
+                <span>{isPlayingAudio ? "Playing Voice in Noise..." : hasPlayedOnce ? "🔄 Replay Announcement" : "🔊 Play Teacher's Announcement"}</span>
+              </button>
 
-            <span style={{ fontSize: 13, color: isPlayingAudio ? "var(--itw-auditory)" : "var(--itw-muted)", fontWeight: 700 }}>
-              {isPlayingAudio
-                ? (isUnsupported ? "⚠️ Classroom noise & phonetic masking active!" : "Teacher speaking aloud...")
-                : "Click above to listen or replay the spoken instructions"}
-            </span>
+              <span style={{ fontSize: 13, color: isPlayingAudio ? "var(--itw-auditory)" : "var(--itw-muted)", fontWeight: 700 }}>
+                {isPlayingAudio
+                  ? (isUnsupported ? "⚠️ Live classroom noise & phonetic masking active!" : "Teacher speaking aloud...")
+                  : "Click above to listen or replay the spoken instructions"}
+              </span>
+            </div>
+
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+              <span
+                style={{
+                  fontSize: 11.5,
+                  fontWeight: 800,
+                  padding: "3px 9px",
+                  borderRadius: 6,
+                  background: "rgba(5, 176, 118, 0.12)",
+                  color: "#05b076",
+                  border: "1px solid rgba(5, 176, 118, 0.28)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                }}
+              >
+                <span>🇮🇳</span>
+                <span>Voice: Indian English ({detectedVoiceName || "en-IN Classroom Teacher"})</span>
+              </span>
+              {isUnsupported && (
+                <span
+                  style={{
+                    fontSize: 11.5,
+                    fontWeight: 800,
+                    padding: "3px 9px",
+                    borderRadius: 6,
+                    background: "rgba(220, 38, 38, 0.12)",
+                    color: "#dc2626",
+                    border: "1px solid rgba(220, 38, 38, 0.28)",
+                  }}
+                >
+                  ⚠️ Competing Classroom Noise Active (-5 dB SNR)
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Acoustic Waveform Visualization */}

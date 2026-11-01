@@ -2,10 +2,10 @@ const LIVE = 'https://www.manaslearning.com'
 const WHATSAPP = 'https://chat.whatsapp.com/IeobE2Zx5HMBft0xQEK7Vh?mode=gi_t'
 
 const FEELS = [
-  {name: 'Autism', line: 'Find one thing while sounds and sights compete for your attention.', tone: 'border-card-blue/60 bg-card-blue/15'},
-  {name: 'ADHD', line: 'Stay on one task while the world keeps interrupting.', tone: 'border-card-yellow/70 bg-card-yellow/20'},
-  {name: 'Dyslexia', line: 'Read a passage where the letters will not sit still.', tone: 'border-primary/50 bg-primary/10'},
-  {name: 'Speech', line: 'Push through a word that will not come out in time.', tone: 'border-card-green/60 bg-card-green/15'},
+  {name: 'Autism', line: 'Explore how sensory filtering shapes attention when sounds and visuals compete.', tone: 'border-card-blue/60 bg-card-blue/15'},
+  {name: 'ADHD', line: 'Notice how environmental distractions and interruptions affect focus on a single task.', tone: 'border-card-yellow/70 bg-card-yellow/20'},
+  {name: 'Dyslexia', line: 'Explore the cognitive effort of decoding print and how reader supports make a difference.', tone: 'border-primary/50 bg-primary/10'},
+  {name: 'Speech', line: 'Explore how conversation partners can make room for different ways of communicating.', tone: 'border-card-green/60 bg-card-green/15'},
 ]
 const SERVICES = [
   {title: 'Speech and language', text: 'Support for children who are late to talk, hard to understand, or finding it difficult to put words together.'},
@@ -41,21 +41,21 @@ export default function Home() {
 
       <section id="experience" className="container mx-auto scroll-mt-28 px-4 py-16 lg:px-8">
         <div className="mx-auto max-w-3xl space-y-3 text-center">
-          <h2 className={h2}>Experience what they feel</h2>
-          <p className={sub}>A checklist gives you the facts. These interactive experiences put you inside a child&apos;s morning for a few minutes, then show the Indian data and what helps.</p>
+          <h2 className={h2}>In Their World: Learning Differences &amp; Accommodations</h2>
+          <p className={sub}>Interactive perspectives exploring task demands, classroom accessibility barriers, and practical supports across neurodiversity, followed by Indian data and evidence-based accommodations.</p>
         </div>
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {FEELS.map((f) => (
             <a key={f.name} href="/experience" className={`${card} ${f.tone} group`}>
               <h3 className="font-poppins text-xl font-bold text-black">{f.name}</h3>
               <p className="mt-2 text-xl text-text-brown">{f.line}</p>
-              <p className="mt-4 text-xl text-primary group-hover:underline">Try it →</p>
+              <p className="mt-4 text-xl text-primary group-hover:underline">Explore →</p>
             </a>
           ))}
         </div>
         <div className="mt-8 text-center">
-          <a href="/experience" className={btnOrange}>Start the experience</a>
-          <p className="mt-3 text-lg text-black/60">Built to build empathy, not to diagnose.</p>
+          <a href="/experience" className={btnOrange}>Explore Experiences &amp; Supports</a>
+          <p className="mt-3 text-lg text-black/60">Built to explore accessibility barriers and supports, not to diagnose.</p>
         </div>
       </section>
 

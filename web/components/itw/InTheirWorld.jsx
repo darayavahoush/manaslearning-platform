@@ -874,21 +874,21 @@ function Landing({ onSelect }) {
 
       <div className="itw-hero">
         <div className="itw-masthead">
-          <div className="itw-eyebrow itw-rise itw-rise-1">Experience What They Feel</div>
+          <div className="itw-eyebrow itw-rise itw-rise-1">Learning Differences &amp; Accommodations</div>
           <h1 className="itw-title itw-rise itw-rise-2">
-            Step into their <span className="itw-accent-word">world<svg className="itw-squiggle" viewBox="0 0 160 14" preserveAspectRatio="none"><path d="M2 9c14-10 26-10 40 0s26 10 40 0 26-10 40 0 26 10 36 2" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"/></svg></span>,<br />just for a few minutes.
+            In Their <span className="itw-accent-word">World<svg className="itw-squiggle" viewBox="0 0 160 14" preserveAspectRatio="none"><path d="M2 9c14-10 26-10 40 0s26 10 40 0 26-10 40 0 26 10 36 2" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"/></svg></span>:<br />Barriers &amp; Supports.
           </h1>
           <p className="itw-lede itw-rise itw-rise-3">
-            Some learning differences are difficult to see from the outside. Short, hands-on
-            experiences let you feel a small part of what reading, focusing, sensory input and
-            speaking out loud can be like for some children — each one paired with real data
-            and practical steps you can use right away.
+            Some learning differences are difficult to see from the outside. Interactive
+            perspectives explore task demands, environmental friction, and practical supports across reading,
+            focus, sensory filtering, and communication access — each one paired with Indian data
+            and actionable accommodations you can use right away.
           </p>
           <div className="itw-hero-actions itw-rise itw-rise-4">
-            <button className="itw-cta itw-cta-dark" onClick={() => scrollToId("itw-choose")}>Start an Experience</button>
+            <button className="itw-cta itw-cta-dark" onClick={() => scrollToId("itw-choose")}>Explore Experiences &amp; Supports</button>
           </div>
           <div className="itw-disclaimer itw-rise itw-rise-4">
-            <strong>Before you start:</strong> these are approximations for empathy, not diagnoses — every child's experience is their own.
+            <strong>Important:</strong> These interactive activities explore task demands, classroom barriers, and accommodations — they do not diagnose, simulate, or recreate an individual's lived experience.
           </div>
         </div>
         <aside className="itw-hero-card itw-rise itw-rise-3" aria-hidden="true">
@@ -954,8 +954,7 @@ function Landing({ onSelect }) {
       </section>
 
       <div className="itw-foot-note">
-        Built to build empathy, not to diagnose. Figures are approximate and drawn from the Dyslexia
-        Association of India, AIISH, INCLEN Trust / PLOS Medicine, and peer-reviewed Indian epidemiological studies.
+        Built to explore environmental barriers and inclusive accommodations, not to diagnose. Figures are drawn from peer-reviewed Indian epidemiological studies and official frameworks.
       </div>
     </section>
   );
@@ -970,31 +969,29 @@ function AboutBlock() {
       <div>
         <h3>About In Their World</h3>
         <p>
-          Reading a checklist about autism, ADHD, dyslexia, or a speech/language difference tells you
-          the facts — it doesn't tell you what your child's morning actually feels like. In Their World
-          is four short simulations, one per condition, that put you inside that experience for a few
-          minutes: sounds you can't tune out, focus that keeps slipping, letters that won't sit still,
-          words that won't come out in time. Most parents and teachers don't get long before they need
-          to understand — this is a five-minute way in.
+          Reading a diagnostic checklist about autism, ADHD, dyslexia, or speech/language differences tells you
+          clinical terms — it does not always show how classroom environments and task demands create friction.
+          In Their World provides interactive perspectives exploring environmental barriers, task design, and
+          practical accommodations across attention, sensory processing, reading decoding, mathematical representation,
+          and communication access.
         </p>
         <p>
-          The data behind each module is deliberately Indian, not imported. Most awareness material
-          in this space is built on US or UK prevalence numbers that don't map cleanly onto a country
-          where diagnosis is far less common and often comes late. Figures here are drawn from the
-          Dyslexia Association of India, AIISH, and INCLEN Trust / PLOS Medicine studies instead.
+          The data behind each module is grounded in Indian pediatric and educational contexts. Rather than relying solely
+          on imported prevalence statistics, figures here reflect Indian clinical and epidemiological research,
+          exam board frameworks, and the Rights of Persons with Disabilities (RPwD) Act 2016.
         </p>
         <ul className="itw-about-points">
           <li>
-            <b>Feel it first</b>
-            A short interactive task simulates the actual friction — not a description of it.
+            <b>Explore Task Demands</b>
+            Interactive perspectives examine how environment, pacing, and representation shape learning.
           </li>
           <li>
-            <b>See the numbers</b>
-            Indian prevalence data and context, so the scale feels real rather than abstract.
+            <b>See the Data</b>
+            Carefully cited Indian epidemiological and clinical context with clear denominators.
           </li>
           <li>
-            <b>Know what helps</b>
-            Concrete, low-effort strategies for home and classroom, not just awareness.
+            <b>Know What Helps</b>
+            Concrete, evidence-based accommodations for home and classroom, from visual horizons to multi-modal AAC.
           </li>
         </ul>
         <p className="itw-brand-echo">EveryChildLearnsDifferently.</p>
@@ -3712,7 +3709,7 @@ function advanceActiveDyslexiaPairIndex() {
 function FlowCrumbs({ name, onBack }) {
   return (
     <nav className="itw-crumbs" aria-label="Breadcrumb">
-      <button type="button" className="itw-crumb-link" onClick={onBack}>Experience What They Feel</button>
+      <button type="button" className="itw-crumb-link" onClick={onBack}>In Their World • Experiences</button>
       <span aria-hidden="true">›</span>
       <span aria-current="page">{name}</span>
     </nav>
@@ -4588,127 +4585,91 @@ const SPEECH_SCENARIOS = [
   {
     id: "stuttering",
     title: "Scenario A: A Student Who Stutters",
-    student: "Rohan (Grade 6)",
-    topic: "Science Discussion on Plant Stomata",
-    context: "Rohan is contributing an idea during a whole-class science discussion on how leaves exchange gases.",
-    barrierDescription: "Discussion moves at a rapid pace. When Rohan experiences a speech block, an impatient partner cuts in, finishes his sentence, and tells him to 'take a breath and calm down'. Rohan looks down, feeling rushed and talked over.",
+    student: "Rohan (Grade 8)",
+    topic: "Classroom Science Discussion • Plant Respiration",
+    context: "Rohan is contributing an explanation about plant transpiration and leaf stomata during a whole-class science discussion.",
+    barrierDescription: "Fast-paced classroom expectations, classmates guessing his words, and listener advice to 'slow down' create unnecessary pressure around natural speech fluency.",
     practices: [
       {
         id: "give_time",
-        label: "Allow Time to Finish",
-        desc: "Wait patiently without looking at the clock, tapping feet, or showing impatience.",
+        label: "Allow Unhurried Time",
+        desc: "Offer calm conversational pacing without impatience, desk-tapping, or time pressure.",
       },
       {
         id: "no_finish",
         label: "Never Finish Sentences",
-        desc: "Do not guess words or finish sentences for the speaker. Honor sentence ownership.",
+        desc: "Honor sentence ownership; do not guess words or complete thoughts for the speaker.",
       },
       {
         id: "message_focus",
         label: "Focus on Message Content",
-        desc: "Respond warmly to the scientific concept rather than commenting on delivery fluency.",
+        desc: "Respond directly to the scientific insight rather than commenting on speech delivery or fluency.",
       },
       {
-        id: "calm_presence",
-        label: "Maintain Relaxed Presence",
-        desc: "Keep natural, comfortable eye contact and relational calm throughout the exchange.",
+        id: "relational_respect",
+        label: "Respectful Relational Presence",
+        desc: "Maintain warm, comfortable engagement without demanding fixed eye contact, which can add discomfort.",
       },
-    ],
-    dialogueBarrier: [
-      { speaker: "Teacher", text: "Rohan, how does the leaf control moisture loss during hot afternoons?" },
-      { speaker: "Rohan", text: "The... the... w-w-water vapor..." },
-      { speaker: "Classmate (Interruption)", text: "Stomata! You mean stomata, right? Just take a deep breath and slow down!" },
-      { speaker: "Outcome", text: "⚠️ Barrier: Rohan was interrupted, advised to 'calm down', and denied the chance to complete his own thought.", isAlert: true },
-    ],
-    dialogueSupported: [
-      { speaker: "Teacher", text: "Rohan, how does the leaf control moisture loss during hot afternoons?" },
-      { speaker: "Rohan", text: "The... the... w-w-water vapor escapes through tiny pores called stomata. They close when it gets dry." },
-      { speaker: "Teacher (Direct Response)", text: "Exactly right, Rohan. The stomata close to prevent dehydration. That is a great observation." },
-      { speaker: "Outcome", text: "✓ Accessible Environment: Rohan completed his scientific thought with dignity. The teacher responded to the idea, not the fluency.", isSuccess: true },
     ],
   },
   {
     id: "aac",
     title: "Scenario B: A Student Who Uses AAC",
     student: "Ananya (Grade 7)",
-    topic: "Science Exhibition Showcase",
-    context: "Ananya uses a dynamic tablet AAC device with symbol tiles to explain her water purification model to classroom visitors.",
-    barrierDescription: "A visiting evaluator addresses Ananya's peer assistant instead of looking at Ananya, reaches out to touch her tablet screen without permission, and guesses her sentence before she presses the speech output button.",
+    topic: "Science Exhibition Showcase • Water Filtration",
+    context: "Ananya uses a dynamic tablet AAC device with symbol tiles to explain her two-stage water purification model to visitors.",
+    barrierDescription: "Visitors often address Ananya's peer assistant instead of looking at her, touch her device without permission, or rush her while she navigates symbol folders.",
     practices: [
       {
         id: "direct_address",
         label: "Address Student Directly",
-        desc: "Look at and speak directly to Ananya at eye level, not to an assistant or parent.",
+        desc: "Speak directly to Ananya at eye level, rather than talking about her to an assistant or parent.",
       },
       {
         id: "device_autonomy",
         label: "Respect Device Autonomy",
-        desc: "Never touch, grab, or alter an AAC system without explicit permission. It is personal space.",
+        desc: "Never touch, grab, or alter an AAC system without explicit permission. It is personal physical space.",
       },
       {
         id: "compose_time",
         label: "Allow Composition Time",
-        desc: "Recognize that navigating symbol pages and building multi-word phrases requires unhurried motor time.",
+        desc: "Recognize that navigating symbol folders and assembling multi-word phrases requires unhurried motor time.",
       },
       {
         id: "multimodal",
         label: "Welcome Multi-Modal Output",
-        desc: "Respect speech, device voice output, gestures, and pointing as equally valid communication.",
+        desc: "Value synthesized device voice, diagram pointing, gestures, and vocalizations equally.",
       },
-    ],
-    dialogueBarrier: [
-      { speaker: "Visitor (to Assistant)", text: "Can she explain to us what this sand filtration layer does?" },
-      { speaker: "Visitor (reaching for tablet)", text: "Let me tap that button for you... is it 'clean water'?" },
-      { speaker: "Outcome", text: "⚠️ Barrier: The visitor talked about Ananya rather than to her, violated her personal device space, and rushed her composition.", isAlert: true },
-    ],
-    dialogueSupported: [
-      { speaker: "Visitor (looking directly at Ananya)", text: "Ananya, could you tell us how your filtration system works?" },
-      { speaker: "Ananya (composing on AAC)", text: "[ Sand Layer ] + [ Traps ] + [ Fine Sediment ]" },
-      { speaker: "AAC Voice Output", text: "“The sand layer traps fine sediment before charcoal filtering.”" },
-      { speaker: "Visitor", text: "Thank you, Ananya. That two-stage process makes the water noticeably clearer." },
-      { speaker: "Outcome", text: "✓ Accessible Environment: Ananya was addressed directly, given full composition autonomy, and communicated her project successfully.", isSuccess: true },
     ],
   },
   {
     id: "language_time",
     title: "Scenario C: Processing Time & Clear Prompts",
     student: "Kavi (Grade 5)",
-    topic: "Chemistry Acid-Base Investigation",
+    topic: "Chemistry Investigation • Litmus Acid-Base Test",
     context: "The teacher checks in with Kavi during a chemistry lab where blue litmus paper turns red in lemon juice.",
-    barrierDescription: "The teacher asks a compound three-part question rapidly. Before Kavi can organize his thoughts, the teacher jumps in with rapid-fire rephrasing. The verbal barrage resets Kavi's processing window.",
+    barrierDescription: "A compound three-part question asked in rapid succession overloads working memory; rapid rephrasing adds competing verbal input before thoughts can be organized.",
     practices: [
       {
-        id: "single_question",
+        id: "clear_prompt",
         label: "Ask One Clear Question",
-        desc: "Break complex compound questions into one single-concept inquiry at a time.",
+        desc: "Break compound questions into a single, focused inquiry at a time.",
       },
       {
-        id: "processing_silence",
+        id: "processing_time",
         label: "Allow Processing Silence",
-        desc: "Offer generous silence without jumping in to rephrase. Rapid rephrasing restarts the cognitive processing clock.",
+        desc: "Offer generous silent thinking time without jumping in with rapid rephrasings that introduce competing verbal input.",
       },
       {
         id: "visual_anchor",
-        label: "Offer Visual Anchors",
-        desc: "Point to the litmus color chart and key vocabulary on the laboratory table.",
+        label: "Provide Visual Anchors",
+        desc: "Point to labeled charts, diagrams, or key vocabulary cards on the lab table.",
       },
       {
-        id: "preferred_mode",
-        label: "Accept Varied Responses",
-        desc: "Allow pointing to the diagram, writing a keyword, or speaking as comfortable.",
+        id: "varied_response",
+        label: "Welcome Varied Response Modes",
+        desc: "Accept pointing to the chart, keyword notes, or verbal replies as valid scientific communication.",
       },
-    ],
-    dialogueBarrier: [
-      { speaker: "Teacher (rapid pace)", text: "Kavi, why did the paper turn red, what does that mean about acidity, and did you record the pH?" },
-      { speaker: "Teacher (after 1.5 seconds)", text: "Was it acid or base, Kavi? Quick, tell me the gas name!" },
-      { speaker: "Outcome", text: "⚠️ Barrier: Multiple simultaneous questions and immediate rephrasing overloaded working memory and caused verbal shutdown.", isAlert: true },
-    ],
-    dialogueSupported: [
-      { speaker: "Teacher (measured pace)", text: "Kavi, look at the color chart. What does the red litmus paper tell us about lemon juice?" },
-      { speaker: "Teacher (patient silence)", text: "(Waits calmly for 6 seconds while Kavi looks at the paper and chart)" },
-      { speaker: "Kavi", text: "The red color means the lemon juice is an acid." },
-      { speaker: "Teacher", text: "Spot on, Kavi. The red color confirms it is acidic." },
-      { speaker: "Outcome", text: "✓ Accessible Environment: One clear prompt, visual grounding, and patient silence enabled accurate scientific retrieval.", isSuccess: true },
     ],
   },
 ];
@@ -4722,18 +4683,258 @@ const AAC_SAMPLE_TILES = [
   { id: "charcoal", label: "Charcoal Layer", icon: "🪵" },
 ];
 
+function getSpeechDialogue(scenarioId, activePractices) {
+  const has = (id) => activePractices.includes(id);
+
+  if (scenarioId === "stuttering") {
+    const giveTime = has("give_time");
+    const noFinish = has("no_finish");
+    const messageFocus = has("message_focus");
+    const respect = has("relational_respect");
+
+    const turns = [
+      {
+        speaker: "Teacher (Classroom Science Discussion)",
+        text: "Rohan, can you explain how leaf stomata regulate water loss during a hot afternoon?",
+      },
+      {
+        speaker: "Rohan (Student)",
+        text: "The moisture... [pause] ... escapes through microscopic pores called stomata.",
+      },
+    ];
+
+    // Turn 3: Partner Pacing & Sentence Ownership reaction
+    if (giveTime && noFinish) {
+      turns.push({
+        speaker: "Conversation Partner (Patient & Attentive)",
+        text: "(Waits quietly and attentively at a natural pace while Rohan completes his thought.)",
+        isSuccess: true,
+      });
+    } else if (!giveTime && !noFinish) {
+      turns.push({
+        speaker: "Classmate (Interruption & Guessing)",
+        text: "Stomata! You mean stomata, right? Quick, just spit it out, the bell is going to ring!",
+        isAlert: true,
+      });
+    } else if (giveTime && !noFinish) {
+      turns.push({
+        speaker: "Classmate (Jumping In)",
+        text: "Are you trying to say stomata? Here, let me finish it for you: they close up!",
+        isAlert: true,
+      });
+    } else {
+      turns.push({
+        speaker: "Teacher (Pacing Pressure)",
+        text: "Rohan, please hurry up, we have four other questions to cover before the period ends.",
+        isAlert: true,
+      });
+    }
+
+    // Turn 4: Rohan completes thought
+    turns.push({
+      speaker: "Rohan (Student)",
+      text: "When the air is dry, the guard cells close the pores to prevent the plant from wilting.",
+    });
+
+    // Turn 5: Feedback & Presence
+    if (messageFocus && respect) {
+      turns.push({
+        speaker: "Teacher (Scientific Engagement)",
+        text: "Spot on, Rohan. Guard cells respond directly to ambient humidity to conserve moisture. That is excellent reasoning.",
+        isSuccess: true,
+      });
+    } else if (!messageFocus && !respect) {
+      turns.push({
+        speaker: "Teacher (Fluency Critique & Eye Contact Demand)",
+        text: "Look at me when you answer, Rohan. You knew the answer, but try taking a deep breath so you don't hesitate next time.",
+        isAlert: true,
+      });
+    } else if (messageFocus && !respect) {
+      turns.push({
+        speaker: "Teacher (Eye Contact Demand)",
+        text: "Good scientific point, Rohan. But make sure you keep your eyes locked on me when answering in class.",
+        isAlert: true,
+      });
+    } else {
+      turns.push({
+        speaker: "Teacher (Fluency Focus)",
+        text: "You got the definition, but remember to practice your breathing rhythm so words flow without pauses.",
+        isAlert: true,
+      });
+    }
+
+    return turns;
+  }
+
+  if (scenarioId === "aac") {
+    const direct = has("direct_address");
+    const autonomy = has("device_autonomy");
+    const compTime = has("compose_time");
+    const multimodal = has("multimodal");
+
+    const turns = [];
+
+    // Turn 1: Opening address
+    if (direct) {
+      turns.push({
+        speaker: "Exhibition Visitor (Speaking Directly to Ananya)",
+        text: "Hello Ananya, could you tell us how your two-stage water filtration model works?",
+        isSuccess: true,
+      });
+    } else {
+      turns.push({
+        speaker: "Exhibition Visitor (Talking About Ananya to Peer Assistant)",
+        text: "Can she explain to us what this sand filtration model does? Does she know how it works?",
+        isAlert: true,
+      });
+    }
+
+    // Turn 2: Device handling & composition
+    if (autonomy && compTime) {
+      turns.push({
+        speaker: "Ananya (Navigating AAC Symbol Pages)",
+        text: "(Selects [ Science ] → [ Water Project ] → [ Filtration Layers ] on her communication device unhurriedly.)",
+        isSuccess: true,
+      });
+    } else if (!autonomy && !compTime) {
+      turns.push({
+        speaker: "Visitor (Intruding on Device & Rushing)",
+        text: "(Leans over Ananya's shoulder and reaches toward her screen) 'Let me tap that button for you... is it this one? Hurry up, other parents want to see!'",
+        isAlert: true,
+      });
+    } else if (!autonomy && compTime) {
+      turns.push({
+        speaker: "Visitor (Touching Device)",
+        text: "(Points fingers directly onto Ananya's personal tablet screen) 'Let me scroll that folder down for you...'",
+        isAlert: true,
+      });
+    } else {
+      turns.push({
+        speaker: "Visitor (Rushing Composition)",
+        text: "(Taps foot and sighs) 'Can you tap faster? We have to visit five more project booths before lunch.'",
+        isAlert: true,
+      });
+    }
+
+    // Turn 3: Assembled AAC expression
+    turns.push({
+      speaker: "Ananya (Composed AAC Message)",
+      text: "[ Sand Layer ] + [ Traps ] + [ Fine Sediment ] + [ Clean Water ]",
+    });
+
+    // Turn 4: Delivery & Reception
+    if (multimodal) {
+      turns.push({
+        speaker: "AAC Device Voice & Ananya (Multi-Modal Delivery)",
+        text: "“The sand layer traps fine sediment before the charcoal filter.” (Ananya points to the water sample vial.)",
+        isSuccess: true,
+      });
+      turns.push({
+        speaker: "Visitor (Respectful Feedback)",
+        text: "Thank you, Ananya! Pointing to that vial makes the sediment removal crystal clear. That is great engineering.",
+        isSuccess: true,
+      });
+    } else {
+      turns.push({
+        speaker: "Visitor (Demanding Spoken Speech)",
+        text: "The tablet is nice, but can't you just explain it out loud with your actual voice for the judging criteria?",
+        isAlert: true,
+      });
+    }
+
+    return turns;
+  }
+
+  // Scenario C: language_time
+  const clearPrompt = has("clear_prompt");
+  const procTime = has("processing_time");
+  const visualAnchor = has("visual_anchor");
+  const variedMode = has("varied_response");
+
+  const turns = [];
+
+  // Turn 1: Teacher Prompt
+  if (clearPrompt) {
+    turns.push({
+      speaker: "Teacher (Focused Single Prompt)",
+      text: "Kavi, look at the blue litmus strip we dipped in the lemon juice. What does the red color indicate?",
+      isSuccess: true,
+    });
+  } else {
+    turns.push({
+      speaker: "Teacher (Compound Barrage)",
+      text: "Kavi, why did the litmus paper turn red, what does that say about pH and hydronium ions, and did you write down the formula?",
+      isAlert: true,
+    });
+  }
+
+  // Turn 2: Processing window & Visual support
+  if (procTime && visualAnchor) {
+    turns.push({
+      speaker: "Teacher & Environment (Patient Silence + Visual Support)",
+      text: "(Teacher pauses calmly for 6 seconds and gestures to the color-coded pH scale on the laboratory bench. Kavi observes the strip and chart.)",
+      isSuccess: true,
+    });
+  } else if (!procTime && !visualAnchor) {
+    turns.push({
+      speaker: "Teacher (Rapid Rephrasing Without Visuals)",
+      text: "(After 1.5 seconds) 'Was it acid or base, Kavi? Come on, is it sour? Quick, answer before the bell!'",
+      isAlert: true,
+    });
+  } else if (procTime && !visualAnchor) {
+    turns.push({
+      speaker: "Teacher (Patient Silence Without Visuals)",
+      text: "(Teacher waits calmly, but without pointing to any visual diagram or vocabulary card on the table.)",
+    });
+  } else {
+    turns.push({
+      speaker: "Teacher (Interrupting Despite Visuals)",
+      text: "(Points to the chart, but immediately interrupts after 1 second: 'Acid or base? Quick!')",
+      isAlert: true,
+    });
+  }
+
+  // Turn 3: Response Mode
+  if (variedMode) {
+    turns.push({
+      speaker: "Kavi & Teacher (Flexible Communication Accepted)",
+      text: "Kavi points to 'Acid (pH < 7)' on the chart and says: 'The red color means lemon juice is an acid.' Teacher replies: 'Spot on, Kavi. The red litmus test confirms high acidity.'",
+      isSuccess: true,
+    });
+  } else {
+    turns.push({
+      speaker: "Teacher (Demanding Formal Oral Recitation)",
+      text: "Kavi points to the chart, but teacher says: 'No pointing, Kavi! Use a full grammatical sentence out loud or it doesn't count for lab points.'",
+      isAlert: true,
+    });
+  }
+
+  return turns;
+}
+
 function CommunicationAccessStudio() {
   const { soundOn } = useContext(SettingsContext);
   const [activeScenarioId, setActiveScenarioId] = useState("stuttering");
   const [enabledPractices, setEnabledPractices] = useState({
     stuttering: ["give_time", "no_finish"],
     aac: ["direct_address", "device_autonomy"],
-    language_time: ["single_question", "processing_silence"],
+    language_time: ["clear_prompt", "processing_time"],
   });
   const [aacMessage, setAacMessage] = useState([]);
+  const [aacSpeechStatus, setAacSpeechStatus] = useState("idle"); // idle | playing | stopped | unsupported
+  const [liveAnnouncement, setLiveAnnouncement] = useState("");
 
   const currentScenario = SPEECH_SCENARIOS.find((s) => s.id === activeScenarioId) || SPEECH_SCENARIOS[0];
   const activePractices = enabledPractices[activeScenarioId] || [];
+
+  // Cleanup speech synthesis on unmount or scenario change
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, [activeScenarioId]);
 
   const togglePractice = (practiceId) => {
     if (soundOn) audio.cue("tap");
@@ -4746,29 +4947,72 @@ function CommunicationAccessStudio() {
     });
   };
 
-  const isFullySupported = activePractices.length >= 3;
-
   const handleTileClick = (tile) => {
     if (soundOn) audio.cue("tap");
     if (aacMessage.some((t) => t.id === tile.id)) return;
     setAacMessage((prev) => [...prev, tile]);
+    setLiveAnnouncement(`Added ${tile.label} to message.`);
   };
 
   const handleClearAac = () => {
-    if (soundOn) audio.cue("tap");
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
     setAacMessage([]);
+    setAacSpeechStatus("idle");
+    setLiveAnnouncement("AAC message cleared.");
   };
 
-  const handleSpeakAac = () => {
-    if (soundOn) {
-      audio.cue("bell");
+  const handleStopAac = () => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    setAacSpeechStatus("stopped");
+    setLiveAnnouncement("Speech output stopped.");
+  };
+
+  // Explicit user-initiated AAC Speech Output (works independently of global soundOn)
+  const handlePlayAac = () => {
+    if (aacMessage.length === 0) return;
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      setAacSpeechStatus("unsupported");
+      setLiveAnnouncement("Speech synthesis is not supported in this browser environment.");
+      return;
+    }
+    try {
+      window.speechSynthesis.cancel();
       const sentence = aacMessage.map((t) => t.label).join(" ");
-      speakText(sentence, { rate: 0.9, pitch: 1 });
+      const utterance = new SpeechSynthesisUtterance(sentence);
+      utterance.rate = 0.9;
+      utterance.pitch = 1.0;
+      utterance.onstart = () => {
+        setAacSpeechStatus("playing");
+        setLiveAnnouncement(`Playing message: ${sentence}`);
+      };
+      utterance.onend = () => {
+        setAacSpeechStatus("idle");
+        setLiveAnnouncement("Message playback finished.");
+      };
+      utterance.onerror = () => {
+        setAacSpeechStatus("idle");
+      };
+      window.speechSynthesis.speak(utterance);
+    } catch {
+      setAacSpeechStatus("unsupported");
+      setLiveAnnouncement("Speech synthesis encountered an error.");
     }
   };
 
+  const dialogueTurns = getSpeechDialogue(activeScenarioId, activePractices);
+  const inactivePractices = currentScenario.practices.filter((p) => !activePractices.includes(p.id));
+
   return (
     <div className="itw-studio-wrap" role="region" aria-label="Communication Access Studio">
+      {/* Accessible Live Region for Announcements */}
+      <div className="itw-sr-only" aria-live="polite" aria-atomic="true">
+        {liveAnnouncement}
+      </div>
+
       {/* Studio Header */}
       <div className="itw-studio-header" style={{ marginBottom: 20 }}>
         <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-speech)", letterSpacing: "0.08em" }}>
@@ -4778,8 +5022,8 @@ function CommunicationAccessStudio() {
           Making Room for Diverse Ways of Communicating
         </h3>
         <p style={{ fontSize: 14.5, color: "var(--itw-muted)", maxWidth: "70ch", margin: 0 }}>
-          Communication is a two-way collaborative exchange, not a solo performance. Explore how adjusting listener habits,
-          pacing, and relational practices transforms classroom accessibility.
+          Communication is a collaborative exchange, not a solo performance. Explore how adjusting listener habits,
+          conversational pacing, and relational practices transforms classroom accessibility.
         </p>
       </div>
 
@@ -4795,7 +5039,13 @@ function CommunicationAccessStudio() {
               aria-selected={isActive}
               className={`itw-cta ${isActive ? "itw-cta-dark" : "itw-cta-line"}`}
               style={{ fontSize: 13.5, padding: "10px 20px" }}
-              onClick={() => setActiveScenarioId(s.id)}
+              onClick={() => {
+                if (typeof window !== "undefined" && "speechSynthesis" in window) {
+                  window.speechSynthesis.cancel();
+                }
+                setAacSpeechStatus("idle");
+                setActiveScenarioId(s.id);
+              }}
             >
               {s.title}
             </button>
@@ -4814,8 +5064,10 @@ function CommunicationAccessStudio() {
               {currentScenario.title}
             </h4>
           </div>
-          <span style={{ fontSize: 12, padding: "4px 12px", borderRadius: 99, background: isFullySupported ? "rgba(5, 176, 118, 0.12)" : "rgba(244, 117, 34, 0.12)", color: isFullySupported ? "#05b076" : "#f47522", fontWeight: 700 }}>
-            {isFullySupported ? "✓ Accessible Environment Active" : "⚠️ Barriers Present in Conversation"}
+          <span style={{ fontSize: 12, padding: "4px 12px", borderRadius: 99, background: activePractices.length === 4 ? "rgba(5, 176, 118, 0.12)" : "rgba(244, 117, 34, 0.12)", color: activePractices.length === 4 ? "#05b076" : "#f47522", fontWeight: 700 }}>
+            {activePractices.length === 4
+              ? "All 4 Accommodations Active"
+              : `${activePractices.length} of 4 Practices Enabled (${inactivePractices.length} Barrier${inactivePractices.length > 1 ? "s" : ""} Remaining)`}
           </span>
         </div>
         <p style={{ fontSize: 14.5, color: "var(--itw-muted)", lineHeight: 1.6, margin: 0 }}>
@@ -4840,6 +5092,7 @@ function CommunicationAccessStudio() {
               <button
                 key={p.id}
                 type="button"
+                aria-pressed={isEnabled}
                 onClick={() => togglePractice(p.id)}
                 style={{
                   padding: "14px 16px",
@@ -4873,17 +5126,19 @@ function CommunicationAccessStudio() {
 
       {/* Reactive Dialogue Preview */}
       <div style={{ padding: 22, borderRadius: 18, border: "1.5px solid var(--itw-border)", background: "var(--itw-panel)", marginBottom: 28 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, borderBottom: "1px solid var(--itw-border)", paddingBottom: 10 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, borderBottom: "1px solid var(--itw-border)", paddingBottom: 10, flexWrap: "wrap", gap: 8 }}>
           <span style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", letterSpacing: "0.06em" }}>
-            Live Dialogue Preview • {isFullySupported ? "Collaborative & Respectful Exchange" : "Traditional Fast-Paced Exchange"}
+            Live Dialogue Preview • Dynamic Response to Enabled Choices
           </span>
-          <span style={{ fontSize: 12, color: isFullySupported ? "#05b076" : "var(--itw-muted)", fontWeight: 700 }}>
-            {isFullySupported ? "All Accommodations Applied" : "Some Practices Inactive"}
+          <span style={{ fontSize: 12, color: activePractices.length === 4 ? "#05b076" : "#f47522", fontWeight: 700 }}>
+            {activePractices.length === 4
+              ? "All Practices Active"
+              : `${inactivePractices.length} Barrier${inactivePractices.length > 1 ? "s" : ""} Present in Exchange`}
           </span>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {(isFullySupported ? currentScenario.dialogueSupported : currentScenario.dialogueBarrier).map((d, idx) => (
+          {dialogueTurns.map((d, idx) => (
             <div
               key={idx}
               style={{
@@ -4909,6 +5164,28 @@ function CommunicationAccessStudio() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Dynamic Accommodations Impact Summary */}
+        <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px dashed var(--itw-border)", display: "flex", flexDirection: "column", gap: 6 }}>
+          <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-text)" }}>
+            Current Interaction Dynamics:
+          </span>
+          <ul style={{ margin: 0, paddingLeft: "1.2em", fontSize: 13, color: "var(--itw-muted)", lineHeight: 1.5 }}>
+            {activePractices.map((pid) => {
+              const p = currentScenario.practices.find((item) => item.id === pid);
+              return p ? (
+                <li key={pid} style={{ color: "#05b076" }}>
+                  <b>Active:</b> {p.label} — {p.desc}
+                </li>
+              ) : null;
+            })}
+            {inactivePractices.map((p) => (
+              <li key={p.id} style={{ color: "#dc2626" }}>
+                <b>Inactive Barrier:</b> {p.label} is currently disabled in the palette.
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
@@ -4944,13 +5221,14 @@ function CommunicationAccessStudio() {
             )}
           </div>
 
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
             {AAC_SAMPLE_TILES.map((t) => {
               const isSelected = aacMessage.some((m) => m.id === t.id);
               return (
                 <button
                   key={t.id}
                   type="button"
+                  aria-pressed={isSelected}
                   onClick={() => handleTileClick(t)}
                   style={{
                     padding: "8px 14px",
@@ -4973,15 +5251,25 @@ function CommunicationAccessStudio() {
             })}
           </div>
 
-          <div style={{ display: "flex", gap: 10 }}>
+          {/* AAC Voice Output Controls (Explicit user trigger, independent of global soundOn) */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <button
               type="button"
               className="itw-cta itw-cta-dark"
               style={{ fontSize: 13, padding: "8px 18px" }}
-              disabled={aacMessage.length === 0}
-              onClick={handleSpeakAac}
+              disabled={aacMessage.length === 0 || aacSpeechStatus === "playing"}
+              onClick={handlePlayAac}
             >
-              🔊 Speak Message
+              🔊 Play Message (Speech Output)
+            </button>
+            <button
+              type="button"
+              className="itw-cta itw-cta-line"
+              style={{ fontSize: 13, padding: "8px 18px" }}
+              disabled={aacSpeechStatus !== "playing"}
+              onClick={handleStopAac}
+            >
+              ⏹️ Stop Message
             </button>
             <button
               type="button"
@@ -4990,9 +5278,21 @@ function CommunicationAccessStudio() {
               disabled={aacMessage.length === 0}
               onClick={handleClearAac}
             >
-              Clear
+              ✕ Clear Message
             </button>
           </div>
+
+          {aacSpeechStatus === "playing" && (
+            <div style={{ marginTop: 10, fontSize: 12.5, color: "#05b076", fontWeight: 700 }}>
+              🔊 Speech output active: “{aacMessage.map((t) => t.label).join(" ")}”
+            </div>
+          )}
+
+          {aacSpeechStatus === "unsupported" && (
+            <div style={{ marginTop: 10, fontSize: 12.5, color: "#f47522", fontWeight: 600 }}>
+              ℹ️ Web Speech Synthesis API is not available in this browser environment. Assembled text display remains fully active.
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -5008,16 +5308,16 @@ function SpeechModule({ onBack, onNavigate }) {
 
   return (
     <section className="itw-view itw-module itw-flow" data-accent="speech">
-      <FlowCrumbs name="Speech &amp; Language Differences" onBack={onBack} />
+      <FlowCrumbs name="Speech &amp; Communication Access" onBack={onBack} />
 
       {tab === "studio" && (
         <div className="itw-flow-page" key="studio">
           <div className="itw-flow-readtop">
             <h2 className="itw-flow-title">Communication Access Studio</h2>
-            <div className="itw-flow-sub">Classroom Conversational Pacing &amp; Multi-Modal Support</div>
+            <div className="itw-flow-sub">Classroom Conversational Pacing, Partner Practices &amp; Multi-Modal AAC</div>
             <p className="itw-flow-lead" style={{ margin: 0 }}>
               Explore how listening habits, conversational pacing, and relational respect transform access for students
-              who stutter, students who use AAC, and students who need processing time.
+              who stutter, students who use AAC, and students who benefit from processing time.
             </p>
           </div>
 
@@ -5041,7 +5341,7 @@ function SpeechModule({ onBack, onNavigate }) {
 
           <p className="itw-flow-lead">
             Communication differences are diverse and multi-faceted. Understanding the distinction between fluency,
-            motor speech, language formulation, and AAC prevents common misconceptions.
+            motor speech, language formulation, and AAC prevents common misconceptions. Communication preferences vary across individuals.
           </p>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, margin: "20px 0" }}>
@@ -5057,7 +5357,7 @@ function SpeechModule({ onBack, onNavigate }) {
               <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-speech)" }}>Domain 2</span>
               <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0 6px" }}>Motor Speech Production (Apraxia)</h4>
               <p style={{ fontSize: 13, color: "var(--itw-muted)", margin: 0, lineHeight: 1.5 }}>
-                Neurological planning and coordination of muscle movements required for articulating sounds. The student knows the word, but the motor plan requires targeted therapy.
+                Neurological planning and coordination of muscle movements required for articulating sounds. The student knows the word, but the motor execution plan requires targeted therapy.
               </p>
             </div>
 
@@ -5065,13 +5365,13 @@ function SpeechModule({ onBack, onNavigate }) {
               <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-speech)" }}>Domain 3</span>
               <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0 6px" }}>Language Formulation &amp; Processing</h4>
               <p style={{ fontSize: 13, color: "var(--itw-muted)", margin: 0, lineHeight: 1.5 }}>
-                Organizing words into grammatical syntax and comprehending verbal messages. Extra processing time and single-step prompts ensure complete understanding.
+                Organizing thoughts into grammatical syntax and processing spoken language. Providing generous processing time and single-concept prompts supports accurate retrieval.
               </p>
             </div>
 
             <div style={{ padding: 18, borderRadius: 14, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)" }}>
               <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-speech)" }}>Domain 4</span>
-              <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0 6px" }}>Augmentative Communication (AAC)</h4>
+              <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0 6px" }}>Augmentative &amp; Alternative Communication (AAC)</h4>
               <p style={{ fontSize: 13, color: "var(--itw-muted)", margin: 0, lineHeight: 1.5 }}>
                 An umbrella term for communication systems ranging from picture exchange boards and communication books to dynamic eye-gaze speech-generating tablets.
               </p>
@@ -5082,22 +5382,22 @@ function SpeechModule({ onBack, onNavigate }) {
           <FactsGrid
             facts={[
               {
-                num: "~10% Caseload",
-                label: "proportion of pediatric clients presenting to specialized tertiary clinics who stutter — a clinical caseload denominator representing seeking care",
-                src: "All India Institute of Speech and Hearing (AIISH Mysore) Clinical Registry",
+                num: "Clinical Caseload",
+                label: "Fluency disorders represent ~7%–10% of pediatric outpatient speech-language caseloads at specialized tertiary clinical centers like the All India Institute of Speech and Hearing (AIISH, Mysore). This reflects a clinical presentation denominator among clients seeking care, rather than general community prevalence.",
+                src: "All India Institute of Speech and Hearing (AIISH Mysore) Annual Clinical Registry",
               },
               {
-                num: "1.5%–2%",
-                label: "estimated community prevalence of developmental speech fluency and language differences in school-age Indian cohorts",
-                src: "National Institute for the Empowered of Persons with Multiple Disabilities (NIEPMD)",
+                num: "1%–1.5%",
+                label: "Estimated community prevalence of developmental stuttering in Indian primary school populations. In multilingual classrooms, speech-language pathologists emphasize distinguishing natural bilingual formulation pauses from clinical speech sound or fluency disorders.",
+                src: "National Institute for the Empowerment of Persons with Multiple Disabilities (Divyangjan) (NIEPMD), Chennai & AIISH",
               },
               {
-                num: "RPwD 2016",
-                label: "statutory recognition protecting the right to multi-modal and AAC communication accommodations in educational and examination settings",
-                src: "Rights of Persons with Disabilities Act, Government of India",
+                num: "RPwD Act 2016",
+                label: "Sections 16 and 17 mandate inclusive education and the promotion of augmentative and alternative modes of communication (AAC). Formal exam modifications (e.g. compensatory time or scribes) require certified benchmark disability documentation under Ministry/board guidelines.",
+                src: "Rights of Persons with Disabilities Act (2016) & DEPwD Guidelines",
               },
             ]}
-            note="In multilingual Indian classroom settings, speech-language pathologists emphasize giving speakers unhurried time and distinguishing natural bilingual code-switching pauses from clinical speech disorders."
+            note="Speech-language pathologists emphasize that communication differences are relational: adjusting the partner's pacing, maintaining respectful engagement without demanding eye contact, and respecting device autonomy enables full participation."
             onComplete={() => {}}
           />
 
@@ -5107,10 +5407,10 @@ function SpeechModule({ onBack, onNavigate }) {
               <b>Patience Over Pacing:</b> Never finish someone sentences, guess their words, or tell them to &ldquo;slow down&rdquo;. Sentence ownership is fundamental dignity.
             </li>
             <li>
-              <b>Direct Relational Engagement:</b> When a student communicates through an AAC device, speech generator, or interpreter, always speak directly to the student at eye level.
+              <b>Direct Relational Engagement:</b> When a student communicates through an AAC device, speech generator, or interpreter, always speak directly to the student without demanding fixed eye contact.
             </li>
             <li>
-              <b>Single-Question Clarity:</b> Ask one clear question at a time and offer generous processing silence before prompting again.
+              <b>Single-Question Clarity:</b> Ask one clear question at a time and offer generous processing silence before introducing new verbal input.
             </li>
             <li>
               <b>Respect Communication Modes:</b> Value all communication methods equally — spoken words, AAC outputs, pointing, gesture, and written notes.
@@ -5119,13 +5419,13 @@ function SpeechModule({ onBack, onNavigate }) {
 
           <div className="itw-flow-nav itw-flow-nav-center" style={{ marginTop: 32 }}>
             <a href="/consult" className="itw-cta itw-cta-dark" style={{ textDecoration: "none" }}>
-              Book a Speech Therapy Consultation
+              Book a Speech-Language Consultation
             </a>
             <button type="button" className="itw-cta itw-cta-line" onClick={() => onNavigate("dyscalculia")}>
               Next Experience: Dyscalculia →
             </button>
             <button type="button" className="itw-cta itw-cta-line" onClick={() => setTab("studio")}>
-              ← Back to Studio
+              ← Back to Studio Workspace
             </button>
           </div>
         </div>
@@ -5144,16 +5444,16 @@ const KITCHEN_RECIPE_ITEMS = [
     original: 2,
     target: 4,
     icon: "🍋",
-    workedExample: "2 lemons × 2 groups = 4 lemons (2 for the first 2 servings + 2 for the next 2).",
+    stepHint: "2 lemons for 2 people. For 4 people, double the group: 2 + 2 = 4 lemons.",
   },
   {
     id: "water",
-    name: "Chilled Water",
+    name: "Cold Water",
     unit: "cups",
     original: 3,
     target: 6,
-    icon: "🥛",
-    workedExample: "3 cups × 2 groups = 6 cups of water.",
+    icon: "💧",
+    stepHint: "3 cups for 2 people. To double: 3 cups + 3 cups = 6 cups.",
   },
   {
     id: "sugar",
@@ -5162,7 +5462,7 @@ const KITCHEN_RECIPE_ITEMS = [
     original: 2,
     target: 4,
     icon: "🥄",
-    workedExample: "2 tablespoons × 2 groups = 4 tablespoons of sugar.",
+    stepHint: "2 tbsp for 2 people. To double: 2 tbsp + 2 tbsp = 4 tablespoons.",
   },
   {
     id: "mint",
@@ -5171,7 +5471,7 @@ const KITCHEN_RECIPE_ITEMS = [
     original: 6,
     target: 12,
     icon: "🌿",
-    workedExample: "6 leaves × 2 groups = 12 mint leaves.",
+    stepHint: "6 leaves for 2 people. To double: 6 + 6 = 12 leaves.",
   },
 ];
 
@@ -5187,12 +5487,12 @@ function QuantityKitchenWorkspace() {
   const [showWorkedExample, setShowWorkedExample] = useState(false);
   const [showStepHint, setShowStepHint] = useState(false);
 
-  const updateQuantity = (id, delta) => {
+  const handleAdjust = (itemId, delta) => {
     if (soundOn) audio.cue("tap");
     setQuantities((prev) => {
-      const current = prev[id] || 0;
+      const current = prev[itemId] || 0;
       const next = Math.max(0, Math.min(24, current + delta));
-      return { ...prev, [id]: next };
+      return { ...prev, [itemId]: next };
     });
   };
 
@@ -5273,6 +5573,7 @@ function QuantityKitchenWorkspace() {
           </span>
           <button
             type="button"
+            aria-pressed={viewMode === "grouped"}
             className={`itw-cta ${viewMode === "grouped" ? "itw-cta-dark" : "itw-cta-line"}`}
             style={{ fontSize: 12.5, padding: "6px 14px" }}
             onClick={() => setViewMode("grouped")}
@@ -5281,6 +5582,7 @@ function QuantityKitchenWorkspace() {
           </button>
           <button
             type="button"
+            aria-pressed={viewMode === "bar"}
             className={`itw-cta ${viewMode === "bar" ? "itw-cta-dark" : "itw-cta-line"}`}
             style={{ fontSize: 12.5, padding: "6px 14px" }}
             onClick={() => setViewMode("bar")}
@@ -5289,6 +5591,7 @@ function QuantityKitchenWorkspace() {
           </button>
           <button
             type="button"
+            aria-pressed={viewMode === "numeric"}
             className={`itw-cta ${viewMode === "numeric" ? "itw-cta-dark" : "itw-cta-line"}`}
             style={{ fontSize: 12.5, padding: "6px 14px" }}
             onClick={() => setViewMode("numeric")}
@@ -5300,6 +5603,7 @@ function QuantityKitchenWorkspace() {
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <button
             type="button"
+            aria-expanded={showWorkedExample}
             className="itw-cta itw-cta-line"
             style={{ fontSize: 12, padding: "6px 14px" }}
             onClick={() => setShowWorkedExample((prev) => !prev)}
@@ -5308,6 +5612,7 @@ function QuantityKitchenWorkspace() {
           </button>
           <button
             type="button"
+            aria-expanded={showStepHint}
             className="itw-cta itw-cta-line"
             style={{ fontSize: 12, padding: "6px 14px" }}
             onClick={() => setShowStepHint((prev) => !prev)}
@@ -5327,7 +5632,7 @@ function QuantityKitchenWorkspace() {
 
       {/* Worked Example Banner (Expandable) */}
       {showWorkedExample && (
-        <div style={{ padding: 18, borderRadius: 14, background: "rgba(5, 176, 118, 0.08)", border: "1.5px solid rgba(5, 176, 118, 0.3)", marginBottom: 20, animation: "fadeIn 0.2s" }}>
+        <div style={{ padding: 18, borderRadius: 14, background: "rgba(5, 176, 118, 0.08)", border: "1.5px solid rgba(5, 176, 118, 0.3)", marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
             <span style={{ fontSize: 16 }}>💡</span>
             <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "#05b076", letterSpacing: "0.06em" }}>
@@ -5343,144 +5648,138 @@ function QuantityKitchenWorkspace() {
 
       {/* Step Hint Banner (Expandable) */}
       {showStepHint && (
-        <div style={{ padding: 16, borderRadius: 14, background: "rgba(244, 117, 34, 0.08)", border: "1.5px solid rgba(244, 117, 34, 0.3)", marginBottom: 20, animation: "fadeIn 0.2s" }}>
+        <div style={{ padding: 16, borderRadius: 14, background: "rgba(244, 117, 34, 0.08)", border: "1.5px solid rgba(244, 117, 34, 0.3)", marginBottom: 20 }}>
           <div style={{ fontSize: 13.5, color: "var(--itw-text)", lineHeight: 1.5 }}>
             <b>Step-by-step strategy:</b> Look at the original number, and add that same number once more. For water: 3 cups + 3 cups = 6 cups. For mint: 6 leaves + 6 leaves = 12 leaves.
           </div>
         </div>
       )}
 
-      {/* 4 Recipe Ingredients Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(310px, 1fr))", gap: 16, marginBottom: 26 }}>
+      {/* Ingredient Workstations */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 18, marginBottom: 26 }}>
         {KITCHEN_RECIPE_ITEMS.map((item) => {
-          const val = quantities[item.id] || 0;
+          const val = quantities[item.id];
           const isCorrect = val === item.target;
           const isBelow = val < item.target;
           const isAbove = val > item.target;
+          const diff = val - item.target;
 
           return (
             <div
               key={item.id}
               style={{
-                padding: 20,
+                padding: 18,
                 borderRadius: 16,
-                background: "var(--itw-panel)",
                 border: isCorrect ? "2px solid #05b076" : "1.5px solid var(--itw-border)",
-                boxShadow: isCorrect ? "0 4px 18px rgba(5, 176, 118, 0.12)" : "0 2px 10px rgba(0, 0, 0, 0.03)",
+                background: "var(--itw-panel)",
                 display: "flex",
                 flexDirection: "column",
-                gap: 14,
+                gap: 12,
+                boxShadow: isCorrect ? "0 4px 16px rgba(5, 176, 118, 0.12)" : "0 2px 8px rgba(0,0,0,0.03)",
                 transition: "all 0.2s ease",
               }}
             >
-              {/* Card Header */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              {/* Header row: Icon, Name & Current Count */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontSize: 28, lineHeight: 1 }}>{item.icon}</span>
+                  <span style={{ fontSize: 26 }}>{item.icon}</span>
                   <div>
-                    <h4 style={{ fontSize: 17, fontWeight: 800, color: "var(--itw-text)", margin: 0 }}>
+                    <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: 0 }}>
                       {item.name}
                     </h4>
                     <span style={{ fontSize: 12, color: "var(--itw-muted)" }}>
-                      Original: <b>{item.original} {item.unit}</b> (for 2 people)
+                      Base: {item.original} {item.unit} (for 2)
                     </span>
                   </div>
                 </div>
 
-                {isCorrect && (
-                  <span style={{ fontSize: 11, fontWeight: 800, padding: "3px 10px", borderRadius: 99, background: "rgba(5, 176, 118, 0.15)", color: "#05b076" }}>
-                    ✓ Matched
-                  </span>
-                )}
-              </div>
-
-              {/* Stepper Controls */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(0,0,0,0.02)", padding: "8px 14px", borderRadius: 12, border: "1px solid var(--itw-border)" }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--itw-muted)", textTransform: "uppercase" }}>
-                  Adjust for 4:
-                </span>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                {/* Interactive Steppers */}
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <button
                     type="button"
-                    className="itw-cta itw-cta-line"
-                    style={{ minWidth: 36, height: 36, padding: 0, fontSize: 18, fontWeight: 900 }}
-                    onClick={() => updateQuantity(item.id, -1)}
-                    disabled={val <= 0}
+                    className="itw-stepper-btn"
+                    style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid var(--itw-border)", background: "var(--itw-panel-soft)", fontSize: 16, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--itw-text)" }}
                     aria-label={`Decrease ${item.name}`}
+                    onClick={() => handleAdjust(item.id, -1)}
                   >
                     –
                   </button>
-                  <span style={{ minWidth: 42, textAlign: "center", fontSize: 19, fontFamily: "var(--font-mono, monospace)", fontWeight: 900, color: isCorrect ? "#05b076" : "var(--itw-text)" }}>
+                  <span style={{ minWidth: 28, textAlign: "center", fontFamily: "var(--font-mono, monospace)", fontSize: 16, fontWeight: 900, color: isCorrect ? "#05b076" : "var(--itw-text)" }}>
                     {val}
                   </span>
                   <button
                     type="button"
-                    className="itw-cta itw-cta-line"
-                    style={{ minWidth: 36, height: 36, padding: 0, fontSize: 18, fontWeight: 900 }}
-                    onClick={() => updateQuantity(item.id, 1)}
+                    className="itw-stepper-btn"
+                    style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid var(--itw-border)", background: "var(--itw-panel-soft)", fontSize: 16, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--itw-text)" }}
                     aria-label={`Increase ${item.name}`}
+                    onClick={() => handleAdjust(item.id, 1)}
                   >
                     +
                   </button>
-                  <span style={{ fontSize: 13, color: "var(--itw-muted)", minWidth: 45 }}>
-                    {item.unit}
-                  </span>
                 </div>
               </div>
 
-              {/* Dynamic Representation Display based on viewMode */}
+              {/* Representation Mode 1: Grouped Visual Sets */}
               {viewMode === "grouped" && (
-                <div style={{ minHeight: 46, padding: 10, borderRadius: 10, background: "var(--itw-panel-soft)", border: "1px dashed var(--itw-border)" }}>
-                  <div style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", marginBottom: 6 }}>
-                    Grouped Units (1 group = {item.original}):
+                <div style={{ minHeight: 64, padding: "10px 12px", borderRadius: 10, background: "var(--itw-panel-soft)", border: "1px solid var(--itw-border)", display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)" }}>
+                    Visualized in Groups of {item.original}:
                   </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-                    {Array.from({ length: Math.ceil(val / item.original) || 0 }).map((_, groupIdx) => {
-                      const countInGroup = Math.min(item.original, val - groupIdx * item.original);
-                      return (
-                        <div
-                          key={groupIdx}
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 3,
-                            padding: "4px 8px",
-                            borderRadius: 8,
-                            background: groupIdx < 2 ? "rgba(5, 176, 118, 0.12)" : "rgba(220, 38, 38, 0.10)",
-                            border: groupIdx < 2 ? "1px solid rgba(5, 176, 118, 0.25)" : "1px solid rgba(220, 38, 38, 0.25)",
-                          }}
-                        >
-                          {Array.from({ length: Math.max(0, countInGroup) }).map((__, i) => (
-                            <span key={i} style={{ fontSize: 16 }}>{item.icon}</span>
-                          ))}
-                          <span style={{ fontSize: 10, fontWeight: 700, color: "var(--itw-muted)", marginLeft: 2 }}>
-                            Grp {groupIdx + 1}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+                    {/* First Group (Original 2 Servings) */}
+                    <div style={{ padding: "4px 8px", borderRadius: 8, background: "rgba(0,0,0,0.03)", border: "1px dashed var(--itw-border)", display: "flex", gap: 4 }}>
+                      {Array.from({ length: Math.min(val, item.original) }).map((_, idx) => (
+                        <span key={`grp1-${idx}`} style={{ fontSize: 18 }} title="Original Base Portion">
+                          {item.icon}
+                        </span>
+                      ))}
+                      {val < item.original && (
+                        <span style={{ fontSize: 11, color: "var(--itw-muted)", fontStyle: "italic", alignSelf: "center" }}>
+                          Missing {item.original - val}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Plus separator */}
+                    <span style={{ fontSize: 14, fontWeight: 800, color: "var(--itw-muted)" }}>+</span>
+
+                    {/* Second Group (Doubled 4 Servings) */}
+                    <div style={{ padding: "4px 8px", borderRadius: 8, background: val > item.original ? "rgba(5, 176, 118, 0.08)" : "rgba(0,0,0,0.02)", border: val > item.original ? "1px dashed #05b076" : "1px dashed var(--itw-border)", display: "flex", gap: 4 }}>
+                      {val > item.original ? (
+                        Array.from({ length: val - item.original }).map((_, idx) => (
+                          <span key={`grp2-${idx}`} style={{ fontSize: 18 }} title="Doubled Portion">
+                            {item.icon}
                           </span>
-                        </div>
-                      );
-                    })}
-                    {val === 0 && (
-                      <span style={{ fontSize: 12, color: "var(--itw-muted)", fontStyle: "italic" }}>
-                        0 {item.unit} selected
-                      </span>
-                    )}
+                        ))
+                      ) : (
+                        <span style={{ fontSize: 11, color: "var(--itw-muted)", fontStyle: "italic" }}>
+                          Add {item.target - val} more for 2nd group
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
 
+              {/* Representation Mode 2: Proportional Ratio Strip */}
               {viewMode === "bar" && (
-                <div style={{ padding: 10, borderRadius: 10, background: "var(--itw-panel-soft)", border: "1px dashed var(--itw-border)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", marginBottom: 4 }}>
-                    <span>Original Scale (2 servings): {item.original}</span>
-                    <span>Target: {item.target}</span>
+                <div style={{ minHeight: 64, padding: "10px 12px", borderRadius: 10, background: "var(--itw-panel-soft)", border: "1px solid var(--itw-border)", display: "flex", flexDirection: "column", gap: 8, justifyContent: "center" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)" }}>
+                    <span>Proportion Strip:</span>
+                    <span>Target: {item.target} {item.unit}</span>
                   </div>
-                  <div style={{ height: 10, borderRadius: 99, background: "rgba(0,0,0,0.06)", overflow: "hidden", position: "relative" }}>
+                  <div style={{ position: "relative", height: 16, background: "rgba(0,0,0,0.06)", borderRadius: 8, overflow: "hidden" }}>
+                    {/* Fill bar for current amount */}
                     <div
                       style={{
-                        height: "100%",
+                        position: "absolute",
+                        top: 0,
+                        bottom: 0,
+                        left: 0,
                         width: `${Math.min(100, (val / (item.target * 1.5)) * 100)}%`,
-                        background: isCorrect ? "#05b076" : "#f47522",
-                        transition: "width 0.2s ease, background 0.2s ease",
+                        background: isCorrect ? "#05b076" : isBelow ? "#f47522" : "#dc2626",
+                        borderRadius: 8,
+                        transition: "width 0.2s ease",
                       }}
                     />
                     {/* Marker for target */}
@@ -5500,12 +5799,31 @@ function QuantityKitchenWorkspace() {
                 </div>
               )}
 
+              {/* Representation Mode 3: Pure Numeric (Complete Live Calculation Breakdown) */}
               {viewMode === "numeric" && (
-                <div style={{ padding: "8px 12px", borderRadius: 8, background: "var(--itw-panel-soft)", fontSize: 13, color: "var(--itw-text)", display: "flex", justifyContent: "space-between" }}>
-                  <span>Ratio Calculation:</span>
-                  <span style={{ fontFamily: "var(--font-mono, monospace)", fontWeight: 800 }}>
-                    {item.original} × 2 = {item.target}
-                  </span>
+                <div style={{ minHeight: 64, padding: "10px 14px", borderRadius: 10, background: "var(--itw-panel-soft)", border: "1px solid var(--itw-border)", display: "flex", flexDirection: "column", gap: 6, fontSize: 12.5, color: "var(--itw-text)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span>Current Quantity:</span>
+                    <b style={{ fontFamily: "var(--font-mono, monospace)" }}>{val} {item.unit}</b>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span>Base Recipe (2 servings):</span>
+                    <span style={{ fontFamily: "var(--font-mono, monospace)" }}>{item.original} {item.unit}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span>Scaling Multiplier:</span>
+                    <span style={{ fontFamily: "var(--font-mono, monospace)", fontWeight: 700 }}>×2</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px dashed var(--itw-border)", paddingTop: 4 }}>
+                    <span>Target (4 servings):</span>
+                    <b style={{ fontFamily: "var(--font-mono, monospace)", color: "#05b076" }}>{item.target} {item.unit}</b>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", color: isCorrect ? "#05b076" : isBelow ? "#d97706" : "#dc2626", fontWeight: 700 }}>
+                    <span>Difference:</span>
+                    <span style={{ fontFamily: "var(--font-mono, monospace)" }}>
+                      {diff === 0 ? "0 (Target matched!)" : diff < 0 ? `${diff} (needs ${Math.abs(diff)} more)` : `+${diff} (${diff} over target)`}
+                    </span>
+                  </div>
                 </div>
               )}
 
@@ -5530,7 +5848,6 @@ function QuantityKitchenWorkspace() {
             border: "2px solid #05b076",
             textAlign: "center",
             boxShadow: "0 8px 24px rgba(5, 176, 118, 0.14)",
-            animation: "fadeIn 0.3s ease",
           }}
         >
           <div style={{ fontSize: 36, marginBottom: 6 }}>🍹</div>
@@ -5617,19 +5934,19 @@ function DyscalculiaModule({ onBack, onNavigate }) {
           <FactsGrid
             facts={[
               {
-                num: "5%–8%",
-                label: "estimated prevalence of developmental dyscalculia in Indian primary school children, often co-occurring with dyslexia or ADHD",
-                src: "NIMHANS Child & Adolescent Psychiatry Epidemiology Studies",
+                num: "3%–6% Cohort Range",
+                label: "Localized Indian primary school studies (e.g., Ramaa & Gowramma, Mysore, N=664; Karande et al., Mumbai pediatric clinics) identify mathematical learning difficulties in approximately 3%–6% of evaluated cohorts. National epidemiological data disaggregated specifically for dyscalculia remains limited across diverse educational boards.",
+                src: "Indian Journal of Pediatrics / Ramaa & Gowramma (Dyscalculia in Primary School Cohorts)",
               },
               {
-                num: "Math Labs",
-                label: "NCERT curriculum framework emphasizing experiential mathematics laboratories with concrete manipulatives over repetitive paper drills",
-                src: "National Council of Educational Research and Training (NCERT)",
+                num: "NCERT Math Kits",
+                label: "The National Curriculum Framework (NCF) and NCERT position papers on the teaching of mathematics recommend concrete manipulative kits, geoboards, and fraction strips to anchor numerical concepts in primary schooling.",
+                src: "NCERT National Focus Group Position Paper on Teaching of Mathematics",
               },
               {
-                num: "CBSE & ICSE",
-                label: "board examination provisions permitting calculators, graph paper rulers, formula reference sheets, and extra time for certified dyscalculia",
-                src: "Central Board of Secondary Education (CBSE) Inclusive Guidelines",
+                num: "CBSE CwD Rules",
+                label: "CBSE examination circulars for Candidates with Disabilities (CwD) permit specific accommodations (such as simple arithmetic calculators or extra time) for candidates with certified benchmark dyscalculia under RPwD Act rules, subject to valid medical/UDID board documentation.",
+                src: "CBSE Examination Bye-Laws for Candidates with Benchmark Disabilities",
               },
             ]}
             note="Clinical and educational psychologists stress that difficulty with rapid mental arithmetic does not reflect logical reasoning ability. Structured visual tools unlock deep problem-solving capacity."
@@ -7007,6 +7324,7 @@ const PROJECT_TASKS = [
     timeEst: "15 min",
     icon: "🔍",
     naturalPredecessor: null,
+    informs: "Task 2 (Find Sources): Defining a focused inquiry determines what search terms and research documents to gather.",
     subtasks: [
       "Select Bangalore/Chennai urban lake case study",
       "Draft 1 focused question on bird biodiversity",
@@ -7021,6 +7339,8 @@ const PROJECT_TASKS = [
     timeEst: "30 min",
     icon: "📚",
     naturalPredecessor: "question",
+    predecessorExplanation: "Suggested predecessor: Task 1. Having a clear question helps pinpoint relevant studies.",
+    informs: "Task 3 (Record Notes): Supplies the raw data, chemical metrics, and species counts to extract.",
     subtasks: [
       "Locate 1 environmental science journal article",
       "Find 1 municipal wetland survey report",
@@ -7035,6 +7355,8 @@ const PROJECT_TASKS = [
     timeEst: "20 min",
     icon: "📝",
     naturalPredecessor: "sources",
+    predecessorExplanation: "Suggested predecessor: Task 2. Notes are synthesized from the gathered sources.",
+    informs: "Task 4 (Visual Display): Provides the bullet points, charts, and captions needed for the display board.",
     subtasks: [
       "List 3 migratory species observed (e.g. Painted Stork, Spot-billed Pelican)",
       "Record pH and dissolved oxygen metrics",
@@ -7049,6 +7371,8 @@ const PROJECT_TASKS = [
     timeEst: "45 min",
     icon: "🎨",
     naturalPredecessor: "notes",
+    predecessorExplanation: "Suggested predecessor: Task 3. Layout uses synthesized notes and visual map graphics.",
+    informs: "Task 5 (Rehearse): Forms the physical visual aid used during oral presentation practice.",
     subtasks: [
       "Print 1 lake satellite map & 2 bird photographs",
       "Paste the 3 research findings in bold text cards",
@@ -7063,11 +7387,40 @@ const PROJECT_TASKS = [
     timeEst: "15 min",
     icon: "🎤",
     naturalPredecessor: "display",
+    predecessorExplanation: "Suggested predecessor: Task 4. Rehearsal walks through the finished visual trifold.",
+    informs: "Classroom Science Showcase presentation.",
     subtasks: [
       "Introduce the lake location & research question (30 sec)",
       "Explain the 2 water quality graphs (60 sec)",
       "Share the conclusion on community stewardship (30 sec)",
     ],
+  },
+];
+
+const CHANGE_PLAN_OPTIONS = [
+  {
+    id: "alternate_source",
+    title: "Find an Alternate Source",
+    action: "Search an open-access university wetland archive for Bellandur / Pallikaranai water metrics.",
+    note: "Adaptive search: Kept Task 2 active with a revised digital search target.",
+  },
+  {
+    id: "saved_backup",
+    title: "Use a Saved Backup Document",
+    action: "Use the citizen-science bird census summary sheet already saved in your folder.",
+    note: "Resource substitution: Leveraged existing reference data to maintain momentum.",
+  },
+  {
+    id: "ask_guidance",
+    title: "Ask Teacher or Teammate for Guidance",
+    action: "Request the teacher's recommended baseline water quality dataset from last year's lab archive.",
+    note: "Collaborative consultation: Clarified expected data parameters without stalling.",
+  },
+  {
+    id: "reorder_tasks",
+    title: "Reorder Steps & Continue Useful Work",
+    action: "Sketch the trifold display layout (Task 4) first while waiting for source access.",
+    note: "Workflow reordering: Shifted active attention to visual design without losing progress.",
   },
 ];
 
@@ -7083,6 +7436,13 @@ function ProjectPlanningDeskWorkspace() {
   });
   const [expandedTaskId, setExpandedTaskId] = useState("display");
   const [checkedSubtasks, setCheckedSubtasks] = useState({});
+  const [nextActionNote, setNextActionNote] = useState({
+    lastWorked: "Drafted 1 focused question on bird biodiversity in urban lakes",
+    nextStep: "Locate municipal wetland survey report for dissolved oxygen data",
+    resourceNeeded: "Bangalore / Chennai wetland water quality PDF",
+  });
+  const [activePlanAdjustment, setActivePlanAdjustment] = useState(null);
+  const [showPlanChangeModal, setShowPlanChangeModal] = useState(false);
 
   const setStatus = (taskId, status) => {
     if (soundOn) audio.cue("tap");
@@ -7094,7 +7454,17 @@ function ProjectPlanningDeskWorkspace() {
     setCheckedSubtasks((prev) => ({ ...prev, [subtaskKey]: !prev[subtaskKey] }));
   };
 
-  const currentNowTask = PROJECT_TASKS.find((t) => taskStatus[t.id] === "now");
+  const applyPlanAdjustment = (opt) => {
+    if (soundOn) audio.cue("tap");
+    setActivePlanAdjustment(opt);
+    setNextActionNote((prev) => ({
+      ...prev,
+      nextStep: opt.action,
+    }));
+    setShowPlanChangeModal(false);
+  };
+
+  const completedCount = PROJECT_TASKS.filter((t) => taskStatus[t.id] === "done").length;
 
   return (
     <div className="itw-planning-desk" role="region" aria-label="The Project Planning Desk Workspace">
@@ -7105,7 +7475,7 @@ function ProjectPlanningDeskWorkspace() {
           borderRadius: 18,
           background: "linear-gradient(135deg, rgba(244, 117, 34, 0.10), rgba(255, 232, 168, 0.35))",
           border: "1.5px solid #f2c766",
-          marginBottom: 24,
+          marginBottom: 20,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
@@ -7130,12 +7500,176 @@ function ProjectPlanningDeskWorkspace() {
           <span style={{ fontSize: 22 }}>📋</span>
           <div>
             <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-text)" }}>
-              {PROJECT_TASKS.filter((t) => taskStatus[t.id] === "done").length} of 5 Completed
+              {completedCount} of 5 Completed
             </div>
-            <span style={{ fontSize: 11, color: "var(--itw-muted)" }}>Total est: ~2 hours</span>
+            <span style={{ fontSize: 11, color: "var(--itw-muted)" }}>Illustrative plan: ~2 hrs</span>
           </div>
         </div>
       </div>
+
+      {/* Persistent Editable Next-Action Reminder (Externalized Working Memory Anchor) */}
+      <div
+        style={{
+          padding: "16px 20px",
+          borderRadius: 16,
+          background: "var(--itw-panel)",
+          border: "1.5px solid var(--itw-border)",
+          marginBottom: 22,
+          boxShadow: "0 2px 10px rgba(0,0,0,0.02)",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 16 }}>📌</span>
+            <span style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-executive)", letterSpacing: "0.05em" }}>
+              Next-Action Reminder (Editable Working Memory Anchor)
+            </span>
+          </div>
+          <button
+            type="button"
+            className="itw-cta itw-cta-line"
+            style={{ fontSize: 12, padding: "4px 12px" }}
+            onClick={() => setShowPlanChangeModal((prev) => !prev)}
+          >
+            ⚡ Change-of-Plan Scenario
+          </button>
+        </div>
+
+        {/* 3 Editable Anchor Fields */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+          <div>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "var(--itw-muted)", marginBottom: 4 }}>
+              What I last worked on:
+            </label>
+            <input
+              type="text"
+              value={nextActionNote.lastWorked}
+              onChange={(e) => setNextActionNote((prev) => ({ ...prev, lastWorked: e.target.value }))}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                borderRadius: 10,
+                border: "1px solid var(--itw-border)",
+                background: "var(--itw-panel-soft)",
+                fontSize: 13,
+                color: "var(--itw-text)",
+              }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "var(--itw-muted)", marginBottom: 4 }}>
+              What I intend to do next:
+            </label>
+            <input
+              type="text"
+              value={nextActionNote.nextStep}
+              onChange={(e) => setNextActionNote((prev) => ({ ...prev, nextStep: e.target.value }))}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                borderRadius: 10,
+                border: "1px solid var(--itw-border)",
+                background: "var(--itw-panel-soft)",
+                fontSize: 13,
+                color: "var(--itw-text)",
+              }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "var(--itw-muted)", marginBottom: 4 }}>
+              Resource / Document needed:
+            </label>
+            <input
+              type="text"
+              value={nextActionNote.resourceNeeded}
+              onChange={(e) => setNextActionNote((prev) => ({ ...prev, resourceNeeded: e.target.value }))}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                borderRadius: 10,
+                border: "1px solid var(--itw-border)",
+                background: "var(--itw-panel-soft)",
+                fontSize: 13,
+                color: "var(--itw-text)",
+              }}
+            />
+          </div>
+        </div>
+
+        {activePlanAdjustment && (
+          <div style={{ marginTop: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(5, 176, 118, 0.08)", border: "1px solid rgba(5, 176, 118, 0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 12.5, color: "#065f46" }}>
+              <b>Active Adaptive Route:</b> {activePlanAdjustment.note}
+            </span>
+            <button
+              type="button"
+              className="itw-pill-btn"
+              style={{ fontSize: 11, padding: "2px 8px" }}
+              onClick={() => setActivePlanAdjustment(null)}
+            >
+              Reset Route
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Change-of-Plan Scenario Modal / Panel */}
+      {showPlanChangeModal && (
+        <div style={{ padding: 18, borderRadius: 16, background: "rgba(244, 117, 34, 0.08)", border: "1.5px solid #f47522", marginBottom: 22 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+            <div>
+              <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "#f47522", letterSpacing: "0.06em" }}>
+                Realistic Change-of-Plan Scenario
+              </span>
+              <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: "2px 0" }}>
+                “The source you planned to use is unavailable.”
+              </h4>
+              <p style={{ fontSize: 13.5, color: "var(--itw-muted)", margin: "4px 0 12px" }}>
+                The municipal wetland archive report link is broken. How would you adjust your plan? Pick an adaptive strategy below:
+              </p>
+            </div>
+            <button
+              type="button"
+              className="itw-pill-btn"
+              style={{ fontSize: 11, padding: "2px 8px" }}
+              onClick={() => setShowPlanChangeModal(false)}
+            >
+              ✕ Close
+            </button>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
+            {CHANGE_PLAN_OPTIONS.map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => applyPlanAdjustment(opt)}
+                style={{
+                  padding: "12px 14px",
+                  borderRadius: 12,
+                  border: "1.5px solid var(--itw-border)",
+                  background: "var(--itw-panel)",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 4,
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <span style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-text)" }}>
+                  ➔ {opt.title}
+                </span>
+                <span style={{ fontSize: 12, color: "var(--itw-muted)", lineHeight: 1.4 }}>
+                  {opt.action}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Visual Planning Supports Switcher Toolbar */}
       <div
@@ -7158,6 +7692,7 @@ function ProjectPlanningDeskWorkspace() {
           </span>
           <button
             type="button"
+            aria-pressed={activeView === "nnl"}
             className={`itw-cta ${activeView === "nnl" ? "itw-cta-dark" : "itw-cta-line"}`}
             style={{ fontSize: 12.5, padding: "6px 14px" }}
             onClick={() => setActiveView("nnl")}
@@ -7166,6 +7701,7 @@ function ProjectPlanningDeskWorkspace() {
           </button>
           <button
             type="button"
+            aria-pressed={activeView === "workflow"}
             className={`itw-cta ${activeView === "workflow" ? "itw-cta-dark" : "itw-cta-line"}`}
             style={{ fontSize: 12.5, padding: "6px 14px" }}
             onClick={() => setActiveView("workflow")}
@@ -7174,6 +7710,7 @@ function ProjectPlanningDeskWorkspace() {
           </button>
           <button
             type="button"
+            aria-pressed={activeView === "chunking"}
             className={`itw-cta ${activeView === "chunking" ? "itw-cta-dark" : "itw-cta-line"}`}
             style={{ fontSize: 12.5, padding: "6px 14px" }}
             onClick={() => setActiveView("chunking")}
@@ -7182,6 +7719,7 @@ function ProjectPlanningDeskWorkspace() {
           </button>
           <button
             type="button"
+            aria-pressed={activeView === "time"}
             className={`itw-cta ${activeView === "time" ? "itw-cta-dark" : "itw-cta-line"}`}
             style={{ fontSize: 12.5, padding: "6px 14px" }}
             onClick={() => setActiveView("time")}
@@ -7195,9 +7733,9 @@ function ProjectPlanningDeskWorkspace() {
         </span>
       </div>
 
-      {/* Perspective 1: Now / Next / Later Board */}
+      {/* Perspective 1: Now / Next / Later Board (With 2-Way Task Movement) */}
       {activeView === "nnl" && (
-        <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: 16, marginBottom: 26 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginBottom: 26 }}>
           {/* Column 1: NOW */}
           <div style={{ padding: 18, borderRadius: 16, background: "rgba(244, 117, 34, 0.06)", border: "2px solid #f47522" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
@@ -7231,14 +7769,33 @@ function ProjectPlanningDeskWorkspace() {
                 <p style={{ fontSize: 13, color: "var(--itw-muted)", margin: "0 0 14px", lineHeight: 1.45 }}>
                   {task.desc}
                 </p>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--itw-muted)", background: "rgba(0,0,0,0.04)", padding: "3px 8px", borderRadius: 6 }}>
-                    ⏱️ {task.timeEst}
-                  </span>
+
+                {/* 2-Way Task Movement Controls */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button
+                      type="button"
+                      className="itw-pill-btn"
+                      style={{ fontSize: 11, padding: "4px 8px" }}
+                      title="Move task to Next column"
+                      onClick={() => setStatus(task.id, "next")}
+                    >
+                      ➔ Next
+                    </button>
+                    <button
+                      type="button"
+                      className="itw-pill-btn"
+                      style={{ fontSize: 11, padding: "4px 8px" }}
+                      title="Move task to Later column"
+                      onClick={() => setStatus(task.id, "later")}
+                    >
+                      ➔ Later
+                    </button>
+                  </div>
                   <button
                     type="button"
                     className="itw-cta itw-cta-dark"
-                    style={{ fontSize: 12.5, padding: "6px 14px" }}
+                    style={{ fontSize: 12, padding: "6px 14px" }}
                     onClick={() => setStatus(task.id, "done")}
                   >
                     ✓ Mark Done
@@ -7260,10 +7817,10 @@ function ProjectPlanningDeskWorkspace() {
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--itw-muted)", opacity: 0.6 }} />
                 <span style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", letterSpacing: "0.06em" }}>
-                  NEXT • Upcoming
+                  NEXT • Upcoming Queue
                 </span>
               </div>
-              <span style={{ fontSize: 11, color: "var(--itw-muted)" }}>Queue</span>
+              <span style={{ fontSize: 11, color: "var(--itw-muted)" }}>Upcoming</span>
             </div>
 
             {PROJECT_TASKS.filter((t) => taskStatus[t.id] === "next").map((task) => (
@@ -7283,19 +7840,42 @@ function ProjectPlanningDeskWorkspace() {
                     {task.title}
                   </div>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10 }}>
-                  <span style={{ fontSize: 11, color: "var(--itw-muted)" }}>{task.timeEst}</span>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10, flexWrap: "wrap", gap: 6 }}>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button
+                      type="button"
+                      className="itw-cta itw-cta-dark"
+                      style={{ fontSize: 11, padding: "4px 10px" }}
+                      onClick={() => setStatus(task.id, "now")}
+                    >
+                      Move to NOW ➔
+                    </button>
+                    <button
+                      type="button"
+                      className="itw-pill-btn"
+                      style={{ fontSize: 11, padding: "4px 8px" }}
+                      onClick={() => setStatus(task.id, "later")}
+                    >
+                      ➔ Later
+                    </button>
+                  </div>
                   <button
                     type="button"
-                    className="itw-cta itw-cta-line"
-                    style={{ fontSize: 11.5, padding: "4px 10px" }}
-                    onClick={() => setStatus(task.id, "now")}
+                    className="itw-pill-btn"
+                    style={{ fontSize: 11, padding: "4px 8px" }}
+                    onClick={() => setStatus(task.id, "done")}
                   >
-                    Move to NOW ➔
+                    ✓ Done
                   </button>
                 </div>
               </div>
             ))}
+
+            {PROJECT_TASKS.filter((t) => taskStatus[t.id] === "next").length === 0 && (
+              <div style={{ padding: 16, textAlign: "center", color: "var(--itw-muted)", fontSize: 13, fontStyle: "italic" }}>
+                Queue empty. Advance tasks from LATER.
+              </div>
+            )}
           </div>
 
           {/* Column 3: LATER */}
@@ -7307,7 +7887,7 @@ function ProjectPlanningDeskWorkspace() {
                   LATER • Future Milestones
                 </span>
               </div>
-              <span style={{ fontSize: 11, color: "var(--itw-muted)" }}>Visible Horizon</span>
+              <span style={{ fontSize: 11, color: "var(--itw-muted)" }}>Horizon</span>
             </div>
 
             {PROJECT_TASKS.filter((t) => taskStatus[t.id] === "later").map((task) => (
@@ -7322,103 +7902,132 @@ function ProjectPlanningDeskWorkspace() {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: 6,
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <span>{task.icon}</span>
                   <span style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)" }}>{task.title}</span>
                 </div>
-                <button
-                  type="button"
-                  className="itw-pill-btn"
-                  style={{ fontSize: 10, padding: "2px 8px" }}
-                  onClick={() => setStatus(task.id, "next")}
-                >
-                  ➔ Next
-                </button>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button
+                    type="button"
+                    className="itw-pill-btn"
+                    style={{ fontSize: 11, padding: "3px 8px" }}
+                    onClick={() => setStatus(task.id, "next")}
+                  >
+                    ➔ Next
+                  </button>
+                  <button
+                    type="button"
+                    className="itw-pill-btn"
+                    style={{ fontSize: 11, padding: "3px 8px" }}
+                    onClick={() => setStatus(task.id, "now")}
+                  >
+                    ➔ Now
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Perspective 2: Visual Workflow Map */}
+      {/* Perspective 2: Visual Workflow Map (Render Real Dependencies) */}
       {activeView === "workflow" && (
         <div style={{ padding: 22, borderRadius: 18, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)", marginBottom: 26 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
             <div>
               <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-executive)" }}>
-                Natural Sequence &amp; Precedents
+                Visible Task Dependencies &amp; Precedents
               </span>
               <h4 style={{ fontSize: 17, fontWeight: 800, color: "var(--itw-text)", margin: "2px 0" }}>
                 Logical Presentation Roadmap
               </h4>
             </div>
             <span style={{ fontSize: 12, color: "var(--itw-muted)" }}>
-              No arbitrary blockers • Understanding natural flow
+              Dependencies explain natural flow • No artificial task locking
             </span>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {PROJECT_TASKS.map((task, idx) => {
               const status = taskStatus[task.id];
               return (
-                <div key={task.id} style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                  <div
-                    style={{
-                      width: 38,
-                      height: 38,
-                      borderRadius: "50%",
-                      background: status === "done" ? "#05b076" : status === "now" ? "#f47522" : "var(--itw-panel-soft)",
-                      color: status === "done" || status === "now" ? "#fff" : "var(--itw-muted)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontWeight: 900,
-                      fontSize: 15,
-                      border: "1.5px solid var(--itw-border)",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {status === "done" ? "✓" : idx + 1}
+                <div key={task.id} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                    <div
+                      style={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: "50%",
+                        background: status === "done" ? "#05b076" : status === "now" ? "#f47522" : "var(--itw-panel-soft)",
+                        color: status === "done" || status === "now" ? "#fff" : "var(--itw-muted)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontWeight: 900,
+                        fontSize: 15,
+                        border: "1.5px solid var(--itw-border)",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {status === "done" ? "✓" : idx + 1}
+                    </div>
+
+                    <div
+                      style={{
+                        flex: 1,
+                        padding: 14,
+                        borderRadius: 12,
+                        background: status === "now" ? "rgba(244, 117, 34, 0.06)" : "var(--itw-panel-soft)",
+                        border: status === "now" ? "1.5px solid #f47522" : "1px solid var(--itw-border)",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                        gap: 8,
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontSize: 14.5, fontWeight: 800, color: "var(--itw-text)" }}>
+                          {task.title}
+                        </div>
+                        <div style={{ fontSize: 12.5, color: "var(--itw-muted)", marginTop: 2 }}>
+                          {task.desc}
+                        </div>
+                        {/* Dependency Informational Relationship */}
+                        <div style={{ fontSize: 12, color: "var(--itw-executive)", marginTop: 6, fontWeight: 600 }}>
+                          ➔ <b>Informs:</b> {task.informs}
+                        </div>
+                        {task.predecessorExplanation && (
+                          <div style={{ fontSize: 11.5, color: "var(--itw-muted)", marginTop: 2 }}>
+                            ℹ️ {task.predecessorExplanation}
+                          </div>
+                        )}
+                      </div>
+
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "var(--itw-muted)" }}>
+                          ⏱️ {task.timeEst}
+                        </span>
+                        <button
+                          type="button"
+                          className="itw-cta itw-cta-line"
+                          style={{ fontSize: 11.5, padding: "4px 10px" }}
+                          onClick={() => setStatus(task.id, status === "done" ? "now" : "done")}
+                        >
+                          {status === "done" ? "Re-open ↺" : "Mark Done ✓"}
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
-                  <div
-                    style={{
-                      flex: 1,
-                      padding: 14,
-                      borderRadius: 12,
-                      background: status === "now" ? "rgba(244, 117, 34, 0.06)" : "var(--itw-panel-soft)",
-                      border: status === "now" ? "1.5px solid #f47522" : "1px solid var(--itw-border)",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      flexWrap: "wrap",
-                      gap: 8,
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: 14.5, fontWeight: 800, color: "var(--itw-text)" }}>
-                        {task.title}
-                      </div>
-                      <div style={{ fontSize: 12.5, color: "var(--itw-muted)", marginTop: 2 }}>
-                        {task.desc}
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: "var(--itw-muted)" }}>
-                        ⏱️ {task.timeEst}
-                      </span>
-                      <button
-                        type="button"
-                        className="itw-cta itw-cta-line"
-                        style={{ fontSize: 11.5, padding: "4px 10px" }}
-                        onClick={() => setStatus(task.id, status === "done" ? "now" : "done")}
-                      >
-                        {status === "done" ? "Re-open" : "Complete ✓"}
-                      </button>
-                    </div>
-                  </div>
+                  {/* Flow connector line */}
+                  {idx < PROJECT_TASKS.length - 1 && (
+                    <div style={{ marginLeft: 18, height: 12, width: 2, background: "var(--itw-border)" }} />
+                  )}
                 </div>
               );
             })}
@@ -7426,7 +8035,7 @@ function ProjectPlanningDeskWorkspace() {
         </div>
       )}
 
-      {/* Perspective 3: Task Chunking Tool */}
+      {/* Perspective 3: Task Chunking Tool (Micro-Step Decomposition) */}
       {activeView === "chunking" && (
         <div style={{ padding: 22, borderRadius: 18, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)", marginBottom: 26 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
@@ -7438,11 +8047,12 @@ function ProjectPlanningDeskWorkspace() {
                 Decompose an Intimidating Task into Bite-Sized Steps
               </h4>
             </div>
-            <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {PROJECT_TASKS.map((t) => (
                 <button
                   key={t.id}
                   type="button"
+                  aria-pressed={expandedTaskId === t.id}
                   className={`itw-cta ${expandedTaskId === t.id ? "itw-cta-dark" : "itw-cta-line"}`}
                   style={{ fontSize: 11.5, padding: "4px 10px" }}
                   onClick={() => setExpandedTaskId(t.id)}
@@ -7455,18 +8065,25 @@ function ProjectPlanningDeskWorkspace() {
 
           {(() => {
             const currentTask = PROJECT_TASKS.find((t) => t.id === expandedTaskId) || PROJECT_TASKS[3];
+            const completedSubCount = currentTask.subtasks.filter((_, idx) => checkedSubtasks[`${currentTask.id}_${idx}`]).length;
+
             return (
               <div style={{ padding: 18, borderRadius: 14, background: "var(--itw-panel-soft)", border: "1.5px solid var(--itw-border)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                  <span style={{ fontSize: 26 }}>{currentTask.icon}</span>
-                  <div>
-                    <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: 0 }}>
-                      {currentTask.title}
-                    </h4>
-                    <span style={{ fontSize: 12, color: "var(--itw-muted)" }}>
-                      Estimated overall duration: {currentTask.timeEst} • Chunked into 3 micro-steps
-                    </span>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 26 }}>{currentTask.icon}</span>
+                    <div>
+                      <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: 0 }}>
+                        {currentTask.title}
+                      </h4>
+                      <span style={{ fontSize: 12, color: "var(--itw-muted)" }}>
+                        Illustrative duration: {currentTask.timeEst} • Chunked into 3 micro-steps
+                      </span>
+                    </div>
                   </div>
+                  <span style={{ fontSize: 12, fontWeight: 700, padding: "4px 10px", borderRadius: 99, background: completedSubCount === 3 ? "rgba(5, 176, 118, 0.12)" : "rgba(0,0,0,0.04)", color: completedSubCount === 3 ? "#05b076" : "var(--itw-text)" }}>
+                    {completedSubCount} of {currentTask.subtasks.length} Subtasks Done
+                  </span>
                 </div>
                 <p style={{ fontSize: 13.5, color: "var(--itw-muted)", margin: "0 0 16px" }}>
                   {currentTask.desc}
@@ -7519,11 +8136,11 @@ function ProjectPlanningDeskWorkspace() {
                 Calm Temporal Pacing
               </span>
               <h4 style={{ fontSize: 17, fontWeight: 800, color: "var(--itw-text)", margin: "2px 0" }}>
-                Realistic Project Duration Blocks (Total: ~2 Hours)
+                Illustrative Planning Time Blocks (Total: ~2 Hours)
               </h4>
             </div>
             <span style={{ fontSize: 12, color: "var(--itw-muted)" }}>
-              No ticking timer • Visual proportion of time
+              Illustrative planning estimates for pacing, not rigid standardized predictions
             </span>
           </div>
 
@@ -7547,7 +8164,7 @@ function ProjectPlanningDeskWorkspace() {
                   {t.timeEst}
                 </div>
                 <span style={{ fontSize: 11, color: "var(--itw-muted)" }}>
-                  Paced break recommended after
+                  Suggested planning block (adjust pace to personal rhythm)
                 </span>
               </div>
             ))}
@@ -7567,7 +8184,7 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
 
   return (
     <section className="itw-view itw-module itw-flow" data-accent="executive">
-      <FlowCrumbs name="Executive Functioning Differences" onBack={onBack} />
+      <FlowCrumbs name="Executive Functioning &amp; Planning Scaffolding" onBack={onBack} />
 
       {tab === "desk" && (
         <div className="itw-flow-page" key="desk">
@@ -7575,7 +8192,7 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
             <h2 className="itw-flow-title">The Project Planning Desk</h2>
             <div className="itw-flow-sub">Task Initiation, Working Memory Offloading &amp; Visual Horizons</div>
             <p className="itw-flow-lead" style={{ margin: 0 }}>
-              Executive function is the brain management coordinator for prioritizing, estimating duration, and sequencing multi-step goals.
+              Executive function is the brain's coordination suite for prioritizing, estimating duration, and sequencing multi-step goals.
               Explore how visual horizons, chunking, and natural workflow maps relieve cognitive friction.
             </p>
           </div>
@@ -7626,18 +8243,18 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
           <FactsGrid
             facts={[
               {
-                num: "8%–10%",
-                label: "estimated proportion of Indian school-age children facing executive coordination, planning, or initiation differences",
-                src: "Indian Journal of Pediatrics School Mental Health Consortium",
+                num: "Cognitive Domain",
+                label: "Executive functioning encompasses prefrontal regulatory processes (task initiation, working memory, cognitive flexibility) rather than a standalone diagnostic label. In Indian pediatric and school mental health literature, localized studies (such as the BRIEF-P preschool cohort study in urban Bengaluru, N=412) show that executive coordination differences co-occur across ADHD, specific learning differences, and sensory profiles.",
+                src: "Indian Journal of Pediatrics / Developmental-Behavioral Pediatrics",
               },
               {
-                num: "Visual Boards",
-                label: "educational research proving that visual Now/Next/Later schedules reduce task refusal and transition distress by over 60%",
+                num: "Visual Horizons",
+                label: "Pedagogical research shows that externalizing working memory demands through physical Now / Next / Later horizons and visual micro-chunking significantly reduces task initiation inertia and decision fatigue.",
                 src: "Journal of Applied Behavior Analysis & Inclusive Pedagogy",
               },
               {
-                num: "CBSE Scaffolding",
-                label: "examination board guidelines permitting project breakdown checklists, separate testing desks, and rest breaks for neurodiverse students",
+                num: "CBSE Accommodations",
+                label: "CBSE inclusive education framework provisions permit structured accommodations such as compensatory time, visual assistance, and rest breaks for students with certified disabilities under RPwD Act rules.",
                 src: "Central Board of Secondary Education (CBSE) Inclusive Framework",
               },
             ]}
@@ -7654,7 +8271,7 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
               <b>The 5-Minute Micro-Action:</b> When stuck, ask the student to work for just 5 minutes on the first small step without committing to finishing the whole project.
             </li>
             <li>
-              <b>Visual Analog Clocks (Time Timer):</b> Displays elapsed time as a disappearing colored wedge, making time tangible and concrete.
+              <b>Visual Analog Clocks:</b> Displays elapsed time as a disappearing colored wedge, making duration tangible and concrete without ticking anxiety.
             </li>
             <li>
               <b>Collaborative Body Doubling:</b> Having a parent, teacher, or study partner sit nearby while working provides gentle accountability without pressure.
@@ -7677,6 +8294,7 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
     </section>
   );
 }
+
 /* ================= STORIES & PERSPECTIVES EXHIBITS ================= */
 
 function playPageTurnSound(soundOn) {
@@ -8332,7 +8950,7 @@ function EyesTextPage({
             onClick={onNavigateAutism}
             disabled={isTurningFace}
           >
-            Try Interactive Simulations →
+            Explore Interactive Experiences →
           </button>
         )}
       </div>

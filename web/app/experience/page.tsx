@@ -4,16 +4,16 @@ import ItwClient from '../../components/itw/ItwClient'
 export const metadata: Metadata = {
   title: 'In Their World — Interactive Neurodiversity & Learning Experiences | Manas Learning',
   description:
-    'Step into their world for a few minutes. Interactive first-person learning experiences and illustrated storybooks exploring sensory processing (Autism), attentional regulation (ADHD), phonological decoding (Dyslexia), speech pacing (AAC), dyscalculia, dysgraphia, and inclusive classroom support.',
+    'Interactive learning experiences and illustrated perspectives exploring task demands, classroom accessibility barriers, and evidence-based supports across autism, ADHD, dyslexia, speech and communication differences, dyscalculia, dysgraphia, and Down syndrome.',
   keywords: [
     'neurodiversity learning experiences',
-    'autism sensory experience',
-    'ADHD focus exploration',
-    'dyslexia reading decoding',
-    'speech delay AAC exploration',
+    'autism sensory processing supports',
+    'ADHD attentional regulation',
+    'dyslexia reading decoding supports',
+    'speech AAC communication access',
     'dyscalculia math manipulatives',
-    'dysgraphia motor transcription',
-    'auditory processing disorder',
+    'dysgraphia transcription scaffolding',
+    'auditory processing accommodations',
     'Down syndrome school inclusion',
     'inclusive education India',
     'special education Chennai',
@@ -21,9 +21,9 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Manas Learning Special Education Team' }],
   openGraph: {
-    title: 'In Their World — Experience What They Feel | Manas Learning',
+    title: 'In Their World — Learning Differences & Accommodations | Manas Learning',
     description:
-      'First-person interactive experiences and illustrated storybooks of autism, ADHD, dyslexia, and speech differences. Evidence-grounded, empathetic, and paired with actionable accommodations.',
+      'Interactive learning experiences and illustrated perspectives exploring learning differences and classroom accessibility. Grounded in pediatric and pedagogical evidence, paired with actionable accommodations.',
     url: 'https://web-vert-nu-vcsh56lv8l.vercel.app/experience',
     siteName: 'Manas Learning',
     images: [
@@ -39,9 +39,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'In Their World — Experience What They Feel',
+    title: 'In Their World — Learning Differences & Accommodations',
     description:
-      'First-person interactive experiences of sensory, attentional, and reading differences. Designed with pediatric clinical rigor.',
+      'Interactive learning experiences exploring sensory, attentional, and reading differences. Designed to illustrate classroom barriers and effective supports.',
     images: ['/decor/itw/supportive-environment.webp'],
   },
 }
@@ -51,7 +51,7 @@ const jsonLd = {
   '@type': 'LearningResource',
   name: 'In Their World: Neurodiversity & Special Education Interactive Experiences',
   description:
-    'An interactive experiential suite exploring sensory filtering, ADHD working memory load, dyslexia phonological decoding, and inclusive pedagogical accommodations.',
+    'An interactive educational suite exploring environmental barriers, task demands, and inclusive pedagogical accommodations across neurodiversity.',
   publisher: {
     '@type': 'EducationalOrganization',
     name: 'Manas Learning',

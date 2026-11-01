@@ -10,12 +10,11 @@ const DAYS: [number, string][] = [[1, 'Mon'], [2, 'Tue'], [3, 'Wed'], [4, 'Thu']
 const istDate = (ms: number) => new Date(ms + 19800000).toISOString().slice(0, 10)
 const input = 'rounded-lg border border-cream-dark bg-white px-2 py-1 text-sm outline-none focus:border-primary'
 
-function Card({s, bookings, k}: {s: Staff; bookings: B[]; k: string}) {
+function Card({s, bookings, k, now}: {s: Staff; bookings: B[]; k: string; now: number}) {
   const [d, setD] = useState<Staff>(s)
   const [nl, setNl] = useState<L>({from: '', to: ''})
   const [msg, setMsg] = useState('')
   const [saving, setSaving] = useState(false)
-  const now = Date.now()
   const live = bookings.filter((b) => b.staffId === s.id && b.status !== 'cancelled' && Date.parse(b.startAt) >= now)
   const busy = live.filter((b) => Date.parse(b.startAt) < now + 7 * 864e5).length
   const win = (idx: number, patch: Partial<W>) => setD({...d, weeklyHours: d.weeklyHours.map((w, j) => (j === idx ? {...w, ...patch} : w))})
@@ -98,17 +97,45 @@ function Card({s, bookings, k}: {s: Staff; bookings: B[]; k: string}) {
 }
 
 export default function Availability() {
-  const [key, setKey] = useState('')
+  const [key, setKey] = useState(() => (typeof window !== 'undefined' ? sessionStorage.getItem('team-key') || '' : ''))
   const [data, setData] = useState<{staff: Staff[]; bookings: B[]} | null>(null)
+  const [now, setNow] = useState(0)
   const [err, setErr] = useState('')
 
   const load = useCallback(async (k: string) => {
     const r = await fetch('/api/team/bookings', {headers: {'x-team-key': k}})
     if (!r.ok) { setData(null); setErr('Wrong password.'); return }
+    setNow(Date.now())
     setData(await r.json()); setErr(''); sessionStorage.setItem('team-key', k)
   }, [])
 
-  useEffect(() => { const k = sessionStorage.getItem('team-key'); if (k) { setKey(k); load(k) } }, [load])
+  useEffect(() => {
+    if (!key) return
+    let active = true
+    fetch('/api/team/bookings', {headers: {'x-team-key': key}})
+      .then(async (r) => {
+        if (!active) return
+        if (!r.ok) {
+          setData(null)
+          setErr('Wrong password.')
+          return
+        }
+        const json = await r.json()
+        if (!active) return
+        setNow(Date.now())
+        setData(json)
+        setErr('')
+        sessionStorage.setItem('team-key', key)
+      })
+      .catch(() => {
+        if (!active) return
+        setData(null)
+        setErr('Failed to load.')
+      })
+    return () => {
+      active = false
+    }
+  }, [key])
 
   if (!data) return (
     <main className="mx-auto max-w-sm px-5 py-20">
@@ -129,7 +156,7 @@ export default function Availability() {
       </div>
       <p className="mt-2 text-sm text-brown-light">Set working hours and time off. Parents only see open times, so changes apply to /consult immediately.</p>
       <div className="mt-5 grid gap-5">
-        {data.staff.map((s) => <Card key={s.id} s={s} bookings={data.bookings} k={key} />)}
+        {data.staff.map((s) => <Card key={s.id} s={s} bookings={data.bookings} k={key} now={now} />)}
       </div>
     </main>
   )

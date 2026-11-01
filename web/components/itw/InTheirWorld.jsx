@@ -2613,7 +2613,6 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
   // Dynamic Distraction Generator for interrupted mode: Multi-font, multi-color pop-ins
   useEffect(() => {
     if (mode === "baseline" || mode === "supported" || paused || !running) {
-      setNotifications([]);
       return undefined;
     }
 
@@ -2691,6 +2690,8 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
     };
   }, [mode, paused, running, playAdhdSound]);
 
+  const visibleNotifications = (mode === "baseline" || mode === "supported" || paused || !running) ? [] : notifications;
+
   const handleToggleKeyword = (kw) => {
     if (soundOn) audio.cue("tap");
     if (!currentTask.targets.includes(kw)) {
@@ -2708,7 +2709,7 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
       clearTimers();
       setRunning(false);
       if (soundOn) audio.cue("slam");
-      const finalTime = parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1));
+      const finalTime = elapsed > 0 ? elapsed : 0.1;
       onCompleteRef.current?.({
         time: finalTime,
         distractionsDismissed,
@@ -2760,9 +2761,9 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
       </div>
 
       {/* Floating Notifications in Interrupted Mode */}
-      {mode === "interrupted" && notifications.length > 0 && (
+      {mode === "interrupted" && visibleNotifications.length > 0 && (
         <div className="itw-toast-container" aria-live="polite" style={{ zIndex: 10 }}>
-          {notifications.map((n) => (
+          {visibleNotifications.map((n) => (
             <div key={n.id} className={`itw-desk-toast itw-toast-${n.styleType || "default"} itw-distraction-burst`}>
               <span className="itw-toast-icon" aria-hidden="true">{n.icon}</span>
               <div className="itw-toast-content">
@@ -3881,7 +3882,6 @@ function DyslexiaModule({ onBack, onNavigate }) {
 
   useEffect(() => {
     if (activeTab !== "labs" || labSubTab !== "scramble" || !scrambleActive) {
-      setScrambledText(DYS_BASE_SCRAMBLE_PASSAGE);
       return undefined;
     }
     const interval = setInterval(() => {
@@ -3889,6 +3889,8 @@ function DyslexiaModule({ onBack, onNavigate }) {
     }, scrambleSpeed);
     return () => clearInterval(interval);
   }, [activeTab, labSubTab, scrambleActive, scrambleSpeed]);
+
+  const displayScrambledText = (activeTab !== "labs" || labSubTab !== "scramble" || !scrambleActive) ? DYS_BASE_SCRAMBLE_PASSAGE : scrambledText;
 
   // --- Lab 2: Mirror Confusion State ---
   const [confusionActive, setConfusionActive] = useState(true);
@@ -3901,7 +3903,6 @@ function DyslexiaModule({ onBack, onNavigate }) {
 
   useEffect(() => {
     if (activeTab !== "labs" || labSubTab !== "confusion" || !confusionActive) {
-      setConfusedText(DYS_BASE_CONFUSION_PASSAGE);
       return undefined;
     }
     const interval = setInterval(() => {
@@ -3909,6 +3910,8 @@ function DyslexiaModule({ onBack, onNavigate }) {
     }, 850);
     return () => clearInterval(interval);
   }, [activeTab, labSubTab, confusionActive]);
+
+  const displayConfusedText = (activeTab !== "labs" || labSubTab !== "confusion" || !confusionActive) ? DYS_BASE_CONFUSION_PASSAGE : confusedText;
 
   // --- Lab 3: Visual Crowding State ---
   const [crowdLetterSpacing, setCrowdLetterSpacing] = useState(-1.5);
@@ -3935,7 +3938,6 @@ function DyslexiaModule({ onBack, onNavigate }) {
 
   useEffect(() => {
     if (activeTab !== "labs" || labSubTab !== "blur" || !blurActive) {
-      setBlurredWordIndexes(new Set());
       return undefined;
     }
 
@@ -4002,6 +4004,9 @@ function DyslexiaModule({ onBack, onNavigate }) {
     const elapsedSec = ((performance.now() - challengeStartRef.current) / 1000).toFixed(1);
     setNormalTime(parseFloat(elapsedSec));
     setNormalDone(true);
+    if (dyslexiaDone) {
+      setChallengeRunning(false);
+    }
   };
 
   const finishDyslexia = () => {
@@ -4009,16 +4014,14 @@ function DyslexiaModule({ onBack, onNavigate }) {
     const elapsedSec = ((performance.now() - challengeStartRef.current) / 1000).toFixed(1);
     setDyslexiaTime(parseFloat(elapsedSec));
     setDyslexiaDone(true);
+    if (normalDone) {
+      setChallengeRunning(false);
+    }
   };
 
   // Timer loop for challenge
   useEffect(() => {
-    if (!challengeRunning) return undefined;
-    if (normalDone && dyslexiaDone) {
-      setChallengeRunning(false);
-      setChallengeDyslexiaText(DYS_CHALLENGE_PASSAGE);
-      return undefined;
-    }
+    if (!challengeRunning || (normalDone && dyslexiaDone)) return undefined;
 
     const timer = setInterval(() => {
       const now = performance.now();
@@ -4033,7 +4036,6 @@ function DyslexiaModule({ onBack, onNavigate }) {
   // Dyslexia text live scrambler in challenge
   useEffect(() => {
     if (!challengeRunning || dyslexiaDone) {
-      if (!challengeRunning) setChallengeDyslexiaText(DYS_CHALLENGE_PASSAGE);
       return undefined;
     }
     const interval = setInterval(() => {
@@ -4042,6 +4044,8 @@ function DyslexiaModule({ onBack, onNavigate }) {
     }, 160);
     return () => clearInterval(interval);
   }, [challengeRunning, dyslexiaDone]);
+
+  const displayChallengeDyslexiaText = (!challengeRunning || dyslexiaDone) ? DYS_CHALLENGE_PASSAGE : challengeDyslexiaText;
 
   // --- Tab 3: Sandbox State ---
   const [sandboxInput, setSandboxInput] = useState(DYS_SANDBOX_PRESETS[0]);
@@ -4058,14 +4062,7 @@ function DyslexiaModule({ onBack, onNavigate }) {
   };
 
   useEffect(() => {
-    if (activeTab !== "sandbox") return undefined;
-    if (!sandboxInput.trim()) {
-      setSandboxRenderedText("");
-      return undefined;
-    }
-
-    if (!activeFilters.has("scramble") && !activeFilters.has("confusion")) {
-      setSandboxRenderedText(sandboxInput);
+    if (activeTab !== "sandbox" || !sandboxInput.trim() || (!activeFilters.has("scramble") && !activeFilters.has("confusion"))) {
       return undefined;
     }
 
@@ -4083,6 +4080,11 @@ function DyslexiaModule({ onBack, onNavigate }) {
     return () => clearInterval(interval);
   }, [activeTab, sandboxInput, activeFilters]);
 
+  const displaySandboxText =
+    activeTab !== "sandbox" || !sandboxInput.trim() || (!activeFilters.has("scramble") && !activeFilters.has("confusion"))
+      ? sandboxInput
+      : sandboxRenderedText;
+
   // --- Tab 4: Accommodations Studio State ---
   const [useOpenDyslexic, setUseOpenDyslexic] = useState(false);
   const [activeTint, setActiveTint] = useState("none"); // none | cream | peach | mint | sky | rose
@@ -4094,11 +4096,21 @@ function DyslexiaModule({ onBack, onNavigate }) {
 
   const rulerRef = useRef(null);
 
-  const handleRulerMouseMove = (e) => {
+  const updateRulerPosition = (clientY) => {
     if (!readingRulerActive || !rulerRef.current) return;
     const rect = rulerRef.current.getBoundingClientRect();
-    const relativeY = Math.max(0, Math.min(e.clientY - rect.top - 18, rect.height - 36));
+    const relativeY = Math.max(0, Math.min(clientY - rect.top - 18, rect.height - 36));
     setRulerY(relativeY);
+  };
+
+  const handleRulerMouseMove = (e) => {
+    updateRulerPosition(e.clientY);
+  };
+
+  const handleRulerTouchMove = (e) => {
+    if (e.touches && e.touches[0]) {
+      updateRulerPosition(e.touches[0].clientY);
+    }
   };
 
   const playTTS = () => {
@@ -4283,7 +4295,7 @@ function DyslexiaModule({ onBack, onNavigate }) {
                 </div>
 
                 <div className="itw-dys-output-stage">
-                  <p>{scrambledText}</p>
+                  <p>{displayScrambledText}</p>
                 </div>
 
                 <div className="itw-storybook-insight-box" style={{ marginTop: 18 }}>
@@ -4345,7 +4357,7 @@ function DyslexiaModule({ onBack, onNavigate }) {
                 </div>
 
                 <div className="itw-dys-output-stage">
-                  <p>{confusedText}</p>
+                  <p>{displayConfusedText}</p>
                 </div>
 
                 <div className="itw-storybook-insight-box" style={{ marginTop: 18 }}>
@@ -4696,7 +4708,7 @@ function DyslexiaModule({ onBack, onNavigate }) {
                 </div>
 
                 <div className="itw-dys-passage-box">
-                  <p>{challengeDyslexiaText}</p>
+                  <p>{displayChallengeDyslexiaText}</p>
                 </div>
 
                 <div style={{ marginTop: 16 }}>
@@ -4814,7 +4826,7 @@ function DyslexiaModule({ onBack, onNavigate }) {
             >
               {activeFilters.has("floating") ? (
                 <p>
-                  {sandboxRenderedText.split("").map((ch, idx) => {
+                  {displaySandboxText.split("").map((ch, idx) => {
                     if (ch === " ") return " ";
                     const dx = (Math.sin(idx) * 3).toFixed(1);
                     const dy = (Math.cos(idx) * 3).toFixed(1);
@@ -4831,7 +4843,7 @@ function DyslexiaModule({ onBack, onNavigate }) {
                 </p>
               ) : activeFilters.has("blur") ? (
                 <p>
-                  {sandboxRenderedText.split(/(\s+)/).map((word, idx) => {
+                  {displaySandboxText.split(/(\s+)/).map((word, idx) => {
                     if (!word.trim()) return word;
                     const shouldBlur = idx % 3 === 0;
                     return (
@@ -4842,7 +4854,7 @@ function DyslexiaModule({ onBack, onNavigate }) {
                   })}
                 </p>
               ) : (
-                <p>{sandboxRenderedText || "Type something in the box above to see the simulation..."}</p>
+                <p>{displaySandboxText || "Type something in the box above to see the simulation..."}</p>
               )}
             </div>
           </div>
@@ -4927,6 +4939,7 @@ function DyslexiaModule({ onBack, onNavigate }) {
                 position: "relative",
               }}
               onMouseMove={handleRulerMouseMove}
+              onTouchMove={handleRulerTouchMove}
             >
               {readingRulerActive && (
                 <div
@@ -5423,7 +5436,7 @@ function SpeechSim({
     setRunning(false);
     if (soundOn) audio.cue("slam");
 
-    const finalTime = parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1));
+    const finalTime = elapsed > 0 ? elapsed : 0.1;
     onCompleteRef.current?.({
       time: finalTime,
       method,
@@ -6201,7 +6214,7 @@ function DyscalculiaSim({ mode = "baseline", supportType = "tenframes", onComple
     }
 
     if (timerRef.current) clearInterval(timerRef.current);
-    const finalTime = parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1));
+    const finalTime = elapsed > 0 ? elapsed : 0.1;
     onCompleteRef.current?.({
       time: finalTime,
       errors,
@@ -6927,7 +6940,7 @@ function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplet
   const finishSim = (method, charCount, fatigue) => {
     if (timerRef.current) clearInterval(timerRef.current);
     setRunning(false);
-    const finalTime = parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1));
+    const finalTime = elapsed > 0 ? elapsed : 0.1;
     onCompleteRef.current?.({
       time: finalTime,
       method,

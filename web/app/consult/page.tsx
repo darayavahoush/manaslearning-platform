@@ -39,14 +39,16 @@ export default function Consult() {
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
-    const td = ist(Date.now())
-    setToday(td); setMonth(td.slice(0, 7))
     const q = new URLSearchParams(window.location.search)
     if (q.get('embed')) { const h = document.querySelector('header') as HTMLElement | null; if (h) h.style.display = 'none' }
     const iepAllowed = q.get('type') === 'iep-consultation' || q.get('iep') === 'true' || q.get('from') === 'dashboard' || q.get('assessment') === 'paid'
-    setIsIepUnlocked(iepAllowed)
 
     fetch('/api/types').then((r) => r.json()).then((list: T[]) => {
+      const td = ist(Date.now())
+      setToday(td)
+      setMonth(td.slice(0, 7))
+      setIsIepUnlocked(iepAllowed)
+      setTypes(list)
       setTypes(list)
       const initial =
         (iepAllowed && list.find((x) => x.id === 'iep-consultation')) ||

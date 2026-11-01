@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 type Staff = {
   id: string
@@ -89,9 +89,22 @@ const labelDate = (d: string) =>
 const hmTime = (iso: string) =>
   new Date(Date.parse(iso) + 19800000).toISOString().slice(11, 16)
 
+const getInitialSession = () => {
+  if (typeof window === 'undefined') return null
+  try {
+    const saved = sessionStorage.getItem('team-auth-session')
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      if (parsed && parsed.user && parsed.token) return parsed as { user: AuthUser; token: string }
+    }
+  } catch {}
+  return null
+}
+
 export default function TeamPortal() {
   // Session & Auth
-  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null)
+  const [initialSession] = useState(getInitialSession)
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => initialSession?.user || null)
   const [loginMode, setLoginMode] = useState<'specialist' | 'admin'>('specialist')
   const [selectedStaffId, setSelectedStaffId] = useState<string>('ananya-sridhar')
   const [loginPassword, setLoginPassword] = useState<string>('ananya123')
@@ -100,16 +113,20 @@ export default function TeamPortal() {
 
   // Data & Workspace
   const [data, setData] = useState<{ staff: Staff[]; types: ConsultType[]; bookings: Booking[] } | null>(null)
-  const [activeStaffId, setActiveStaffId] = useState<string>('all')
-  const [activeTab, setActiveTab] = useState<'availability' | 'calendar' | 'leaves' | 'quick-book' | 'admin-members'>('availability')
+  const [activeStaffId, setActiveStaffId] = useState<string>(() =>
+    initialSession ? (initialSession.user.isAdmin ? 'all' : initialSession.user.id) : 'all'
+  )
+  const [activeTab, setActiveTab] = useState<'availability' | 'calendar' | 'leaves' | 'quick-book' | 'admin-members'>(() =>
+    initialSession ? (initialSession.user.isAdmin ? 'admin-members' : 'availability') : 'availability'
+  )
 
   // Calendar navigation
-  const [week, setWeek] = useState('')
   const [today, setToday] = useState('')
+  const [week, setWeek] = useState('')
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
 
   // Availability editing state for active staff
-  const [editStaff, setEditStaff] = useState<Staff | null>(null)
+  const [editStaffOverride, setEditStaffOverride] = useState<Staff | null>(null)
   const [availSaving, setAvailSaving] = useState(false)
   const [availMsg, setAvailMsg] = useState('')
 
@@ -162,42 +179,31 @@ export default function TeamPortal() {
 
   // Initial load & check persisted session
   useEffect(() => {
-    const t = parts(new Date().toISOString()).date
-    const dow = new Date(t + 'T00:00:00Z').getUTCDay()
-    setToday(t)
-    setWeek(addDays(t, -((dow + 6) % 7))) // Monday of current week
-    setMbDate(t)
-    setPreviewDate(t)
-
     // Load public staff roster first for login dropdown
     fetch('/api/team/members')
       .then((r) => r.json())
       .then((res) => {
+        const t = parts(new Date().toISOString()).date
+        const dow = new Date(t + 'T00:00:00Z').getUTCDay()
+        setToday(t)
+        setWeek(addDays(t, -((dow + 6) % 7)))
+        setPreviewDate(t)
+        setMbDate(t)
         if (res.ok && res.staff) {
           setData((prev) => (prev ? { ...prev, staff: res.staff } : { staff: res.staff, types: res.consultTypes || [], bookings: [] }))
         }
       })
       .catch(() => {})
 
-    // Check existing session
-    const saved = sessionStorage.getItem('team-auth-session')
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        if (parsed && parsed.user && parsed.token) {
-          setCurrentUser(parsed.user)
-          loadData(parsed.token)
-          if (!parsed.user.isAdmin) {
-            setActiveStaffId(parsed.user.id)
-            setActiveTab('availability')
-          } else {
-            setActiveStaffId('all')
-            setActiveTab('admin-members')
-          }
-        }
-      } catch {}
+    if (initialSession?.token) {
+      fetch('/api/team/bookings', { headers: { 'x-team-key': initialSession.token } })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((json) => {
+          if (json) setData(json)
+        })
+        .catch(() => {})
     }
-  }, [loadData])
+  }, [initialSession])
 
   // Handle Login
   async function handleLogin(e?: React.FormEvent) {
@@ -260,22 +266,18 @@ export default function TeamPortal() {
     setLoginError('')
   }
 
-  // Sync editStaff whenever data loads or active staff changes
-  useEffect(() => {
-    if (!data || !data.staff) return
-    const target =
-      currentUser && !currentUser.isAdmin
+  // Derive current target staff for availability editing & forms
+  const baseTarget = useMemo(() => {
+    if (!data || !data.staff || !data.staff.length) return null
+    return (
+      (currentUser && !currentUser.isAdmin
         ? data.staff.find((s) => s.id === currentUser.id)
-        : data.staff.find((s) => s.id === (activeStaffId === 'all' ? data.staff[0]?.id : activeStaffId))
+        : data.staff.find((s) => s.id === (activeStaffId === 'all' ? data.staff[0]?.id : activeStaffId))) || null
+    )
+  }, [data, activeStaffId, currentUser])
 
-    if (target) {
-      setEditStaff(JSON.parse(JSON.stringify(target)))
-      setMbStaffId(target.id)
-    }
-    if (data.types?.length && !mbTypeId) {
-      setMbTypeId(data.types[0].id)
-    }
-  }, [data, activeStaffId, currentUser, mbTypeId])
+  const editStaff = editStaffOverride && editStaffOverride.id === baseTarget?.id ? editStaffOverride : baseTarget
+  const setEditStaff = (s: Staff | null) => setEditStaffOverride(s)
 
   // Cancel booking
   async function cancelBooking(b: Booking) {
@@ -488,7 +490,9 @@ export default function TeamPortal() {
   // Manual Booking / Slot Block
   async function handleManualBook(e: React.FormEvent) {
     e.preventDefault()
-    if (!mbStaffId || !mbTypeId || !mbDate || !mbTime || !mbParentName) {
+    const finalStaffId = mbStaffId || baseTarget?.id || ''
+    const finalTypeId = mbTypeId || data?.types?.[0]?.id || ''
+    if (!finalStaffId || !finalTypeId || !mbDate || !mbTime || !mbParentName) {
       setMbMsg('Please fill in specialist, type, date, time and client name.')
       return
     }
@@ -503,8 +507,8 @@ export default function TeamPortal() {
         method: 'POST',
         headers: { 'x-team-key': token, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          staffId: mbStaffId,
-          typeId: mbTypeId,
+          staffId: finalStaffId,
+          typeId: finalTypeId,
           startAt: isoStart,
           parentName: mbParentName,
           email: mbEmail,
@@ -790,7 +794,6 @@ export default function TeamPortal() {
   // -------------------------------------------------------------
   const allStaff = data?.staff || []
   const currentSpecialist = editStaff || allStaff[0]
-  const color = STAFF_COLORS[currentSpecialist?.id] || DEFAULT_COLOR
 
   // Filter bookings for specialist vs admin
   const filteredBookings = (data?.bookings || []).filter((b) => {
@@ -1347,7 +1350,7 @@ export default function TeamPortal() {
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1">Specialist</label>
                   <select
-                    value={mbStaffId}
+                    value={mbStaffId || baseTarget?.id || ''}
                     onChange={(e) => setMbStaffId(e.target.value)}
                     className="w-full rounded-xl border border-cream-dark bg-cream px-3 py-2 text-xs font-bold"
                   >
@@ -1361,7 +1364,7 @@ export default function TeamPortal() {
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1">Consultation Type</label>
                   <select
-                    value={mbTypeId}
+                    value={mbTypeId || data?.types?.[0]?.id || ''}
                     onChange={(e) => setMbTypeId(e.target.value)}
                     className="w-full rounded-xl border border-cream-dark bg-cream px-3 py-2 text-xs font-bold"
                   >

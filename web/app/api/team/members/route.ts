@@ -12,7 +12,7 @@ function verifyAuth(req: Request) {
   )
 }
 
-export async function GET(req: Request) {
+export async function GET() {
   const db = readDB()
   // Return staff list
   return NextResponse.json({

@@ -1,15 +1,13 @@
 'use client'
-import {useEffect, useState} from 'react'
+import {useState} from 'react'
 
 type R = {title: string; startAt: string; needsPayment: boolean}
 
 export default function Confirm() {
-  const [token, setToken] = useState('')
+  const [token] = useState(() => (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('token') || '' : ''))
   const [state, setState] = useState<'ready' | 'busy' | 'ok' | 'err'>('ready')
   const [msg, setMsg] = useState('')
   const [r, setR] = useState<R | null>(null)
-
-  useEffect(() => { setToken(new URLSearchParams(window.location.search).get('token') || '') }, [])
 
   async function go() {
     setState('busy')

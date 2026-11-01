@@ -70,8 +70,10 @@ assert(itwJsx.includes('speechSynthesis.speak(utterance)'), 'Calls Web Speech AP
 assert(itwJsx.includes('aria-live="polite"'), 'Accessible aria-live region present for speech status announcements');
 
 // Check Speech Indian Statistics & RPwD scope
-assert(itwJsx.includes('Kumar et al. (2023)'), 'Dakshina Kannada school survey (Kumar et al. 2023) cited for regional 1.68% cohort');
+assert(itwJsx.includes('Varghese et al. (2023)'), 'Dakshina Kannada school survey (Varghese et al. 2023) cited for regional 1.68% stuttering cohort');
+assert(itwJsx.includes('10.1016/j.cegh.2023.101327'), 'Varghese et al. (2023) DOI accurately cited');
 assert(itwJsx.includes('3,437 school children aged 6–15 years in Dakshina Kannada district'), 'Dakshina Kannada sample size and age range cited accurately');
+assert(itwJsx.includes('stuttering prevalence of 1.68%'), 'Reported finding accurately specified as stuttering prevalence rather than generalized speech disorders');
 assert(itwJsx.includes('Sections 16 and 17 of the Rights of Persons with Disabilities Act 2016'), 'RPwD Act Sections 16 & 17 correctly cited');
 assert(itwJsx.includes('require certified benchmark disability documentation'), 'Formal exam accommodations scope correctly stated as requiring benchmark certification');
 
@@ -99,11 +101,13 @@ assert(itwJsx.includes('original: 6') && itwJsx.includes('target: 12'), 'Mint le
 
 // Check research citations
 assert(!itwJsx.includes('NIMHANS Child & Adolescent Psychiatry Epidemiology Studies'), 'Removed unsupported NIMHANS dyscalculia prevalence citation');
-assert(itwJsx.includes('Ramaa & Gowramma (2002)'), 'Ramaa & Gowramma Mysore primary school study cited with DOI');
+assert(itwJsx.includes('Ramaa, S., & Gowramma, I. P. (2002)'), 'Ramaa & Gowramma Mysore primary school study cited with accurate bibliographic title');
+assert(itwJsx.includes('10.1002/dys.214'), 'Ramaa & Gowramma (2002) correct DOI (10.1002/dys.214) cited');
+assert(itwJsx.includes('8(2), 67–85'), 'Ramaa & Gowramma (2002) correct volume, issue and pagination cited');
 assert(itwJsx.includes('5.98% (15 out of 251 students in grades 3–4) in Study 1, and 5.54% (78 out of 1,408 screened students) in Study 2'), 'Ramaa & Gowramma two distinct study cohorts reported separately');
 assert(!itwJsx.includes('N=664'), 'Unsupported combined N=664 figure removed');
-assert(itwJsx.includes('NCERT National Focus Group Position Paper on Teaching of Mathematics'), 'NCERT math kit guidance cited');
-assert(itwJsx.includes('CBSE Circular No. CBSE/Coord/2020'), 'CBSE Circular 2020 calculator exemption and Rule 24 cited');
+assert(itwJsx.includes('Section 5.2'), 'NCERT math kit guidance cited with accurate Section 5.2');
+assert(itwJsx.includes('CBSE Circular No. CBSE/Coord/2020 (dated 20.01.2020)'), 'CBSE Circular 2020 calculator exemption (dated 20.01.2020) and Rule 24 cited');
 
 // ----------------------------------------------------
 // TEST 4: Executive Functioning — The Project Planning Desk
@@ -143,9 +147,12 @@ assert(itwJsx.includes('Illustrative Planning Time Blocks'), 'Time blocks explic
 assert(!itwJsx.includes('Paced break recommended after'), 'Removed rigid "Paced break recommended after" claim');
 
 // Check Research Citations
-assert(itwJsx.includes('Selvam, S., et al. (2018)'), 'Selvam et al. 2018 Child Neuropsychology study cited with DOI');
+assert(itwJsx.includes('Selvam, S., Thomas, T., Kurpad, A. V., & Srinivasan, K. (2018)'), 'Selvam et al. 2018 Child Neuropsychology study cited with full author list');
+assert(itwJsx.includes('24(2), 226–246'), 'Selvam et al. (2018) correct issue and pagination (24(2), 226–246) cited');
+assert(itwJsx.includes('10.1080/09297049.2016.1254761'), 'Selvam et al. (2018) DOI cited accurately');
 assert(itwJsx.includes('cohort of 412 typically-developing urban preschool children aged 2–5 in Bengaluru'), 'BRIEF-P study cited with exact sample size and preschool population constraint');
 assert(!itwJsx.includes('Journal of Applied Behavior Analysis & Inclusive Pedagogy'), 'Phantom journal label removed');
+assert(!itwJsx.includes('Pedagogical Scaffolding & Universal Design for Learning (UDL) Guidelines'), 'Non-traceable UDL publication label removed');
 assert(!itwJsx.includes('The Prefrontal Cortex Coordination Suite'), 'Replaced single-centre coordination suite label');
 assert(!itwJsx.includes('internal activation energy'), 'Replaced internal activation energy phrase');
 assert(itwJsx.includes('Distributed Executive Brain Networks'), 'Accurate distributed executive networks heading present');

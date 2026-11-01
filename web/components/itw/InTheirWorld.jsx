@@ -5382,19 +5382,19 @@ function SpeechModule({ onBack, onNavigate }) {
           <FactsGrid
             facts={[
               {
-                num: "1.68% Regional Cohort",
-                label: "A localized epidemiological survey of 3,437 school children aged 6–15 years in Dakshina Kannada district, Karnataka, identified speech and fluency differences in 1.68% of the cohort. Researchers emphasize that this district-level finding reflects a specific regional survey and should not be cited as a national prevalence estimate, which remains under-documented across diverse Indian states.",
-                src: "Kumar et al. (2023), Epidemiological Survey of Speech and Language Disorders in School-Going Children, Journal of Indian Speech Language & Hearing Association, DOI: 10.4103/jisha.jisha_19_22",
+                num: "1.68% Regional Stuttering Cohort",
+                label: "A localized epidemiological survey of 3,437 school children aged 6–15 years in Dakshina Kannada district, Karnataka, identified a stuttering prevalence of 1.68%. Researchers emphasize that this district-level finding reflects a specific regional primary and secondary school sample and should not be generalized as a national prevalence estimate or applied across all speech, language, or communication differences.",
+                src: "Varghese et al. (2023). Prevalence of stuttering among school age children in Dakshina Kannada district of Karnataka, India. Clinical Epidemiology and Global Health, 22, 101327. DOI: 10.1016/j.cegh.2023.101327",
               },
               {
                 num: "Multilingual Classrooms",
-                label: "In multilingual Indian classroom settings, speech-language pathologists highlight the importance of distinguishing natural bilingual formulation pauses, code-switching delays, and second-language lexical retrieval from developmental speech sound or fluency disorders.",
-                src: "All India Institute of Speech and Hearing (AIISH) Clinical Guidelines",
+                label: "In multilingual Indian classroom settings, speech-language pathologists and educators highlight the importance of distinguishing natural bilingual formulation pauses, code-switching, and second-language lexical retrieval from developmental speech sound or fluency disorders.",
+                src: "Multilingual Speech-Language Pedagogy & Classroom Guidance",
               },
               {
                 num: "RPwD Act (Sec 16 & 17)",
-                label: "Sections 16 and 17 of the Rights of Persons with Disabilities Act 2016 mandate inclusive education and the promotion of augmentative and alternative modes of communication (AAC). Formal school board examination accommodations (such as compensatory extra time or an adult scribe) require certified benchmark disability documentation under RPwD Act guidelines.",
-                src: "Rights of Persons with Disabilities Act (2016) & DEPwD Guidelines",
+                label: "Sections 16 and 17 of the Rights of Persons with Disabilities Act 2016 mandate inclusive education and the promotion of augmentative and alternative modes of communication (AAC). Formal school board examination accommodations (such as compensatory extra time or an adult scribe) require certified benchmark disability documentation under RPwD Act guidelines, subject to the relevant eligibility requirements, supporting documentation, applicable examination-board guidelines and approval procedures.",
+                src: "Rights of Persons with Disabilities Act (2016), Sections 16 & 17",
               },
             ]}
             note="Speech-language pathologists emphasize that communication differences are relational: adjusting the partner's pacing, maintaining respectful engagement without demanding eye contact, and respecting device autonomy enables full participation."
@@ -5935,18 +5935,18 @@ function DyscalculiaModule({ onBack, onNavigate }) {
             facts={[
               {
                 num: "5.5%–6.0% Mysore Cohorts",
-                label: "In a systematic primary school study in Mysore, Ramaa & Gowramma (2002) reported dyscalculia in two distinct samples: 5.98% (15 out of 251 students in grades 3–4) in Study 1, and 5.54% (78 out of 1,408 screened students) in Study 2. These localized primary school cohort findings provide empirical evidence from South India, but do not represent a national prevalence figure. (Broader SLD studies, such as Karande et al., evaluated learning disabilities collectively rather than dyscalculia specifically).",
-                src: "Ramaa, S., & Gowramma, I. P. (2002). A systematic study of dyscalculia among primary school children. Dyslexia, 8(4), 206–222. DOI: 10.1002/dys.225",
+                label: "In a systematic primary school study in Mysore, Ramaa & Gowramma (2002) reported dyscalculia in two distinct samples: 5.98% (15 out of 251 students in grades 3–4) in Study 1, and 5.54% (78 out of 1,408 screened students) in Study 2. These localized primary school cohort findings provide empirical evidence from South India, but do not represent a national prevalence figure. (Broader SLD research, such as Karande et al., evaluated learning disabilities collectively rather than dyscalculia specifically).",
+                src: "Ramaa, S., & Gowramma, I. P. (2002). A systematic procedure for identifying and classifying children with Dyscalculia among primary school children in India. Dyslexia, 8(2), 67–85. DOI: 10.1002/dys.214",
               },
               {
                 num: "NCERT Math Lab Kits",
-                label: "The NCERT National Focus Group on Teaching of Mathematics (NCF 2005 position paper, Section 3.2 'Mathematics for All') recommends concrete manipulative materials—such as fraction strips, geoboards, bead frames, and base-ten blocks—to anchor conceptual quantity relations before introducing abstract numerical operations.",
-                src: "NCERT National Focus Group Position Paper on Teaching of Mathematics (NCF 2005)",
+                label: "The NCERT National Focus Group on Teaching of Mathematics (NCF 2005 position paper, Section 5.2 'Mathematics Laboratory') recommends concrete learning resources, manipulatives, and laboratory exploration to ground mathematical relations and spatial patterns before introducing formal abstract algorithms.",
+                src: "NCERT National Focus Group Position Paper on Teaching of Mathematics, National Curriculum Framework 2005 (Section 5.2)",
               },
               {
                 num: "CBSE Circular 2020 / Rule 24",
-                label: "CBSE Circular No. CBSE/Coord/2020 (dated 22.01.2020) permits basic, simple arithmetic calculators (without memory or algebraic keys) specifically for Candidates with Disabilities (CwD) with certified dyscalculia in Class X and XII examinations. General accommodations such as compensatory extra time (20 min/hour) or scribe services under Rule 24 require certified benchmark disability documentation under the RPwD Act 2016, approved on an individual basis.",
-                src: "CBSE Circular No. CBSE/Coord/2020 & Examination Bye-Laws Rule 24",
+                label: "CBSE Circular No. CBSE/Coord/2020 (dated 20.01.2020) permitted simple basic arithmetic calculators for Candidates with Disabilities (CwD) with certified dyscalculia in the 2020 Class X and XII board examinations upon prior formal application and medical certification. General accommodations such as compensatory extra time (20 minutes per hour) or scribe/reader facilities under Examination Bye-Laws Rule 24 require certified benchmark disability documentation under the RPwD Act 2016, subject to the relevant eligibility requirements, supporting documentation, applicable examination-board guidelines and approval procedures.",
+                src: "CBSE Circular No. CBSE/Coord/2020 (dated 20.01.2020) & Examination Bye-Laws Rule 24",
               },
             ]}
             note="Clinical and educational psychologists stress that difficulty with rapid mental arithmetic does not reflect logical reasoning ability. Structured visual tools unlock deep problem-solving capacity."
@@ -7737,7 +7737,7 @@ function ProjectPlanningDeskWorkspace() {
       {activeView === "nnl" && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginBottom: 26 }}>
           {/* Column 1: NOW */}
-          <div style={{ padding: 18, borderRadius: 16, background: "rgba(244, 117, 34, 0.06)", border: "2px solid #f47522" }}>
+          <div data-status-column="now" style={{ padding: 18, borderRadius: 16, background: "rgba(244, 117, 34, 0.06)", border: "2px solid #f47522" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#f47522" }} />
@@ -7751,6 +7751,7 @@ function ProjectPlanningDeskWorkspace() {
             {PROJECT_TASKS.filter((t) => taskStatus[t.id] === "now").map((task) => (
               <div
                 key={task.id}
+                data-task-id={task.id}
                 style={{
                   padding: 16,
                   borderRadius: 14,
@@ -7812,7 +7813,7 @@ function ProjectPlanningDeskWorkspace() {
           </div>
 
           {/* Column 2: NEXT */}
-          <div style={{ padding: 18, borderRadius: 16, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)" }}>
+          <div data-status-column="next" style={{ padding: 18, borderRadius: 16, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--itw-muted)", opacity: 0.6 }} />
@@ -7826,6 +7827,7 @@ function ProjectPlanningDeskWorkspace() {
             {PROJECT_TASKS.filter((t) => taskStatus[t.id] === "next").map((task) => (
               <div
                 key={task.id}
+                data-task-id={task.id}
                 style={{
                   padding: 14,
                   borderRadius: 12,
@@ -7879,7 +7881,7 @@ function ProjectPlanningDeskWorkspace() {
           </div>
 
           {/* Column 3: LATER */}
-          <div style={{ padding: 18, borderRadius: 16, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)" }}>
+          <div data-status-column="later" style={{ padding: 18, borderRadius: 16, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--itw-muted)", opacity: 0.3 }} />
@@ -7893,6 +7895,7 @@ function ProjectPlanningDeskWorkspace() {
             {PROJECT_TASKS.filter((t) => taskStatus[t.id] === "later").map((task) => (
               <div
                 key={task.id}
+                data-task-id={task.id}
                 style={{
                   padding: 12,
                   borderRadius: 10,
@@ -8244,18 +8247,18 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
             facts={[
               {
                 num: "Preschool Cohort Norms",
-                label: "Executive functioning comprises distributed neural processes—including working memory, inhibitory control, and cognitive flexibility—rather than a single brain control center or standalone diagnostic label. In India, Selvam et al. (2018) established BRIEF-P executive function norms in a cohort of 412 typically-developing urban preschool children aged 2–5 in Bengaluru, evaluating associations with nutritional status. (This normative study did not assess ADHD, learning difference, or sensory profile co-occurrence rates).",
-                src: "Selvam, S., et al. (2018), Development of norms for executive functions in typically-developing Indian urban preschool children, Child Neuropsychology, 24(5), 652–671. DOI: 10.1080/09297049.2016.1254761",
+                label: "Executive functioning comprises distributed neural processes—including working memory, inhibitory control, and cognitive flexibility—rather than a single brain control center or standalone diagnostic label. In India, Selvam et al. (2018) established BRIEF-P executive function norms in a cohort of 412 typically-developing urban preschool children aged 2–5 in Bengaluru, evaluating associations with nutritional status. (This normative study did not assess ADHD, learning difference, or sensory profile co-occurrence rates, nor does it establish a general Indian prevalence figure).",
+                src: "Selvam, S., Thomas, T., Kurpad, A. V., & Srinivasan, K. (2018). Development of norms for executive functions in typically-developing Indian urban preschool children and its association with nutritional status. Child Neuropsychology, 24(2), 226–246. DOI: 10.1080/09297049.2016.1254761",
               },
               {
                 num: "Visual Scaffolding",
-                label: "Visual planning tools—such as Now / Next / Later horizons, milestone checklists, and visible timers—serve as practical supports that externalize working memory demands and make task expectations visible. Educators note that individual planning preferences and effectiveness vary among learners.",
-                src: "Pedagogical Scaffolding & Universal Design for Learning (UDL) Guidelines",
+                label: "Visual planning tools—such as Now / Next / Later horizons, milestone checklists, and visible timers—serve as practical pedagogical supports that externalize working memory demands and make task expectations visible. Educators note that individual planning preferences and effectiveness vary among learners.",
+                src: "Pedagogical Scaffolding & Structured Classroom Planning Strategies",
               },
               {
                 num: "CBSE Rule 24 / CwD circulars",
-                label: "CBSE Examination Bye-Laws Rule 24 and relevant CwD circulars provide specific exam accommodations—such as compensatory extra time (20 minutes per hour of examination) or adult reader/scribe facilities—for students with certified benchmark disabilities under RPwD Act criteria upon formal school application and medical board documentation. Concessions are individually approved entitlements rather than blanket automatic packages.",
-                src: "CBSE Examination Bye-Laws Rule 24 / Circular No. CBSE/Coord/2019/13523",
+                label: "CBSE Examination Bye-Laws Rule 24 and relevant CwD circulars provide specific exam accommodations—such as compensatory extra time (20 minutes per hour of examination) or adult reader/scribe facilities—for students with certified benchmark disabilities under RPwD Act criteria upon formal school application and medical board documentation. Concessions are individually approved entitlements rather than blanket automatic packages, subject to the relevant eligibility requirements, supporting documentation, applicable examination-board guidelines and approval procedures.",
+                src: "CBSE Examination Bye-Laws Rule 24 & Circular No. CBSE/Coord/2019/13523",
               },
             ]}
             note="Developmental pediatricians emphasize replacing moralizing language ('lazy', 'careless') with compassionate structural scaffolding ('What is our very first micro-step?')."

@@ -1,10 +1,14 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const PORT = 9225;
-const DOCS_DIR = path.resolve(__dirname, "../docs/itw/screenshots");
+const DOCS_DIR = path.resolve(__dirname, "../docs/itw/screenshots/packet5_retest");
 
 if (!fs.existsSync(DOCS_DIR)) {
   fs.mkdirSync(DOCS_DIR, { recursive: true });

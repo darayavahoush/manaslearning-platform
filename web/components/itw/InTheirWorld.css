@@ -312,7 +312,6 @@
   font-weight:700;padding:5px 11px;border-radius:12px;animation:itw-cue-cycle 2.4s ease infinite;
 }
 .itw-cp-word{font-family:var(--font-display);color:#fff;font-size:15px;}
-.itw-cp-letter{display:inline-block;animation:itw-letter-jitter 1.6s ease-in-out infinite;}
 .itw-cp-blocked{color:var(--itw-speech);font-family:var(--font-mono);animation:itw-word-shake .16s ease-in-out infinite;}
 
 /* ---------- demo cursor: idle-state "how it's played" playback ---------- */
@@ -980,14 +979,6 @@
   color: #fff;
 }
 .itw-reading-passage .itw-ch{display:inline-block;white-space:pre;}
-.itw-reading-passage.itw-simulated .itw-ch{animation:itw-letter-jitter 2.6s ease-in-out infinite;letter-spacing:.01em;}
-.itw-reading-passage.itw-simulated{filter:blur(.25px);}
-@keyframes itw-letter-jitter{
-  0%,100%{transform:translateY(0) rotate(0deg);}
-  25%{transform:translateY(-1px) rotate(-1.5deg);}
-  50%{transform:translateY(1px) rotate(1deg);}
-  75%{transform:translateY(-.5px) rotate(-.5deg);}
-}
 .itw-quiz{margin:0 22px 20px;padding:20px 22px;background:var(--itw-panel-2);border:1px solid var(--itw-border);border-radius:18px;}
 .itw-quiz-label{font-weight:700;font-size:14px;color:var(--itw-text);margin-bottom:16px;}
 .itw-quiz-q{margin-bottom:18px;}

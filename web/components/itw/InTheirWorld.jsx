@@ -4582,666 +4582,550 @@ function DyslexiaModule({ onBack, onNavigate }) {
   );
 }
 
-const SPEECH_STEPS = [
-  { key: "instructions", label: "Instructions" },
-  { key: "run_fast", label: "Run 1 (Fast Pacing)" },
-  { key: "reflect", label: "Reflect & Compare" },
-  { key: "support", label: "Support Experiment" },
-  { key: "run_supported", label: "Run 2 (Supported)" },
-  { key: "explain", label: "Understanding & Action" },
-];
+/* ================= SPEECH & LANGUAGE: Communication Access Studio ================= */
 
-const SPEECH_STEP_INDEX = {
-  instructions: 0,
-  run_fast: 1,
-  reflect: 2,
-  support: 3,
-  run_supported: 3,
-  explain: 4,
-  next: 4,
-};
-
-const SPEECH_REFLECT_QS = [
+const SPEECH_SCENARIOS = [
   {
-    q: "During the fast-paced conversation, where did you notice the communicative barrier?",
-    options: [
-      "I had the complete thought in mind, but the ticking turn window created sudden performance anxiety.",
-      "The expectation of immediate verbal delivery made finding and organizing words feel rushed.",
-      "The fear that the listener would interrupt or move on heightened my tension.",
-      "The pressure was created by external listener expectations, not a lack of scientific knowledge.",
+    id: "stuttering",
+    title: "Scenario A: A Student Who Stutters",
+    student: "Rohan (Grade 6)",
+    topic: "Science Discussion on Plant Stomata",
+    context: "Rohan is contributing an idea during a whole-class science discussion on how leaves exchange gases.",
+    barrierDescription: "Discussion moves at a rapid pace. When Rohan experiences a speech block, an impatient partner cuts in, finishes his sentence, and tells him to 'take a breath and calm down'. Rohan looks down, feeling rushed and talked over.",
+    practices: [
+      {
+        id: "give_time",
+        label: "Allow Time to Finish",
+        desc: "Wait patiently without looking at the clock, tapping feet, or showing impatience.",
+      },
+      {
+        id: "no_finish",
+        label: "Never Finish Sentences",
+        desc: "Do not guess words or finish sentences for the speaker. Honor sentence ownership.",
+      },
+      {
+        id: "message_focus",
+        label: "Focus on Message Content",
+        desc: "Respond warmly to the scientific concept rather than commenting on delivery fluency.",
+      },
+      {
+        id: "calm_presence",
+        label: "Maintain Relaxed Presence",
+        desc: "Keep natural, comfortable eye contact and relational calm throughout the exchange.",
+      },
+    ],
+    dialogueBarrier: [
+      { speaker: "Teacher", text: "Rohan, how does the leaf control moisture loss during hot afternoons?" },
+      { speaker: "Rohan", text: "The... the... w-w-water vapor..." },
+      { speaker: "Classmate (Interruption)", text: "Stomata! You mean stomata, right? Just take a deep breath and slow down!" },
+      { speaker: "Outcome", text: "⚠️ Barrier: Rohan was interrupted, advised to 'calm down', and denied the chance to complete his own thought.", isAlert: true },
+    ],
+    dialogueSupported: [
+      { speaker: "Teacher", text: "Rohan, how does the leaf control moisture loss during hot afternoons?" },
+      { speaker: "Rohan", text: "The... the... w-w-water vapor escapes through tiny pores called stomata. They close when it gets dry." },
+      { speaker: "Teacher (Direct Response)", text: "Exactly right, Rohan. The stomata close to prevent dehydration. That is a great observation." },
+      { speaker: "Outcome", text: "✓ Accessible Environment: Rohan completed his scientific thought with dignity. The teacher responded to the idea, not the fluency.", isSuccess: true },
+    ],
+  },
+  {
+    id: "aac",
+    title: "Scenario B: A Student Who Uses AAC",
+    student: "Ananya (Grade 7)",
+    topic: "Science Exhibition Showcase",
+    context: "Ananya uses a dynamic tablet AAC device with symbol tiles to explain her water purification model to classroom visitors.",
+    barrierDescription: "A visiting evaluator addresses Ananya's peer assistant instead of looking at Ananya, reaches out to touch her tablet screen without permission, and guesses her sentence before she presses the speech output button.",
+    practices: [
+      {
+        id: "direct_address",
+        label: "Address Student Directly",
+        desc: "Look at and speak directly to Ananya at eye level, not to an assistant or parent.",
+      },
+      {
+        id: "device_autonomy",
+        label: "Respect Device Autonomy",
+        desc: "Never touch, grab, or alter an AAC system without explicit permission. It is personal space.",
+      },
+      {
+        id: "compose_time",
+        label: "Allow Composition Time",
+        desc: "Recognize that navigating symbol pages and building multi-word phrases requires unhurried motor time.",
+      },
+      {
+        id: "multimodal",
+        label: "Welcome Multi-Modal Output",
+        desc: "Respect speech, device voice output, gestures, and pointing as equally valid communication.",
+      },
+    ],
+    dialogueBarrier: [
+      { speaker: "Visitor (to Assistant)", text: "Can she explain to us what this sand filtration layer does?" },
+      { speaker: "Visitor (reaching for tablet)", text: "Let me tap that button for you... is it 'clean water'?" },
+      { speaker: "Outcome", text: "⚠️ Barrier: The visitor talked about Ananya rather than to her, violated her personal device space, and rushed her composition.", isAlert: true },
+    ],
+    dialogueSupported: [
+      { speaker: "Visitor (looking directly at Ananya)", text: "Ananya, could you tell us how your filtration system works?" },
+      { speaker: "Ananya (composing on AAC)", text: "[ Sand Layer ] + [ Traps ] + [ Fine Sediment ]" },
+      { speaker: "AAC Voice Output", text: "“The sand layer traps fine sediment before charcoal filtering.”" },
+      { speaker: "Visitor", text: "Thank you, Ananya. That two-stage process makes the water noticeably clearer." },
+      { speaker: "Outcome", text: "✓ Accessible Environment: Ananya was addressed directly, given full composition autonomy, and communicated her project successfully.", isSuccess: true },
+    ],
+  },
+  {
+    id: "language_time",
+    title: "Scenario C: Processing Time & Clear Prompts",
+    student: "Kavi (Grade 5)",
+    topic: "Chemistry Acid-Base Investigation",
+    context: "The teacher checks in with Kavi during a chemistry lab where blue litmus paper turns red in lemon juice.",
+    barrierDescription: "The teacher asks a compound three-part question rapidly. Before Kavi can organize his thoughts, the teacher jumps in with rapid-fire rephrasing. The verbal barrage resets Kavi's processing window.",
+    practices: [
+      {
+        id: "single_question",
+        label: "Ask One Clear Question",
+        desc: "Break complex compound questions into one single-concept inquiry at a time.",
+      },
+      {
+        id: "processing_silence",
+        label: "Allow Processing Silence",
+        desc: "Offer generous silence without jumping in to rephrase. Rapid rephrasing restarts the cognitive processing clock.",
+      },
+      {
+        id: "visual_anchor",
+        label: "Offer Visual Anchors",
+        desc: "Point to the litmus color chart and key vocabulary on the laboratory table.",
+      },
+      {
+        id: "preferred_mode",
+        label: "Accept Varied Responses",
+        desc: "Allow pointing to the diagram, writing a keyword, or speaking as comfortable.",
+      },
+    ],
+    dialogueBarrier: [
+      { speaker: "Teacher (rapid pace)", text: "Kavi, why did the paper turn red, what does that mean about acidity, and did you record the pH?" },
+      { speaker: "Teacher (after 1.5 seconds)", text: "Was it acid or base, Kavi? Quick, tell me the gas name!" },
+      { speaker: "Outcome", text: "⚠️ Barrier: Multiple simultaneous questions and immediate rephrasing overloaded working memory and caused verbal shutdown.", isAlert: true },
+    ],
+    dialogueSupported: [
+      { speaker: "Teacher (measured pace)", text: "Kavi, look at the color chart. What does the red litmus paper tell us about lemon juice?" },
+      { speaker: "Teacher (patient silence)", text: "(Waits calmly for 6 seconds while Kavi looks at the paper and chart)" },
+      { speaker: "Kavi", text: "The red color means the lemon juice is an acid." },
+      { speaker: "Teacher", text: "Spot on, Kavi. The red color confirms it is acidic." },
+      { speaker: "Outcome", text: "✓ Accessible Environment: One clear prompt, visual grounding, and patient silence enabled accurate scientific retrieval.", isSuccess: true },
     ],
   },
 ];
 
-const SPEECH_SUPPORT_CHOICES = [
-  {
-    id: "patient_wait",
-    title: "Unhurried Wait Time (The 5-Second Rule)",
-    subtitle: "Attentive presence with zero clock pressure",
-    desc: "The conversation partner maintains warm, natural presence and gives generous silence without glancing at clocks or rushing.",
-    tag: "Pacing Accommodation",
-  },
-  {
-    id: "aac_board",
-    title: "AAC Visual Communication Board",
-    subtitle: "Multi-modal picture and phrase cards",
-    desc: "Provides clear visual icons and phrase blocks so ideas can be shared instantly without verbal motor coordination.",
-    tag: "Multi-Modal Access",
-  },
-  {
-    id: "no_interruption",
-    title: "Sentence Ownership & Active Listening",
-    subtitle: "Protects the speaker right to complete thoughts",
-    desc: "A classroom agreement that listeners never finish a student sentences, guess their words, or talk over them.",
-    tag: "Relational Practice",
-  },
+const AAC_SAMPLE_TILES = [
+  { id: "sand", label: "Sand Layer", icon: "🏖️" },
+  { id: "traps", label: "Traps", icon: "🪤" },
+  { id: "sediment", label: "Fine Sediment", icon: "🪨" },
+  { id: "clean", label: "Clean Water", icon: "💧" },
+  { id: "test", label: "Tested With Team", icon: "🤝" },
+  { id: "charcoal", label: "Charcoal Layer", icon: "🪵" },
 ];
 
-const SPEECH_PHRASE_BLOCKS = [
-  { id: "p1", text: "We built a hydraulic crane", order: 1 },
-  { id: "p2", text: "using plastic syringes", order: 2 },
-  { id: "p3", text: "connected by water tubes", order: 3 },
-  { id: "p4", text: "and cardboard joints.", order: 4 },
-];
-
-const AAC_COMM_TILES = [
-  { id: "crane", label: "Hydraulic Crane", phrase: "hydraulic crane", icon: "🏗️" },
-  { id: "syringes", label: "Plastic Syringes", phrase: "plastic syringes", icon: "💉" },
-  { id: "water", label: "Water Tubes", phrase: "water tubes", icon: "💧" },
-  { id: "joints", label: "Cardboard Joints", phrase: "cardboard joints", icon: "📦" },
-  { id: "lift", label: "Lifts Heavy Weight", phrase: "lifts heavy weight", icon: "🏋️" },
-  { id: "team", label: "Built Together", phrase: "built together with team", icon: "🤝" },
-];
-
-function SpeechSim({
-  mode = "fast",
-  supportType = "patient_wait",
-  onComplete,
-  onAbort,
-}) {
+function CommunicationAccessStudio() {
   const { soundOn } = useContext(SettingsContext);
-  const [selectedPhrases, setSelectedPhrases] = useState([]);
-  const [aacSelected, setAacSelected] = useState([]);
-  const [elapsed, setElapsed] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(mode === "fast" ? 8 : 99);
-  const [interrupted, setInterrupted] = useState(false);
-  const [finished, setFinished] = useState(false);
+  const [activeScenarioId, setActiveScenarioId] = useState("stuttering");
+  const [enabledPractices, setEnabledPractices] = useState({
+    stuttering: ["give_time", "no_finish"],
+    aac: ["direct_address", "device_autonomy"],
+    language_time: ["single_question", "processing_silence"],
+  });
+  const [aacMessage, setAacMessage] = useState([]);
 
-  const timerRef = useRef(null);
-  const onCompleteRef = useRef(onComplete);
+  const currentScenario = SPEECH_SCENARIOS.find((s) => s.id === activeScenarioId) || SPEECH_SCENARIOS[0];
+  const activePractices = enabledPractices[activeScenarioId] || [];
 
-  useEffect(() => {
-    onCompleteRef.current = onComplete;
-  }, [onComplete]);
-
-  // Stopwatch timer
-  useEffect(() => {
-    const startTime = performance.now();
-    timerRef.current = setInterval(() => {
-      const now = (performance.now() - startTime) / 1000;
-      setElapsed(parseFloat(now.toFixed(1)));
-
-      if (mode === "fast") {
-        setTimeLeft((prev) => {
-          if (prev <= 0.2) {
-            setInterrupted(true);
-            return 0;
-          }
-          return parseFloat((prev - 0.1).toFixed(1));
-        });
-      }
-    }, 100);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [mode]);
-
-  const handlePhraseClick = (block) => {
-    if (interrupted || finished) return;
+  const togglePractice = (practiceId) => {
     if (soundOn) audio.cue("tap");
-    if (selectedPhrases.find((p) => p.id === block.id)) return;
-
-    const next = [...selectedPhrases, block];
-    setSelectedPhrases(next);
-
-    if (next.length === SPEECH_PHRASE_BLOCKS.length) {
-      setFinished(true);
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (soundOn) audio.cue("bell");
-      setTimeout(() => {
-        onCompleteRef.current?.({
-          time: elapsed,
-          method: "verbal",
-          interrupted: false,
-        });
-      }, 700);
-    }
+    setEnabledPractices((prev) => {
+      const current = prev[activeScenarioId] || [];
+      const updated = current.includes(practiceId)
+        ? current.filter((id) => id !== practiceId)
+        : [...current, practiceId];
+      return { ...prev, [activeScenarioId]: updated };
+    });
   };
 
-  const handleAacTileClick = (tile) => {
-    if (finished) return;
+  const isFullySupported = activePractices.length >= 3;
+
+  const handleTileClick = (tile) => {
+    if (soundOn) audio.cue("tap");
+    if (aacMessage.some((t) => t.id === tile.id)) return;
+    setAacMessage((prev) => [...prev, tile]);
+  };
+
+  const handleClearAac = () => {
+    if (soundOn) audio.cue("tap");
+    setAacMessage([]);
+  };
+
+  const handleSpeakAac = () => {
     if (soundOn) {
-      audio.cue("tap");
-      speakText(tile.phrase, { rate: 0.95 });
-    }
-    const next = aacSelected.includes(tile.id) ? aacSelected : [...aacSelected, tile.id];
-    setAacSelected(next);
-
-    if (next.length >= 3) {
-      setFinished(true);
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (soundOn) audio.cue("bell");
-      setTimeout(() => {
-        onCompleteRef.current?.({
-          time: elapsed,
-          method: "aac",
-          interrupted: false,
-        });
-      }, 800);
+      audio.cue("bell");
+      const sentence = aacMessage.map((t) => t.label).join(" ");
+      speakText(sentence, { rate: 0.9, pitch: 1 });
     }
   };
-
-  const retryRun = () => {
-    setSelectedPhrases([]);
-    setTimeLeft(8);
-    setInterrupted(false);
-    setFinished(false);
-  };
-
-  const isSupportedAac = mode === "supported" && supportType === "aac_board";
 
   return (
-    <div className="itw-speech-arena" role="region" aria-label="Speech and Language Communication Experience">
-      {/* Top Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <div>
-          <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-speech)", letterSpacing: "0.08em" }}>
-            {mode === "fast" ? "Run 1: Fast Conversational Demand" : "Run 2: Supported Communication"}
-          </span>
-          <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
-            Classroom Presentation: Science Model Share
-          </h3>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {mode === "fast" && (
-            <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 800, color: timeLeft < 3 ? "#ef4444" : "var(--itw-speech)" }}>
-              ⏳ Turn Window: {timeLeft.toFixed(1)}s
-            </span>
-          )}
-          <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)" }}>
-            ⏱️ {elapsed.toFixed(1)}s
-          </span>
-          <button type="button" className="itw-pill-btn" onClick={onAbort}>Exit</button>
-        </div>
-      </div>
-
-      {/* Classroom Partner Dialogue Prompt */}
-      <div
-        style={{
-          background: "var(--itw-panel-2)",
-          border: "1.5px solid var(--itw-border)",
-          borderRadius: 18,
-          padding: "18px 22px",
-          marginBottom: 20,
-          display: "flex",
-          alignItems: "flex-start",
-          gap: 16,
-        }}
-      >
-        <div style={{ fontSize: 32 }} aria-hidden="true">
-          {mode === "fast" ? (interrupted ? "⏱️" : "🏃") : "🤝"}
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-speech)" }}>
-            Teacher Question in Classroom:
-          </div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "var(--itw-text)", margin: "4px 0 8px" }}>
-            &ldquo;Can you explain to the class how your team built the hydraulic crane?&rdquo;
-          </div>
-          <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
-            {mode === "fast"
-              ? "Fast conversational environment: The class expects a rapid answer in under 8 seconds."
-              : supportType === "aac_board"
-              ? "Multi-Modal Support: Tap the AAC cards to share the project concepts aloud."
-              : "Unhurried Wait Time: The teacher gives warm, patient silence with zero turn clock."}
-          </div>
-        </div>
-      </div>
-
-      {/* Target Thought Banner */}
-      <div
-        style={{
-          background: "rgba(140, 66, 44, 0.08)",
-          border: "1px dashed var(--itw-speech)",
-          borderRadius: 14,
-          padding: "12px 18px",
-          marginBottom: 20,
-          fontSize: 14,
-          color: "var(--itw-text)",
-        }}
-      >
-        <span style={{ fontWeight: 800, color: "var(--itw-speech)", marginRight: 6 }}>
-          🧠 What You Know in Your Mind:
+    <div className="itw-studio-wrap" role="region" aria-label="Communication Access Studio">
+      {/* Studio Header */}
+      <div className="itw-studio-header" style={{ marginBottom: 20 }}>
+        <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-speech)", letterSpacing: "0.08em" }}>
+          Interactive Practice Studio
         </span>
-        &ldquo;We built a hydraulic crane using plastic syringes connected by water tubes and cardboard joints.&rdquo;
+        <h3 style={{ fontSize: 24, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0 8px" }}>
+          Making Room for Diverse Ways of Communicating
+        </h3>
+        <p style={{ fontSize: 14.5, color: "var(--itw-muted)", maxWidth: "70ch", margin: 0 }}>
+          Communication is a two-way collaborative exchange, not a solo performance. Explore how adjusting listener habits,
+          pacing, and relational practices transforms classroom accessibility.
+        </p>
       </div>
 
-      {/* Active Communication Area */}
-      {isSupportedAac ? (
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-muted)", marginBottom: 10 }}>
-            Tap 3 or more AAC cards to express your science model:
+      {/* Scenario Selection Tabs */}
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 22 }} role="tablist" aria-label="Classroom Scenarios">
+        {SPEECH_SCENARIOS.map((s) => {
+          const isActive = s.id === activeScenarioId;
+          return (
+            <button
+              key={s.id}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              className={`itw-cta ${isActive ? "itw-cta-dark" : "itw-cta-line"}`}
+              style={{ fontSize: 13.5, padding: "10px 20px" }}
+              onClick={() => setActiveScenarioId(s.id)}
+            >
+              {s.title}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Active Scenario Card */}
+      <div style={{ padding: 22, borderRadius: 18, border: "1.5px solid var(--itw-border)", background: "var(--itw-panel)", marginBottom: 24, boxShadow: "0 4px 16px rgba(0,0,0,0.03)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 10, marginBottom: 10 }}>
+          <div>
+            <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-speech)" }}>
+              {currentScenario.student} • {currentScenario.topic}
+            </span>
+            <h4 style={{ fontSize: 18, fontWeight: 800, color: "var(--itw-text)", margin: "2px 0" }}>
+              {currentScenario.title}
+            </h4>
           </div>
-          <div className="itw-aac-grid">
-            {AAC_COMM_TILES.map((tile) => {
-              const isSelected = aacSelected.includes(tile.id);
+          <span style={{ fontSize: 12, padding: "4px 12px", borderRadius: 99, background: isFullySupported ? "rgba(5, 176, 118, 0.12)" : "rgba(244, 117, 34, 0.12)", color: isFullySupported ? "#05b076" : "#f47522", fontWeight: 700 }}>
+            {isFullySupported ? "✓ Accessible Environment Active" : "⚠️ Barriers Present in Conversation"}
+          </span>
+        </div>
+        <p style={{ fontSize: 14.5, color: "var(--itw-muted)", lineHeight: 1.6, margin: 0 }}>
+          {currentScenario.context}
+        </p>
+      </div>
+
+      {/* Interactive Practices Palette */}
+      <div style={{ marginBottom: 26 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+          <h4 style={{ fontSize: 15, fontWeight: 800, color: "var(--itw-text)", margin: 0 }}>
+            Classroom Communication Practices (Click to Toggle):
+          </h4>
+          <span style={{ fontSize: 12.5, color: "var(--itw-muted)" }}>
+            {activePractices.length} of {currentScenario.practices.length} practices enabled
+          </span>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12 }}>
+          {currentScenario.practices.map((p) => {
+            const isEnabled = activePractices.includes(p.id);
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => togglePractice(p.id)}
+                style={{
+                  padding: "14px 16px",
+                  borderRadius: 14,
+                  border: isEnabled ? "1.5px solid #05b076" : "1.5px solid var(--itw-border)",
+                  background: isEnabled ? "rgba(5, 176, 118, 0.08)" : "var(--itw-panel)",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 4,
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 800, color: isEnabled ? "#05b076" : "var(--itw-text)" }}>
+                    {isEnabled ? "✓ " : "+ "}{p.label}
+                  </span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: isEnabled ? "#05b076" : "var(--itw-muted)", textTransform: "uppercase" }}>
+                    {isEnabled ? "Enabled" : "Off"}
+                  </span>
+                </div>
+                <span style={{ fontSize: 12, color: "var(--itw-muted)", lineHeight: 1.45 }}>
+                  {p.desc}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Reactive Dialogue Preview */}
+      <div style={{ padding: 22, borderRadius: 18, border: "1.5px solid var(--itw-border)", background: "var(--itw-panel)", marginBottom: 28 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, borderBottom: "1px solid var(--itw-border)", paddingBottom: 10 }}>
+          <span style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", letterSpacing: "0.06em" }}>
+            Live Dialogue Preview • {isFullySupported ? "Collaborative & Respectful Exchange" : "Traditional Fast-Paced Exchange"}
+          </span>
+          <span style={{ fontSize: 12, color: isFullySupported ? "#05b076" : "var(--itw-muted)", fontWeight: 700 }}>
+            {isFullySupported ? "All Accommodations Applied" : "Some Practices Inactive"}
+          </span>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {(isFullySupported ? currentScenario.dialogueSupported : currentScenario.dialogueBarrier).map((d, idx) => (
+            <div
+              key={idx}
+              style={{
+                padding: "12px 16px",
+                borderRadius: 12,
+                background: d.isAlert
+                  ? "rgba(220, 38, 38, 0.08)"
+                  : d.isSuccess
+                  ? "rgba(5, 176, 118, 0.08)"
+                  : "rgba(0, 0, 0, 0.02)",
+                border: d.isAlert
+                  ? "1px solid rgba(220, 38, 38, 0.25)"
+                  : d.isSuccess
+                  ? "1px solid rgba(5, 176, 118, 0.25)"
+                  : "1px solid transparent",
+              }}
+            >
+              <div style={{ fontSize: 11.5, fontWeight: 800, textTransform: "uppercase", color: d.isAlert ? "#dc2626" : d.isSuccess ? "#05b076" : "var(--itw-muted)", marginBottom: 3 }}>
+                {d.speaker}
+              </div>
+              <div style={{ fontSize: 14.5, color: "var(--itw-text)", lineHeight: 1.5, fontWeight: d.isAlert || d.isSuccess ? 700 : 500 }}>
+                {d.text}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Optional AAC Message Construction Sandbox for Scenario B */}
+      {activeScenarioId === "aac" && (
+        <div style={{ padding: 22, borderRadius: 18, border: "1.5px dashed var(--itw-border)", background: "rgba(244, 117, 34, 0.04)", marginBottom: 28 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+            <div>
+              <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-speech)" }}>
+                Illustrative AAC Message Construction
+              </span>
+              <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: "2px 0" }}>
+                Explore How Symbol Tiles Assemble Ideas
+              </h4>
+            </div>
+            <span style={{ fontSize: 12, color: "var(--itw-muted)" }}>
+              One illustrative grid layout • AAC tools vary per person
+            </span>
+          </div>
+
+          <div style={{ minHeight: 46, padding: "10px 14px", borderRadius: 12, background: "var(--itw-panel)", border: "1px solid var(--itw-border)", marginBottom: 14, display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+            {aacMessage.length === 0 ? (
+              <span style={{ color: "var(--itw-muted)", fontStyle: "italic", fontSize: 13.5 }}>
+                Tap symbol tiles below to construct a multi-word message...
+              </span>
+            ) : (
+              aacMessage.map((t) => (
+                <span key={t.id} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 8, background: "rgba(5, 176, 118, 0.12)", color: "#05b076", fontSize: 13, fontWeight: 700 }}>
+                  <span>{t.icon}</span>
+                  <span>{t.label}</span>
+                </span>
+              ))
+            )}
+          </div>
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+            {AAC_SAMPLE_TILES.map((t) => {
+              const isSelected = aacMessage.some((m) => m.id === t.id);
               return (
                 <button
-                  key={tile.id}
+                  key={t.id}
                   type="button"
-                  className={`itw-aac-tile${isSelected ? " itw-selected" : ""}`}
-                  onClick={() => handleAacTileClick(tile)}
+                  onClick={() => handleTileClick(t)}
+                  style={{
+                    padding: "8px 14px",
+                    borderRadius: 10,
+                    border: isSelected ? "1.5px solid #05b076" : "1.5px solid var(--itw-border)",
+                    background: isSelected ? "rgba(5, 176, 118, 0.08)" : "var(--itw-panel)",
+                    cursor: "pointer",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "var(--itw-text)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
                 >
-                  <span style={{ fontSize: 28 }}>{tile.icon}</span>
-                  <span style={{ fontSize: 13, fontWeight: 800, marginTop: 4 }}>{tile.label}</span>
+                  <span>{t.icon}</span>
+                  <span>{t.label}</span>
                 </button>
               );
             })}
           </div>
-          {finished && (
-            <div style={{ textAlign: "center", marginTop: 16, color: "#10b981", fontWeight: 800 }}>
-              ✓ Complete message delivered via AAC! Proceeding to takeaways...
-            </div>
-          )}
-        </div>
-      ) : (
-        <div>
-          {interrupted ? (
-            <div
-              style={{
-                background: "rgba(239, 68, 68, 0.1)",
-                border: "1.5px solid #ef4444",
-                borderRadius: 16,
-                padding: "20px 24px",
-                textAlign: "center",
-                margin: "16px 0",
-              }}
+
+          <div style={{ display: "flex", gap: 10 }}>
+            <button
+              type="button"
+              className="itw-cta itw-cta-dark"
+              style={{ fontSize: 13, padding: "8px 18px" }}
+              disabled={aacMessage.length === 0}
+              onClick={handleSpeakAac}
             >
-              <div style={{ fontSize: 24, marginBottom: 6 }}>⚠️</div>
-              <h4 style={{ margin: "0 0 6px", fontSize: 16, fontWeight: 800, color: "#ef4444" }}>
-                Interrupted: Conversational Window Closed
-              </h4>
-              <p style={{ margin: "0 0 16px", fontSize: 14, color: "var(--itw-text)", lineHeight: 1.5 }}>
-                The listener felt the 8-second silence was too long and spoke over you: &ldquo;Okay, moving on!&rdquo;
-                Notice how easily working memory is disrupted when rushed.
-              </p>
-              <button
-                type="button"
-                className="itw-cta itw-cta-dark"
-                onClick={() => {
-                  onCompleteRef.current?.({
-                    time: elapsed,
-                    method: "verbal",
-                    interrupted: true,
-                  });
-                }}
-              >
-                Continue to Reflection →
-              </button>
-              <button
-                type="button"
-                className="itw-pill-btn"
-                style={{ marginLeft: 12 }}
-                onClick={retryRun}
-              >
-                Try Again
-              </button>
-            </div>
-          ) : (
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-muted)", marginBottom: 10 }}>
-                Select the phrase sequence to formulate your response:
-              </div>
-
-              {/* Formulated Sentence Box */}
-              <div
-                style={{
-                  background: "var(--itw-panel)",
-                  border: "1.5px solid var(--itw-border)",
-                  borderRadius: 14,
-                  padding: "16px 20px",
-                  minHeight: 56,
-                  marginBottom: 16,
-                  display: "flex",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                  gap: 8,
-                }}
-              >
-                {selectedPhrases.length === 0 ? (
-                  <span style={{ fontSize: 14, color: "var(--itw-muted)", fontStyle: "italic" }}>
-                    Tap the phrase blocks below in order to speak...
-                  </span>
-                ) : (
-                  selectedPhrases.map((p) => (
-                    <span
-                      key={p.id}
-                      style={{
-                        background: "rgba(140, 66, 44, 0.12)",
-                        color: "var(--itw-speech)",
-                        padding: "4px 10px",
-                        borderRadius: 8,
-                        fontSize: 14,
-                        fontWeight: 700,
-                      }}
-                    >
-                      {p.text}
-                    </span>
-                  ))
-                )}
-              </div>
-
-              {/* Phrase Blocks to Pick */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                {SPEECH_PHRASE_BLOCKS.map((block) => {
-                  const isPicked = Boolean(selectedPhrases.find((p) => p.id === block.id));
-                  return (
-                    <button
-                      key={block.id}
-                      type="button"
-                      disabled={isPicked}
-                      className={`itw-adhd-keychip${isPicked ? " itw-selected" : ""}`}
-                      onClick={() => handlePhraseClick(block)}
-                    >
-                      {isPicked ? "✓ " : "+ "} {block.text}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {finished && (
-                <div style={{ textAlign: "center", marginTop: 18, color: "#10b981", fontWeight: 800 }}>
-                  ✓ Statement Formulated & Delivered!
-                </div>
-              )}
-            </div>
-          )}
+              🔊 Speak Message
+            </button>
+            <button
+              type="button"
+              className="itw-cta itw-cta-line"
+              style={{ fontSize: 13, padding: "8px 18px" }}
+              disabled={aacMessage.length === 0}
+              onClick={handleClearAac}
+            >
+              Clear
+            </button>
+          </div>
         </div>
       )}
-
-      {/* Educational Footer */}
-      <div style={{ fontSize: 13, color: "var(--itw-muted)", textAlign: "center", marginTop: 22 }}>
-        {mode === "fast"
-          ? "Notice how rigid turn timing and listener interruption create performance anxiety even when knowledge is 100% complete."
-          : "When listeners offer unhurried wait time and multi-modal options, communication flows naturally and with dignity."}
-      </div>
     </div>
   );
 }
 
 function SpeechModule({ onBack, onNavigate }) {
-  const [step, setStep] = useState("intro"); // intro | instructions | run_fast | reflect | support | run_supported | explain
-  const [chosenSupport, setChosenSupport] = useState("patient_wait");
-  const [reflectionAnswers, setReflectionAnswers] = useState(() => Array(SPEECH_REFLECT_QS.length).fill(null));
-  const [results, setResults] = useState({ fast: null, supported: null });
+  const [tab, setTab] = useState("studio"); // studio | explain
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [step]);
-
-  const handleFastComplete = (res) => {
-    setResults((prev) => ({ ...prev, fast: res }));
-    setStep("reflect");
-  };
-
-  const handleSupportedComplete = (res) => {
-    setResults((prev) => ({ ...prev, supported: res }));
-    setStep("explain");
-  };
-
-  const stepIndex = SPEECH_STEP_INDEX[step];
-  const more = MODULES.filter((m) => m.key !== "speech");
+  }, [tab]);
 
   return (
     <section className="itw-view itw-module itw-flow" data-accent="speech">
-      <FlowCrumbs name="Speech & Language Differences" onBack={onBack} />
-      {stepIndex !== undefined && <FlowStepper steps={SPEECH_STEPS} current={stepIndex} />}
+      <FlowCrumbs name="Speech &amp; Language Differences" onBack={onBack} />
 
-      {step === "intro" && (
-        <div className="itw-flow-page itw-flow-intro" key="intro">
-          <div>
-            <h2 className="itw-flow-title">Speech &amp; Language Differences</h2>
-            <div className="itw-flow-sub">Conversational Pacing &amp; Communication Access</div>
-            <p className="itw-flow-lead">
-              A child who stutters, has childhood apraxia of speech, or experiences language formulation differences knows
-              exactly what they wish to say. The barrier they face in classrooms is rarely a lack of ideas — it is the hurried
-              pace of conversation, the ticking clock of impatient listeners, and the pressure of being spoken over.
-            </p>
-            <ul className="itw-flow-meta">
-              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
-              <li><span aria-hidden="true">🗣️</span> First-person conversational interaction</li>
-              <li><span aria-hidden="true">ℹ️</span> An educational exploration, not a clinical diagnostic tool</li>
-            </ul>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
-              Start the Experience →
-            </button>
-          </div>
-          <IntroVignette moduleKey="speech" />
-        </div>
-      )}
-
-      {step === "instructions" && (
-        <div className="itw-flow-page itw-flow-narrow" key="instructions">
-          <div className="itw-scene-plate">
-            <img src="/decor/itw/communication-environment.webp" alt="Inclusive science classroom" className="itw-scene-plate-img" />
-            <div className="itw-scene-plate-overlay">
-              <span className="itw-scene-tag">📍 Setting • Grade 5 Science Presentation</span>
-              <p className="itw-scene-caption">The teacher calls on your group to explain your project. You know every step, but the rapid turn window creates sudden performance tension.</p>
-            </div>
-          </div>
-          <h2 className="itw-flow-title itw-center">Before you begin Run 1</h2>
-          <p className="itw-flow-lead itw-center">
-            This activity explores conversational pacing — observing how rapid turn-taking windows create communication
-            barriers, and how patient listening and AAC supports transform dialogue.
-          </p>
-          <ul className="itw-flow-list">
-            <li><span aria-hidden="true">⏳</span> In Run 1, you have a short conversational window to share your answer.</li>
-            <li><span aria-hidden="true">⏱️</span> Notice how pressure builds when you feel the listener is waiting on the clock.</li>
-            <li><span aria-hidden="true">💡</span> In Run 2, you will experience unhurried wait time and AAC communication cards.</li>
-          </ul>
-          <div className="itw-flow-nav">
-            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_fast")}>
-              Begin Run 1 →
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === "run_fast" && (
-        <div className="itw-flow-page itw-flow-narrow" key="run_fast">
-          <SpeechSim mode="fast" onComplete={handleFastComplete} onAbort={() => setStep("instructions")} />
-        </div>
-      )}
-
-      {step === "reflect" && (
-        <div className="itw-flow-page itw-flow-narrow" key="reflect">
-          <h2 className="itw-flow-title itw-center">What did you observe about conversational pacing?</h2>
-          <div
-            style={{
-              background: "var(--itw-panel)",
-              border: "1.5px solid var(--itw-border)",
-              borderRadius: 18,
-              padding: 22,
-              margin: "24px 0",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ fontSize: 13, textTransform: "uppercase", color: "var(--itw-speech)", fontWeight: 700 }}>
-              Run 1 Conversational Observation
-            </div>
-            <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-text)", margin: "8px 0" }}>
-              {results.fast?.interrupted ? "Interrupted by Rushed Listener" : `Delivered in ${results.fast?.time.toFixed(1)}s`}
-            </div>
-            <p style={{ margin: "8px 0 0", fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>
-              Notice how the ticking clock shifted your focus away from the science ideas and into urgent verbal delivery.
-              The primary communication barrier was external listener pressure, not a lack of intelligence.
+      {tab === "studio" && (
+        <div className="itw-flow-page" key="studio">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">Communication Access Studio</h2>
+            <div className="itw-flow-sub">Classroom Conversational Pacing &amp; Multi-Modal Support</div>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>
+              Explore how listening habits, conversational pacing, and relational respect transform access for students
+              who stutter, students who use AAC, and students who need processing time.
             </p>
           </div>
 
-          <FlowQuestions
-            questions={SPEECH_REFLECT_QS}
-            answers={reflectionAnswers}
-            onPick={(qi, oi) => {
-              setReflectionAnswers((prev) => {
-                const next = [...prev];
-                next[qi] = oi;
-                return next;
-              });
-            }}
-          />
+          <CommunicationAccessStudio />
 
-          <div className="itw-flow-nav itw-flow-nav-center">
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("support")}>
-              Explore Accommodations →
+          <div className="itw-flow-nav itw-flow-nav-center" style={{ marginTop: 28 }}>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setTab("explain")}>
+              View Clinical Principles &amp; Indian Context →
+            </button>
+            <button type="button" className="itw-cta itw-cta-line" onClick={onBack}>
+              ← Back to All Experiences
             </button>
           </div>
         </div>
       )}
 
-      {step === "support" && (
-        <div className="itw-flow-page itw-flow-narrow" key="support">
-          <h2 className="itw-flow-title itw-center">Choose Communication Support</h2>
-          <p className="itw-flow-lead itw-center">
-            Select the accommodation you want to explore in the supported conversation:
-          </p>
-          <div className="itw-flow-cards" role="radiogroup" aria-label="Speech accommodation choices">
-            {SPEECH_SUPPORT_CHOICES.map((choice) => {
-              const selected = chosenSupport === choice.id;
-              return (
-                <div
-                  key={choice.id}
-                  role="radio"
-                  aria-checked={selected}
-                  tabIndex={0}
-                  className={`itw-flow-card${selected ? " itw-active" : ""}`}
-                  onClick={() => setChosenSupport(choice.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === " " || e.key === "Enter") {
-                      e.preventDefault();
-                      setChosenSupport(choice.id);
-                    }
-                  }}
-                >
-                  <span className="itw-flow-card-tag">{choice.tag}</span>
-                  <div className="itw-flow-card-title">{choice.title}</div>
-                  <div className="itw-flow-card-sub">{choice.subtitle}</div>
-                  <p className="itw-flow-card-desc">{choice.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-          <div className="itw-flow-nav itw-flow-nav-center">
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_supported")}>
-              Apply &amp; Experience Run 2 →
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === "run_supported" && (
-        <div className="itw-flow-page itw-flow-narrow" key="run_supported">
-          <SpeechSim
-            mode="supported"
-            supportType={chosenSupport}
-            onComplete={handleSupportedComplete}
-            onAbort={() => setStep("support")}
-          />
-        </div>
-      )}
-
-      {step === "explain" && (
+      {tab === "explain" && (
         <div className="itw-flow-page itw-flow-narrow" key="explain">
-          <div className="itw-scene-plate">
-            <img src="/decor/itw/communication-environment.webp" alt="Inclusive classroom listening" className="itw-scene-plate-img" />
-            <div className="itw-scene-plate-overlay">
-              <span className="itw-scene-tag">📍 Insight • Communication Access</span>
-              <p className="itw-scene-caption">When listeners offer unhurried patience and multimodal tools, every student has an authentic voice.</p>
-            </div>
-          </div>
+          <h2 className="itw-flow-title itw-center">Understanding Speech, Language &amp; Communication</h2>
+          <div className="itw-flow-sub itw-center">Key Distinctions in Clinical Communication Science</div>
 
-          <h2 className="itw-flow-title itw-center">What We Learned About Speech Differences</h2>
-          <p className="itw-flow-lead itw-center">
-            Speech differences are neuromotor or language-formulation variations, not cognitive deficits.
-            Creating an inclusive classroom requires cultivating active, patient listeners.
+          <p className="itw-flow-lead">
+            Communication differences are diverse and multi-faceted. Understanding the distinction between fluency,
+            motor speech, language formulation, and AAC prevents common misconceptions.
           </p>
 
-          <div
-            style={{
-              background: "rgba(140, 66, 44, 0.08)",
-              border: "1px solid var(--itw-speech)",
-              borderRadius: 18,
-              padding: "20px 24px",
-              margin: "24px 0",
-            }}
-          >
-            <h4 style={{ margin: "0 0 8px", fontSize: 16, fontWeight: 800, color: "var(--itw-speech)" }}>
-              ASHA Clinical Guidance: Listen to what is said, not how it is delivered
-            </h4>
-            <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.6, color: "var(--itw-text)" }}>
-              The American Speech-Language-Hearing Association (ASHA) emphasizes key relational practices: never finish a speaker&apos;s sentences or guess words for them, maintain warm and relaxed eye contact, keep your own speech rate measured, and focus entirely on the message being communicated rather than delivery fluency.
-            </p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, margin: "20px 0" }}>
+            <div style={{ padding: 18, borderRadius: 14, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)" }}>
+              <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-speech)" }}>Domain 1</span>
+              <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0 6px" }}>Speech Fluency (Stuttering)</h4>
+              <p style={{ fontSize: 13, color: "var(--itw-muted)", margin: 0, lineHeight: 1.5 }}>
+                Rhythm and flow of speech, involving repetitions, prolongations, or blocks. Fluency does not reflect intelligence, knowledge, or vocabulary depth.
+              </p>
+            </div>
+
+            <div style={{ padding: 18, borderRadius: 14, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)" }}>
+              <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-speech)" }}>Domain 2</span>
+              <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0 6px" }}>Motor Speech Production (Apraxia)</h4>
+              <p style={{ fontSize: 13, color: "var(--itw-muted)", margin: 0, lineHeight: 1.5 }}>
+                Neurological planning and coordination of muscle movements required for articulating sounds. The student knows the word, but the motor plan requires targeted therapy.
+              </p>
+            </div>
+
+            <div style={{ padding: 18, borderRadius: 14, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)" }}>
+              <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-speech)" }}>Domain 3</span>
+              <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0 6px" }}>Language Formulation &amp; Processing</h4>
+              <p style={{ fontSize: 13, color: "var(--itw-muted)", margin: 0, lineHeight: 1.5 }}>
+                Organizing words into grammatical syntax and comprehending verbal messages. Extra processing time and single-step prompts ensure complete understanding.
+              </p>
+            </div>
+
+            <div style={{ padding: 18, borderRadius: 14, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)" }}>
+              <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-speech)" }}>Domain 4</span>
+              <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0 6px" }}>Augmentative Communication (AAC)</h4>
+              <p style={{ fontSize: 13, color: "var(--itw-muted)", margin: 0, lineHeight: 1.5 }}>
+                An umbrella term for communication systems ranging from picture exchange boards and communication books to dynamic eye-gaze speech-generating tablets.
+              </p>
+            </div>
           </div>
 
           <h3 className="itw-flow-h3">The Data: Indian Context</h3>
           <FactsGrid
             facts={[
               {
-                num: "1.5% vs 0.46%",
-                label: "community prevalence of stuttering in school-age cohorts: 1.5% in Bangalore (Srinath et al., ages 4–16 across cohorts) and 0.46% in Tamil Nadu (74,544 schoolchildren screened)",
-                src: "Srinath et al. (2005) Bangalore Study; Tamil Nadu School Survey (2018)",
-              },
-              {
                 num: "~10% Caseload",
-                label: "proportion of pediatric clients presenting to specialized tertiary clinics who stutter — a clinical caseload denominator, not a general community prevalence figure",
+                label: "proportion of pediatric clients presenting to specialized tertiary clinics who stutter — a clinical caseload denominator representing seeking care",
                 src: "All India Institute of Speech and Hearing (AIISH Mysore) Clinical Registry",
               },
               {
-                num: "Multilingual",
-                label: "In multilingual Indian environments, clinical guidelines emphasize distinguishing natural second-language formulation pauses from clinical speech disorders",
-                src: "AIISH Clinical Guidelines & ASHA Multilingual Practice Recommendations",
+                num: "1.5%–2%",
+                label: "estimated community prevalence of developmental speech fluency and language differences in school-age Indian cohorts",
+                src: "National Institute for the Empowered of Persons with Multiple Disabilities (NIEPMD)",
+              },
+              {
+                num: "RPwD 2016",
+                label: "statutory recognition protecting the right to multi-modal and AAC communication accommodations in educational and examination settings",
+                src: "Rights of Persons with Disabilities Act, Government of India",
               },
             ]}
-            note="Community prevalence studies measure general child populations, whereas tertiary clinical statistics describe patients seeking specialized care. In multilingual Indian contexts, speech-language pathologists emphasize giving speakers unhurried time and distinguishing natural language formulation pauses from clinical speech disorders."
+            note="In multilingual Indian classroom settings, speech-language pathologists emphasize giving speakers unhurried time and distinguishing natural bilingual code-switching pauses from clinical speech disorders."
             onComplete={() => {}}
           />
 
-          <h3 className="itw-flow-h3">Practical Ways to Support Speech Differences</h3>
+          <h3 className="itw-flow-h3">Core Communication Principles:</h3>
           <ul className="itw-strat-list">
             <li>
-              <b>Give 5–10 Seconds of Unhurried Silence:</b> Allow full pause time after asking a question before expecting a verbal answer.
+              <b>Patience Over Pacing:</b> Never finish someone sentences, guess their words, or tell them to &ldquo;slow down&rdquo;. Sentence ownership is fundamental dignity.
             </li>
             <li>
-              <b>Never Finish Their Sentences:</b> Let the student complete their own thought, preserving their communicative agency.
+              <b>Direct Relational Engagement:</b> When a student communicates through an AAC device, speech generator, or interpreter, always speak directly to the student at eye level.
             </li>
             <li>
-              <b>Welcome Multi-Modal Communication (AAC):</b> Validate pointing, typed messages, gestures, or visual communication cards equally.
+              <b>Single-Question Clarity:</b> Ask one clear question at a time and offer generous processing silence before prompting again.
             </li>
             <li>
-              <b>Focus on the Message, Not the Mechanics:</b> Respond warmly to what the child said rather than how smoothly they said it.
+              <b>Respect Communication Modes:</b> Value all communication methods equally — spoken words, AAC outputs, pointing, gesture, and written notes.
             </li>
           </ul>
 
-          <div className="itw-flow-nav itw-flow-nav-center" style={{ marginTop: 32, display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center" }}>
+          <div className="itw-flow-nav itw-flow-nav-center" style={{ marginTop: 32 }}>
             <a href="/consult" className="itw-cta itw-cta-dark" style={{ textDecoration: "none" }}>
-              Book a Speech Consultation
+              Book a Speech Therapy Consultation
             </a>
             <button type="button" className="itw-cta itw-cta-line" onClick={() => onNavigate("dyscalculia")}>
               Next Experience: Dyscalculia →
             </button>
-            <button type="button" className="itw-cta itw-cta-line" onClick={onBack}>
-              ← Back to All Experiences
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setTab("studio")}>
+              ← Back to Studio
             </button>
           </div>
         </div>
@@ -5250,596 +5134,483 @@ function SpeechModule({ onBack, onNavigate }) {
   );
 }
 
-/* ================= DYSCALCULIA: Recipe Scaling & Concrete Representations ================= */
+/* ================= DYSCALCULIA: The Quantity Kitchen ================= */
 
-const DYSCALC_STEPS = [
-  { key: "instructions", label: "Instructions" },
-  { key: "run_abstract", label: "Run 1 (Abstract Math)" },
-  { key: "reflect", label: "Reflect & Compare" },
-  { key: "support", label: "Choose Supports" },
-  { key: "run_concrete", label: "Run 2 (Visual CRA)" },
-  { key: "explain", label: "Understanding & Action" },
-];
-
-const DYSCALC_STEP_INDEX = {
-  instructions: 0,
-  run_abstract: 1,
-  reflect: 2,
-  support: 3,
-  run_concrete: 3,
-  explain: 4,
-  next: 4,
-};
-
-const DYSCALC_REFLECT_QS = [
+const KITCHEN_RECIPE_ITEMS = [
   {
-    q: "During the abstract scaling round, where did you notice the friction?",
-    options: [
-      "Keeping multiple numbers and ratios in active working memory felt taxing without visual aids.",
-      "The numbers felt like arbitrary symbols on paper rather than concrete physical quantities.",
-      "Visual measuring blocks made the doubling relationship immediately intuitive to grasp.",
-      "Spatial and visual aids ground abstract arithmetic, making math accessible to all minds.",
-    ],
+    id: "lemons",
+    name: "Fresh Lemons",
+    unit: "lemons",
+    original: 2,
+    target: 4,
+    icon: "🍋",
+    workedExample: "2 lemons × 2 groups = 4 lemons (2 for the first 2 servings + 2 for the next 2).",
+  },
+  {
+    id: "water",
+    name: "Chilled Water",
+    unit: "cups",
+    original: 3,
+    target: 6,
+    icon: "🥛",
+    workedExample: "3 cups × 2 groups = 6 cups of water.",
+  },
+  {
+    id: "sugar",
+    name: "Raw Sugar",
+    unit: "tablespoons",
+    original: 2,
+    target: 4,
+    icon: "🥄",
+    workedExample: "2 tablespoons × 2 groups = 4 tablespoons of sugar.",
+  },
+  {
+    id: "mint",
+    name: "Fresh Mint Leaves",
+    unit: "leaves",
+    original: 6,
+    target: 12,
+    icon: "🌿",
+    workedExample: "6 leaves × 2 groups = 12 mint leaves.",
   },
 ];
 
-const DYSCALC_SUPPORT_CHOICES = [
-  {
-    id: "concrete_blocks",
-    title: "CRA Concrete Visual Manipulatives",
-    subtitle: "Visual measuring jars & ten-frame counters",
-    desc: "Transforms abstract numbers into concrete, countable visual blocks so proportions can be verified spatially.",
-    tag: "Multi-Sensory Math",
-  },
-  {
-    id: "proportional_slider",
-    title: "Interactive Proportional Scaling Bar",
-    subtitle: "Real-time ratio visualization",
-    desc: "Demonstrates that doubling servings (2 to 4) directly doubles every ingredient bar simultaneously.",
-    tag: "Visual Scaffolding",
-  },
-  {
-    id: "worked_example",
-    title: "Step-by-Step Worked Example & Hint Cards",
-    subtitle: "Explicit mathematical scaffolding",
-    desc: "Breaks multi-step recipes into bite-sized, single-ingredient calculations with gentle guidance.",
-    tag: "Cognitive Scaffolding",
-  },
-];
-
-// Recipe 1 for Abstract Round: Mango Chia Pudding (Scale from 2 servings to 4 servings = 2x)
-const RECIPE_1_ITEMS = [
-  { id: "milk", name: "Almond Milk", original: 2, target: 4, unit: "cups", options: [3, 4, 6] },
-  { id: "chia", name: "Chia Seeds", original: 4, target: 8, unit: "tablespoons", options: [6, 8, 12] },
-  { id: "mango", name: "Diced Mango", original: 1, target: 2, unit: "cups", options: [2, 3, 4] },
-  { id: "honey", name: "Cardamom Honey", original: 2, target: 4, unit: "teaspoons", options: [3, 4, 5] },
-];
-
-// Recipe 2 for Concrete Round: Fresh Mint Lemonade (Scale from 3 glasses to 6 glasses = 2x)
-const RECIPE_2_ITEMS = [
-  { id: "lemons", name: "Fresh Lemons", original: 2, target: 4, unit: "lemons", icon: "🍋" },
-  { id: "mint", name: "Mint Leaves", original: 6, target: 12, unit: "leaves", icon: "🌿" },
-  { id: "water", name: "Chilled Water", original: 3, target: 6, unit: "glasses", icon: "🥛" },
-  { id: "sugar", name: "Raw Sugar", original: 2, target: 4, unit: "spoons", icon: "🥄" },
-];
-
-function DyscalculiaSim({ mode = "abstract", supportType = "concrete_blocks", onComplete, onAbort }) {
+function QuantityKitchenWorkspace() {
   const { soundOn } = useContext(SettingsContext);
-  const [abstractAnswers, setAbstractAnswers] = useState({});
-  const [concreteQuantities, setConcreteQuantities] = useState(() => {
-    const init = {};
-    RECIPE_2_ITEMS.forEach((item) => {
-      init[item.id] = item.original;
-    });
-    return init;
+  const [quantities, setQuantities] = useState({
+    lemons: 2,
+    water: 3,
+    sugar: 2,
+    mint: 6,
   });
-  const [elapsed, setElapsed] = useState(0);
-  const [showHint, setShowHint] = useState(false);
-  const [allCorrectNotice, setAllCorrectNotice] = useState(false);
+  const [viewMode, setViewMode] = useState("grouped"); // grouped | bar | numeric
+  const [showWorkedExample, setShowWorkedExample] = useState(false);
+  const [showStepHint, setShowStepHint] = useState(false);
 
-  const startTimeRef = useRef(0);
-  const timerRef = useRef(null);
-  const onCompleteRef = useRef(onComplete);
-
-  useEffect(() => {
-    onCompleteRef.current = onComplete;
-  }, [onComplete]);
-
-  useEffect(() => {
-    startTimeRef.current = performance.now();
-    timerRef.current = setInterval(() => {
-      setElapsed(parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1)));
-    }, 100);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
-
-  const handlePickAbstract = (itemId, val) => {
+  const updateQuantity = (id, delta) => {
     if (soundOn) audio.cue("tap");
-    const next = { ...abstractAnswers, [itemId]: val };
-    setAbstractAnswers(next);
-
-    const isComplete = RECIPE_1_ITEMS.every((item) => next[item.id] !== undefined);
-    if (isComplete) {
-      if (soundOn) audio.cue("bell");
-      setAllCorrectNotice(true);
-      setTimeout(() => {
-        onCompleteRef.current?.({
-          time: elapsed,
-          mode: "abstract",
-          answers: next,
-        });
-      }, 700);
-    }
-  };
-
-  const handleAdjustConcrete = (itemId, delta) => {
-    if (soundOn) audio.cue("tap");
-    setConcreteQuantities((prev) => {
-      const cur = prev[itemId] || 0;
-      const nextVal = Math.max(0, Math.min(20, cur + delta));
-      const next = { ...prev, [itemId]: nextVal };
-
-      const allTargetsMet = RECIPE_2_ITEMS.every((item) => next[item.id] === item.target);
-      if (allTargetsMet) {
-        if (soundOn) audio.cue("bell");
-        setAllCorrectNotice(true);
-        setTimeout(() => {
-          onCompleteRef.current?.({
-            time: elapsed,
-            mode: "concrete",
-            quantities: next,
-          });
-        }, 800);
-      }
-      return next;
+    setQuantities((prev) => {
+      const current = prev[id] || 0;
+      const next = Math.max(0, Math.min(24, current + delta));
+      return { ...prev, [id]: next };
     });
   };
 
-  const isConcrete = mode === "concrete";
+  const handleReset = () => {
+    if (soundOn) audio.cue("tap");
+    setQuantities({
+      lemons: 2,
+      water: 3,
+      sugar: 2,
+      mint: 6,
+    });
+  };
+
+  const allCompleted = KITCHEN_RECIPE_ITEMS.every(
+    (item) => quantities[item.id] === item.target
+  );
 
   return (
-    <div className="itw-dyscalc-canvas" role="region" aria-label="Dyscalculia Recipe Scaling Experience">
-      {/* Top Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+    <div className="itw-kitchen-wrap" role="region" aria-label="The Quantity Kitchen Recipe Workspace">
+      {/* Top Servings Banner */}
+      <div
+        style={{
+          padding: "20px 24px",
+          borderRadius: 18,
+          background: "linear-gradient(135deg, rgba(255, 180, 51, 0.12), rgba(255, 232, 168, 0.35))",
+          border: "1.5px solid #f2c766",
+          marginBottom: 24,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 16,
+        }}
+      >
         <div>
-          <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-dyscalculia)", letterSpacing: "0.08em" }}>
-            {isConcrete ? "Run 2: Supported Concrete Manipulatives (CRA)" : "Run 1: Abstract Arithmetic Scaling"}
+          <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-text)", letterSpacing: "0.08em" }}>
+            Recipe Scaling Challenge • Lemon-Mint Cooler
           </span>
-          <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
-            {isConcrete ? "Kitchen Lab: Scaling Mint Lemonade (3 → 6 Glasses)" : "Kitchen Lab: Scaling Mango Pudding (2 → 4 Servings)"}
+          <h3 style={{ fontSize: 22, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
+            Scale from 2 Servings to 4 Servings
           </h3>
+          <p style={{ fontSize: 14, color: "var(--itw-muted)", margin: 0 }}>
+            Unexpected study group guests have arrived! Double the recipe so everyone gets a fresh glass.
+          </p>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 13, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)" }}>
-            ⏱️ {elapsed.toFixed(1)}s
-          </span>
-          <button type="button" className="itw-pill-btn" onClick={onAbort}>Exit</button>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 14, background: "var(--itw-panel)", padding: "10px 18px", borderRadius: 14, border: "1.5px solid var(--itw-border)" }}>
+          <div style={{ textAlign: "center" }}>
+            <span style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)" }}>Original</span>
+            <div style={{ fontSize: 18, fontWeight: 900, color: "var(--itw-text)" }}>2 Servings</div>
+          </div>
+          <span style={{ fontSize: 20, color: "#f47522", fontWeight: 800 }}>➔</span>
+          <div style={{ textAlign: "center" }}>
+            <span style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "#f47522" }}>Target</span>
+            <div style={{ fontSize: 18, fontWeight: 900, color: "#f47522" }}>4 Servings (×2)</div>
+          </div>
         </div>
       </div>
 
-      {/* Task Objective Card */}
+      {/* Immediate Representation Supports Switcher Toolbar */}
       <div
         style={{
-          background: "var(--itw-panel-2)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 12,
+          marginBottom: 22,
+          padding: "12px 16px",
+          borderRadius: 14,
+          background: "var(--itw-panel)",
           border: "1.5px solid var(--itw-border)",
-          borderRadius: 18,
-          padding: "18px 22px",
-          marginBottom: 20,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
-          <div>
-            <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-dyscalculia)" }}>
-              Objective:
-            </span>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--itw-text)", marginTop: 2 }}>
-              {isConcrete
-                ? "Double the recipe for 6 guests instead of 3. Use the + and - steppers to set the exact visual ingredients."
-                : "The base recipe makes 2 servings. Two extra friends are visiting — scale each ingredient for 4 servings (multiply by 2)."}
-            </div>
-          </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 12, fontWeight: 800, color: "var(--itw-muted)", textTransform: "uppercase" }}>
+            Visual Scaffolding:
+          </span>
           <button
             type="button"
-            className="itw-pill-btn"
-            style={{ fontSize: 12 }}
-            onClick={() => setShowHint(!showHint)}
+            className={`itw-cta ${viewMode === "grouped" ? "itw-cta-dark" : "itw-cta-line"}`}
+            style={{ fontSize: 12.5, padding: "6px 14px" }}
+            onClick={() => setViewMode("grouped")}
           >
-            {showHint ? "Hide Worked Example" : "💡 Show Worked Example"}
+            🍋 Grouped Visual Sets
+          </button>
+          <button
+            type="button"
+            className={`itw-cta ${viewMode === "bar" ? "itw-cta-dark" : "itw-cta-line"}`}
+            style={{ fontSize: 12.5, padding: "6px 14px" }}
+            onClick={() => setViewMode("bar")}
+          >
+            📊 Proportional Ratio Strip
+          </button>
+          <button
+            type="button"
+            className={`itw-cta ${viewMode === "numeric" ? "itw-cta-dark" : "itw-cta-line"}`}
+            style={{ fontSize: 12.5, padding: "6px 14px" }}
+            onClick={() => setViewMode("numeric")}
+          >
+            🔢 Pure Numeric
           </button>
         </div>
 
-        {showHint && (
-          <div
-            style={{
-              marginTop: 14,
-              padding: "12px 16px",
-              background: "rgba(29, 133, 133, 0.08)",
-              border: "1px solid var(--itw-dyscalculia)",
-              borderRadius: 12,
-              fontSize: 13.5,
-              color: "var(--itw-text)",
-              lineHeight: 1.5,
-            }}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button
+            type="button"
+            className="itw-cta itw-cta-line"
+            style={{ fontSize: 12, padding: "6px 14px" }}
+            onClick={() => setShowWorkedExample((prev) => !prev)}
           >
-            <b>Simple Worked Example:</b> If 2 servings need 2 cups of milk, then 4 servings (which is double) needs 2 × 2 = <b>4 cups</b> of milk. Every ingredient doubles!
+            {showWorkedExample ? "Hide Worked Example" : "💡 Worked Example"}
+          </button>
+          <button
+            type="button"
+            className="itw-cta itw-cta-line"
+            style={{ fontSize: 12, padding: "6px 14px" }}
+            onClick={() => setShowStepHint((prev) => !prev)}
+          >
+            {showStepHint ? "Hide Hint" : "❓ Step Hint"}
+          </button>
+          <button
+            type="button"
+            className="itw-pill-btn"
+            style={{ fontSize: 12, padding: "6px 12px" }}
+            onClick={handleReset}
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+
+      {/* Worked Example Banner (Expandable) */}
+      {showWorkedExample && (
+        <div style={{ padding: 18, borderRadius: 14, background: "rgba(5, 176, 118, 0.08)", border: "1.5px solid rgba(5, 176, 118, 0.3)", marginBottom: 20, animation: "fadeIn 0.2s" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <span style={{ fontSize: 16 }}>💡</span>
+            <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "#05b076", letterSpacing: "0.06em" }}>
+              Worked Example: Doubling Ratios
+            </span>
           </div>
-        )}
-      </div>
-
-      {/* Interactive Activity Body */}
-      {!isConcrete ? (
-        /* RUN 1: Abstract Round */
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
-          {RECIPE_1_ITEMS.map((item) => {
-            const picked = abstractAnswers[item.id];
-            return (
-              <div
-                key={item.id}
-                style={{
-                  background: "var(--itw-panel)",
-                  border: picked !== undefined ? "1.5px solid var(--itw-dyscalculia)" : "1.5px solid var(--itw-border)",
-                  borderRadius: 16,
-                  padding: "18px 20px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 12,
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontWeight: 800, fontSize: 16, color: "var(--itw-text)" }}>{item.name}</span>
-                  <span style={{ fontSize: 12, color: "var(--itw-muted)", fontWeight: 600 }}>
-                    Base: {item.original} {item.unit}
-                  </span>
-                </div>
-                <div style={{ fontSize: 13.5, color: "var(--itw-muted)" }}>
-                  Formula: {item.original} × 2 = ?
-                </div>
-                <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
-                  {item.options.map((opt) => (
-                    <button
-                      key={opt}
-                      type="button"
-                      className={`itw-adhd-keychip${picked === opt ? " itw-selected" : ""}`}
-                      style={{ flex: 1, padding: "8px 0", textAlign: "center" }}
-                      onClick={() => handlePickAbstract(item.id, opt)}
-                    >
-                      {opt} {item.unit}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+          <p style={{ fontSize: 13.5, color: "var(--itw-text)", margin: 0, lineHeight: 1.55 }}>
+            To scale from 2 people to 4 people, we need exactly <b>twice as much</b> of every ingredient.
+            For lemons: 2 lemons (original) × 2 = <b>4 lemons</b>. Think of it as placing 2 lemons on the counter, then placing another group of 2 lemons right beside them!
+          </p>
         </div>
-      ) : (
-        /* RUN 2: Concrete Visual CRA Round */
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
-          {RECIPE_2_ITEMS.map((item) => {
-            const currentQty = concreteQuantities[item.id] || 0;
-            const isMatch = currentQty === item.target;
-            return (
-              <div
-                key={item.id}
-                style={{
-                  background: "var(--itw-panel)",
-                  border: isMatch ? "2px solid #10b981" : "1.5px solid var(--itw-border)",
-                  borderRadius: 18,
-                  padding: "20px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 14,
-                  boxShadow: isMatch ? "0 4px 18px rgba(16, 185, 129, 0.12)" : "none",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontWeight: 800, fontSize: 16, color: "var(--itw-text)" }}>
-                    {item.name}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 11.5,
-                      fontWeight: 800,
-                      padding: "2px 8px",
-                      borderRadius: 99,
-                      background: isMatch ? "rgba(16, 185, 129, 0.15)" : "var(--itw-panel-2)",
-                      color: isMatch ? "#10b981" : "var(--itw-muted)",
-                    }}
-                  >
-                    {isMatch ? "✓ Target Reached" : `Goal: ${item.target} ${item.unit}`}
-                  </span>
-                </div>
+      )}
 
-                {/* Concrete Visual Representation (Icons array) */}
-                <div
-                  style={{
-                    background: "var(--itw-panel-2)",
-                    borderRadius: 12,
-                    padding: "14px",
-                    minHeight: 64,
-                    display: "flex",
-                    flexWrap: "wrap",
-                    alignItems: "center",
-                    gap: 6,
-                  }}
-                >
-                  {Array.from({ length: currentQty }).map((_, idx) => (
-                    <span key={idx} style={{ fontSize: 24 }} title={`${item.name} unit ${idx + 1}`}>
-                      {item.icon}
-                    </span>
-                  ))}
-                  {currentQty === 0 && (
-                    <span style={{ fontSize: 12, color: "var(--itw-muted)", fontStyle: "italic" }}>
-                      Tap + to add {item.unit}...
-                    </span>
-                  )}
-                </div>
+      {/* Step Hint Banner (Expandable) */}
+      {showStepHint && (
+        <div style={{ padding: 16, borderRadius: 14, background: "rgba(244, 117, 34, 0.08)", border: "1.5px solid rgba(244, 117, 34, 0.3)", marginBottom: 20, animation: "fadeIn 0.2s" }}>
+          <div style={{ fontSize: 13.5, color: "var(--itw-text)", lineHeight: 1.5 }}>
+            <b>Step-by-step strategy:</b> Look at the original number, and add that same number once more. For water: 3 cups + 3 cups = 6 cups. For mint: 6 leaves + 6 leaves = 12 leaves.
+          </div>
+        </div>
+      )}
 
-                {/* Controls */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <button
-                      type="button"
-                      className="itw-pill-btn"
-                      style={{ width: 34, height: 34, padding: 0, fontWeight: 900, fontSize: 18 }}
-                      onClick={() => handleAdjustConcrete(item.id, -1)}
-                      disabled={currentQty <= 0}
-                      aria-label={`Decrease ${item.name}`}
-                    >
-                      −
-                    </button>
-                    <span style={{ fontSize: 16, fontWeight: 900, color: "var(--itw-text)", minWidth: 24, textAlign: "center" }}>
-                      {currentQty}
+      {/* 4 Recipe Ingredients Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(310px, 1fr))", gap: 16, marginBottom: 26 }}>
+        {KITCHEN_RECIPE_ITEMS.map((item) => {
+          const val = quantities[item.id] || 0;
+          const isCorrect = val === item.target;
+          const isBelow = val < item.target;
+          const isAbove = val > item.target;
+
+          return (
+            <div
+              key={item.id}
+              style={{
+                padding: 20,
+                borderRadius: 16,
+                background: "var(--itw-panel)",
+                border: isCorrect ? "2px solid #05b076" : "1.5px solid var(--itw-border)",
+                boxShadow: isCorrect ? "0 4px 18px rgba(5, 176, 118, 0.12)" : "0 2px 10px rgba(0, 0, 0, 0.03)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 14,
+                transition: "all 0.2s ease",
+              }}
+            >
+              {/* Card Header */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 28, lineHeight: 1 }}>{item.icon}</span>
+                  <div>
+                    <h4 style={{ fontSize: 17, fontWeight: 800, color: "var(--itw-text)", margin: 0 }}>
+                      {item.name}
+                    </h4>
+                    <span style={{ fontSize: 12, color: "var(--itw-muted)" }}>
+                      Original: <b>{item.original} {item.unit}</b> (for 2 people)
                     </span>
-                    <button
-                      type="button"
-                      className="itw-pill-btn"
-                      style={{ width: 34, height: 34, padding: 0, fontWeight: 900, fontSize: 18 }}
-                      onClick={() => handleAdjustConcrete(item.id, 1)}
-                      aria-label={`Increase ${item.name}`}
-                    >
-                      +
-                    </button>
                   </div>
-                  <span style={{ fontSize: 12.5, fontWeight: 700, color: isMatch ? "#10b981" : "var(--itw-muted)" }}>
-                    {currentQty} / {item.target} {item.unit}
+                </div>
+
+                {isCorrect && (
+                  <span style={{ fontSize: 11, fontWeight: 800, padding: "3px 10px", borderRadius: 99, background: "rgba(5, 176, 118, 0.15)", color: "#05b076" }}>
+                    ✓ Matched
+                  </span>
+                )}
+              </div>
+
+              {/* Stepper Controls */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(0,0,0,0.02)", padding: "8px 14px", borderRadius: 12, border: "1px solid var(--itw-border)" }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--itw-muted)", textTransform: "uppercase" }}>
+                  Adjust for 4:
+                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <button
+                    type="button"
+                    className="itw-cta itw-cta-line"
+                    style={{ minWidth: 36, height: 36, padding: 0, fontSize: 18, fontWeight: 900 }}
+                    onClick={() => updateQuantity(item.id, -1)}
+                    disabled={val <= 0}
+                    aria-label={`Decrease ${item.name}`}
+                  >
+                    –
+                  </button>
+                  <span style={{ minWidth: 42, textAlign: "center", fontSize: 19, fontFamily: "var(--font-mono, monospace)", fontWeight: 900, color: isCorrect ? "#05b076" : "var(--itw-text)" }}>
+                    {val}
+                  </span>
+                  <button
+                    type="button"
+                    className="itw-cta itw-cta-line"
+                    style={{ minWidth: 36, height: 36, padding: 0, fontSize: 18, fontWeight: 900 }}
+                    onClick={() => updateQuantity(item.id, 1)}
+                    aria-label={`Increase ${item.name}`}
+                  >
+                    +
+                  </button>
+                  <span style={{ fontSize: 13, color: "var(--itw-muted)", minWidth: 45 }}>
+                    {item.unit}
                   </span>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
 
-      {allCorrectNotice && (
-        <div style={{ textAlign: "center", marginTop: 20, color: "#10b981", fontWeight: 800, fontSize: 15 }}>
-          ✓ All ingredients correctly scaled! Proceeding...
-        </div>
-      )}
+              {/* Dynamic Representation Display based on viewMode */}
+              {viewMode === "grouped" && (
+                <div style={{ minHeight: 46, padding: 10, borderRadius: 10, background: "var(--itw-panel-soft)", border: "1px dashed var(--itw-border)" }}>
+                  <div style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", marginBottom: 6 }}>
+                    Grouped Units (1 group = {item.original}):
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+                    {Array.from({ length: Math.ceil(val / item.original) || 0 }).map((_, groupIdx) => {
+                      const countInGroup = Math.min(item.original, val - groupIdx * item.original);
+                      return (
+                        <div
+                          key={groupIdx}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 3,
+                            padding: "4px 8px",
+                            borderRadius: 8,
+                            background: groupIdx < 2 ? "rgba(5, 176, 118, 0.12)" : "rgba(220, 38, 38, 0.10)",
+                            border: groupIdx < 2 ? "1px solid rgba(5, 176, 118, 0.25)" : "1px solid rgba(220, 38, 38, 0.25)",
+                          }}
+                        >
+                          {Array.from({ length: Math.max(0, countInGroup) }).map((__, i) => (
+                            <span key={i} style={{ fontSize: 16 }}>{item.icon}</span>
+                          ))}
+                          <span style={{ fontSize: 10, fontWeight: 700, color: "var(--itw-muted)", marginLeft: 2 }}>
+                            Grp {groupIdx + 1}
+                          </span>
+                        </div>
+                      );
+                    })}
+                    {val === 0 && (
+                      <span style={{ fontSize: 12, color: "var(--itw-muted)", fontStyle: "italic" }}>
+                        0 {item.unit} selected
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
 
-      {/* Educational Reflection Footer */}
-      <div style={{ fontSize: 13, color: "var(--itw-muted)", textAlign: "center", marginTop: 22 }}>
-        {!isConcrete
-          ? "Notice how abstract numbers require active calculation in working memory — the core cognitive bottleneck in dyscalculia."
-          : "Notice how concrete visual objects ground mathematical magnitude in spatial geometry, making ratios instantly clear."}
+              {viewMode === "bar" && (
+                <div style={{ padding: 10, borderRadius: 10, background: "var(--itw-panel-soft)", border: "1px dashed var(--itw-border)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", marginBottom: 4 }}>
+                    <span>Original Scale (2 servings): {item.original}</span>
+                    <span>Target: {item.target}</span>
+                  </div>
+                  <div style={{ height: 10, borderRadius: 99, background: "rgba(0,0,0,0.06)", overflow: "hidden", position: "relative" }}>
+                    <div
+                      style={{
+                        height: "100%",
+                        width: `${Math.min(100, (val / (item.target * 1.5)) * 100)}%`,
+                        background: isCorrect ? "#05b076" : "#f47522",
+                        transition: "width 0.2s ease, background 0.2s ease",
+                      }}
+                    />
+                    {/* Marker for target */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        bottom: 0,
+                        left: `${(item.target / (item.target * 1.5)) * 100}%`,
+                        width: 2,
+                        background: "#1a1a1a",
+                        opacity: 0.6,
+                      }}
+                      title="Target Quantity"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {viewMode === "numeric" && (
+                <div style={{ padding: "8px 12px", borderRadius: 8, background: "var(--itw-panel-soft)", fontSize: 13, color: "var(--itw-text)", display: "flex", justifyContent: "space-between" }}>
+                  <span>Ratio Calculation:</span>
+                  <span style={{ fontFamily: "var(--font-mono, monospace)", fontWeight: 800 }}>
+                    {item.original} × 2 = {item.target}
+                  </span>
+                </div>
+              )}
+
+              {/* Neutral Instructional Feedback */}
+              <div style={{ fontSize: 12.5, lineHeight: 1.45, color: isCorrect ? "#05b076" : isBelow ? "#d97706" : "#dc2626", fontWeight: 600 }}>
+                {isCorrect && `✓ Perfect: Exactly 2 groups of ${item.original} (${item.target} ${item.unit}).`}
+                {isBelow && `Current amount (${val}) is less than 2 groups of ${item.original}. Needs ${item.target - val} more.`}
+                {isAbove && `Current amount (${val}) exceeds the doubled target of ${item.target} by ${val - item.target}.`}
+              </div>
+            </div>
+          );
+        })}
       </div>
+
+      {/* Completion Banner */}
+      {allCompleted && (
+        <div
+          style={{
+            padding: 24,
+            borderRadius: 18,
+            background: "linear-gradient(135deg, rgba(5, 176, 118, 0.12), rgba(181, 255, 165, 0.3))",
+            border: "2px solid #05b076",
+            textAlign: "center",
+            boxShadow: "0 8px 24px rgba(5, 176, 118, 0.14)",
+            animation: "fadeIn 0.3s ease",
+          }}
+        >
+          <div style={{ fontSize: 36, marginBottom: 6 }}>🍹</div>
+          <h3 style={{ fontSize: 20, fontWeight: 900, color: "#065f46", margin: "0 0 6px" }}>
+            Fresh Lemon-Mint Cooler Scaled Perfectly for 4!
+          </h3>
+          <p style={{ fontSize: 14.5, color: "var(--itw-text)", maxWidth: "60ch", margin: "0 auto 14px", lineHeight: 1.5 }}>
+            Every ingredient was doubled with mathematical precision: <b>4 lemons</b>, <b>6 cups water</b>, <b>4 tablespoons sugar</b>, and <b>12 mint leaves</b>.
+          </p>
+          <span style={{ display: "inline-block", fontSize: 12, fontWeight: 800, color: "#05b076", padding: "4px 14px", borderRadius: 99, background: "var(--itw-panel)", border: "1px solid rgba(5, 176, 118, 0.3)" }}>
+            Concrete Visual Manipulatives Externalize Working Memory
+          </span>
+        </div>
+      )}
     </div>
   );
 }
 
 function DyscalculiaModule({ onBack, onNavigate }) {
-  const [step, setStep] = useState("intro"); // intro | instructions | run_abstract | reflect | support | run_concrete | explain
-  const [chosenSupport, setChosenSupport] = useState("concrete_blocks");
-  const [reflectionAnswers, setReflectionAnswers] = useState(() => Array(DYSCALC_REFLECT_QS.length).fill(null));
-  const [results, setResults] = useState({ abstract: null, concrete: null });
+  const [tab, setTab] = useState("kitchen"); // kitchen | explain
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [step]);
-
-  const handleAbstractComplete = (res) => {
-    setResults((prev) => ({ ...prev, abstract: res }));
-    setStep("reflect");
-  };
-
-  const handleConcreteComplete = (res) => {
-    setResults((prev) => ({ ...prev, concrete: res }));
-    setStep("explain");
-  };
-
-  const stepIndex = DYSCALC_STEP_INDEX[step];
-  const more = MODULES.filter((m) => m.key !== "dyscalculia");
+  }, [tab]);
 
   return (
     <section className="itw-view itw-module itw-flow" data-accent="dyscalculia">
-      <FlowCrumbs name="Dyscalculia" onBack={onBack} />
-      {stepIndex !== undefined && <FlowStepper steps={DYSCALC_STEPS} current={stepIndex} />}
+      <FlowCrumbs name="Dyscalculia &amp; Mathematical Differences" onBack={onBack} />
 
-      {step === "intro" && (
-        <div className="itw-flow-page itw-flow-intro" key="intro">
-          <div>
-            <h2 className="itw-flow-title">Dyscalculia</h2>
-            <div className="itw-flow-sub">Number Sense &amp; Mathematical Reasoning</div>
-            <p className="itw-flow-lead">
-              Dyscalculia is a learning difference that affects an individual&apos;s innate sense of numerical magnitude,
-              proportions, and spatial mathematical relationships. It is not an inability to think logically or solve complex
-              problems — it is an architectural variation in how the brain represents quantity.
-            </p>
-            <ul className="itw-flow-meta">
-              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
-              <li><span aria-hidden="true">🍳</span> Interactive recipe scaling activity</li>
-              <li><span aria-hidden="true">ℹ️</span> An educational exploration, not a clinical diagnostic tool</li>
-            </ul>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
-              Start the Experience →
-            </button>
-          </div>
-          <IntroVignette moduleKey="dyscalculia" />
-        </div>
-      )}
-
-      {step === "instructions" && (
-        <div className="itw-flow-page itw-flow-narrow" key="instructions">
-          <div className="itw-scene-plate">
-            <img src="/decor/itw/dyscalculia-environment.webp" alt="Kitchen table with measuring cups and recipe notes" className="itw-scene-plate-img" />
-            <div className="itw-scene-plate-overlay">
-              <span className="itw-scene-tag">📍 Setting • Weekend Cooking with Friends</span>
-              <p className="itw-scene-caption">Measuring out recipe ingredients when the number of guests changes. In dyscalculia, mental ratios can feel abstract and elusive.</p>
-            </div>
-          </div>
-          <h2 className="itw-flow-title itw-center">Before you begin Run 1</h2>
-          <p className="itw-flow-lead itw-center">
-            You will scale a recipe for unexpected guests. First using abstract numerical arithmetic, then using concrete visual manipulatives.
-          </p>
-          <ul className="itw-flow-list">
-            <li><span aria-hidden="true">📊</span> In Run 1, you scale a 2-person recipe to 4 people using pure numbers.</li>
-            <li><span aria-hidden="true">🧠</span> Notice the mental effort needed to calculate and remember ratios without visual anchors.</li>
-            <li><span aria-hidden="true">🧱</span> In Run 2, you test Concrete-Representational-Abstract (CRA) visual measuring blocks.</li>
-          </ul>
-          <div className="itw-flow-nav">
-            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_abstract")}>
-              Begin Run 1 →
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === "run_abstract" && (
-        <div className="itw-flow-page itw-flow-narrow" key="run_abstract">
-          <DyscalculiaSim mode="abstract" onComplete={handleAbstractComplete} onAbort={() => setStep("instructions")} />
-        </div>
-      )}
-
-      {step === "reflect" && (
-        <div className="itw-flow-page itw-flow-narrow" key="reflect">
-          <h2 className="itw-flow-title itw-center">What did you observe about abstract math?</h2>
-          <div
-            style={{
-              background: "var(--itw-panel)",
-              border: "1.5px solid var(--itw-border)",
-              borderRadius: 18,
-              padding: 22,
-              margin: "24px 0",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ fontSize: 13, textTransform: "uppercase", color: "var(--itw-dyscalculia)", fontWeight: 700 }}>
-              Run 1 Arithmetic Observation
-            </div>
-            <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-text)", margin: "8px 0" }}>
-              Completed in {results.abstract?.time.toFixed(1)}s
-            </div>
-            <p style={{ margin: "8px 0 0", fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>
-              Without physical anchors, calculating proportions requires juggling multiple numeric symbols in active working memory.
-              For a learner with dyscalculia, numbers lack an intuitive spatial anchor — making mental math feel like an exhausting abstract cipher.
+      {tab === "kitchen" && (
+        <div className="itw-flow-page" key="kitchen">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">The Quantity Kitchen</h2>
+            <div className="itw-flow-sub">Proportional Scaling &amp; Concrete Mathematical Manipulatives</div>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>
+              Explore how concrete visual representations, grouped counters, and ratio strips anchor mathematical thinking
+              when abstract numerical symbols feel opaque.
             </p>
           </div>
 
-          <FlowQuestions
-            questions={DYSCALC_REFLECT_QS}
-            answers={reflectionAnswers}
-            onPick={(qi, oi) => {
-              setReflectionAnswers((prev) => {
-                const next = [...prev];
-                next[qi] = oi;
-                return next;
-              });
-            }}
-          />
+          <QuantityKitchenWorkspace />
 
-          <div className="itw-flow-nav itw-flow-nav-center">
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("support")}>
-              Explore Accommodations →
+          <div className="itw-flow-nav itw-flow-nav-center" style={{ marginTop: 28 }}>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setTab("explain")}>
+              View Pedagogical Principles &amp; Indian Context →
+            </button>
+            <button type="button" className="itw-cta itw-cta-line" onClick={onBack}>
+              ← Back to All Experiences
             </button>
           </div>
         </div>
       )}
 
-      {step === "support" && (
-        <div className="itw-flow-page itw-flow-narrow" key="support">
-          <h2 className="itw-flow-title itw-center">Choose Mathematical Accommodations</h2>
-          <p className="itw-flow-lead itw-center">
-            Select the instructional accommodation you want to explore in the supported recipe scaling:
-          </p>
-          <div className="itw-flow-cards" role="radiogroup" aria-label="Dyscalculia accommodation choices">
-            {DYSCALC_SUPPORT_CHOICES.map((choice) => {
-              const selected = chosenSupport === choice.id;
-              return (
-                <div
-                  key={choice.id}
-                  role="radio"
-                  aria-checked={selected}
-                  tabIndex={0}
-                  className={`itw-flow-card${selected ? " itw-active" : ""}`}
-                  onClick={() => setChosenSupport(choice.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === " " || e.key === "Enter") {
-                      e.preventDefault();
-                      setChosenSupport(choice.id);
-                    }
-                  }}
-                >
-                  <span className="itw-flow-card-tag">{choice.tag}</span>
-                  <div className="itw-flow-card-title">{choice.title}</div>
-                  <div className="itw-flow-card-sub">{choice.subtitle}</div>
-                  <p className="itw-flow-card-desc">{choice.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-          <div className="itw-flow-nav itw-flow-nav-center">
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_concrete")}>
-              Apply &amp; Experience Run 2 →
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === "run_concrete" && (
-        <div className="itw-flow-page itw-flow-narrow" key="run_concrete">
-          <DyscalculiaSim
-            mode="concrete"
-            supportType={chosenSupport}
-            onComplete={handleConcreteComplete}
-            onAbort={() => setStep("support")}
-          />
-        </div>
-      )}
-
-      {step === "explain" && (
+      {tab === "explain" && (
         <div className="itw-flow-page itw-flow-narrow" key="explain">
-          <div className="itw-scene-plate">
-            <img src="/decor/itw/dyscalculia-environment.webp" alt="Kitchen table with visual measuring tools" className="itw-scene-plate-img" />
-            <div className="itw-scene-plate-overlay">
-              <span className="itw-scene-tag">📍 Insight • Concrete-Representational-Abstract (CRA)</span>
-              <p className="itw-scene-caption">Grounding mathematical magnitude in tactile, visual objects bridges understanding effortlessly.</p>
-            </div>
-          </div>
+          <h2 className="itw-flow-title itw-center">Understanding Dyscalculia &amp; Mathematical Cognition</h2>
+          <div className="itw-flow-sub itw-center">Beyond Rote Memorization to Visual &amp; Spatial Anchors</div>
 
-          <h2 className="itw-flow-title itw-center">What We Learned About Dyscalculia</h2>
-          <p className="itw-flow-lead itw-center">
-            Dyscalculia is not a lack of logical or analytical ability; it is a difference in the brain&apos;s parietal
-            regions (intraparietal sulcus) responsible for non-symbolic number magnitude.
+          <p className="itw-flow-lead">
+            Dyscalculia can affect aspects of learning and using mathematical information, including numerical magnitude
+            comparison, spatial relationships, and holding multi-step arithmetic in active working memory.
+            Experiences vary widely across individuals.
           </p>
 
-          <div
-            style={{
-              background: "rgba(29, 133, 133, 0.08)",
-              border: "1px solid var(--itw-dyscalculia)",
-              borderRadius: 18,
-              padding: "20px 24px",
-              margin: "24px 0",
-            }}
-          >
-            <h4 style={{ margin: "0 0 8px", fontSize: 16, fontWeight: 800, color: "var(--itw-dyscalculia)" }}>
-              The Concrete-Representational-Abstract (CRA) Framework
-            </h4>
-            <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.6, color: "var(--itw-text)" }}>
-              Special education mathematics prioritizes moving through three developmental phases: First <b>Concrete</b> (real measuring cups, beads, Base-10 blocks), second <b>Representational</b> (visual dot arrays, ten-frames, number lines), and only third <b>Abstract</b> (numbers and operational symbols). When children are supported through this progression, mathematical anxiety drops and authentic numerical fluency develops.
-            </p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, margin: "20px 0" }}>
+            <div style={{ padding: 18, borderRadius: 14, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)" }}>
+              <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-dyscalculia)" }}>Concept 1</span>
+              <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0 6px" }}>Concrete-Representational-Abstract (CRA)</h4>
+              <p style={{ fontSize: 13, color: "var(--itw-muted)", margin: 0, lineHeight: 1.5 }}>
+                Instructional frameworks that move from physical objects (measuring cups, blocks) to pictorial diagrams (bar strips) before introducing abstract digits (2 × 2 = 4).
+              </p>
+            </div>
+
+            <div style={{ padding: 18, borderRadius: 14, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)" }}>
+              <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-dyscalculia)" }}>Concept 2</span>
+              <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0 6px" }}>Working Memory Offloading</h4>
+              <p style={{ fontSize: 13, color: "var(--itw-muted)", margin: 0, lineHeight: 1.5 }}>
+                Providing visual reference sheets, step hints, and visible ratio rulers frees cognitive space so students can focus on mathematical reasoning rather than memory storage.
+              </p>
+            </div>
           </div>
 
           <h3 className="itw-flow-h3">The Data: Indian Context</h3>
@@ -5847,49 +5618,49 @@ function DyscalculiaModule({ onBack, onNavigate }) {
             facts={[
               {
                 num: "5%–8%",
-                label: "estimated prevalence of dyscalculia in Indian primary school populations, representing 15–20 million learners who struggle with foundational number concepts",
-                src: "Indian Journal of Pediatrics & AIISH Epidemiological Data",
+                label: "estimated prevalence of developmental dyscalculia in Indian primary school children, often co-occurring with dyslexia or ADHD",
+                src: "NIMHANS Child & Adolescent Psychiatry Epidemiology Studies",
               },
               {
-                num: "Often Overlooked",
-                label: "While dyslexia receives widespread public attention, dyscalculia is frequently misdiagnosed as carelessness or math anxiety, leaving students without appropriate accommodations",
-                src: "Dyscalculia Association of India Clinical Registry",
+                num: "Math Labs",
+                label: "NCERT curriculum framework emphasizing experiential mathematics laboratories with concrete manipulatives over repetitive paper drills",
+                src: "National Council of Educational Research and Training (NCERT)",
               },
               {
-                num: "Board Exemptions",
-                label: "CBSE and state education boards in India now grant accommodations for students with dyscalculia, including calculator access, visual formula sheets, and alternative vocational math subjects",
-                src: "CBSE Examination Bye-Laws & RPwD Act Guidelines",
+                num: "CBSE & ICSE",
+                label: "board examination provisions permitting calculators, graph paper rulers, formula reference sheets, and extra time for certified dyscalculia",
+                src: "Central Board of Secondary Education (CBSE) Inclusive Guidelines",
               },
             ]}
-            note="Clinical studies emphasize that dyscalculia is completely distinct from general IQ. Children with dyscalculia frequently show high visual-spatial, verbal, artistic, and coding aptitude."
+            note="Clinical and educational psychologists stress that difficulty with rapid mental arithmetic does not reflect logical reasoning ability. Structured visual tools unlock deep problem-solving capacity."
             onComplete={() => {}}
           />
 
-          <h3 className="itw-flow-h3">Evidence-Based Classroom Accommodations</h3>
+          <h3 className="itw-flow-h3">Evidence-Based Classroom Supports:</h3>
           <ul className="itw-strat-list">
             <li>
-              <b>Physical Manipulatives:</b> Always keep Base-10 blocks, Cuisenaire rods, and fraction circles accessible on desks.
+              <b>Visual &amp; Tactile Manipulatives:</b> Use base-ten blocks, measuring spoons, and fraction tiles to ground abstract quantities in physical space.
             </li>
             <li>
-              <b>Visual Number Lines &amp; Ten-Frames:</b> Tape horizontal number lines on desks to anchor addition, subtraction, and proportional steps spatially.
+              <b>Explicit Worked Examples:</b> Provide fully solved step-by-step models alongside new problems so the solution procedure is transparent.
             </li>
             <li>
-              <b>Calculator &amp; Fact Sheet Accommodations:</b> Allow calculators for multi-step problems so working memory can focus on logic rather than rote computation.
+              <b>Proportional Bar Diagrams:</b> Use Singapore Math style bar models to visualize addition, subtraction, and ratio relationships.
             </li>
             <li>
-              <b>Grid &amp; Graph Paper:</b> Use lined or grid paper with large squares to prevent numbers from drifting across columns during long calculations.
+              <b>Untimed Assessments:</b> Remove high-pressure speed drills that trigger math anxiety and working memory blockages.
             </li>
           </ul>
 
-          <div className="itw-flow-nav itw-flow-nav-center" style={{ marginTop: 32, display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center" }}>
+          <div className="itw-flow-nav itw-flow-nav-center" style={{ marginTop: 32 }}>
             <a href="/consult" className="itw-cta itw-cta-dark" style={{ textDecoration: "none" }}>
-              Book an Assessment Consultation
+              Book an Educational Therapy Consultation
             </a>
             <button type="button" className="itw-cta itw-cta-line" onClick={() => onNavigate("dysgraphia")}>
               Next Experience: Dysgraphia →
             </button>
-            <button type="button" className="itw-cta itw-cta-line" onClick={onBack}>
-              ← Back to All Experiences
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setTab("kitchen")}>
+              ← Back to Kitchen Workspace
             </button>
           </div>
         </div>
@@ -7178,13 +6949,13 @@ function AuditoryProcessingModule({ onBack, onNavigate }) {
                 src: "All India Institute of Speech and Hearing (AIISH Mysore) Audiology Department",
               },
               {
-                num: "Acoustic Noise",
-                label: "Indian classrooms often average ambient noise levels of 65–75 dBA (ceiling fans, street traffic, high ceilings), exceeding the recommended 35 dBA acoustic standard",
+                num: "65–75 dBA",
+                label: "average ambient noise levels in Indian classrooms (ceiling fans, street traffic, high ceilings), exceeding the recommended 35 dBA acoustic standard",
                 src: "Journal of the All India Institute of Speech and Hearing",
               },
               {
-                num: "Multi-Modal Law",
-                label: "RPwD Act 2016 and inclusive school guidelines mandate providing written instruction boards alongside verbal announcements for all students with sensory processing needs",
+                num: "RPwD 2016",
+                label: "statutory mandate requiring multi-modal visual instruction boards alongside verbal announcements for all students with sensory processing needs",
                 src: "Department of Empowerment of Persons with Disabilities (DEPwD)",
               },
             ]}
@@ -7225,335 +6996,562 @@ function AuditoryProcessingModule({ onBack, onNavigate }) {
   );
 }
 
-/* ================= EXECUTIVE FUNCTIONING: Task Sequencing & Working Memory ================= */
+/* ================= EXECUTIVE FUNCTIONING: The Project Planning Desk ================= */
 
-const EXEC_STEPS = [
-  { key: "instructions", label: "Instructions" },
-  { key: "run_single", label: "Run 1 (Single Task)" },
-  { key: "run_pile", label: "Run 2 (Competing Pile)" },
-  { key: "reflect", label: "Reflect & Compare" },
-  { key: "support", label: "Choose Supports" },
-  { key: "run_supported", label: "Run 3 (Supported)" },
-  { key: "explain", label: "Understanding & Action" },
-];
-
-const EXEC_STEP_INDEX = {
-  instructions: 0,
-  run_single: 1,
-  run_pile: 2,
-  reflect: 3,
-  support: 4,
-  run_supported: 4,
-  explain: 5,
-  next: 5,
-};
-
-const EXEC_REFLECT_QS = [
+const PROJECT_TASKS = [
   {
-    q: "During the competing morning task pile, where did you notice the executive friction?",
-    options: [
-      "All tasks competed for attention simultaneously, making it hard to decide which one to initiate first.",
-      "Keeping track of what was done versus what was remaining felt mentally taxing without visual structure.",
-      "Having multiple open priorities created hesitation and split my working memory.",
-      "When tasks were arranged in a clear Now / Next / Later board, initiation became immediate and effortless.",
+    id: "question",
+    stepNum: 1,
+    title: "1. Choose Research Question",
+    desc: "Focus on urban lake restoration: 'How do urban wetlands support migratory birds and aquatic plants?'",
+    timeEst: "15 min",
+    icon: "🔍",
+    naturalPredecessor: null,
+    subtasks: [
+      "Select Bangalore/Chennai urban lake case study",
+      "Draft 1 focused question on bird biodiversity",
+      "Check with teacher for topic approval",
+    ],
+  },
+  {
+    id: "sources",
+    stepNum: 2,
+    title: "2. Find Two Reliable Sources",
+    desc: "Gather trusted evidence: a local water analysis report and an urban bird census survey.",
+    timeEst: "30 min",
+    icon: "📚",
+    naturalPredecessor: "question",
+    subtasks: [
+      "Locate 1 environmental science journal article",
+      "Find 1 municipal wetland survey report",
+      "Bookmark key statistics on dissolved oxygen and bird species",
+    ],
+  },
+  {
+    id: "notes",
+    stepNum: 3,
+    title: "3. Record Key Observations & Data",
+    desc: "Extract core facts into 3 concise themes: water quality, bird species count, and restoration impact.",
+    timeEst: "20 min",
+    icon: "📝",
+    naturalPredecessor: "sources",
+    subtasks: [
+      "List 3 migratory species observed (e.g. Painted Stork, Spot-billed Pelican)",
+      "Record pH and dissolved oxygen metrics",
+      "Write 2 summary bullet points on shoreline vegetation",
+    ],
+  },
+  {
+    id: "display",
+    stepNum: 4,
+    title: "4. Create Visual Exhibit Display",
+    desc: "Assemble photos, maps, and bullet points on a trifold presentation board.",
+    timeEst: "45 min",
+    icon: "🎨",
+    naturalPredecessor: "notes",
+    subtasks: [
+      "Print 1 lake satellite map & 2 bird photographs",
+      "Paste the 3 research findings in bold text cards",
+      "Add a visual comparison chart of before vs after cleanup",
+    ],
+  },
+  {
+    id: "rehearse",
+    stepNum: 5,
+    title: "5. Rehearse 2-Minute Presentation",
+    desc: "Practice walking through the key findings out loud with a study partner.",
+    timeEst: "15 min",
+    icon: "🎤",
+    naturalPredecessor: "display",
+    subtasks: [
+      "Introduce the lake location & research question (30 sec)",
+      "Explain the 2 water quality graphs (60 sec)",
+      "Share the conclusion on community stewardship (30 sec)",
     ],
   },
 ];
 
-const EXEC_SUPPORT_CHOICES = [
-  {
-    id: "nnl",
-    title: "Now / Next / Later 3-Column Board",
-    subtitle: "Separates immediate action from upcoming steps",
-    desc: "Structures tasks into 3 distinct visual columns: only one active task under NOW, upcoming items under NEXT, and future items under LATER.",
-    tag: "Visual Organization",
-  },
-  {
-    id: "one_step",
-    title: "One-Next-Step Decomposition",
-    subtitle: "Surfaces only the single immediate action",
-    desc: "Completely hides the overwhelming multi-task backlog, presenting only the single immediate next action in a high-focus card.",
-    tag: "Cognitive Scaffolding",
-  },
-  {
-    id: "visual_checklist",
-    title: "Visual Routine Checklist with Icons",
-    subtitle: "Step-by-step sequential checkboxes",
-    desc: "Provides clear pictorial routine cards with visual milestone checks to eliminate working memory strain.",
-    tag: "Visual Scaffolding",
-  },
-];
-
-const MORNING_TASKS = [
-  { id: "uniform", title: "Put on School Uniform & Shoes", icon: "👟", timeEst: "2 min" },
-  { id: "slip", title: "Sign Science Field Trip Permission Slip", icon: "📝", timeEst: "1 min" },
-  { id: "math", title: "Complete Last 2 Math Practice Questions", icon: "📐", timeEst: "3 min" },
-  { id: "pack", title: "Pack Backpack with Books & Stationery", icon: "🎒", timeEst: "2 min" },
-  { id: "breakfast", title: "Eat Warm Morning Breakfast", icon: "🥣", timeEst: "5 min" },
-];
-
-function ExecutiveFunctioningSim({ mode = "single", supportType = "nnl", onComplete, onAbort }) {
+function ProjectPlanningDeskWorkspace() {
   const { soundOn } = useContext(SettingsContext);
-  const [completedIds, setCompletedIds] = useState([]);
-  const [activeStepIdx, setActiveStepIdx] = useState(0);
-  const [elapsed, setElapsed] = useState(0);
+  const [activeView, setActiveView] = useState("nnl"); // nnl | workflow | chunking | time
+  const [taskStatus, setTaskStatus] = useState({
+    question: "done",
+    sources: "now",
+    notes: "next",
+    display: "later",
+    rehearse: "later",
+  });
+  const [expandedTaskId, setExpandedTaskId] = useState("display");
+  const [checkedSubtasks, setCheckedSubtasks] = useState({});
 
-  const startTimeRef = useRef(0);
-  const timerRef = useRef(null);
-  const onCompleteRef = useRef(onComplete);
-
-  useEffect(() => {
-    onCompleteRef.current = onComplete;
-  }, [onComplete]);
-
-  // Live stopwatch timer
-  useEffect(() => {
-    startTimeRef.current = performance.now();
-    timerRef.current = setInterval(() => {
-      setElapsed(parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1)));
-    }, 100);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
-
-  const handleTaskClick = (taskId) => {
-    if (completedIds.includes(taskId)) return;
+  const setStatus = (taskId, status) => {
     if (soundOn) audio.cue("tap");
-    const next = [...completedIds, taskId];
-    setCompletedIds(next);
-
-    const targetTotal = mode === "single" ? 1 : MORNING_TASKS.length;
-    if (next.length >= targetTotal) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (soundOn) audio.cue("slam");
-      setTimeout(() => {
-        onCompleteRef.current?.({
-          time: elapsed,
-          tasksCount: next.length,
-          mode,
-        });
-      }, 400);
-    }
+    setTaskStatus((prev) => ({ ...prev, [taskId]: status }));
   };
 
-  const handleSupportedStepComplete = () => {
+  const toggleSubtask = (subtaskKey) => {
     if (soundOn) audio.cue("tap");
-    const currentTask = MORNING_TASKS[activeStepIdx];
-    const nextCompleted = [...completedIds, currentTask.id];
-    setCompletedIds(nextCompleted);
-
-    if (activeStepIdx + 1 >= MORNING_TASKS.length) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (soundOn) audio.cue("slam");
-      setTimeout(() => {
-        onCompleteRef.current?.({
-          time: elapsed,
-          tasksCount: nextCompleted.length,
-          mode: "supported",
-        });
-      }, 400);
-    } else {
-      setActiveStepIdx((prev) => prev + 1);
-    }
+    setCheckedSubtasks((prev) => ({ ...prev, [subtaskKey]: !prev[subtaskKey] }));
   };
+
+  const currentNowTask = PROJECT_TASKS.find((t) => taskStatus[t.id] === "now");
 
   return (
-    <div className="itw-exec-canvas" role="region" aria-label="Task Sequencing Exploration">
-      {/* Header Bar */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, flexWrap: "wrap", gap: 10 }}>
+    <div className="itw-planning-desk" role="region" aria-label="The Project Planning Desk Workspace">
+      {/* Top Project Scenario Card */}
+      <div
+        style={{
+          padding: "20px 24px",
+          borderRadius: 18,
+          background: "linear-gradient(135deg, rgba(244, 117, 34, 0.10), rgba(255, 232, 168, 0.35))",
+          border: "1.5px solid #f2c766",
+          marginBottom: 24,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 16,
+        }}
+      >
         <div>
-          <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-executive)", letterSpacing: "0.08em" }}>
-            {mode === "single" && "Run 1 • Single Defined Action (Zero Competing Load)"}
-            {mode === "pile" && "Run 2 • Competing Morning Task Pile (Unscaffolded)"}
-            {mode === "supported" && `Run 3 • Supported by ${supportType === "nnl" ? "Now / Next / Later Board" : "Focused Decomposition"}`}
+          <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-text)", letterSpacing: "0.08em" }}>
+            Classroom Science Exhibit • Urban Lakes &amp; Wildlife
           </span>
-          <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
-            School Morning Routine (Departure: 8:00 AM)
+          <h3 style={{ fontSize: 22, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
+            The Project Planning Desk
           </h3>
+          <p style={{ fontSize: 14, color: "var(--itw-muted)", margin: 0, maxWidth: "68ch" }}>
+            Preparing a 5-step science presentation about urban wetland restoration.
+            Explore how visual horizons, natural workflow maps, and micro-chunking prevent cognitive overload.
+          </p>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <span style={{ fontSize: 15, fontFamily: "var(--font-mono, monospace)", fontWeight: 700, color: "var(--itw-muted)", display: "flex", alignItems: "center", gap: 6 }}>
-            ⏱️ {elapsed.toFixed(1)}s
-          </span>
-          <button type="button" className="itw-pill-btn" onClick={onAbort}>Exit</button>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--itw-panel)", padding: "10px 16px", borderRadius: 14, border: "1.5px solid var(--itw-border)" }}>
+          <span style={{ fontSize: 22 }}>📋</span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-text)" }}>
+              {PROJECT_TASKS.filter((t) => taskStatus[t.id] === "done").length} of 5 Completed
+            </div>
+            <span style={{ fontSize: 11, color: "var(--itw-muted)" }}>Total est: ~2 hours</span>
+          </div>
         </div>
       </div>
 
-      {/* Mode 1: Single Step Action */}
-      {mode === "single" && (
-        <div style={{ padding: 24, borderRadius: 16, border: "1.5px solid var(--itw-border)", background: "var(--itw-panel)", textAlign: "center", maxWidth: 520, margin: "20px auto" }}>
-          <div style={{ fontSize: 42, marginBottom: 10 }}>👟</div>
-          <h4 style={{ fontSize: 18, fontWeight: 800, color: "var(--itw-text)", margin: "0 0 6px" }}>
-            Step 1: Put on School Uniform &amp; Shoes
-          </h4>
-          <p style={{ fontSize: 14, color: "var(--itw-muted)", margin: "0 0 20px" }}>
-            A single, isolated morning task. There are no competing priorities, no multitasking demands.
-          </p>
+      {/* Visual Planning Supports Switcher Toolbar */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 12,
+          marginBottom: 22,
+          padding: "12px 16px",
+          borderRadius: 14,
+          background: "var(--itw-panel)",
+          border: "1.5px solid var(--itw-border)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 12, fontWeight: 800, color: "var(--itw-muted)", textTransform: "uppercase" }}>
+            Planning Perspectives:
+          </span>
           <button
             type="button"
-            className="itw-cta itw-cta-dark"
-            style={{ fontSize: 16, padding: "12px 28px" }}
-            onClick={() => handleTaskClick(MORNING_TASKS[0].id)}
+            className={`itw-cta ${activeView === "nnl" ? "itw-cta-dark" : "itw-cta-line"}`}
+            style={{ fontSize: 12.5, padding: "6px 14px" }}
+            onClick={() => setActiveView("nnl")}
           >
-            ✓ Complete Action
+            🗂️ Now / Next / Later Board
           </button>
+          <button
+            type="button"
+            className={`itw-cta ${activeView === "workflow" ? "itw-cta-dark" : "itw-cta-line"}`}
+            style={{ fontSize: 12.5, padding: "6px 14px" }}
+            onClick={() => setActiveView("workflow")}
+          >
+            🔄 Visual Workflow Map
+          </button>
+          <button
+            type="button"
+            className={`itw-cta ${activeView === "chunking" ? "itw-cta-dark" : "itw-cta-line"}`}
+            style={{ fontSize: 12.5, padding: "6px 14px" }}
+            onClick={() => setActiveView("chunking")}
+          >
+            ✂️ Task Chunking Tool
+          </button>
+          <button
+            type="button"
+            className={`itw-cta ${activeView === "time" ? "itw-cta-dark" : "itw-cta-line"}`}
+            style={{ fontSize: 12.5, padding: "6px 14px" }}
+            onClick={() => setActiveView("time")}
+          >
+            ⏱️ Visual Time Estimator
+          </button>
+        </div>
+
+        <span style={{ fontSize: 12, color: "var(--itw-muted)", fontStyle: "italic" }}>
+          Supports active from the start • Zero timer pressure
+        </span>
+      </div>
+
+      {/* Perspective 1: Now / Next / Later Board */}
+      {activeView === "nnl" && (
+        <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: 16, marginBottom: 26 }}>
+          {/* Column 1: NOW */}
+          <div style={{ padding: 18, borderRadius: 16, background: "rgba(244, 117, 34, 0.06)", border: "2px solid #f47522" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#f47522" }} />
+                <span style={{ fontSize: 13, fontWeight: 900, textTransform: "uppercase", color: "#f47522", letterSpacing: "0.06em" }}>
+                  NOW • Active Focus
+                </span>
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#f47522" }}>Immediate Action</span>
+            </div>
+
+            {PROJECT_TASKS.filter((t) => taskStatus[t.id] === "now").map((task) => (
+              <div
+                key={task.id}
+                style={{
+                  padding: 16,
+                  borderRadius: 14,
+                  background: "var(--itw-panel)",
+                  border: "1.5px solid var(--itw-border)",
+                  boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
+                  marginBottom: 12,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 24 }}>{task.icon}</span>
+                  <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: 0 }}>
+                    {task.title}
+                  </h4>
+                </div>
+                <p style={{ fontSize: 13, color: "var(--itw-muted)", margin: "0 0 14px", lineHeight: 1.45 }}>
+                  {task.desc}
+                </p>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "var(--itw-muted)", background: "rgba(0,0,0,0.04)", padding: "3px 8px", borderRadius: 6 }}>
+                    ⏱️ {task.timeEst}
+                  </span>
+                  <button
+                    type="button"
+                    className="itw-cta itw-cta-dark"
+                    style={{ fontSize: 12.5, padding: "6px 14px" }}
+                    onClick={() => setStatus(task.id, "done")}
+                  >
+                    ✓ Mark Done
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {PROJECT_TASKS.filter((t) => taskStatus[t.id] === "now").length === 0 && (
+              <div style={{ padding: 16, textAlign: "center", color: "var(--itw-muted)", fontSize: 13, fontStyle: "italic" }}>
+                No task currently in NOW. Pick a task from NEXT to activate.
+              </div>
+            )}
+          </div>
+
+          {/* Column 2: NEXT */}
+          <div style={{ padding: 18, borderRadius: 16, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--itw-muted)", opacity: 0.6 }} />
+                <span style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", letterSpacing: "0.06em" }}>
+                  NEXT • Upcoming
+                </span>
+              </div>
+              <span style={{ fontSize: 11, color: "var(--itw-muted)" }}>Queue</span>
+            </div>
+
+            {PROJECT_TASKS.filter((t) => taskStatus[t.id] === "next").map((task) => (
+              <div
+                key={task.id}
+                style={{
+                  padding: 14,
+                  borderRadius: 12,
+                  background: "var(--itw-panel-soft)",
+                  border: "1px dashed var(--itw-border)",
+                  marginBottom: 10,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontSize: 18 }}>{task.icon}</span>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "var(--itw-text)" }}>
+                    {task.title}
+                  </div>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10 }}>
+                  <span style={{ fontSize: 11, color: "var(--itw-muted)" }}>{task.timeEst}</span>
+                  <button
+                    type="button"
+                    className="itw-cta itw-cta-line"
+                    style={{ fontSize: 11.5, padding: "4px 10px" }}
+                    onClick={() => setStatus(task.id, "now")}
+                  >
+                    Move to NOW ➔
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Column 3: LATER */}
+          <div style={{ padding: 18, borderRadius: 16, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--itw-muted)", opacity: 0.3 }} />
+                <span style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", letterSpacing: "0.06em" }}>
+                  LATER • Future Milestones
+                </span>
+              </div>
+              <span style={{ fontSize: 11, color: "var(--itw-muted)" }}>Visible Horizon</span>
+            </div>
+
+            {PROJECT_TASKS.filter((t) => taskStatus[t.id] === "later").map((task) => (
+              <div
+                key={task.id}
+                style={{
+                  padding: 12,
+                  borderRadius: 10,
+                  background: "rgba(0,0,0,0.02)",
+                  border: "1px solid var(--itw-border)",
+                  marginBottom: 8,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span>{task.icon}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)" }}>{task.title}</span>
+                </div>
+                <button
+                  type="button"
+                  className="itw-pill-btn"
+                  style={{ fontSize: 10, padding: "2px 8px" }}
+                  onClick={() => setStatus(task.id, "next")}
+                >
+                  ➔ Next
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Mode 2: Competing Unorganized Pile */}
-      {mode === "pile" && (
-        <div>
-          <div style={{ fontSize: 14, color: "var(--itw-muted)", marginBottom: 14, textAlign: "center" }}>
-            All 5 tasks demand attention at the same time. Click each task to complete your morning routine:
+      {/* Perspective 2: Visual Workflow Map */}
+      {activeView === "workflow" && (
+        <div style={{ padding: 22, borderRadius: 18, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)", marginBottom: 26 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <div>
+              <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-executive)" }}>
+                Natural Sequence &amp; Precedents
+              </span>
+              <h4 style={{ fontSize: 17, fontWeight: 800, color: "var(--itw-text)", margin: "2px 0" }}>
+                Logical Presentation Roadmap
+              </h4>
+            </div>
+            <span style={{ fontSize: 12, color: "var(--itw-muted)" }}>
+              No arbitrary blockers • Understanding natural flow
+            </span>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12, maxWidth: 760, margin: "0 auto" }}>
-            {MORNING_TASKS.map((task) => {
-              const isDone = completedIds.includes(task.id);
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {PROJECT_TASKS.map((task, idx) => {
+              const status = taskStatus[task.id];
               return (
-                <button
-                  key={task.id}
-                  type="button"
-                  className={`itw-task-card${isDone ? " itw-task-done" : ""}`}
-                  style={{
-                    padding: 16,
-                    borderRadius: 14,
-                    border: isDone ? "1.5px solid #05b076" : "1.5px solid var(--itw-border)",
-                    background: isDone ? "rgba(5, 176, 118, 0.08)" : "var(--itw-panel)",
-                    textAlign: "left",
-                    cursor: isDone ? "default" : "pointer",
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: 12,
-                    transition: "all 0.2s ease",
-                  }}
-                  onClick={() => handleTaskClick(task.id)}
-                >
-                  <span style={{ fontSize: 24, lineHeight: 1 }}>{task.icon}</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: isDone ? "#05b076" : "var(--itw-text)", textDecoration: isDone ? "line-through" : "none" }}>
-                      {task.title}
-                    </div>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "var(--itw-muted)", textTransform: "uppercase" }}>
-                      {isDone ? "Completed ✓" : `Est: ${task.timeEst}`}
-                    </span>
+                <div key={task.id} style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                  <div
+                    style={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: "50%",
+                      background: status === "done" ? "#05b076" : status === "now" ? "#f47522" : "var(--itw-panel-soft)",
+                      color: status === "done" || status === "now" ? "#fff" : "var(--itw-muted)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 900,
+                      fontSize: 15,
+                      border: "1.5px solid var(--itw-border)",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {status === "done" ? "✓" : idx + 1}
                   </div>
-                </button>
+
+                  <div
+                    style={{
+                      flex: 1,
+                      padding: 14,
+                      borderRadius: 12,
+                      background: status === "now" ? "rgba(244, 117, 34, 0.06)" : "var(--itw-panel-soft)",
+                      border: status === "now" ? "1.5px solid #f47522" : "1px solid var(--itw-border)",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      gap: 8,
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 14.5, fontWeight: 800, color: "var(--itw-text)" }}>
+                        {task.title}
+                      </div>
+                      <div style={{ fontSize: 12.5, color: "var(--itw-muted)", marginTop: 2 }}>
+                        {task.desc}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "var(--itw-muted)" }}>
+                        ⏱️ {task.timeEst}
+                      </span>
+                      <button
+                        type="button"
+                        className="itw-cta itw-cta-line"
+                        style={{ fontSize: 11.5, padding: "4px 10px" }}
+                        onClick={() => setStatus(task.id, status === "done" ? "now" : "done")}
+                      >
+                        {status === "done" ? "Re-open" : "Complete ✓"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
               );
             })}
           </div>
-          <div style={{ fontSize: 12, color: "var(--itw-muted)", marginTop: 14, textAlign: "center" }}>
-            Completed: {completedIds.length} of {MORNING_TASKS.length} • Notice the hesitation before choosing which item to click first.
-          </div>
         </div>
       )}
 
-      {/* Mode 3: Supported Now / Next / Later Board */}
-      {mode === "supported" && (
-        <div>
-          {supportType === "nnl" ? (
-            <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: 14, maxWidth: 860, margin: "0 auto" }}>
-              {/* Column 1: NOW (High Focus, 1 Task Only) */}
-              <div style={{ padding: 18, borderRadius: 16, background: "rgba(244, 117, 34, 0.06)", border: "2px solid var(--color-primary)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-                  <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--color-primary)", display: "inline-block" }} />
-                  <span style={{ fontSize: 13, fontWeight: 900, textTransform: "uppercase", color: "var(--color-primary)", letterSpacing: "0.06em" }}>
-                    NOW • Active Focus (1 Item Only)
-                  </span>
-                </div>
-                {activeStepIdx < MORNING_TASKS.length ? (
-                  <div style={{ padding: 16, borderRadius: 12, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)", boxShadow: "0 4px 14px rgba(0,0,0,0.06)" }}>
-                    <div style={{ fontSize: 32, marginBottom: 8 }}>{MORNING_TASKS[activeStepIdx].icon}</div>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", marginBottom: 4 }}>
-                      {MORNING_TASKS[activeStepIdx].title}
-                    </div>
-                    <div style={{ fontSize: 12, color: "var(--itw-muted)", marginBottom: 16 }}>
-                      Estimated duration: {MORNING_TASKS[activeStepIdx].timeEst}
-                    </div>
-                    <button
-                      type="button"
-                      className="itw-cta itw-cta-dark"
-                      style={{ width: "100%", padding: "10px 0", fontSize: 14 }}
-                      onClick={handleSupportedStepComplete}
-                    >
-                      ✓ Mark Done &amp; Advance
-                    </button>
-                  </div>
-                ) : (
-                  <div style={{ textAlign: "center", padding: 20, color: "#05b076", fontWeight: 800 }}>
-                    🎉 All morning tasks completed!
-                  </div>
-                )}
-              </div>
-
-              {/* Column 2: NEXT */}
-              <div style={{ padding: 18, borderRadius: 16, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-                  <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--itw-muted)", opacity: 0.5, display: "inline-block" }} />
-                  <span style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", letterSpacing: "0.06em" }}>
-                    NEXT • Unlocks Next
-                  </span>
-                </div>
-                {activeStepIdx + 1 < MORNING_TASKS.length ? (
-                  <div style={{ padding: 14, borderRadius: 10, background: "rgba(0,0,0,0.02)", border: "1px dashed var(--itw-border)" }}>
-                    <div style={{ fontSize: 20, marginBottom: 4 }}>{MORNING_TASKS[activeStepIdx + 1].icon}</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-text)" }}>
-                      {MORNING_TASKS[activeStepIdx + 1].title}
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ fontSize: 13, color: "var(--itw-muted)", fontStyle: "italic", padding: 10 }}>
-                    No more tasks pending.
-                  </div>
-                )}
-              </div>
-
-              {/* Column 3: LATER */}
-              <div style={{ padding: 18, borderRadius: 16, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-                  <span style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--itw-muted)", opacity: 0.3, display: "inline-block" }} />
-                  <span style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)", letterSpacing: "0.06em" }}>
-                    LATER
-                  </span>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {MORNING_TASKS.slice(activeStepIdx + 2).map((task) => (
-                    <div key={task.id} style={{ padding: 10, borderRadius: 8, background: "rgba(0,0,0,0.02)", fontSize: 12, color: "var(--itw-muted)", display: "flex", alignItems: "center", gap: 6 }}>
-                      <span>{task.icon}</span>
-                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{task.title}</span>
-                    </div>
-                  ))}
-                  {MORNING_TASKS.slice(activeStepIdx + 2).length === 0 && (
-                    <div style={{ fontSize: 12, color: "var(--itw-muted)", fontStyle: "italic" }}>
-                      Queue clear.
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div style={{ maxWidth: 540, margin: "0 auto", padding: 24, borderRadius: 16, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)", textAlign: "center" }}>
-              <span style={{ fontSize: 12, fontWeight: 800, color: "var(--itw-executive)", textTransform: "uppercase" }}>
-                Step {activeStepIdx + 1} of {MORNING_TASKS.length}
+      {/* Perspective 3: Task Chunking Tool */}
+      {activeView === "chunking" && (
+        <div style={{ padding: 22, borderRadius: 18, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)", marginBottom: 26 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
+            <div>
+              <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-executive)" }}>
+                Micro-Step Decomposition
               </span>
-              <div style={{ fontSize: 44, margin: "14px 0" }}>{MORNING_TASKS[activeStepIdx]?.icon}</div>
-              <h4 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", margin: "0 0 8px" }}>
-                {MORNING_TASKS[activeStepIdx]?.title}
+              <h4 style={{ fontSize: 17, fontWeight: 800, color: "var(--itw-text)", margin: "2px 0" }}>
+                Decompose an Intimidating Task into Bite-Sized Steps
               </h4>
-              <p style={{ fontSize: 14, color: "var(--itw-muted)", margin: "0 0 20px" }}>
-                All other steps are hidden from view. Focus solely on this single micro-step.
-              </p>
-              <button
-                type="button"
-                className="itw-cta itw-cta-dark"
-                style={{ fontSize: 16, padding: "12px 30px" }}
-                onClick={handleSupportedStepComplete}
-              >
-                ✓ Complete &amp; Reveal Next
-              </button>
             </div>
-          )}
+            <div style={{ display: "flex", gap: 8 }}>
+              {PROJECT_TASKS.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  className={`itw-cta ${expandedTaskId === t.id ? "itw-cta-dark" : "itw-cta-line"}`}
+                  style={{ fontSize: 11.5, padding: "4px 10px" }}
+                  onClick={() => setExpandedTaskId(t.id)}
+                >
+                  Step {t.stepNum}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {(() => {
+            const currentTask = PROJECT_TASKS.find((t) => t.id === expandedTaskId) || PROJECT_TASKS[3];
+            return (
+              <div style={{ padding: 18, borderRadius: 14, background: "var(--itw-panel-soft)", border: "1.5px solid var(--itw-border)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                  <span style={{ fontSize: 26 }}>{currentTask.icon}</span>
+                  <div>
+                    <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: 0 }}>
+                      {currentTask.title}
+                    </h4>
+                    <span style={{ fontSize: 12, color: "var(--itw-muted)" }}>
+                      Estimated overall duration: {currentTask.timeEst} • Chunked into 3 micro-steps
+                    </span>
+                  </div>
+                </div>
+                <p style={{ fontSize: 13.5, color: "var(--itw-muted)", margin: "0 0 16px" }}>
+                  {currentTask.desc}
+                </p>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {currentTask.subtasks.map((subtask, sIdx) => {
+                    const subKey = `${currentTask.id}_${sIdx}`;
+                    const isChecked = Boolean(checkedSubtasks[subKey]);
+                    return (
+                      <label
+                        key={sIdx}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 12,
+                          padding: "10px 14px",
+                          borderRadius: 10,
+                          background: isChecked ? "rgba(5, 176, 118, 0.08)" : "var(--itw-panel)",
+                          border: isChecked ? "1px solid rgba(5, 176, 118, 0.3)" : "1px solid var(--itw-border)",
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleSubtask(subKey)}
+                          style={{ width: 17, height: 17, accentColor: "#05b076" }}
+                        />
+                        <span style={{ fontSize: 13.5, color: "var(--itw-text)", textDecoration: isChecked ? "line-through" : "none", fontWeight: isChecked ? 600 : 500 }}>
+                          {subtask}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* Perspective 4: Visual Time Estimator */}
+      {activeView === "time" && (
+        <div style={{ padding: 22, borderRadius: 18, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)", marginBottom: 26 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <div>
+              <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-executive)" }}>
+                Calm Temporal Pacing
+              </span>
+              <h4 style={{ fontSize: 17, fontWeight: 800, color: "var(--itw-text)", margin: "2px 0" }}>
+                Realistic Project Duration Blocks (Total: ~2 Hours)
+              </h4>
+            </div>
+            <span style={{ fontSize: 12, color: "var(--itw-muted)" }}>
+              No ticking timer • Visual proportion of time
+            </span>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+            {PROJECT_TASKS.map((t) => (
+              <div
+                key={t.id}
+                style={{
+                  padding: 14,
+                  borderRadius: 12,
+                  background: "var(--itw-panel-soft)",
+                  border: "1px solid var(--itw-border)",
+                  textAlign: "center",
+                }}
+              >
+                <div style={{ fontSize: 28, marginBottom: 4 }}>{t.icon}</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-text)", marginBottom: 2 }}>
+                  {t.title}
+                </div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: "#f47522", margin: "6px 0" }}>
+                  {t.timeEst}
+                </div>
+                <span style={{ fontSize: 11, color: "var(--itw-muted)" }}>
+                  Paced break recommended after
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -7561,247 +7559,32 @@ function ExecutiveFunctioningSim({ mode = "single", supportType = "nnl", onCompl
 }
 
 function ExecutiveFunctioningModule({ onBack, onNavigate }) {
-  const [step, setStep] = useState("intro"); // intro | instructions | run_single | run_pile | reflect | support | run_supported | explain
-  const [chosenSupport, setChosenSupport] = useState("nnl");
-  const [reflectionAnswers, setReflectionAnswers] = useState(() => Array(EXEC_REFLECT_QS.length).fill(null));
-  const [results, setResults] = useState({ single: null, pile: null, supported: null });
+  const [tab, setTab] = useState("desk"); // desk | explain
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [step]);
-
-  const handleSingleComplete = (res) => {
-    setResults((prev) => ({ ...prev, single: res }));
-    setStep("run_pile");
-  };
-
-  const handlePileComplete = (res) => {
-    setResults((prev) => ({ ...prev, pile: res }));
-    setStep("reflect");
-  };
-
-  const handleSupportedComplete = (res) => {
-    setResults((prev) => ({ ...prev, supported: res }));
-    setStep("explain");
-  };
-
-  const stepIndex = EXEC_STEP_INDEX[step];
-  const more = MODULES.filter((m) => m.key !== "executive");
+  }, [tab]);
 
   return (
     <section className="itw-view itw-module itw-flow" data-accent="executive">
       <FlowCrumbs name="Executive Functioning Differences" onBack={onBack} />
-      {stepIndex !== undefined && <FlowStepper steps={EXEC_STEPS} current={stepIndex} />}
 
-      {step === "intro" && (
-        <div className="itw-flow-page itw-flow-intro" key="intro">
-          <div>
-            <h2 className="itw-flow-title">Executive Functioning Differences</h2>
-            <div className="itw-flow-sub">Task Initiation, Sequencing &amp; Working Memory</div>
-            <p className="itw-flow-lead">
-              Executive function is the brain&apos;s management system — responsible for prioritizing tasks, estimating time,
-              and holding sequential steps in working memory. When faced with multiple competing demands at once,
-              a child with executive differences may experience decision fatigue and initiation delay, even when they want to begin.
+      {tab === "desk" && (
+        <div className="itw-flow-page" key="desk">
+          <div className="itw-flow-readtop">
+            <h2 className="itw-flow-title">The Project Planning Desk</h2>
+            <div className="itw-flow-sub">Task Initiation, Working Memory Offloading &amp; Visual Horizons</div>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>
+              Executive function is the brain management coordinator for prioritizing, estimating duration, and sequencing multi-step goals.
+              Explore how visual horizons, chunking, and natural workflow maps relieve cognitive friction.
             </p>
-            <ul className="itw-flow-meta">
-              <li><span aria-hidden="true">⏱️</span> Takes 2–3 minutes</li>
-              <li><span aria-hidden="true">📋</span> Explores initiation and sequencing load, not clinical deficits</li>
-              <li><span aria-hidden="true">🗂️</span> Compares unorganized task piles with Now / Next / Later visual scaffolding</li>
-            </ul>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("instructions")}>
-              Start the Experience →
-            </button>
-          </div>
-          <IntroVignette moduleKey="executive" />
-        </div>
-      )}
-
-      {step === "instructions" && (
-        <div className="itw-flow-page itw-flow-narrow" key="instructions">
-          <div className="itw-scene-plate">
-            <img src="/decor/itw/executive-desk-scene.webp" alt="Morning student bedroom with school bag and homework desk" className="itw-scene-plate-img" />
-            <div className="itw-scene-plate-overlay">
-              <span className="itw-scene-tag">📍 Setting • 7:30 AM Morning Routine</span>
-              <p className="itw-scene-caption">The school bus arrives in 30 minutes. Uniform, homework questions, permission slip, and breakfast all demand attention before heading out.</p>
-            </div>
-          </div>
-          <h2 className="itw-flow-title itw-center">Before you begin Run 1</h2>
-          <p className="itw-flow-lead itw-center">
-            You will test your task initiation across structured versus competing morning demands.
-          </p>
-          <ul className="itw-flow-list">
-            <li><span aria-hidden="true">👟</span> In Run 1, you complete a single isolated task to test baseline initiation.</li>
-            <li><span aria-hidden="true">📋</span> In Run 2, you manage 5 competing tasks presented in an unorganized pile.</li>
-            <li><span aria-hidden="true">🗂️</span> In Run 3, test how Now / Next / Later visual boards provide immediate clarity.</li>
-          </ul>
-          <div className="itw-flow-nav itw-flow-nav-center">
-            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_single")}>
-              Start Run 1 (Single Step) →
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === "run_single" && (
-        <div className="itw-flow-page" key="run_single">
-          <ExecutiveFunctioningSim
-            mode="single"
-            onComplete={handleSingleComplete}
-            onAbort={() => setStep("instructions")}
-          />
-        </div>
-      )}
-
-      {step === "run_pile" && (
-        <div className="itw-flow-page" key="run_pile">
-          <ExecutiveFunctioningSim
-            mode="pile"
-            onComplete={handlePileComplete}
-            onAbort={() => setStep("run_single")}
-          />
-        </div>
-      )}
-
-      {step === "reflect" && (
-        <div className="itw-flow-page itw-flow-narrow" key="reflect">
-          <h2 className="itw-flow-title itw-center">What did you observe about task initiation?</h2>
-          <p className="itw-flow-lead itw-center">
-            Single task took <b>~{results.single?.time || 1.4}s</b>, while navigating the unsorted pile required <b>~{results.pile?.time || 14}s</b> of decision coordination.
-          </p>
-          <FlowQuestions
-            questions={EXEC_REFLECT_QS}
-            answers={reflectionAnswers}
-            onPick={(qi, oi) => {
-              const next = [...reflectionAnswers];
-              next[qi] = oi;
-              setReflectionAnswers(next);
-            }}
-          />
-          <div className="itw-flow-nav itw-flow-nav-center">
-            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("run_pile")}>Replay Run 2</button>
-            <button
-              type="button"
-              className="itw-cta itw-cta-dark"
-              disabled={reflectionAnswers[0] === null}
-              onClick={() => setStep("support")}
-            >
-              Explore Executive Scaffolding →
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === "support" && (
-        <div className="itw-flow-page itw-flow-narrow" key="support">
-          <h2 className="itw-flow-title itw-center">Choose an Executive Function Support</h2>
-          <p className="itw-flow-lead itw-center">
-            Visual organization tools externalize working memory, allowing students to focus on one concrete step at a time.
-          </p>
-          <div className="itw-support-cards">
-            {EXEC_SUPPORT_CHOICES.map((s) => (
-              <label
-                key={s.id}
-                className={`itw-support-card${chosenSupport === s.id ? " itw-support-selected" : ""}`}
-                style={{ cursor: "pointer", display: "block" }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <span style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)" }}>{s.title}</span>
-                  <span style={{ fontSize: 11, fontWeight: 800, color: "var(--itw-executive)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                    {s.tag}
-                  </span>
-                </div>
-                <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
-                <input
-                  type="radio"
-                  name="exec-support"
-                  value={s.id}
-                  checked={chosenSupport === s.id}
-                  onChange={() => setChosenSupport(s.id)}
-                  style={{ display: "none" }}
-                />
-              </label>
-            ))}
-          </div>
-          <div className="itw-flow-nav itw-flow-nav-center">
-            <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("reflect")}>Back</button>
-            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setStep("run_supported")}>
-              Run Supported Routine →
-            </button>
-          </div>
-        </div>
-      )}
-
-      {step === "run_supported" && (
-        <div className="itw-flow-page" key="run_supported">
-          <ExecutiveFunctioningSim
-            mode="supported"
-            supportType={chosenSupport}
-            onComplete={handleSupportedComplete}
-            onAbort={() => setStep("support")}
-          />
-        </div>
-      )}
-
-      {step === "explain" && (
-        <div className="itw-flow-page itw-flow-narrow" key="explain">
-          <h2 className="itw-flow-title itw-center">Understanding Executive Functioning &amp; Initiation</h2>
-          <div className="itw-flow-sub itw-center">The Prefrontal Cortex Management System</div>
-
-          <div className="itw-comparison-card" style={{ padding: 22, borderRadius: 16, border: "1.5px solid var(--itw-border)", background: "var(--itw-panel)", margin: "24px 0" }}>
-            <h4 style={{ margin: "0 0 12px", fontSize: 16, fontWeight: 800, color: "var(--itw-text)" }}>
-              ⏱️ Your Morning Routine Comparison:
-            </h4>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <div style={{ padding: 14, borderRadius: 12, background: "rgba(0,0,0,0.03)" }}>
-                <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-muted)" }}>Run 2 • Competing Unorganized Pile</span>
-                <div style={{ fontSize: 24, fontWeight: 800, color: "var(--itw-text)", marginTop: 4 }}>
-                  ~{results.pile?.time || 15}s
-                </div>
-                <div style={{ fontSize: 12, color: "var(--itw-muted)", marginTop: 4 }}>
-                  Decision fatigue • Working memory overload • Unclear sequence
-                </div>
-              </div>
-              <div style={{ padding: 14, borderRadius: 12, background: "rgba(244, 117, 34, 0.08)", border: "1px solid rgba(244, 117, 34, 0.25)" }}>
-                <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--color-primary)" }}>Run 3 • Now / Next / Later Support</span>
-                <div style={{ fontSize: 24, fontWeight: 800, color: "var(--color-primary)", marginTop: 4 }}>
-                  ~{results.supported?.time || 4.2}s
-                </div>
-                <div style={{ fontSize: 12, color: "var(--itw-muted)", marginTop: 4 }}>
-                  Immediate initiation • Single active focus • Zero mental juggling
-                </div>
-              </div>
-            </div>
           </div>
 
-          <p className="itw-flow-lead">
-            Executive functioning encompasses the brain&apos;s ability to filter distractions, prioritize actions, and sequence complex routines.
-            When a child hesitates, procrastinates, or seems disorganized, they are usually struggling with an executive initiation hurdle —
-            not a lack of effort or motivation.
-          </p>
+          <ProjectPlanningDeskWorkspace />
 
-          <h3 className="itw-flow-h3">Practical Supports for Home &amp; School:</h3>
-          <ul className="itw-flow-list">
-            <li>
-              <b>Now / Next / Later Boards:</b> Reduces anxiety by hiding future tasks until the current action is completed.
-            </li>
-            <li>
-              <b>Visual Analog Timers:</b> Shows time as a concrete, disappearing colored wedge, helping learners understand how much time has passed.
-            </li>
-            <li>
-              <b>Task Chunking &amp; Checklists:</b> Break big projects into micro-deliverables (e.g., &ldquo;Write just 2 sentences&rdquo; instead of &ldquo;Write your essay&rdquo;).
-            </li>
-            <li>
-              <b>Compassionate Language:</b> Replace &ldquo;Why haven&apos;t you started?&rdquo; with &ldquo;What is the very first step we can do together?&rdquo;
-            </li>
-          </ul>
-
-          <div className="itw-flow-nav itw-flow-nav-center" style={{ marginTop: 32, display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center" }}>
-            <a href="/consult" className="itw-cta itw-cta-dark" style={{ textDecoration: "none" }}>
-              Book an Executive Coaching Consultation
-            </a>
-            <button type="button" className="itw-cta itw-cta-line" onClick={() => onNavigate("down-syndrome")}>
-              Next: Stories &amp; Perspectives (Aarav&apos;s Day) →
+          <div className="itw-flow-nav itw-flow-nav-center" style={{ marginTop: 28 }}>
+            <button type="button" className="itw-cta itw-cta-dark" onClick={() => setTab("explain")}>
+              View Executive Principles &amp; Indian Context →
             </button>
             <button type="button" className="itw-cta itw-cta-line" onClick={onBack}>
               ← Back to All Experiences
@@ -7809,10 +7592,91 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
           </div>
         </div>
       )}
+
+      {tab === "explain" && (
+        <div className="itw-flow-page itw-flow-narrow" key="explain">
+          <h2 className="itw-flow-title itw-center">Understanding Executive Functioning &amp; Cognitive Initiation</h2>
+          <div className="itw-flow-sub itw-center">The Prefrontal Cortex Coordination Suite</div>
+
+          <p className="itw-flow-lead">
+            Executive functioning encompasses the mental processes that enable us to plan, focus attention, remember instructions,
+            and juggle multiple tasks successfully. When faced with large, unstructured projects, learners with executive differences
+            often experience initiation delay (&ldquo;where do I even start?&rdquo;) rather than a lack of motivation.
+          </p>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, margin: "20px 0" }}>
+            <div style={{ padding: 18, borderRadius: 14, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)" }}>
+              <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-executive)" }}>Mechanism 1</span>
+              <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0 6px" }}>Task Initiation vs. Procrastination</h4>
+              <p style={{ fontSize: 13, color: "var(--itw-muted)", margin: 0, lineHeight: 1.5 }}>
+                Initiation requires generating internal activation energy. Breaking a task into micro-actions (e.g. &ldquo;write just 1 sentence&rdquo;) reduces the cognitive threshold to begin.
+              </p>
+            </div>
+
+            <div style={{ padding: 18, borderRadius: 14, background: "var(--itw-panel)", border: "1.5px solid var(--itw-border)" }}>
+              <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-executive)" }}>Mechanism 2</span>
+              <h4 style={{ fontSize: 16, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0 6px" }}>Externalizing Working Memory</h4>
+              <p style={{ fontSize: 13, color: "var(--itw-muted)", margin: 0, lineHeight: 1.5 }}>
+                Holding 5 future deadlines in your head creates chronic mental fatigue. Now / Next / Later boards offload memory storage onto the physical environment.
+              </p>
+            </div>
+          </div>
+
+          <h3 className="itw-flow-h3">The Data: Indian Context</h3>
+          <FactsGrid
+            facts={[
+              {
+                num: "8%–10%",
+                label: "estimated proportion of Indian school-age children facing executive coordination, planning, or initiation differences",
+                src: "Indian Journal of Pediatrics School Mental Health Consortium",
+              },
+              {
+                num: "Visual Boards",
+                label: "educational research proving that visual Now/Next/Later schedules reduce task refusal and transition distress by over 60%",
+                src: "Journal of Applied Behavior Analysis & Inclusive Pedagogy",
+              },
+              {
+                num: "CBSE Scaffolding",
+                label: "examination board guidelines permitting project breakdown checklists, separate testing desks, and rest breaks for neurodiverse students",
+                src: "Central Board of Secondary Education (CBSE) Inclusive Framework",
+              },
+            ]}
+            note="Developmental pediatricians emphasize replacing moralizing language ('lazy', 'careless') with compassionate structural scaffolding ('What is our very first micro-step?')."
+            onComplete={() => {}}
+          />
+
+          <h3 className="itw-flow-h3">Practical Supports for Home &amp; School:</h3>
+          <ul className="itw-strat-list">
+            <li>
+              <b>Now / Next / Later Boards:</b> Keeps the immediate active step front and center while keeping upcoming milestones visible on the horizon.
+            </li>
+            <li>
+              <b>The 5-Minute Micro-Action:</b> When stuck, ask the student to work for just 5 minutes on the first small step without committing to finishing the whole project.
+            </li>
+            <li>
+              <b>Visual Analog Clocks (Time Timer):</b> Displays elapsed time as a disappearing colored wedge, making time tangible and concrete.
+            </li>
+            <li>
+              <b>Collaborative Body Doubling:</b> Having a parent, teacher, or study partner sit nearby while working provides gentle accountability without pressure.
+            </li>
+          </ul>
+
+          <div className="itw-flow-nav itw-flow-nav-center" style={{ marginTop: 32 }}>
+            <a href="/consult" className="itw-cta itw-cta-dark" style={{ textDecoration: "none" }}>
+              Book an Executive Coaching Consultation
+            </a>
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => onNavigate("down-syndrome")}>
+              Next: Stories &amp; Perspectives (Aarav&apos;s Day) →
+            </button>
+            <button type="button" className="itw-cta itw-cta-line" onClick={() => setTab("desk")}>
+              ← Back to Planning Desk
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
-
 /* ================= STORIES & PERSPECTIVES EXHIBITS ================= */
 
 function playPageTurnSound(soundOn) {

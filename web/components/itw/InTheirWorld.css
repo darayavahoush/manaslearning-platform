@@ -606,9 +606,14 @@
 }
 .itw-facts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-  margin: 16px 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 18px 0;
+}
+@media (max-width: 860px) {
+  .itw-facts-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .itw-fact-card-static {
   background: var(--itw-panel);
@@ -1384,13 +1389,13 @@ body:has(.itw-dark) .leaf-fall,
 
 .itw-hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin:22px 0 16px;}
 .itw-cta{
-  display:inline-flex;align-items:center;justify-content:center;padding:13px 26px;border-radius:12px;cursor:pointer;
-  font-family:var(--font-display);font-weight:800;font-size:1rem;text-decoration:none;border:2px solid var(--itw-text);
-  transition:transform .18s ease, box-shadow .18s ease;
+  display:inline-flex;align-items:center;justify-content:center;padding:12px 26px;border-radius:99px;cursor:pointer;
+  font-family:var(--font-body);font-weight:700;font-size:14.5px;text-decoration:none;border:1.5px solid var(--itw-border);
+  transition:transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
 }
-.itw-cta:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.14);}
-.itw-root a.itw-cta-dark, .itw-cta-dark{background:var(--itw-text);color:var(--itw-panel) !important;}
-.itw-root a.itw-cta-line, .itw-cta-line{background:transparent;color:var(--itw-text);}
+.itw-cta:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.10);}
+.itw-root a.itw-cta-dark, .itw-cta-dark{background:#f47522;color:#ffffff !important;border:1.5px solid #e06314 !important;box-shadow:0 4px 14px rgba(244,117,34,.28);}
+.itw-root a.itw-cta-line, .itw-cta-line{background:var(--itw-panel);color:var(--itw-text);border:1.5px solid var(--itw-border);}
 
 .itw-sec{position:relative;z-index:1;margin-top:64px;}
 .itw-sec-head{text-align:center;margin-bottom:6px;}
@@ -1656,30 +1661,67 @@ body:has(.itw-dark) .leaf-fall,
 /* leaves live inside .itw-root: above its background, below .itw-view */
 .itw-root > .itw-leafwrap { z-index: 0; }
 
-/* Rock-solid contrast for CTAs in all modes (light and dark) */
+/* Warm, polished, brand-aligned CTAs in all modes (light and dark) */
 .itw-root .itw-cta-dark,
 .itw-cta-dark,
 .itw-root a.itw-cta-dark {
-  background: #20281f !important;
+  background: #f47522 !important;
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
-  border: 2px solid #20281f !important;
-  font-weight: 700;
+  border: 1.5px solid #e06314 !important;
+  box-shadow: 0 4px 14px rgba(244, 117, 34, 0.28) !important;
+  border-radius: 99px !important;
+  font-weight: 700 !important;
+}
+.itw-root .itw-cta-dark:hover,
+.itw-cta-dark:hover,
+.itw-root a.itw-cta-dark:hover {
+  background: #e06314 !important;
+  box-shadow: 0 6px 20px rgba(244, 117, 34, 0.40) !important;
 }
 .itw-root.itw-dark .itw-cta-dark,
 .itw-root.itw-dark a.itw-cta-dark {
-  background: #56d2b1 !important;
-  color: #0c1610 !important;
-  -webkit-text-fill-color: #0c1610 !important;
-  border: 2px solid #56d2b1 !important;
-  font-weight: 800;
+  background: #f59e0b !important;
+  color: #14180f !important;
+  -webkit-text-fill-color: #14180f !important;
+  border: 1.5px solid #d97706 !important;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.28) !important;
+  font-weight: 800 !important;
+}
+.itw-root.itw-dark .itw-cta-dark:hover,
+.itw-root.itw-dark a.itw-cta-dark:hover {
+  background: #fbbf24 !important;
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45) !important;
 }
 .itw-root .itw-cta-line,
 .itw-cta-line,
 .itw-root a.itw-cta-line {
-  background: transparent !important;
-  color: var(--itw-text) !important;
-  border: 2px solid var(--itw-text) !important;
+  background: var(--itw-panel, #ffffff) !important;
+  color: var(--itw-text, #2c3024) !important;
+  border: 1.5px solid var(--itw-border, #dcd3be) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  border-radius: 99px !important;
+  font-weight: 700 !important;
+}
+.itw-root .itw-cta-line:hover,
+.itw-cta-line:hover,
+.itw-root a.itw-cta-line:hover {
+  background: var(--itw-panel-soft, #fdf8ee) !important;
+  border-color: #f47522 !important;
+  color: #f47522 !important;
+}
+.itw-root.itw-dark .itw-cta-line,
+.itw-root.itw-dark a.itw-cta-line {
+  background: #1e2519 !important;
+  color: #eef1ea !important;
+  border: 1.5px solid #3d4a34 !important;
+  box-shadow: none !important;
+}
+.itw-root.itw-dark .itw-cta-line:hover,
+.itw-root.itw-dark a.itw-cta-line:hover {
+  background: #273220 !important;
+  border-color: #f59e0b !important;
+  color: #f59e0b !important;
 }
 
 /* ================= EDITORIAL 2x2 CARD GRID ================= */

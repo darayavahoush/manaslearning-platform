@@ -3481,10 +3481,11 @@ body:has(.itw-dark) .leaf-fall,
   border: 1.5px solid var(--itw-border);
   background: var(--itw-panel);
   box-shadow: 0 20px 48px -18px rgba(0, 0, 0, 0.3);
-  margin: 16px 0 24px;
-  min-height: 520px;
+  margin: 10px 0 16px;
+  min-height: auto;
   display: flex;
   flex-direction: column;
+  padding: 16px 20px;
 }
 .itw-desk-bg-wrap {
   position: absolute;
@@ -4564,18 +4565,17 @@ body:has(.itw-dark) .leaf-fall,
   max-width: 100%;
   max-height: 270px;
   object-fit: contain;
-  border-radius: 20px;
-  border: 1.5px solid var(--itw-border, rgba(0, 0, 0, 0.08));
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.10);
-  background: var(--itw-card, #fffdf8);
-  filter: saturate(1.05) contrast(1.02);
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.14)) saturate(1.05);
   animation: itw-sticker-bob 6s ease-in-out infinite;
 }
 .itw-root.itw-dark .itw-flow-sticker-img {
-  border-color: rgba(253, 248, 238, 0.15);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
-  background: #1b2126;
-  filter: brightness(0.88) contrast(1.02);
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.35)) brightness(0.92);
 }
 @keyframes itw-sticker-bob {
   0%, 100% { transform: translateY(0) rotate(0deg); }
@@ -5135,21 +5135,23 @@ body:has(.itw-dark) .leaf-fall,
   animation: itw-toast-pop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .itw-float-0 {
-  top: 16px;
-  right: 16px;
+  top: 18%;
+  left: 50%;
+  transform: translateX(-50%) rotate(-1.5deg);
 }
 .itw-float-1 {
-  bottom: 84px;
-  right: 20px;
+  top: 60%;
+  left: 50%;
+  transform: translateX(-50%) rotate(1deg);
 }
 @media (max-width: 640px) {
   .itw-toast-floating {
-    max-width: calc(100% - 32px);
-    left: 16px;
-    right: 16px;
+    max-width: calc(100% - 24px);
+    left: 50%;
+    transform: translateX(-50%);
   }
-  .itw-float-0 { top: 12px; }
-  .itw-float-1 { bottom: 64px; }
+  .itw-float-0 { top: 15%; }
+  .itw-float-1 { top: 58%; }
 }
 @keyframes itw-toast-pop {
   0% { transform: scale(0.92) translateY(-6px); opacity: 0; }

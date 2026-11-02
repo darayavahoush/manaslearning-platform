@@ -32,19 +32,19 @@ export default function MiloWidget() {
         aria-label="Milo chat"
         className={`${open ? 'flex' : 'hidden'} fixed z-50 flex-col overflow-hidden bg-white shadow-2xl transition-all duration-200 ${big ? 'inset-0' : 'bottom-5 right-5 h-[min(680px,85dvh)] w-[min(440px,calc(100vw-2.5rem))] rounded-2xl border border-black/10'}`}
       >
-        <header className="flex items-center gap-3 bg-gradient-to-r from-[#05b076] via-[#10b981] to-[#f47522] px-4 py-3 text-white shadow-sm">
+        <header className="flex items-center gap-3 bg-gradient-to-r from-card-green via-[#049a68] to-[#037a52] px-4 py-3 text-white shadow-sm font-poppins">
           <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border-2 border-white/80 bg-white/20 shadow-sm p-1 flex items-center justify-center">
             <MiloAvatar />
           </div>
           <div className="leading-tight">
             <div className="flex items-center gap-1.5">
-              <p className="font-bold text-lg leading-none">Milo</p>
-              <span className="rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">Learning Guide</span>
+              <p className="font-bold text-base leading-none">Milo the Owl</p>
+              <span className="text-sm" role="img" aria-label="owl">🦉</span>
             </div>
-            <p className="text-xs text-white/90">Ask me anything · Here to help</p>
+            <p className="text-[11.5px] text-white/90">Pediatric Learning Companion</p>
           </div>
           <div className="ml-auto flex items-center gap-1.5">
-            <a href="/consult" className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold hover:bg-white/30 transition text-white">Consultation</a>
+            <a href="/consult" className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold hover:bg-white/30 transition text-white">Free Consultation</a>
             <button
               type="button"
               onClick={() => setBig(!big)}

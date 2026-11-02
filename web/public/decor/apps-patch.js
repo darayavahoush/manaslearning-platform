@@ -1,4 +1,4 @@
-/* Adds VaakSiddhi and Vaakify cards under the Phonics Jungle card on the homepage.
+/* Adds Vaaksudhi and Vaakify cards under the Phonics Jungle card on the homepage.
    Self-contained: own markup + own CSS, no copied inline animation styles, solid white
    cards that sit above the page's decorative illustration. Shows a phone AND a laptop. */
 (function () {
@@ -7,9 +7,9 @@
 
   var APPS = [
     {
-      id: "vaaksiddhi",
-      name: "VaakSiddhi",
-      href: "https://vaaksiddhi.manaslearning.com",
+      id: "vaaksudhi",
+      name: "Vaaksudhi",
+      href: "https://vaaksudhi.manaslearning.com",
       title: "Playful speech and breathing practice",
       text: " gives children playful breathing, sound and voice games on a phone or laptop, and gives therapists and parents a clear view of progress after every session.",
       chips: ["Breathing games", "Sound games", "Voice games", "Therapist and parent progress"],
@@ -28,11 +28,10 @@
     }
   ];
 
-
-  // Official app favicon SVGs (from favicon skill)
+  // Official app favicon SVGs (from respective repositories: agenti_ai and speech-repeater)
   var FAVICONS = {
-    vaaksiddhi: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -4 122 108"><rect x="-6" y="-4" width="122" height="108" rx="26" fill="#eafbe6"/><path d="M28 70c-10 0-17-7-17-15 0-8 6-14 14-15 2-10 11-17 21-17 9 0 17 5 20 13 9 1 16 8 16 17 0 9-8 17-18 17H28z" fill="#cdf7c4" stroke="#2f9e6a" stroke-width="3.5" stroke-linejoin="round"/><path d="M35 50q4-5 8 0M59 50q4-5 8 0" fill="none" stroke="#1f5e41" stroke-width="3" stroke-linecap="round"/><ellipse cx="33" cy="59" rx="5" ry="3" fill="#ffb3a7"/><ellipse cx="69" cy="59" rx="5" ry="3" fill="#ffb3a7"/><ellipse cx="51" cy="60" rx="3.8" ry="4.6" fill="#2f9e6a"/><g fill="none" stroke="#2f9e6a" stroke-width="3.5" stroke-linecap="round"><path d="M91 42q6 8 0 16"/><path d="M98 36q10 14 0 28"/></g><path d="M20 18l2.2 5 5 2.2-5 2.2-2.2 5-2.2-5-5-2.2 5-2.2z" fill="#f0a321"/><circle cx="62" cy="14" r="3" fill="#fff" stroke="#2f9e6a" stroke-width="2"/><circle cx="72" cy="8" r="2" fill="#fff" stroke="#2f9e6a" stroke-width="2"/></svg>',
-    vaakify: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -4 122 108"><rect x="-6" y="-4" width="122" height="108" rx="26" fill="#fff1d6"/><rect x="30" y="10" width="40" height="52" rx="20" fill="#ffd9a8" stroke="#e0762a" stroke-width="3.5"/><circle cx="42" cy="34" r="3.2" fill="#6b3d12"/><circle cx="58" cy="34" r="3.2" fill="#6b3d12"/><path d="M44 43q6 7 12 0" fill="none" stroke="#6b3d12" stroke-width="3" stroke-linecap="round"/><ellipse cx="36" cy="41" rx="4.5" ry="2.8" fill="#ffb3a7"/><ellipse cx="64" cy="41" rx="4.5" ry="2.8" fill="#ffb3a7"/><path d="M22 50v4a28 28 0 0 0 56 0v-4" fill="none" stroke="#e0762a" stroke-width="3.5" stroke-linecap="round"/><path d="M50 82v8" stroke="#e0762a" stroke-width="3.5" stroke-linecap="round"/><rect x="36" y="89" width="28" height="6" rx="3" fill="#e0762a"/><path d="M80 18h20a6 6 0 0 1 6 6v14a6 6 0 0 1-6 6H92l-7 7v-7h-5a6 6 0 0 1-6-6V24a6 6 0 0 1 6-6z" fill="#fff" stroke="#e0762a" stroke-width="3"/><path d="M84 31l5 5 10-10" fill="none" stroke="#2f9e6a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    vaaksudhi: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="52" height="52"><defs><linearGradient id="windGrad_vk" x1="6" y1="10" x2="42" y2="38" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#A8FF6F"/><stop offset="100%" stop-color="#1D9E75"/></linearGradient></defs><rect width="48" height="48" rx="12" fill="#12122A"/><g transform="translate(3,5) scale(1.85)" fill="none" stroke="url(#windGrad_vk)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.8 19.6A2 2 0 1 0 14 16H2"/><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"/><path d="M9.8 4.4A2 2 0 1 1 11 8H2"/></g></svg>',
+    vaakify: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="52" height="52"><defs><linearGradient id="vk_bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#4A3630"/><stop offset="100%" stop-color="#2B201D"/></linearGradient><linearGradient id="vk_gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#F3D27A"/><stop offset="100%" stop-color="#D9A441"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#vk_bg)"/><path d="M33.73 11.51 A22 22 0 1 0 48.12 43.89 A18 18 0 0 1 33.73 11.51 Z" fill="url(#vk_gold)"/><path d="M12 33 H19 L23 24 L28 42 L33 20 L38 44 L42 29 L45 33 H51" fill="none" stroke="#2B201D" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 33 H19 L23 24 L28 42 L33 20 L38 44 L42 29 L45 33 H51" fill="none" stroke="url(#vk_gold)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M51 12 Q51.6 17.4 57 18 Q51.6 18.6 51 24 Q50.4 18.6 45 18 Q50.4 17.4 51 12 Z" fill="#F3D27A"/></svg>'
   };
 
   // Screen art: laptop = real live screenshot of homepage, phone = centered app favicon on clean wallpaper
@@ -41,20 +40,21 @@
     return '<img src="' + src + '" alt="' + esc(a.name) + ' live homepage" style="width:100%;height:100%;object-fit:cover;object-position:top left;display:block" loading="lazy" decoding="async" />';
   }
   function phoneScreen(a) {
-    var fav = FAVICONS[a.id];
+    var fav = FAVICONS[a.id] || FAVICONS.vaaksudhi;
     return '<svg viewBox="0 0 90 180" preserveAspectRatio="xMidYMid slice" style="display:block;width:100%;height:100%">' +
       '<rect width="90" height="180" fill="' + a.tint + '"/>' +
-      '<circle cx="16" cy="155" r="32" fill="#fff" opacity=".4"/>' +
-      '<circle cx="78" cy="28" r="24" fill="#fff" opacity=".4"/>' +
+      '<circle cx="16" cy="155" r="32" fill="#fff" opacity=".35"/>' +
+      '<circle cx="78" cy="28" r="24" fill="#fff" opacity=".35"/>' +
       '<rect x="27" y="7" width="36" height="3.5" rx="1.75" fill="rgba(0,0,0,0.18)"/>' +
-      '<g transform="translate(14, 46) scale(0.51)">' + fav + '</g>' +
-      '<text x="45" y="128" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="11" font-weight="800" fill="' + a.accent + '">' + esc(a.name) + '</text>' +
-      '<text x="45" y="142" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8" font-weight="600" fill="rgba(34,34,34,0.55)">Mobile App</text>' +
+      '<g transform="translate(19, 44)">' + fav + '</g>' +
+      '<text x="45" y="126" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="11.5" font-weight="800" fill="' + a.accent + '">' + esc(a.name) + '</text>' +
+      '<text x="45" y="140" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8.5" font-weight="600" fill="rgba(34,34,34,0.55)">Mobile App</text>' +
       '</svg>';
   }
 
   var CSS =
     "@keyframes itw-app-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}" +
+    "@keyframes itw-phonics-shake{0%{transform:rotate(0deg) translate(0,0)}5.7%{transform:rotate(-3deg) translate(-1px,-1px)}11.4%{transform:rotate(3deg) translate(1px,1px)}17.1%{transform:rotate(-3deg) translate(-1px,-1px)}22.8%{transform:rotate(3deg) translate(1px,1px)}28.5%,100%{transform:rotate(0deg) translate(0,0)}}" +
     ".itw-app{position:relative;z-index:5;margin-bottom:0 !important;padding-bottom:24px;animation:itw-app-in .5s ease both}" +
     ".itw-app::before{content:'';position:absolute;inset:0;z-index:-1;border-radius:24px;background:rgba(253,248,238,.5);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}" +
     ".itw-app-card{background:#fff;border-radius:24px;padding:28px 24px;display:flex;flex-direction:column;align-items:center;gap:28px;box-shadow:0 1px 2px rgba(0,0,0,.05);overflow:hidden}" +
@@ -66,7 +66,9 @@
     ".itw-laptop-screen svg,.itw-phone-screen svg{display:block;width:100%;height:100%}" +
     ".itw-laptop-screen img,.itw-phone-screen img{display:block;width:100%;height:100%;object-fit:cover;object-position:top center}" +
     ".itw-laptop-base{height:9px;width:112%;margin-left:-6%;background:linear-gradient(#e3e3e3,#b9b9b9);border-radius:0 0 12px 12px}" +
-    ".itw-phone{position:absolute;right:0;bottom:0;width:29%;aspect-ratio:9/18;border:4px solid #1f1f1f;border-radius:16px;background:#fff;overflow:hidden;box-shadow:0 16px 26px rgba(0,0,0,.28)}" +
+    ".itw-phone{position:absolute;right:0;bottom:0;width:29%;aspect-ratio:9/18;border:4px solid #1f1f1f;border-radius:16px;background:#fff;overflow:hidden;box-shadow:0 16px 26px rgba(0,0,0,.28);animation:itw-phonics-shake 1.4s ease-in-out infinite;transform-origin:center center;transition:transform .2s ease}" +
+    ".itw-phone:hover{transform:scale(1.05)}" +
+    ".itw-app[data-itw-app='vaakify'] .itw-phone{animation-delay:0.7s}" +
     ".itw-phone::before{content:'';position:absolute;top:3px;left:50%;width:30%;height:4px;margin-left:-15%;border-radius:3px;background:#1f1f1f;z-index:2}" +
     ".itw-phone-screen{width:100%;height:100%}" +
     ".itw-app-body{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0}" +
@@ -186,9 +188,20 @@
     ).observe(f);
   }
 
+  function unifyMiloLauncher() {
+    var btn = document.querySelector('button[aria-label*="Milo"], button[aria-label*="chat with Milo"], button[aria-label*="Milo the Owl"]');
+    if (!btn || btn.querySelector('.itw-milo-dot')) return;
+    var dot = document.createElement('span');
+    dot.className = 'itw-milo-dot';
+    dot.style.cssText = 'position:absolute;top:-2px;right:-2px;width:15px;height:15px;border-radius:9999px;background:#f47522;border:2.5px solid #fff;box-shadow:0 0 6px rgba(244,117,34,0.6);pointer-events:none;z-index:10;';
+    dot.setAttribute('aria-hidden', 'true');
+    btn.appendChild(dot);
+  }
+
   function ensure() {
     addNavCss();
     watchFooter();
+    unifyMiloLauncher();
     var img = document.querySelector('img[alt*="Phonics"]');
     if (!img) return;
     var art = img.closest("article");

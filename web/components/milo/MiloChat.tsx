@@ -8,11 +8,10 @@ const API = process.env.NEXT_PUBLIC_MILO_API || '/api/milo'
 const HUMAN_URL = '/consult'
 
 const STARTERS = [
-  'Explore In Their World experiences',
   'What is stimming?',
   'What is sensory integration?',
-  'Book a consultation',
-  'What assessments are available?',
+  'When should I see a therapist?',
+  'Explore In Their World experiences',
 ]
 
 type NavTarget = {
@@ -159,11 +158,7 @@ export default function MiloChat() {
   const [msgs, setMsgs] = useState<Msg[]>([
     {
       role: 'milo',
-      text: 'Hoo-hoo! I’m Milo, your learning and navigation guide. Ask me questions about sensory needs, ADHD, dyslexia, speech, or let me guide you to any part of our site. I’m right here!',
-      navTargets: [
-        {label: 'Explore All Experiences', url: '/experience'},
-        {label: 'Book Consultation', url: '/consult'},
-      ],
+      text: "Hoo-hoo! I'm Milo, your pediatric learning companion. Ask me anything about stimming, sensory needs, speech, or everyday learning questions. I'm here to help!",
     },
   ])
   const [text, setText] = useState('')
@@ -254,7 +249,7 @@ export default function MiloChat() {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background font-sans">
+    <div className="flex h-full min-h-0 flex-col bg-background font-poppins">
       {/* Sound toggle subheader */}
       <div className="flex items-center justify-between border-b border-black/5 bg-emerald-50/50 px-4 py-1.5 text-xs text-foreground/70">
         <span className="flex items-center gap-1.5">
@@ -388,41 +383,17 @@ export default function MiloChat() {
         ))}
 
         {msgs.length === 1 && !busy && (
-          <div className="my-2 rounded-2xl border border-emerald-100 bg-gradient-to-b from-emerald-50/70 to-white p-3.5 shadow-sm">
-            <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-emerald-800/80">
-              Explore or ask Milo anything:
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {STARTERS.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => send(s)}
-                  className="rounded-full border border-card-green/30 bg-white px-3 py-1.5 text-xs text-foreground shadow-xs transition hover:border-card-green hover:bg-emerald-50/70 hover:text-card-green"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-3 border-t border-emerald-100 pt-2.5">
-              <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-emerald-800/80">
-                Direct Site Navigation:
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {NAV_SHORTCUTS.map((nav) => (
-                  <button
-                    key={nav.url}
-                    type="button"
-                    onClick={() => handleNavigate(nav.url)}
-                    className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50/80 px-2.5 py-1 text-[11px] font-medium text-emerald-900 transition hover:bg-emerald-100"
-                  >
-                    <span>{nav.label}</span>
-                    <span>→</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+          <div className="my-2 flex flex-wrap gap-2">
+            {STARTERS.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => send(s)}
+                className="rounded-full border border-card-green/30 bg-white px-3.5 py-1.5 text-xs font-semibold text-emerald-800 shadow-xs transition hover:border-card-green hover:bg-emerald-50 hover:text-card-green"
+              >
+                {s}
+              </button>
+            ))}
           </div>
         )}
 
@@ -447,7 +418,7 @@ export default function MiloChat() {
             value={text}
             onChange={(e) => setText(e.target.value)}
             maxLength={500}
-            placeholder="Ask Milo or ask to navigate somewhere…"
+            placeholder="Ask Milo a question..."
             className="min-w-0 flex-1 rounded-full border border-black/10 bg-background px-4 py-2.5 text-sm outline-none focus:border-card-green focus:ring-2 focus:ring-card-green/30"
           />
           <button
@@ -462,7 +433,7 @@ export default function MiloChat() {
             </svg>
           </button>
         </div>
-        <p className="mt-2 text-center text-[11px] text-foreground/50">Milo shares learning guidance and site navigation, not medical advice.</p>
+        <p className="mt-2 text-center text-[11.5px] text-foreground/60 font-poppins">Milo shares pediatric developmental guidance, not medical advice.</p>
       </form>
     </div>
   )

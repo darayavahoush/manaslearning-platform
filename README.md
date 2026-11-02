@@ -13,7 +13,7 @@
 5. [Clinical & Pedagogical Taxonomy (Tags System)](#clinical--pedagogical-taxonomy-tags-system)
 6. [Metadata, SEO & Structured Data](#metadata-seo--structured-data)
 7. [Milo AI Learning Guide](#milo-ai-learning-guide)
-8. [Assistive Tools: VaakSiddhi & Vaakify](#assistive-tools-vaaksiddhi--vaakify)
+8. [Assistive Tools: Vaaksudhi & Vaakify](#assistive-tools-vaaksudhi--vaakify)
 9. [Development & Deployment](#development--deployment)
 
 ---
@@ -24,7 +24,7 @@
 - **In Their World (ITW)**: A research-backed experiential simulation suite allowing educators, parents, and therapists to experience the cognitive and sensory demands of neurodiverse learning profiles.
 - **Milo AI Learning Guide**: A gentle, retrieval-augmented navigation and clinical knowledge guide.
 - **Consultation & Booking Engine**: Integrated tele-consultation scheduling for parents and schools.
-- **Assistive Practice Modules**: Direct web access to VaakSiddhi (breathing/sound therapy) and Vaakify (word repetition & clarity feedback).
+- **Assistive Practice Modules**: Direct web access to Vaaksudhi (breathing/sound therapy) and Vaakify (word repetition & clarity feedback).
 
 ---
 
@@ -207,10 +207,10 @@ Injected on `/experience` as a recognized `LearningResource`:
 
 ---
 
-## Assistive Tools: VaakSiddhi & Vaakify
+## Assistive Tools: Vaaksudhi & Vaakify
 
 Rendered dynamically under the Phonics Jungle card on the homepage:
-- **VaakSiddhi** (`https://vaaksiddhi.manaslearning.com`): Playful breathing and voice games with therapist tracking.
+- **Vaaksudhi** (`https://vaaksudhi.manaslearning.com`): Playful breathing and voice games with therapist tracking.
 - **Vaakify** (`https://vaakify.manaslearning.com`): Word repetition, speech clarity feedback, and at-home practice.
 - **Display Art**: Real live desktop screenshots inside laptop frames, paired with official SVG favicons inside mobile frames.
 

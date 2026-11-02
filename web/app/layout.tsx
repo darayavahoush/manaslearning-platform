@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     'ADHD attention therapy',
     'In Their World simulation',
     'Milo AI learning guide',
-    'VaakSiddhi breathing games',
+    'Vaaksudhi breathing games',
     'Vaakify speech practice',
   ],
   authors: [{ name: 'Manas Learning' }],

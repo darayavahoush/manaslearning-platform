@@ -1,23 +1,15 @@
 import { NextResponse } from 'next/server'
+import { requireAdmin, publicStaff, hashPassword } from '@/lib/auth'
 import { readDB, writeDB, type Staff } from '@/lib/store'
 
-function verifyAuth(req: Request) {
-  const envKey = process.env.TEAM_PASSWORD
-  const reqKey = req.headers.get('x-team-key')
-  return (
-    (envKey && reqKey === envKey) ||
-    reqKey === 'manas2026' ||
-    reqKey === 'manasadmin' ||
-    reqKey === 'manas123'
-  )
-}
+const verifyAuth = (req: Request) => !!requireAdmin(req)
 
+// Public: the booking UI needs names/roles only. No email, phone, or credentials.
 export async function GET() {
   const db = readDB()
-  // Return staff list
   return NextResponse.json({
     ok: true,
-    staff: db.staff,
+    staff: db.staff.map((s) => ({id: s.id, name: s.name, role: s.role, active: s.active, consultTypeIds: s.consultTypeIds})),
     consultTypes: db.consultTypes,
   })
 }
@@ -48,6 +40,11 @@ export async function POST(req: Request) {
     .map((day) => ({ day, start: '10:00', end: '17:00' }))
     .concat([{ day: 6, start: '10:00', end: '14:00' }])
 
+  const pw = String(body.password ?? '').trim()
+  if (pw.length < 10) {
+    return NextResponse.json({ error: 'Password must be at least 10 characters' }, { status: 400 })
+  }
+
   const newMember: Staff = {
     id,
     name: body.name.trim(),
@@ -61,14 +58,14 @@ export async function POST(req: Request) {
       ? body.weeklyHours
       : hoursStandard,
     leave: Array.isArray(body.leave) ? body.leave : [],
-    password: body.password?.trim() || `${slug.split('-')[0] || 'manas'}123`,
+    passwordHash: hashPassword(pw),
     phone: body.phone?.trim() || '',
   }
 
   db.staff.push(newMember)
   writeDB(db)
 
-  return NextResponse.json({ ok: true, staff: newMember })
+  return NextResponse.json({ ok: true, staff: publicStaff(newMember) })
 }
 
 export async function DELETE(req: Request) {
@@ -92,7 +89,7 @@ export async function DELETE(req: Request) {
   const removed = db.staff.splice(idx, 1)[0]
   writeDB(db)
 
-  return NextResponse.json({ ok: true, removed })
+  return NextResponse.json({ ok: true, removed: { id: removed.id, name: removed.name } })
 }
 
 export async function PATCH(req: Request) {
@@ -115,12 +112,16 @@ export async function PATCH(req: Request) {
   if (body.email !== undefined) s.email = String(body.email).trim()
   if (body.role !== undefined) s.role = String(body.role).trim()
   if (body.phone !== undefined) s.phone = String(body.phone).trim()
-  if (body.password !== undefined) s.password = String(body.password).trim()
+  if (body.password !== undefined) {
+    const pw = String(body.password).trim()
+    if (pw.length < 10) return NextResponse.json({ error: 'Password must be at least 10 characters' }, { status: 400 })
+    s.passwordHash = hashPassword(pw)
+  }
   if (typeof body.active === 'boolean') s.active = body.active
   if (Array.isArray(body.consultTypeIds)) s.consultTypeIds = body.consultTypeIds
   if (Array.isArray(body.weeklyHours)) s.weeklyHours = body.weeklyHours
   if (Array.isArray(body.leave)) s.leave = body.leave
 
   writeDB(db)
-  return NextResponse.json({ ok: true, staff: s })
+  return NextResponse.json({ ok: true, staff: publicStaff(s) })
 }

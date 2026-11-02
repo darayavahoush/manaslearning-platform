@@ -1,18 +1,12 @@
 import {NextResponse} from 'next/server'
 import {readDB} from '@/lib/store'
+import {requireTeam, publicStaff} from '@/lib/auth'
 
 export async function GET(req: Request) {
-  const envKey = process.env.TEAM_PASSWORD
-  const reqKey = req.headers.get('x-team-key')
+  const session = requireTeam(req)
+  if (!session) return NextResponse.json({error: 'Unauthorized'}, {status: 401})
   const db = readDB()
-  const isStaffPassword = db.staff.some((s) => s.password && s.password === reqKey)
-  const valid =
-    (envKey && reqKey === envKey) ||
-    reqKey === 'manas2026' ||
-    reqKey === 'manasadmin' ||
-    reqKey === 'manas123' ||
-    isStaffPassword
-
-  if (!valid) return NextResponse.json({error: 'Unauthorized'}, {status: 401})
-  return NextResponse.json({staff: db.staff, types: db.consultTypes, bookings: db.bookings})
+  // Specialists see only their own clients; the admin sees everything.
+  const bookings = session.role === 'admin' ? db.bookings : db.bookings.filter((b) => b.staffId === session.sub)
+  return NextResponse.json({staff: db.staff.map(publicStaff), types: db.consultTypes, bookings})
 }

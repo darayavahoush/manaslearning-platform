@@ -1,74 +1,54 @@
-import { NextResponse } from 'next/server'
-import { readDB } from '@/lib/store'
+import {NextResponse} from 'next/server'
+import {readDB} from '@/lib/store'
+import {checkAdminPassword, signSession, verifyPassword} from '@/lib/auth'
+import {publicStaff} from '@/lib/auth'
+
+// Simple in-memory throttle: 8 failed attempts per client per 10 minutes.
+const fails = new Map<string, {n: number; reset: number}>()
+const WINDOW = 10 * 60_000
+const MAX = 8
+
+function clientKey(req: Request) {
+  return (req.headers.get('x-forwarded-for') || 'local').split(',')[0].trim()
+}
 
 export async function POST(req: Request) {
-  try {
-    const body = await req.json().catch(() => null)
-    if (!body) {
-      return NextResponse.json({ error: 'Missing request body' }, { status: 400 })
-    }
+  const key = clientKey(req)
+  const f = fails.get(key)
+  if (f && f.reset > Date.now() && f.n >= MAX)
+    return NextResponse.json({error: 'Too many attempts. Please wait a few minutes and try again.'}, {status: 429})
 
-    const { staffId, email, password, asAdmin } = body
-    const db = readDB()
+  const body = await req.json().catch(() => null)
+  if (!body) return NextResponse.json({error: 'Missing request body'}, {status: 400})
+  const {staffId, email, password, asAdmin} = body as Record<string, string | boolean | undefined>
 
-    // 1. Admin Login
-    if (asAdmin) {
-      const adminPass = process.env.TEAM_ADMIN_PASSWORD || process.env.TEAM_PASSWORD
-      const validAdminPasswords = ['manasadmin', 'manas2026', 'admin123']
-      if (adminPass) validAdminPasswords.push(adminPass)
+  const fail = (msg: string) => {
+    const cur = fails.get(key)
+    fails.set(key, !cur || cur.reset < Date.now() ? {n: 1, reset: Date.now() + WINDOW} : {n: cur.n + 1, reset: cur.reset})
+    return NextResponse.json({error: msg}, {status: 401})
+  }
 
-      if (validAdminPasswords.includes(password)) {
-        return NextResponse.json({
-          ok: true,
-          user: {
-            id: 'admin',
-            name: 'Clinic Administrator',
-            role: 'Clinical Operations Director',
-            email: 'admin@manaslearning.com',
-            isAdmin: true,
-          },
-          token: password,
-        })
-      }
-      return NextResponse.json({ error: 'Invalid admin credentials' }, { status: 401 })
-    }
-
-    // 2. Individual Specialist Login
-    const target = db.staff.find((s) => {
-      if (staffId && s.id === staffId) return true
-      if (email && s.email.toLowerCase() === email.toLowerCase().trim()) return true
-      return false
-    })
-
-    if (!target) {
-      return NextResponse.json({ error: 'Specialist account not found' }, { status: 404 })
-    }
-
-    const isMatch = (target.password && target.password === password) ||
-                    password === 'manas2026' ||
-                    password === 'manasadmin'
-
-    if (!isMatch) {
-      return NextResponse.json({ error: 'Incorrect password for this specialist' }, { status: 401 })
-    }
-
+  if (asAdmin) {
+    if (!checkAdminPassword(password)) return fail('Incorrect email or password.')
+    fails.delete(key)
     return NextResponse.json({
       ok: true,
-      user: {
-        id: target.id,
-        name: target.name,
-        role: target.role,
-        email: target.email,
-        active: target.active,
-        consultTypeIds: target.consultTypeIds,
-        weeklyHours: target.weeklyHours,
-        leave: target.leave,
-        isAdmin: false,
-      },
-      token: target.password || 'manas2026',
+      user: {id: 'admin', name: 'Clinic Administrator', role: 'Clinical Operations Director', email: 'admin@manaslearning.com', isAdmin: true},
+      token: signSession('admin', 'admin'),
     })
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Server error'
-    return NextResponse.json({ error: message }, { status: 500 })
   }
+
+  const db = readDB()
+  const target = db.staff.find((s) =>
+    (typeof staffId === 'string' && s.id === staffId) ||
+    (typeof email === 'string' && s.email.toLowerCase() === email.toLowerCase().trim()))
+  // Same message whether the account or the password is wrong.
+  if (!target || !target.active || !verifyPassword(String(password ?? ''), target.passwordHash)) return fail('Incorrect email or password.')
+
+  fails.delete(key)
+  return NextResponse.json({
+    ok: true,
+    user: {...publicStaff(target), isAdmin: false},
+    token: signSession(target.id, 'staff'),
+  })
 }

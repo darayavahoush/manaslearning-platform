@@ -1,4 +1,5 @@
 import {NextResponse} from 'next/server'
+import {requireTeam, canActAs} from '@/lib/auth'
 import {readDB, writeDB} from '@/lib/store'
 
 const HM = /^([01]\d|2[0-3]):[0-5]\d$/
@@ -11,16 +12,7 @@ export async function POST(req: Request) {
   const s = db.staff.find((x) => x.id === b?.staffId)
   if (!s) return NextResponse.json({error: 'Not found'}, {status: 404})
 
-  const envKey = process.env.TEAM_PASSWORD
-  const reqKey = req.headers.get('x-team-key')
-  const valid =
-    (envKey && reqKey === envKey) ||
-    reqKey === 'manas2026' ||
-    reqKey === 'manasadmin' ||
-    reqKey === 'manas123' ||
-    (s.password && reqKey === s.password)
-
-  if (!valid) return NextResponse.json({error: 'Unauthorized'}, {status: 401})
+  if (!canActAs(requireTeam(req), s.id)) return NextResponse.json({error: 'Unauthorized'}, {status: 401})
 
   if (b.leave !== undefined) {
     if (!Array.isArray(b.leave) || !b.leave.every((l: unknown) => typeof l === 'object' && l !== null && 'from' in l && 'to' in l && typeof (l as Record<string, unknown>).from === 'string' && typeof (l as Record<string, unknown>).to === 'string' && YMD.test((l as {from: string}).from) && YMD.test((l as {to: string}).to) && (l as {from: string}).from <= (l as {to: string}).to)) return bad('Bad leave dates')

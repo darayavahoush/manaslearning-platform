@@ -10,7 +10,7 @@ type Staff = {
   consultTypeIds: string[]
   weeklyHours: { day: number; start: string; end: string }[]
   leave: { from: string; to: string }[]
-  password?: string
+  hasPassword?: boolean
   phone?: string
 }
 
@@ -107,7 +107,7 @@ export default function TeamPortal() {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null)
   const [loginMode, setLoginMode] = useState<'specialist' | 'admin'>('specialist')
   const [selectedStaffId, setSelectedStaffId] = useState<string>('ananya-sridhar')
-  const [loginPassword, setLoginPassword] = useState<string>('ananya123')
+  const [loginPassword, setLoginPassword] = useState<string>('')
   const [loginError, setLoginError] = useState<string>('')
   const [loginLoading, setLoginLoading] = useState<boolean>(false)
 
@@ -293,7 +293,7 @@ export default function TeamPortal() {
   // Cancel booking
   async function cancelBooking(b: Booking) {
     if (!confirm(`Are you sure you want to cancel the booking for ${b.parentName} (${b.childName})?`)) return
-    const token = currentUser?.token || 'manas2026'
+    const token = currentUser?.token || ''
     try {
       const r = await fetch('/api/team/cancel', {
         method: 'POST',
@@ -316,7 +316,7 @@ export default function TeamPortal() {
     if (!editStaff) return
     setAvailSaving(true)
     setAvailMsg('')
-    const token = currentUser?.token || 'manas2026'
+    const token = currentUser?.token || ''
 
     try {
       const r = await fetch('/api/team/availability', {
@@ -359,7 +359,7 @@ export default function TeamPortal() {
     const updatedLeave = [...editStaff.leave, newLeave].sort((a, b) => a.from.localeCompare(b.from))
     setAvailSaving(true)
     setLeaveMsg('')
-    const token = currentUser?.token || 'manas2026'
+    const token = currentUser?.token || ''
 
     try {
       const r = await fetch('/api/team/availability', {
@@ -393,7 +393,7 @@ export default function TeamPortal() {
   async function handleDeleteLeave(index: number) {
     if (!editStaff) return
     const updatedLeave = editStaff.leave.filter((_, idx) => idx !== index)
-    const token = currentUser?.token || 'manas2026'
+    const token = currentUser?.token || ''
     try {
       const r = await fetch('/api/team/availability', {
         method: 'POST',
@@ -423,7 +423,7 @@ export default function TeamPortal() {
     }
     setAddMemberSaving(true)
     setAddMemberMsg('')
-    const token = currentUser?.token || 'manasadmin'
+    const token = currentUser?.token || ''
 
     try {
       const r = await fetch('/api/team/members', {
@@ -434,7 +434,7 @@ export default function TeamPortal() {
           role: newMemberRole,
           email: newMemberEmail,
           phone: newMemberPhone,
-          password: newMemberPassword || `${newMemberName.toLowerCase().split(' ')[0]}123`,
+          password: newMemberPassword,
           consultTypeIds: newMemberTypes,
         }),
       })
@@ -461,7 +461,7 @@ export default function TeamPortal() {
   // Admin: Remove Member
   async function handleRemoveMember(staffId: string, staffName: string) {
     if (!confirm(`Are you sure you want to remove ${staffName} from the clinical team roster? Their profile will no longer appear on /consult.`)) return
-    const token = currentUser?.token || 'manasadmin'
+    const token = currentUser?.token || ''
     try {
       const r = await fetch(`/api/team/members?id=${staffId}`, {
         method: 'DELETE',
@@ -478,9 +478,35 @@ export default function TeamPortal() {
     }
   }
 
+  // Admin: set or reset a specialist's password (stored hashed; never shown again)
+  async function handleSetPassword(member: Staff) {
+    const pw = window.prompt(`New password for ${member.name} (at least 10 characters):`)
+    if (!pw) return
+    if (pw.trim().length < 10) {
+      alert('Password must be at least 10 characters.')
+      return
+    }
+    const token = currentUser?.token || ''
+    try {
+      const r = await fetch('/api/team/members', {
+        method: 'PATCH',
+        headers: { 'x-team-key': token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: member.id, password: pw }),
+      })
+      const j = await r.json().catch(() => ({}))
+      if (!r.ok) alert(j.error || 'Could not update password.')
+      else {
+        alert('Password updated.')
+        loadData(token)
+      }
+    } catch {
+      alert('Network error while updating password.')
+    }
+  }
+
   // Admin: Toggle Active Status
   async function handleToggleActive(member: Staff) {
-    const token = currentUser?.token || 'manasadmin'
+    const token = currentUser?.token || ''
     try {
       const r = await fetch('/api/team/members', {
         method: 'PATCH',
@@ -509,7 +535,7 @@ export default function TeamPortal() {
     }
     setMbSaving(true)
     setMbMsg('')
-    const token = currentUser?.token || 'manas2026'
+    const token = currentUser?.token || ''
 
     const isoStart = new Date(`${mbDate}T${mbTime}:00+05:30`).toISOString()
 
@@ -634,7 +660,7 @@ export default function TeamPortal() {
                 type="button"
                 onClick={() => {
                   setLoginMode('specialist')
-                  setLoginPassword('ananya123')
+                  setLoginPassword('')
                   setLoginError('')
                 }}
                 className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition ${
@@ -651,7 +677,7 @@ export default function TeamPortal() {
                 type="button"
                 onClick={() => {
                   setLoginMode('admin')
-                  setLoginPassword('manasadmin')
+                  setLoginPassword('')
                   setLoginError('')
                 }}
                 className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-bold transition ${
@@ -677,8 +703,7 @@ export default function TeamPortal() {
                       onChange={(e) => {
                         const id = e.target.value
                         setSelectedStaffId(id)
-                        const defaultPw = `${id.split('-')[0] === 'dr' ? id.split('-')[1] : id.split('-')[0]}123`
-                        setLoginPassword(defaultPw)
+                        setLoginPassword('')
                       }}
                       className="w-full rounded-xl border border-cream-dark bg-cream px-4 py-3 text-sm font-bold text-gray-800 outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20"
                     >
@@ -695,7 +720,6 @@ export default function TeamPortal() {
                       <label className="block text-xs font-bold uppercase tracking-wider text-gray-700">
                         Unique Password
                       </label>
-                      <span className="text-xs text-primary font-semibold">e.g. ananya123, manasi123</span>
                     </div>
                     <input
                       type="password"
@@ -713,7 +737,6 @@ export default function TeamPortal() {
                     <label className="block text-xs font-bold uppercase tracking-wider text-gray-700">
                       Admin Password
                     </label>
-                    <span className="text-xs text-emerald-600 font-semibold">pass: manasadmin</span>
                   </div>
                   <input
                     type="password"
@@ -746,54 +769,6 @@ export default function TeamPortal() {
               </button>
             </form>
 
-            {/* Quick Demo Logins Bar */}
-            <div className="mt-6 pt-6 border-t border-gray-100">
-              <div className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-                Quick 1-Click Specialist Logins:
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {[
-                  { id: 'ananya-sridhar', name: 'Ananya S.', pw: 'ananya123' },
-                  { id: 'dr-manasi', name: 'Dr. Manasi', pw: 'manasi123' },
-                  { id: 'dr-radhika', name: 'Dr. Radhika', pw: 'radhika123' },
-                  { id: 'kavitha-s', name: 'Kavitha S.', pw: 'kavitha123' },
-                  { id: 'arun-kumar', name: 'Arun K.', pw: 'arun123' },
-                ].map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => {
-                      setLoginMode('specialist')
-                      setSelectedStaffId(item.id)
-                      setLoginPassword(item.pw)
-                      setLoginError('')
-                    }}
-                    className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${
-                      selectedStaffId === item.id && loginMode === 'specialist'
-                        ? 'border-primary bg-orange-50 text-primary font-bold'
-                        : 'border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    {item.name}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLoginMode('admin')
-                    setLoginPassword('manasadmin')
-                    setLoginError('')
-                  }}
-                  className={`rounded-lg border px-2.5 py-1 text-xs font-bold transition ${
-                    loginMode === 'admin'
-                      ? 'border-emerald-600 bg-emerald-50 text-emerald-700'
-                      : 'border-emerald-200 bg-emerald-50/50 text-emerald-600 hover:bg-emerald-100'
-                  }`}
-                >
-                  Admin (manasadmin)
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </main>
@@ -1584,10 +1559,12 @@ export default function TeamPortal() {
                       <div>
                         <label className="block text-xs font-bold text-gray-700 mb-1">Unique Login Password</label>
                         <input
-                          type="text"
+                          type="password"
+                          autoComplete="new-password"
+                          required
                           value={newMemberPassword}
                           onChange={(e) => setNewMemberPassword(e.target.value)}
-                          placeholder="e.g. pooja123"
+                          placeholder="At least 10 characters" minLength={10}
                           className="w-full rounded-xl border border-cream-dark bg-cream px-3 py-2 text-xs font-bold"
                         />
                       </div>
@@ -1684,10 +1661,8 @@ export default function TeamPortal() {
                         <span className="font-medium truncate">{member.email}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-gray-400">Login Pwd:</span>
-                        <code className="rounded bg-gray-100 px-1.5 py-0.5 text-[11px] font-mono font-bold text-primary">
-                          {member.password || `${member.id.split('-')[0]}123`}
-                        </code>
+                        <span className="font-bold text-gray-400">Password:</span>
+                        <span className="font-medium">{member.hasPassword ? 'Set (hidden)' : 'Not set - reset below'}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span className="font-bold text-gray-400">Weekly Shifts:</span>
@@ -1717,6 +1692,14 @@ export default function TeamPortal() {
                       className="rounded-xl border border-primary bg-orange-50 px-3 py-1.5 text-xs font-bold text-primary hover:bg-orange-100 transition"
                     >
                       Edit Availability
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleSetPassword(member)}
+                      className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-100 transition"
+                    >
+                      Set password
                     </button>
 
                     <button

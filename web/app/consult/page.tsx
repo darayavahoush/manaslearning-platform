@@ -37,9 +37,6 @@ export default function Consult() {
   const [msg, setMsg] = useState('')
   const [done, setDone] = useState<null | {needsPayment: boolean; pendingEmail?: boolean}>(null)
   const [busy, setBusy] = useState(false)
-  const [paid, setPaid] = useState(false)
-  const [paying, setPaying] = useState(false)
-  const [paymentTxn, setPaymentTxn] = useState('')
 
   useEffect(() => {
     const q = new URLSearchParams(window.location.search)
@@ -65,7 +62,7 @@ export default function Consult() {
 
   const loadAvail = () => { if (t && month) fetch(`/api/availability?type=${t.id}&month=${month}`).then((r) => r.json()).then(setAvail) }
   const loadSlots = () => { if (t && date) fetch(`/api/slots?type=${t.id}&date=${date}`).then((r) => r.json()).then(setSlots) }
-  useEffect(() => { setDate(''); setSlots([]); setSlot(null); setPaid(false); setPaymentTxn(''); loadAvail() }, [t]) // eslint-disable-line
+  useEffect(() => { setDate(''); setSlots([]); setSlot(null); loadAvail() }, [t]) // eslint-disable-line
   useEffect(() => { loadAvail() }, [month]) // eslint-disable-line
   useEffect(() => { setSlot(null); loadSlots() }, [date]) // eslint-disable-line
 
@@ -87,8 +84,8 @@ export default function Consult() {
         <h1 className="mt-5 font-patrick text-4xl text-primary">{done.pendingEmail ? 'Check your email' : done.needsPayment ? 'Almost there!' : 'You’re booked!'}</h1>
         <p className="mt-4 text-text-brown">
           {done.pendingEmail
-            ? <>We sent a confirmation link to <b>{f.email}</b>. Click it to confirm <b>{t?.title}</b> on <b>{longDay(date)}</b> at <b>{slot ? t12(slot.label) : ''} IST</b>. We’re holding your time for 15 minutes.</>
-            : done.needsPayment ? 'Your slot is held. The payment step is added in a later patch.'
+            ? <>We sent a confirmation link to <b>{f.email}</b>. Click it to confirm <b>{t?.title}</b> on <b>{longDay(date)}</b> at <b>{slot ? t12(slot.label) : ''} IST</b>. We’re holding your time for 15 minutes.{done.needsPayment && <> This session has a fee; our team will contact you to arrange payment before it.</>}</>
+            : done.needsPayment ? 'Your slot is held. Our team will contact you to arrange the consultation fee before your session.'
             : `${t?.title} on ${longDay(date)} at ${slot ? t12(slot.label) : ''} IST. A confirmation email with a calendar invite is on its way.`}
         </p>
         {done.pendingEmail && <p className="mt-3 text-sm text-brown-light">Can’t see it? Check spam or promotions.</p>}
@@ -178,117 +175,12 @@ export default function Consult() {
           )}
         </Step>
 
-        <Step n={2} title={t && t.priceINR > 0 && !paid ? "Payment & Calendar Access" : "Pick a day and time"}>
-          {t && t.priceINR > 0 && !paid ? (
-            <div className="rounded-2xl border border-amber-200/90 bg-gradient-to-br from-[#fffdfa] via-[#fffbf2] to-[#fff7e6] p-6 shadow-sm">
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-                <div className="flex-1">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900 mb-3">
-                    <span>🔒</span> Calendar Unlocks After Payment
-                  </div>
-                  <h3 className="font-patrick text-2xl text-text-brown">
-                    Reserve Your {t.title}
-                  </h3>
-                  <p className="mt-2 text-sm text-text-brown/80 leading-relaxed">
-                    To guarantee your dedicated 45-minute clinical appointment with our senior developmental team, please complete the consultation fee. The live booking calendar will unlock immediately.
-                  </p>
-
-                  <div className="mt-4 space-y-2 text-xs text-text-brown/90">
-                    <div className="flex items-center gap-2">
-                      <span className="text-emerald-700 font-bold">✓</span>
-                      <span>Dedicated 45-minute 1-on-1 with a senior developmental specialist</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-emerald-700 font-bold">✓</span>
-                      <span>Comprehensive clinical intake, sensory review & milestone evaluation</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-emerald-700 font-bold">✓</span>
-                      <span>Written clinical summary & actionable home support roadmap</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="w-full md:w-80 rounded-2xl bg-white p-5 border border-amber-100 shadow-md">
-                  <div className="flex items-center justify-between border-b border-cream-dark pb-3">
-                    <span className="text-xs font-semibold text-brown-light">Consultation Fee</span>
-                    <span className="font-patrick text-2xl text-emerald-800 font-bold">₹{t.priceINR}</span>
-                  </div>
-
-                  <div className="mt-4 space-y-3">
-                    <div>
-                      <label className="block text-[11px] font-bold text-brown-light uppercase tracking-wider mb-1">Parent Name *</label>
-                      <input
-                        required
-                        className={input}
-                        placeholder="Your full name"
-                        value={f.parentName}
-                        onChange={(e) => setF({...f, parentName: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-bold text-brown-light uppercase tracking-wider mb-1">Email Address *</label>
-                      <input
-                        required
-                        type="email"
-                        className={input}
-                        placeholder="you@example.com"
-                        value={f.email}
-                        onChange={(e) => setF({...f, email: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-bold text-brown-light uppercase tracking-wider mb-1">Phone / WhatsApp *</label>
-                      <input
-                        required
-                        className={input}
-                        placeholder="+91 98765 43210"
-                        value={f.phone}
-                        onChange={(e) => setF({...f, phone: e.target.value})}
-                      />
-                    </div>
-
-                    <div className="pt-2">
-                      <button
-                        type="button"
-                        disabled={paying || !f.parentName.trim() || !f.email.trim() || !f.phone.trim()}
-                        onClick={() => {
-                          setPaying(true)
-                          setTimeout(() => {
-                            const txn = `MN-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`
-                            setPaymentTxn(txn)
-                            setPaid(true)
-                            setPaying(false)
-                          }, 1000)
-                        }}
-                        className="w-full rounded-full bg-emerald-700 py-3.5 px-4 font-semibold text-white shadow-md transition hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2"
-                      >
-                        {paying ? (
-                          <>
-                            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                            <span>Verifying Payment…</span>
-                          </>
-                        ) : (
-                          <>Pay ₹{t.priceINR} & Unlock Calendar →</>
-                        )}
-                      </button>
-                      <p className="mt-2 text-center text-[10px] text-muted-gray">
-                        🔒 256-bit SSL encrypted · Guaranteed appointment hold
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
+        <Step n={2} title="Pick a day and time">
+          {t && (
             <>
-              {t && t.priceINR > 0 && paid && (
-                <div className="mb-4 flex items-center justify-between rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-900 shadow-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-700 text-white text-[11px]">✓</span>
-                    <span>Payment of ₹{t.priceINR} Verified ({paymentTxn}). Please select your preferred date & time below:</span>
-                  </div>
-                  <span className="rounded-full bg-emerald-700 px-2.5 py-0.5 text-[10px] font-bold text-white">Unlocked</span>
+              {t && t.priceINR > 0 && (
+                <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-950">
+                  <b>Fee: ₹{t.priceINR}.</b> You are not charged on this page. Online payment is not switched on yet, so our team will contact you to arrange payment before your session.
                 </div>
               )}
               <p className="-mt-2 mb-4 text-xs text-brown-light">All times are India time (IST).</p>

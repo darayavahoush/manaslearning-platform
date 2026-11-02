@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     id: `booking-${staffId}-${st}-${now.toString(36)}`, typeId: t.id, staffId,
     startAt: new Date(st).toISOString(), endAt: new Date(st + t.durationMins * 60000).toISOString(),
     blockEnd: st + (t.durationMins + t.bufferMins) * 60000,
-    status: 'pending_email', confirmToken: token, expiresAt: now + HOLD_MS,
+    status: 'pending_email', paymentStatus: t.priceINR > 0 ? 'pending' as const : 'not_required' as const, confirmToken: token, expiresAt: now + HOLD_MS,
     parentName: clean(b.parentName, 120), email: clean(b.email, 200), phone: clean(b.phone, 30),
     childName: clean(b.childName, 120), childAge: clean(b.childAge, 30), concern: clean(b.concern, 2000),
     createdAt: new Date().toISOString(),

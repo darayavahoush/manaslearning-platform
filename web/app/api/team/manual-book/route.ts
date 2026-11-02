@@ -1,19 +1,11 @@
 import {NextResponse} from 'next/server'
+import {requireTeam} from '@/lib/auth'
 import {readDB, writeDB, Booking} from '@/lib/store'
 import crypto from 'node:crypto'
 
 export async function POST(req: Request) {
-  const envKey = process.env.TEAM_PASSWORD
-  const reqKey = req.headers.get('x-team-key')
+  if (!requireTeam(req)) return NextResponse.json({error: 'Unauthorized'}, {status: 401})
   const db = readDB()
-  const isStaffPassword = db.staff.some((s) => s.password && s.password === reqKey)
-  const valid =
-    (envKey && reqKey === envKey) ||
-    reqKey === 'manas2026' ||
-    reqKey === 'manasadmin' ||
-    reqKey === 'manas123' ||
-    isStaffPassword
-  if (!valid) return NextResponse.json({error: 'Unauthorized'}, {status: 401})
 
   const body = await req.json().catch(() => null)
   if (!body || !body.staffId || !body.typeId || !body.startAt || !body.parentName) {

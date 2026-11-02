@@ -1317,6 +1317,15 @@ body:has(.itw-dark) .leaf-fall,
 .itw-group-label{font-family:var(--font-display);font-weight:800;font-size:1.05rem;color:var(--itw-text);margin:30px 0 12px;}
 .itw-cardgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px;}
 .itw-cardgrid > .itw-mcard{grid-column:auto;}
+.itw-stories-grid {
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)) !important;
+  gap: 20px !important;
+}
+@media (min-width: 860px) {
+  .itw-stories-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
 
 .itw-soon{cursor:default;opacity:.82;border-style:dashed;}
 .itw-soon:hover{transform:none !important;box-shadow:none !important;}
@@ -1961,6 +1970,109 @@ body:has(.itw-dark) .leaf-fall,
   font-weight: 600;
 }
 
+/* Tactile & Sensory Learning Scaffolds Card (Aarav's Story left-page balance) */
+.itw-storybook-tactile-card {
+  background: rgba(44, 140, 114, 0.08) !important;
+  border: 1px solid rgba(44, 140, 114, 0.28) !important;
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.itw-tactile-card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #1e755d !important;
+}
+.itw-tactile-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.itw-tactile-chip {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.itw-tactile-chip-label {
+  font-weight: 800;
+  color: #1a5644 !important;
+  white-space: nowrap;
+}
+.itw-tactile-chip-val {
+  color: #2e4335 !important;
+}
+
+/* Sensory & Environmental Dynamics Panel (A Day Through My Eyes left-page balance) */
+.itw-storybook-env-panel {
+  background: rgba(44, 140, 114, 0.08) !important;
+  border: 1px solid rgba(44, 140, 114, 0.28) !important;
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.itw-env-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #1e755d !important;
+}
+.itw-env-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+.itw-env-metric-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  background: rgba(255, 255, 255, 0.72) !important;
+  padding: 7px 9px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+}
+.itw-env-metric-icon {
+  font-size: 13px;
+  line-height: 1.2;
+}
+.itw-env-metric-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.itw-env-metric-lbl {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #1b5b49 !important;
+}
+.itw-env-metric-val {
+  font-size: 11.5px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: #1f3024 !important;
+}
+
 .itw-book-left-folio {
   margin-top: auto;
   display: flex;
@@ -2202,15 +2314,53 @@ body:has(.itw-dark) .leaf-fall,
 }
 
 /* Perspective lens switcher on paper */
+.itw-storybook-spread .itw-lens-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 10px;
+}
 .itw-storybook-spread .itw-lens-btn {
-  background: rgba(0, 0, 0, 0.06) !important;
-  color: #243328 !important;
-  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #2b3a30 !important;
+  border: 1.5px solid rgba(0, 0, 0, 0.16) !important;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.25, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.itw-storybook-spread .itw-lens-btn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.09) !important;
+  border-color: rgba(0, 0, 0, 0.3) !important;
+  transform: translateY(-1px);
 }
 .itw-storybook-spread .itw-lens-btn.itw-active {
   color: #ffffff !important;
-  font-weight: 800;
-  border-color: transparent !important;
+  font-weight: 800 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22), 0 0 0 2px rgba(255, 255, 255, 0.45) inset !important;
+}
+.itw-storybook-spread .itw-lens-btn.itw-lens-sensory.itw-active {
+  background: #0d7e68 !important;
+  border-color: #09594a !important;
+}
+.itw-storybook-spread .itw-lens-btn.itw-lens-attention.itw-active {
+  background: #c45b00 !important;
+  border-color: #924300 !important;
+}
+.itw-storybook-spread .itw-lens-btn.itw-lens-communication.itw-active {
+  background: #6e3ba7 !important;
+  border-color: #4f267c !important;
+}
+.itw-storybook-spread .itw-lens-btn.itw-lens-supported.itw-active {
+  background: #1e7d34 !important;
+  border-color: #135523 !important;
 }
 
 /* ================= GENUINE 3D PAGE TURN FLIPPER ================= */
@@ -2445,6 +2595,47 @@ body:has(.itw-dark) .leaf-fall,
 .itw-book-left-folio {
   color: #637768 !important;
   border-top-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.itw-root.itw-dark .itw-storybook-tactile-card,
+.itw-storybook-tactile-card {
+  background: rgba(44, 140, 114, 0.08) !important;
+  border-color: rgba(44, 140, 114, 0.28) !important;
+}
+.itw-root.itw-dark .itw-tactile-card-header,
+.itw-tactile-card-header {
+  color: #1e755d !important;
+}
+.itw-root.itw-dark .itw-tactile-chip-label,
+.itw-tactile-chip-label {
+  color: #1a5644 !important;
+}
+.itw-root.itw-dark .itw-tactile-chip-val,
+.itw-tactile-chip-val {
+  color: #2e4335 !important;
+}
+
+.itw-root.itw-dark .itw-storybook-env-panel,
+.itw-storybook-env-panel {
+  background: rgba(44, 140, 114, 0.08) !important;
+  border-color: rgba(44, 140, 114, 0.28) !important;
+}
+.itw-root.itw-dark .itw-env-panel-title,
+.itw-env-panel-title {
+  color: #1e755d !important;
+}
+.itw-root.itw-dark .itw-env-metric-item,
+.itw-env-metric-item {
+  background: rgba(255, 255, 255, 0.72) !important;
+  border-color: rgba(0, 0, 0, 0.07) !important;
+}
+.itw-root.itw-dark .itw-env-metric-lbl,
+.itw-env-metric-lbl {
+  color: #1b5b49 !important;
+}
+.itw-root.itw-dark .itw-env-metric-val,
+.itw-env-metric-val {
+  color: #1f3024 !important;
 }
 
 .itw-root.itw-dark .itw-storybook-chapter-ribbon span,
@@ -4819,3 +5010,88 @@ body:has(.itw-dark) .leaf-fall,
 
 
 
+
+/* ================= POLISH PASS ================= */
+
+/* .itw-pill-btn is used by every sim (Exit, Reset taps, concept tiles, ...) but had no CSS at all,
+   so those controls rendered as bare text. */
+.itw-root .itw-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 1.5px solid var(--itw-border);
+  background: var(--itw-panel);
+  color: var(--itw-text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.itw-root .itw-pill-btn:hover:not(:disabled) {
+  border-color: var(--itw-text);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px -8px rgba(0, 0, 0, .35);
+}
+.itw-root .itw-pill-btn:disabled { opacity: .5; cursor: default; }
+.itw-root .itw-pill-btn.itw-pill-accent { border-color: var(--itw-dysgraphia); padding: 10px 18px; font-size: 13.5px; }
+.itw-root .itw-pill-btn.itw-pill-accent:disabled { background: var(--itw-panel-2); text-decoration: line-through; opacity: .6; }
+.itw-root button:focus-visible,
+.itw-root a:focus-visible,
+.itw-root [role="button"]:focus-visible,
+.itw-root input:focus-visible {
+  outline: 3px solid var(--itw-accent, #2563eb);
+  outline-offset: 2px;
+}
+
+/* Dysgraphia: one clear "next key" instead of eight identical buttons */
+.itw-dysgraph-keys { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
+.itw-dysgraph-key {
+  min-width: 48px; height: 52px; padding: 0 12px; border-radius: 12px;
+  font-family: var(--font-mono); font-size: 20px; font-weight: 800;
+  background: var(--itw-panel); color: var(--itw-muted);
+  border: 1.5px dashed var(--itw-border); opacity: .55; cursor: default;
+}
+.itw-dysgraph-key.itw-next {
+  opacity: 1; cursor: pointer; color: #fff; background: var(--itw-dysgraphia);
+  border: 2px solid var(--itw-dysgraphia); min-width: 64px; height: 60px; font-size: 24px;
+  box-shadow: 0 0 0 5px rgba(178, 89, 40, .18), 0 10px 20px -8px rgba(178, 89, 40, .6);
+  animation: itw-key-pulse 1.4s ease-in-out infinite;
+}
+.itw-dysgraph-key.itw-next:active { transform: translateY(2px) scale(.97); }
+@keyframes itw-key-pulse { 50% { box-shadow: 0 0 0 9px rgba(178, 89, 40, .08), 0 10px 20px -8px rgba(178, 89, 40, .6); } }
+@media (prefers-reduced-motion: reduce) { .itw-dysgraph-key.itw-next { animation: none; } }
+
+/* Executive: say what to do */
+.itw-exec-instruction { font-size: 14px; line-height: 1.5; color: var(--itw-muted); margin: 0 0 14px; }
+
+/* Speech: press-and-hold must not scroll/zoom/long-press on touch */
+.itw-phonate-btn { touch-action: none; -webkit-touch-callout: none; }
+.itw-phonate-btn:focus-visible { outline: 3px solid var(--itw-speech); outline-offset: 6px; }
+
+/* Dyscalculia: dots are visually small but get a finger-sized hit area */
+.itw-scatter-dot { position: absolute; }
+.itw-scatter-dot::after { content: ""; position: absolute; inset: -12px; border-radius: 50%; }
+
+/* Stories landing cards: single badge (the pill on the photo), calmer eyebrow, clear CTA */
+.itw-story-eyebrow { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.itw-story-eyebrow-kind {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--itw-accent);
+}
+.itw-story-eyebrow-sub { font-size: 13.5px; font-weight: 700; color: var(--itw-muted); }
+.itw-story-cta {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; padding: 8px 16px;
+  border-radius: 999px; border: 1.5px solid currentColor; font-size: .86rem; font-weight: 800;
+  color: var(--itw-accent); width: fit-content; transition: gap .2s ease, background .2s ease;
+}
+.itw-story-card:hover .itw-story-cta { gap: 10px; background: rgba(37, 99, 235, .08); }
+
+/* Storybook: the "Aarav's Day" tag was clipped by the page-corner curl */
+.itw-storybook-text-page .itw-storybook-chapter-ribbon { padding-right: 54px; }
+.itw-storybook-text-page .itw-storybook-time-tag { white-space: nowrap; }

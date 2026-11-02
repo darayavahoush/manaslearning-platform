@@ -944,17 +944,15 @@ function SoonCard({ c, onSelect }) {
       <div className="itw-mcard-body">
         <div className="itw-mcard-top">
           <div className="itw-mcard-icon" aria-hidden="true">{c.icon}</div>
-          <div>
-            <div className="itw-tag" style={{ background: "var(--itw-autism-soft)", color: "var(--itw-autism)" }}>
-              {c.badge || "Interactive"}
-            </div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)", marginTop: 2 }}>{c.sub}</div>
+          <div className="itw-story-eyebrow">
+            <span className="itw-story-eyebrow-kind">{c.meta}</span>
+            <span className="itw-story-eyebrow-sub">{c.sub}</span>
           </div>
         </div>
         <h3>{c.name}</h3>
         <p>{c.blurb}</p>
-        <div className="itw-soon-meta" style={{ color: "var(--itw-accent)", fontWeight: 700 }}>
-          {c.meta} →
+        <div className="itw-soon-meta itw-story-cta">
+          {c.key === "dayineyes" ? "Open the exhibit" : "Read the story"} <span aria-hidden="true">→</span>
         </div>
       </div>
     </button>
@@ -1037,7 +1035,7 @@ function Landing({ onSelect }) {
           {pick(["dyscalculia", "dysgraphia", "auditory", "executive"]).map(renderCard)}
         </div>
         <div className="itw-group-label">Stories &amp; Perspectives</div>
-        <div className="itw-cardgrid">
+        <div className="itw-cardgrid itw-stories-grid">
           {SOON_STORIES.map((c) => <SoonCard key={c.key} c={c} onSelect={onSelect} />)}
         </div>
       </section>
@@ -5329,6 +5327,16 @@ function SpeechSim({
     onCompleteRef.current = onComplete;
   }, [onComplete]);
 
+  // Never leave a hold timer running after the sim unmounts (Exit mid-hold).
+  useEffect(() => {
+    return () => {
+      if (holdIntervalRef.current) {
+        clearInterval(holdIntervalRef.current);
+        holdIntervalRef.current = null;
+      }
+    };
+  }, []);
+
   // Stopwatch timer
   useEffect(() => {
     startTimeRef.current = performance.now();
@@ -5456,8 +5464,8 @@ function SpeechSim({
 
   // Press & hold against vocal fold resistance
   const handleHoldStart = (e) => {
-    e?.preventDefault?.();
-    if (!running || !currentFrag) return;
+    if (e?.type === "keydown" && e.repeat) return; // holding a key fires repeats; start once
+    if (!running || !currentFrag || holdIntervalRef.current) return;
     setIsHolding(true);
     setStrainNotice(null);
     holdProgressRef.current = 6;
@@ -5492,6 +5500,7 @@ function SpeechSim({
 
       if (nextProgress >= 100) {
         clearInterval(holdIntervalRef.current);
+        holdIntervalRef.current = null;
         setIsHolding(false);
         setHoldProgress(0);
         holdProgressRef.current = 0;
@@ -5511,10 +5520,12 @@ function SpeechSim({
     }, 40);
   };
 
-  const handleHoldEnd = (e) => {
-    e?.preventDefault?.();
+  const handleHoldEnd = () => {
     if (!running) return;
-    if (holdIntervalRef.current) clearInterval(holdIntervalRef.current);
+    if (holdIntervalRef.current) {
+      clearInterval(holdIntervalRef.current);
+      holdIntervalRef.current = null;
+    }
     const progress = holdProgressRef.current;
 
     if (progress < 100) {
@@ -5742,10 +5753,29 @@ function SpeechSim({
                 <button
                   type="button"
                   className={`itw-phonate-btn${isHolding ? " itw-charging" : ""}`}
-                  onMouseDown={handleHoldStart}
-                  onMouseUp={handleHoldEnd}
-                  onTouchStart={handleHoldStart}
-                  onTouchEnd={handleHoldEnd}
+                  onPointerDown={(e) => {
+                    // Capture so releasing OUTSIDE the button still ends the hold (no stuck charging).
+                    try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
+                    handleHoldStart(e);
+                  }}
+                  onPointerUp={handleHoldEnd}
+                  onPointerCancel={handleHoldEnd}
+                  onLostPointerCapture={handleHoldEnd}
+                  onKeyDown={(e) => {
+                    if (e.key === " " || e.key === "Enter") {
+                      e.preventDefault();
+                      handleHoldStart(e);
+                    }
+                  }}
+                  onKeyUp={(e) => {
+                    if (e.key === " " || e.key === "Enter") {
+                      e.preventDefault();
+                      handleHoldEnd();
+                    }
+                  }}
+                  onBlur={handleHoldEnd}
+                  onContextMenu={(e) => e.preventDefault()}
+                  aria-label={`Press and hold to phonate: ${currentFrag.text}`}
                   title={
                     mode === "fast"
                       ? "Hold down firmly against vocal motor resistance to release the syllable"
@@ -7099,11 +7129,13 @@ function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplet
   const [motorFatigue, setMotorFatigue] = useState(0);
   const [simplifiedText, setSimplifiedText] = useState("");
   const [usedVoice, setUsedVoice] = useState(false);
+  const [usedTiles, setUsedTiles] = useState([]);
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(true);
 
   const startTimeRef = useRef(0);
   const timerRef = useRef(null);
+  const dictateTimerRef = useRef(null);
   const onCompleteRef = useRef(onComplete);
 
   useEffect(() => {
@@ -7118,12 +7150,14 @@ function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplet
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (dictateTimerRef.current) clearTimeout(dictateTimerRef.current);
     };
   }, []);
 
   const MIND_THOUGHT =
     "The mangrove root network traps river sediment, preventing shoreline erosion while nurturing juvenile marine species.";
-  const TARGET_LETTERS = "The mangrove roots trap river sediment".split("");
+  // Copy the exact sentence shown in "the idea in your mind" so the task is consistent.
+  const TARGET_LETTERS = MIND_THOUGHT.split("");
   const CONCEPT_TILES = [
     "Mangrove root network",
     "Traps river sediment",
@@ -7149,12 +7183,16 @@ function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplet
     }
   };
 
-  const handleWordBankClick = (tileText) => {
+  const handleWordBankClick = (tileText, tileIdx) => {
+    if (usedTiles.includes(tileIdx)) return;
     if (soundOn) audio.cue("tap");
     const phrase = writtenLetters.length === 0 ? tileText : ` ${tileText}`;
     const nextLetters = [...writtenLetters, ...phrase.split("")];
+    const nextUsed = [...usedTiles, tileIdx];
     setWrittenLetters(nextLetters);
-    if (nextLetters.length >= 45) {
+    setUsedTiles(nextUsed);
+    // Done once every concept card has been placed (each can be used once).
+    if (nextUsed.length >= CONCEPT_TILES.length) {
       finishSim("wordbank", nextLetters.length, 12);
     }
   };
@@ -7168,7 +7206,8 @@ function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplet
     setWrittenLetters(MIND_THOUGHT.split(""));
     setMotorFatigue(0);
 
-    setTimeout(() => {
+    if (dictateTimerRef.current) clearTimeout(dictateTimerRef.current);
+    dictateTimerRef.current = setTimeout(() => {
       finishSim("dictation", MIND_THOUGHT.length, 0);
     }, 1200);
   };
@@ -7317,11 +7356,11 @@ function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplet
                     <button
                       key={idx}
                       type="button"
-                      className="itw-pill-btn"
-                      style={{ fontSize: 13, padding: "10px 16px", fontWeight: 700, borderColor: "var(--itw-dysgraphia)" }}
-                      onClick={() => handleWordBankClick(t)}
+                      className="itw-pill-btn itw-pill-accent"
+                      disabled={usedTiles.includes(idx)}
+                      onClick={() => handleWordBankClick(t, idx)}
                     >
-                      + {t}
+                      {usedTiles.includes(idx) ? "✓ " : "+ "}{t}
                     </button>
                   ))}
                 </div>
@@ -7331,33 +7370,29 @@ function DysgraphiaSim({ mode = "baseline", supportType = "dictation", onComplet
         ) : (
           <div>
             <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-muted)", marginBottom: 10 }}>
-              Form each letter stroke manually (notice hand fatigue rising with every letter):
+              Copy the sentence one letter at a time. Tap the highlighted key (notice hand fatigue rising with every letter):
             </div>
-            <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 6 }}>
+            <div className="itw-dysgraph-keys">
               {TARGET_LETTERS.slice(writtenLetters.length, writtenLetters.length + 8).map((char, i) => (
                 <button
-                  key={i}
+                  key={writtenLetters.length + i}
                   type="button"
-                  className="itw-pill-btn"
-                  style={{
-                    fontSize: 16,
-                    padding: "8px 16px",
-                    fontWeight: 800,
-                    fontFamily: "var(--font-mono)",
-                    borderColor: "var(--itw-dysgraphia)",
-                  }}
+                  className={`itw-dysgraph-key${i === 0 ? " itw-next" : ""}`}
+                  disabled={i !== 0}
+                  aria-label={i === 0 ? `Write ${char === " " ? "a space" : char}` : undefined}
                   onClick={() => handleWriteStroke(char)}
                 >
-                  {char === " " ? "[Space]" : char}
+                  {char === " " ? "␣" : char}
                 </button>
               ))}
+            </div>
+            <div style={{ marginTop: 14 }}>
               <button
                 type="button"
                 className="itw-pill-btn"
-                style={{ fontSize: 13, padding: "8px 16px", fontWeight: 700 }}
                 onClick={() => finishSim("manual", writtenLetters.length, motorFatigue)}
               >
-                Complete Attempt →
+                I would stop here →
               </button>
             </div>
           </div>
@@ -8809,6 +8844,7 @@ function ExecutiveFunctioningSim({ mode = "baseline", supportType = "nnl", onCom
   const { soundOn } = useContext(SettingsContext);
   const [completedTasks, setCompletedTasks] = useState([]);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [blockedAttempts, setBlockedAttempts] = useState(0);
   const [elapsed, setElapsed] = useState(0);
 
   const startTimeRef = useRef(0);
@@ -8842,6 +8878,7 @@ function ExecutiveFunctioningSim({ mode = "baseline", supportType = "nnl", onCom
           .map((mId) => EXEC_TASKS.find((t) => t.id === mId)?.title)
           .filter(Boolean)
           .join(" AND ");
+        setBlockedAttempts((n) => n + 1);
         setErrorMsg(`Blocked Dependency: "${task.title}" requires completing [${missingNames}] first.`);
         return;
       }
@@ -8856,8 +8893,9 @@ function ExecutiveFunctioningSim({ mode = "baseline", supportType = "nnl", onCom
       if (timerRef.current) clearInterval(timerRef.current);
       if (soundOn) audio.cue("slam");
       onCompleteRef.current?.({
-        time: elapsed,
+        time: parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1)),
         tasksCount: next.length,
+        blockedAttempts,
       });
     }
   };
@@ -9042,6 +9080,13 @@ function ExecutiveFunctioningSim({ mode = "baseline", supportType = "nnl", onCom
 
       {/* Standard Board for baseline / unsupported / roadmap */}
       {!(mode === "supported" && (supportType === "one_step" || supportType === "nnl")) && (
+        <p className="itw-exec-instruction">
+          {mode === "baseline"
+            ? "Tap the task to complete it."
+            : "Tap the tasks in the order you think they must happen. Some tasks need others finished first, and the bus leaves soon."}
+        </p>
+      )}
+      {!(mode === "supported" && (supportType === "one_step" || supportType === "nnl")) && (
         <div className="itw-exec-board">
           {(mode === "baseline" ? [EXEC_TASKS[0]] : EXEC_TASKS).map((task) => {
             const isDone = completedTasks.includes(task.id);
@@ -9093,7 +9138,7 @@ function ExecutiveFunctioningSim({ mode = "baseline", supportType = "nnl", onCom
 function ExecutiveFunctioningModule({ onBack, onNavigate }) {
   const [step, setStep] = useState("intro");
   const [results, setResults] = useState({ baseline: null, unsupported: null, supported: null });
-  const [chosenSupport, setChosenSupport] = useState("matrix");
+  const [chosenSupport, setChosenSupport] = useState("nnl");
   const [reflectionAnswers, setReflectionAnswers] = useState([null]);
 
   const stepIndex = EXEC_STEP_INDEX[step];
@@ -9240,7 +9285,9 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
                 {results.unsupported ? `${results.unsupported.time.toFixed(1)}s` : "—"}
               </div>
               <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
-                {results.unsupported ? "Dependency tracking & friction" : "—"}
+                {results.unsupported
+                  ? `${results.unsupported.blockedAttempts || 0} blocked attempt${results.unsupported.blockedAttempts === 1 ? "" : "s"}`
+                  : "—"}
               </div>
             </div>
           </div>
@@ -9567,6 +9614,24 @@ function DsArtPage({
         </svg>
         <span>{page.subtitle}</span>
       </div>
+      {page.tactileCues && (
+        <div className="itw-storybook-tactile-card">
+          <div className="itw-tactile-card-header">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+            <span>Sensory &amp; Learning Scaffolds</span>
+          </div>
+          <div className="itw-tactile-chips">
+            {page.tactileCues.map((cue, i) => (
+              <div key={i} className="itw-tactile-chip">
+                <span className="itw-tactile-chip-label">{cue.label}:</span>
+                <span className="itw-tactile-chip-val">{cue.val}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="itw-book-left-folio">
         <span>Plate {pageIndex + 1} of {totalPages}</span>
         <span>Chennai Inclusive Primary</span>
@@ -9704,6 +9769,11 @@ function DownSyndromeStory({ onBack, onNavigate }) {
       narrative: "For Aarav (age 9), having clear visual anchors reduces transition anxiety and builds autonomy. Visual memory is often a notable strength in children with Down syndrome — sequencing pictures anchors concepts far faster than spoken instructions alone.",
       insight: "Visual schedules and predictable routines allow children to navigate complex school days with confidence.",
       badge: "Visual Anchor Strength",
+      tactileCues: [
+        { label: "Visual Cues", val: "Laminated sequence cards with high-contrast icons" },
+        { label: "Routine Anchor", val: "Predictable day flow removes transition anxiety" },
+        { label: "Autonomy", val: "Aarav self-checks completed tasks independently" },
+      ],
     },
     {
       title: "Hands in the Soil: Planting Together",
@@ -9714,6 +9784,11 @@ function DownSyndromeStory({ onBack, onNavigate }) {
       narrative: "Peer-mediated inclusion thrives in cooperative, hands-on tasks. Tactile activities engage motor planning and sensory regulation while fostering authentic social friendships where every child contributes their strengths.",
       insight: "Real peer inclusion happens through shared meaningful activities, not isolated intervention rooms.",
       badge: "Cooperative Peer Learning",
+      tactileCues: [
+        { label: "Sensory Grounding", val: "Cool damp loam regulates proprioceptive input" },
+        { label: "Peer Collaboration", val: "Complementary roles: Diya trowels, Aarav sows" },
+        { label: "Motor Flow", val: "Deliberate pinch-grasp practice with sunflower seeds" },
+      ],
     },
     {
       title: "Hands-On Science: Learning by Touching",
@@ -9724,6 +9799,11 @@ function DownSyndromeStory({ onBack, onNavigate }) {
       narrative: "Abstract textbook definitions can feel opaque, but concrete multi-sensory manipulatives bridge understanding effortlessly. When concepts are experienced physically, retention and expressive participation soar.",
       insight: "Concrete-Representational-Abstract (CRA) learning unlocks deep scientific curiosity.",
       badge: "Multi-Sensory Discovery",
+      tactileCues: [
+        { label: "Concrete First", val: "Living leaf specimens before textbook diagrams" },
+        { label: "Visual Tool", val: "5× handheld loupe brings microscopic textures to life" },
+        { label: "Shared Discovery", val: "Classmates gather to compare vein patterns with Aarav" },
+      ],
     },
     {
       title: "Celebrating Every Milestone",
@@ -9734,6 +9814,11 @@ function DownSyndromeStory({ onBack, onNavigate }) {
       narrative: "Development in Down syndrome is not a race against a rigid timeline; it is a rich journey of steady progress. When schools measure growth by personal milestones rather than uniform speed, children thrive with unshakeable self-worth.",
       insight: "Dignity, patience, and celebrating authentic milestones form the cornerstone of inclusive education.",
       badge: "Strength-Based Milestone",
+      tactileCues: [
+        { label: "Fine Motor Win", val: "Two-loop bunny ears method with two-tone laces" },
+        { label: "Paced Practice", val: "Mastered at Aarav's own pace with zero time pressure" },
+        { label: "Affirmation", val: "Pride shared across teacher, peers, and family at pickup" },
+      ],
     },
   ];
 
@@ -9957,6 +10042,48 @@ function EyesArtPage({
         </svg>
         <span><strong>Setting:</strong> {current.setting}</span>
       </div>
+      {current.metrics && (
+        <div className="itw-storybook-env-panel">
+          <div className="itw-env-panel-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+              <path d="M2 12h20" />
+            </svg>
+            <span>Sensory &amp; Environmental Dynamics</span>
+          </div>
+          <div className="itw-env-metrics-grid">
+            <div className="itw-env-metric-item">
+              <span className="itw-env-metric-icon" aria-hidden="true">🔊</span>
+              <div className="itw-env-metric-body">
+                <span className="itw-env-metric-lbl">Acoustics</span>
+                <span className="itw-env-metric-val">{current.metrics.decibels}</span>
+              </div>
+            </div>
+            <div className="itw-env-metric-item">
+              <span className="itw-env-metric-icon" aria-hidden="true">☀️</span>
+              <div className="itw-env-metric-body">
+                <span className="itw-env-metric-lbl">Visual Light</span>
+                <span className="itw-env-metric-val">{current.metrics.glare}</span>
+              </div>
+            </div>
+            <div className="itw-env-metric-item">
+              <span className="itw-env-metric-icon" aria-hidden="true">👥</span>
+              <div className="itw-env-metric-body">
+                <span className="itw-env-metric-lbl">Social Scale</span>
+                <span className="itw-env-metric-val">{current.metrics.density}</span>
+              </div>
+            </div>
+            <div className="itw-env-metric-item">
+              <span className="itw-env-metric-icon" aria-hidden="true">🌿</span>
+              <div className="itw-env-metric-body">
+                <span className="itw-env-metric-lbl">Calm Anchor</span>
+                <span className="itw-env-metric-val">{current.metrics.anchor}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="itw-book-left-folio">
         <span>Period {activePeriod + 1} of {totalPeriods}</span>
         <span>{current.time} Schedule</span>
@@ -10009,10 +10136,10 @@ function EyesTextPage({
       <div className="itw-lens-switcher" role="radiogroup" aria-label="Perspective lenses">
         <button
           type="button"
-          className={`itw-lens-btn${activeLens === "sensory" ? " itw-active" : ""}`}
+          className={`itw-lens-btn itw-lens-sensory${activeLens === "sensory" ? " itw-active" : ""}`}
           onClick={() => setActiveLens && setActiveLens("sensory")}
-          style={{ background: activeLens === "sensory" ? "var(--itw-autism)" : undefined }}
           disabled={isTurningFace}
+          aria-pressed={activeLens === "sensory"}
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
             <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
@@ -10022,10 +10149,10 @@ function EyesTextPage({
         </button>
         <button
           type="button"
-          className={`itw-lens-btn${activeLens === "attention" ? " itw-active" : ""}`}
+          className={`itw-lens-btn itw-lens-attention${activeLens === "attention" ? " itw-active" : ""}`}
           onClick={() => setActiveLens && setActiveLens("attention")}
-          style={{ background: activeLens === "attention" ? "var(--itw-adhd)" : undefined }}
           disabled={isTurningFace}
+          aria-pressed={activeLens === "attention"}
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
             <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04zM14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04z" />
@@ -10034,10 +10161,10 @@ function EyesTextPage({
         </button>
         <button
           type="button"
-          className={`itw-lens-btn${activeLens === "communication" ? " itw-active" : ""}`}
+          className={`itw-lens-btn itw-lens-communication${activeLens === "communication" ? " itw-active" : ""}`}
           onClick={() => setActiveLens && setActiveLens("communication")}
-          style={{ background: activeLens === "communication" ? "var(--itw-speech)" : undefined }}
           disabled={isTurningFace}
+          aria-pressed={activeLens === "communication"}
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -10046,10 +10173,10 @@ function EyesTextPage({
         </button>
         <button
           type="button"
-          className={`itw-lens-btn${activeLens === "supported" ? " itw-active" : ""}`}
+          className={`itw-lens-btn itw-lens-supported${activeLens === "supported" ? " itw-active" : ""}`}
           onClick={() => setActiveLens && setActiveLens("supported")}
-          style={{ background: activeLens === "supported" ? "#2e7d32" : undefined }}
           disabled={isTurningFace}
+          aria-pressed={activeLens === "supported"}
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ verticalAlign: "-1px" }}>
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
@@ -10153,6 +10280,12 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
       image: "/decor/itw/day-through-my-eyes.webp",
       alt: "Courtyard assembly with hundreds of students under bright morning sun",
       setting: "300 students standing in rows on polished granite; morning announcements booming through high-mounted horn speakers; bright sunlight glaring off courtyard pavers.",
+      metrics: {
+        decibels: "84 dB • Echoing granite reverberation",
+        glare: "High • Direct courtyard sun reflection",
+        density: "~300 peers in structured columns",
+        anchor: "Colonnade shade & perimeter position",
+      },
       sensory: "The loudspeaker reverberates in my ears like physical pressure. The hum of 300 footsteps on stone creates a wall of white noise where words get lost.",
       attention: "My eyes are pulled to the flutter of pigeons in the courtyard rafters and the flicker of distant hallway bulbs. Holding attention on announcements requires intense effort.",
       communication: "The teacher asks me for my homework diary suddenly. The noise makes my throat tighten; finding the words takes longer than the teacher waits.",
@@ -10164,6 +10297,12 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
       image: "/decor/itw/science-lab-story.webp",
       alt: "Diverse children gathered around a wooden table examining microscope and plants",
       setting: "Tables with glassware, microscopes, and tap water; multiple group conversations happening at once.",
+      metrics: {
+        decibels: "72 dB • Clattering glassware & banter",
+        glare: "Moderate • Overhead fluorescent lab tubes",
+        density: "Small table group of 4 teammates",
+        anchor: "Tactile microscope focus & specimen dish",
+      },
       sensory: "The smell of methylated spirits and bleach mixes with the clatter of test tubes on slate benches.",
       attention: "I have 4 ideas for our model simultaneously! Keeping them in sequential order while partners debate is an executive balancing act.",
       communication: "I know the answer to the hypothesis! But speaking over louder classmates requires more motor planning time than the discussion pause allows.",
@@ -10175,6 +10314,12 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
       image: "/decor/itw/hero-world.webp",
       alt: "Quiet shaded garden bench under lush green trees with gentle sunlight",
       setting: "Bustling school cafeteria with stainless steel trays, cutlery clatter, and fast-moving peer banter.",
+      metrics: {
+        decibels: "54 dB at garden bench vs 88 dB inside",
+        glare: "Soft • Dappled leaves & tree shade",
+        density: "1–2 trusted friends in quiet courtyard",
+        anchor: "Fresh breeze & wooden garden bench",
+      },
       sensory: "The scraping of metal chairs on floor tiles and overlapping smells can feel like a sudden wave. A quiet shaded bench under the neem tree restores my equilibrium.",
       attention: "Social games have unwritten, shifting rules. When someone changes the game halfway, my mind takes time to re-route.",
       communication: "Relaxed, low-pressure conversations with close friends where no one rushes my sentences make this my favorite time of day.",
@@ -10186,6 +10331,12 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
       image: "/decor/itw/dyslexia-environment.webp",
       alt: "Warm quiet library with open books and art easels bathed in afternoon light",
       setting: "Afternoon classroom; students transcribing notes from the blackboard into notebooks.",
+      metrics: {
+        decibels: "46 dB • Gentle pencil scratching on paper",
+        glare: "Low • Warm indirect late afternoon sun",
+        density: "Individual desks in spacious arrangement",
+        anchor: "Tinted reading ruler & sensory cushion",
+      },
       sensory: "Afternoon heat and fatigue build up; pencil grip feels heavier as hand muscles tire.",
       attention: "After 5 hours of continuous filtering, my brain's battery is low. Short movement breaks and sensory fidgets restore my focus immediately.",
       communication: "When the teacher asks me to explain what I wrote, speaking it aloud is 10 times easier than the messy pencil marks on my page.",
@@ -10374,7 +10525,7 @@ export default function InTheirWorld() {
     if (typeof window !== "undefined") {
       const p = new URLSearchParams(window.location.search);
       const mod = p.get("module") || window.location.hash.replace("#", "");
-      if (mod && ["autism", "adhd", "dyslexia", "speech", "dyscalculia", "dysgraphia", "auditory", "executive"].includes(mod)) return mod;
+      if (mod && ["autism", "adhd", "dyslexia", "speech", "dyscalculia", "dysgraphia", "auditory", "executive", "downsyndrome", "dayineyes"].includes(mod)) return mod;
     }
     return "landing";
   });

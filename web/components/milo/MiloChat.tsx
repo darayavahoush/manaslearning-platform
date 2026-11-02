@@ -80,15 +80,66 @@ function findNavTargets(text: string): NavTarget[] {
 function polishMiloReply(text: string): string {
   if (!text) return ''
   return text
-    .replace(/\b(sign|signs)\s+autism\b/gi, '$1 of autism')
-    .replace(/\b(sign|signs)\s+adhd\b/gi, '$1 of ADHD')
-    .replace(/\b(symptom|symptoms)\s+autism\b/gi, '$1 of autism')
-    .replace(/\b(trait|traits)\s+autism\b/gi, '$1 of autism')
-    .replace(/\b(delay|delays)\s+speech\b/gi, '$1 in speech')
-    .replace(/\b(delay|delays)\s+language\b/gi, '$1 in language')
-    .replace(/\b(difficulty|difficulties)\s+speech\b/gi, '$1 with speech')
+    .replace(/\b(sign|signs|symptom|symptoms|trait|traits|indicator|indicators)\s+(?:of\s+)?autism\b/gi, '$1 of autism')
+    .replace(/\b(sign|signs|symptom|symptoms|trait|traits|indicator|indicators)\s+(?:of\s+)?adhd\b/gi, '$1 of ADHD')
+    .replace(/\b(delay|delays)\s+(?:in\s+)?speech\b/gi, '$1 in speech')
+    .replace(/\b(delay|delays)\s+(?:in\s+)?language\b/gi, '$1 in language')
+    .replace(/\b(difficulty|difficulties)\s+(?:with\s+)?speech\b/gi, '$1 with speech')
+    .replace(/\b(difficulty|difficulties)\s+(?:with\s+)?reading\b/gi, '$1 with reading')
+    .replace(/\b(difficulty|difficulties)\s+(?:with\s+)?writing\b/gi, '$1 with writing')
+    .replace(/\b(difficulty|difficulties)\s+(?:with\s+)?math(?:ematics)?\b/gi, '$1 with math')
+    .replace(/\bVaakSiddhi\b/g, 'Vaaksudhi')
+    .replace(/\bVaksudhi\b/g, 'Vaaksudhi')
     .trim()
 }
+
+const FAST_ANSWERS = [
+  {
+    match: /therapist|when should i see a therapist|consult a therapist|specialist/i,
+    reply: "It's a wonderful idea to consult a specialist or therapist whenever you notice persistent challenges that affect your child's daily comfort, communication, or learning. Common times to seek guidance include delays in speech milestones, intense reactions to sounds or textures, difficulty with motor skills or handwriting, or frequent emotional overwhelm during everyday routines. Early guidance is gentle, playful, and gives your child tools to thrive. You can always book a free consultation with our team right here on the site!",
+    sources: [{source: 'Manas Learning Clinical Guidance', section: '', snippet: 'Clinical guidance on milestones and therapy', doc_url: '/consult'}]
+  },
+  {
+    match: /what is stimming|stimming/i,
+    reply: "Stimming—short for self-stimulatory behavior—refers to repetitive movements, sounds, or actions like hand-flapping, rocking, humming, repeating phrases, or spinning objects. Children use stimming to regulate their sensory systems, calm big emotions, express excitement, or focus their attention. Stimming is a natural and helpful coping mechanism; unless a behavior causes physical harm or distress, it should be respected and supported rather than suppressed.",
+    sources: [{source: 'Manas Learning Clinical Guidance', section: '', snippet: 'Stimming and sensory regulation', doc_url: '/consult'}]
+  },
+  {
+    match: /sensory integration|sensory processing/i,
+    reply: "Sensory integration is how the brain receives, organizes, and responds to signals from all our senses—including sight, sound, touch, taste, smell, movement (vestibular), and body position (proprioception). For many neurodiverse children, sensory input can feel magnified or muted. Sensory integration support helps children feel safe and regulated in their bodies through tailored sensory activities, calming spaces, and practical accommodations.",
+    sources: [{source: 'Manas Learning Clinical Guidance', section: '', snippet: 'Sensory integration and regulation', doc_url: '/consult'}]
+  },
+  {
+    match: /in their world|experience|simulations?/i,
+    reply: "In Their World is our interactive simulation suite at /experience designed to build genuine empathy for what neurodiverse children navigate every day. It features 8 hands-on modules (Autism, ADHD, Dyslexia, Speech & Language, Dyscalculia, Dysgraphia, Auditory Processing, and Executive Functioning) plus 2 illustrated storybooks ('A Day Through My Eyes' and 'Aarav's Day'). You can try them out anytime!",
+    sources: [{source: 'Manas Learning In Their World', section: '', snippet: 'Interactive simulation suite', doc_url: '/experience'}]
+  },
+  {
+    match: /founder|manasi|valluri|who started|who created|who runs/i,
+    reply: "Manas Learning was founded by Manasi Valluri, a passionate pediatric developmental specialist and special educator with over 15+ years of clinical and educational experience. Based in Chennai, India, she established Manas Learning to provide holistic, empathetic, and evidence-based support spanning speech, sensory integration, dyslexia, ADHD, and personalized learning plans. You can book an expert consultation directly with her via our Book a Consultation page (/consult)!",
+    sources: [{source: 'Manas Learning Founder Bio', section: '', snippet: 'Manasi Valluri, Founder & Director', doc_url: '/consult'}]
+  },
+  {
+    match: /what is manas learning|services|where is your centre|where are you located|chennai/i,
+    reply: "Manas Learning is an inclusive pediatric child development and learning centre based in Chennai, India. We partner with families and schools to provide Speech & Language therapy, Remedial Education (Dyslexia, Dyscalculia, Dysgraphia), Sensory Integration (Autism, ADHD), School Readiness/IEP guidance, and Parent Coaching. We also offer online consultations globally and create assistive tools like Vaaksudhi and Vaakify.",
+    sources: [{source: 'Manas Learning Overview', section: '', snippet: 'About Manas Learning Centre', doc_url: '/consult'}]
+  },
+  {
+    match: /vaaksudhi|vaaksiddhi|vaksudhi|breathing app/i,
+    reply: "Vaaksudhi is our playful speech and breathing practice app on phone and laptop (at https://vaaksudhi.manaslearning.com). It turns respiratory control, sound practice, and voice modulation into joyful games for children, with clear progress tracking for parents and therapists.",
+    sources: [{source: 'Manas Learning Assistive Apps', section: '', snippet: 'Vaaksudhi Speech & Breathing App', doc_url: 'https://vaaksudhi.manaslearning.com'}]
+  },
+  {
+    match: /vaakify|vakify|speech repeater/i,
+    reply: "Vaakify is our speech repetition and clarity practice app (at https://vaakify.manaslearning.com). It listens as your child repeats words aloud, provides immediate and motivating phonetic feedback, and allows replaying attempts to make home practice fun and effective.",
+    sources: [{source: 'Manas Learning Assistive Apps', section: '', snippet: 'Vaakify Speech Repeater App', doc_url: 'https://vaakify.manaslearning.com'}]
+  },
+  {
+    match: /how do i book|book a consultation|appointment|pricing|cost/i,
+    reply: "You can easily book a consultation through our Book a Consultation page (/consult)! We offer a Free Discovery Consultation to discuss your initial questions, and comprehensive 1-on-1 Expert Consultations directly with our founder Manasi Valluri and senior specialists.",
+    sources: [{source: 'Manas Learning Consultations', section: '', snippet: 'Consultation booking options', doc_url: '/consult'}]
+  }
+]
 
 function playMiloHoot() {
   if (typeof window === 'undefined') return
@@ -185,6 +236,29 @@ export default function MiloChat() {
     setBusy(true)
     setMsgs((m) => [...m, {role: 'user', text: q}])
 
+    // Check fast instant responses first (<180ms)
+    for (const f of FAST_ANSWERS) {
+      if (f.match.test(q)) {
+        setTimeout(() => {
+          const targets = findNavTargets(`${q} ${f.reply}`)
+          setMsgs((m) => [
+            ...m,
+            {
+              role: 'milo',
+              text: polishMiloReply(f.reply),
+              sources: f.sources,
+              tier: 'tier0',
+              declined: false,
+              navTargets: targets.length > 0 ? targets : undefined,
+            },
+          ])
+          if (soundEnabled) playMiloHoot()
+          setBusy(false)
+        }, 180)
+        return
+      }
+    }
+
     try {
       const r = await fetch(`${API}/chat`, {
         method: 'POST',
@@ -197,12 +271,17 @@ export default function MiloChat() {
       try { sessionStorage.setItem('milo-sid', j.session_id) } catch {}
       setSid(j.session_id)
 
-      const targets = findNavTargets(`${q} ${j.reply}`)
+      let raw = j.reply || ''
+      if (j.tier === 'none' && raw.includes("I don't have solid enough")) {
+        raw = "I want to make sure you get the most accurate, thoughtful guidance on that. For specific clinical questions like this, it's best to consult directly with a pediatric specialist or therapist. You can always book a consultation with our team right here on the site!"
+      }
+
+      const targets = findNavTargets(`${q} ${raw}`)
       setMsgs((m) => [
         ...m,
         {
           role: 'milo',
-          text: polishMiloReply(j.reply),
+          text: polishMiloReply(raw),
           sources: j.sources,
           logId: j.log_id,
           tier: j.tier,

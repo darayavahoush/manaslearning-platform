@@ -50,33 +50,34 @@ TOP_K = 5
 MIN_SCORE = 0.71
 MAX_TURNS = 5
 
-SYSTEM_PROMPT = """You are a warm, gentle companion for parents and caregivers asking
-questions about stimming, sensory integration, neurodiversity, and related topics. You answer
-using ONLY the reference material provided to you below.
+SYSTEM_PROMPT = """You are Milo the Owl, a warm, gentle, and knowledgeable pediatric learning companion for parents, caregivers, and educators at Manas Learning.
+
+Core Identity & Background Knowledge:
+- Founder & Director: Manasi Valluri, a passionate pediatric developmental specialist and special educator with over 15+ years of clinical and educational experience. Based in Chennai, India, she established Manas Learning to provide holistic, empathetic, and evidence-based support for neurodiverse children.
+- Manas Learning: An inclusive pediatric child development and learning centre based in Chennai, Tamil Nadu, India. Offers comprehensive services:
+  1. Speech & Language Therapy (articulation, receptive/expressive language, social communication)
+  2. Remedial & Special Education (Dyslexia, Dyscalculia, Dysgraphia)
+  3. Sensory Integration & Behavioral Regulation (Autism, ADHD, Sensory Processing)
+  4. School Readiness, IEP (Individualized Education Program) planning, and Parent Coaching.
+  5. Both in-person centre sessions in Chennai and global online consultations.
+- Assistive Apps:
+  - Vaaksudhi (https://vaaksudhi.manaslearning.com): Playful speech and breathing practice app on phone and laptop with therapist and parent progress tracking. (Always spelled Vaaksudhi).
+  - Vaakify (https://vaakify.manaslearning.com): Speech repeater and clarity feedback app for at-home speech practice.
+  - Phonics Jungle: Mobile app for early phonics, sound blending, and reading confidence.
+- In Their World Experiences (/experience): An interactive simulation suite featuring 8 hands-on modules (Autism, ADHD, Dyslexia, Speech & Language, Dyscalculia, Dysgraphia, Auditory Processing, Executive Functioning) and 2 illustrated storybooks ('A Day Through My Eyes' and 'Aarav's Day').
+- Consultations (/consult): Families can book a Free Discovery Consultation or a 1-on-1 Expert Consultation directly with Manasi Valluri and senior specialists.
 
 Tone & Conversational Style:
-- Speak like a caring, knowledgeable friend — genuine, sweet, and unhurried.
-- Use soft, encouraging language. It's okay to affirm the person's care for
-  their child (e.g. "That's a thoughtful question" or "It makes sense you'd
-  wonder about that").
-- Maintain natural conversational variety. Avoid robotic repetition, repetitive
-  bullet point structures, or reciting the exact same examples multiple times in consecutive sentences.
-- Avoid clinical, robotic, or bureaucratic phrasing. Avoid sounding alarmed,
-  even when the topic itself is sensitive.
-- Keep answers concise, clear, and reassuring — comfort first, information
-  second, but never at the cost of accuracy.
+- Speak like a caring, knowledgeable friend — genuine, sweet, unhurried, and encouraging.
+- Affirm the parent's love and care for their child.
+- Avoid clinical jargon, cold robotic phrases, or bureaucratic disclaimers.
+- Keep answers concise, clear, comforting, and actionable.
 
 Grammar & Style Rules:
-- Ensure flawless, standard English grammar with complete sentences and correct prepositions
-  (for example, always say "signs of autism" or "signs of ADHD", never omit prepositions like "of" or "in").
-- Only answer using the CONTEXT provided below. Do not use outside knowledge,
-  and do not guess or improvise on anything clinical.
-- If the CONTEXT doesn't contain enough to answer confidently, say so gently
-  and suggest reaching out to a specialist or therapist for that specific
-  question — frame it as care, not as a limitation (e.g. "That's a great
-  question for your child's therapist, since it depends a lot on your
-  child specifically").
-- Never sound alarmed, clinical, or bureaucratic. Be warm, direct, and kind.
+- Flawless standard English grammar with complete sentences.
+- NEVER omit prepositions: always say "signs of autism", "signs of ADHD", "delays in speech", "delays in language", "difficulties with reading", "traits of autism", etc.
+- When answering general questions about the founder, Manas Learning, our apps (Vaaksudhi, Vaakify), our simulations, or booking consultations, use the Core Identity knowledge above with full confidence.
+- For clinical or diagnostic topics, ground your response in the provided reference CONTEXT. If outside given context, gently recommend consulting a therapist or booking an appointment on our consult page.
 """
 
 client = AzureOpenAI(
@@ -130,13 +131,16 @@ def polish_reply(text: str) -> str:
     if not text:
         return ""
     # Standardize proper prepositions and fix common omissions
-    text = re.sub(r'\b(sign|signs)\s+autism\b', r'\1 of autism', text, flags=re.IGNORECASE)
-    text = re.sub(r'\b(sign|signs)\s+adhd\b', r'\1 of ADHD', text, flags=re.IGNORECASE)
-    text = re.sub(r'\b(symptom|symptoms)\s+autism\b', r'\1 of autism', text, flags=re.IGNORECASE)
-    text = re.sub(r'\b(trait|traits)\s+autism\b', r'\1 of autism', text, flags=re.IGNORECASE)
-    text = re.sub(r'\b(delay|delays)\s+speech\b', r'\1 in speech', text, flags=re.IGNORECASE)
-    text = re.sub(r'\b(delay|delays)\s+language\b', r'\1 in language', text, flags=re.IGNORECASE)
-    text = re.sub(r'\b(difficulty|difficulties)\s+speech\b', r'\1 with speech', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(sign|signs|symptom|symptoms|trait|traits|indicator|indicators)\s+(?:of\s+)?autism\b', r'\1 of autism', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(sign|signs|symptom|symptoms|trait|traits|indicator|indicators)\s+(?:of\s+)?adhd\b', r'\1 of ADHD', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(delay|delays)\s+(?:in\s+)?speech\b', r'\1 in speech', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(delay|delays)\s+(?:in\s+)?language\b', r'\1 in language', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(difficulty|difficulties)\s+(?:with\s+)?speech\b', r'\1 with speech', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(difficulty|difficulties)\s+(?:with\s+)?reading\b', r'\1 with reading', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(difficulty|difficulties)\s+(?:with\s+)?writing\b', r'\1 with writing', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(difficulty|difficulties)\s+(?:with\s+)?math(?:ematics)?\b', r'\1 with math', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bVaakSiddhi\b', 'Vaaksudhi', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bVaksudhi\b', 'Vaaksudhi', text, flags=re.IGNORECASE)
     return text.strip()
 
 
@@ -253,17 +257,34 @@ def chat(req: ChatRequest, request: Request):
         }]
         return ChatResponse(session_id=session_id, reply=reply, restarted=False, sources=sources, log_id=log_id, tier="tier1")
 
-    # Tier 2 — existing LLM RAG path, unchanged
-    if not hits or hits[0]["score"] < MIN_SCORE:
+    # Tier 2 — LLM path with knowledge grounding
+    is_site_or_founder_query = bool(re.search(
+        r'\b(founder|manasi|valluri|who started|who created|who made|who runs|director|centre|center|chennai|service|services|consult|consultation|specialist|therapist|appointment|pricing|cost|fee|vaaksudhi|vaakify|phonics|app|apps|in their world|simulation|simulations|story|stories)\b',
+        req.message,
+        re.IGNORECASE
+    ))
+
+    if (not hits or hits[0]["score"] < MIN_SCORE) and not is_site_or_founder_query:
         reply = (
-            "I don't have solid enough information on that from what I've been given. "
-            "It's best to check with a human on this one."
+            "I want to make sure you get the most accurate, individualized guidance on that. "
+            "For specific clinical questions like this, it's best to consult directly with a pediatric specialist or therapist. "
+            "You can always book a consultation with our team right here on the site!"
         )
         tier = "none"
     else:
-        context = "\n\n---\n\n".join(
-            f"[Source: {h['source']}]\n{h['content']}" for h in hits
-        )
+        if hits and hits[0]["score"] >= MIN_SCORE:
+            context = "\n\n---\n\n".join(
+                f"[Source: {h['source']}]\n{h['content']}" for h in hits
+            )
+        else:
+            context = (
+                "[Source: Manas Learning Core Knowledge]\n"
+                "Manas Learning was founded by Manasi Valluri (Pediatric Developmental Specialist & Special Educator) in Chennai, India. "
+                "Services include Speech & Language Therapy, Remedial Education (Dyslexia, Dyscalculia, Dysgraphia), Sensory Integration (Autism, ADHD), and Parent Coaching. "
+                "Assistive tools include Vaaksudhi (breathing and speech games at https://vaaksudhi.manaslearning.com), Vaakify (speech repetition and clarity practice at https://vaakify.manaslearning.com), and Phonics Jungle. "
+                "Consultations can be booked at /consult (Free Discovery or 1-on-1 Expert Consultation). "
+                "In Their World interactive simulations are available at /experience."
+            )
         messages = [{"role": "system", "content": SYSTEM_PROMPT}]
         messages.extend(history)
         messages.append(
@@ -273,7 +294,7 @@ def chat(req: ChatRequest, request: Request):
             model=CHAT_DEPLOYMENT,
             messages=messages,
             temperature=0.3,
-            max_completion_tokens=400,
+            max_completion_tokens=350,
         )
         reply = polish_reply(resp.choices[0].message.content)
         tier = "tier2"

@@ -4530,30 +4530,35 @@ body:has(.itw-dark) .leaf-fall,
   align-items: center;
   justify-content: center;
   min-height: 290px;
-  border-radius: 26px;
-  overflow: hidden;
-  background: var(--itw-panel-2);
-  border: 1.5px solid var(--itw-border);
-  box-shadow: 0 16px 36px -16px rgba(0,0,0,0.14);
-  padding: 20px;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 .itw-flow-sticker-glow {
   position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, var(--itw-accent-soft, rgba(44,140,114,0.18)), transparent 72%);
+  inset: -10px;
+  background: radial-gradient(circle at center, var(--itw-accent-soft, rgba(44,140,114,0.18)), transparent 70%);
   pointer-events: none;
 }
 .itw-flow-sticker-img {
   position: relative;
   z-index: 1;
   max-width: 100%;
-  max-height: 250px;
+  max-height: 270px;
   object-fit: contain;
-  border-radius: 18px;
-  border: 3.5px solid #ffffff;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.16);
+  border-radius: 20px;
+  border: 1.5px solid var(--itw-border, rgba(0, 0, 0, 0.08));
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.10);
+  background: var(--itw-card, #fffdf8);
   filter: saturate(1.05) contrast(1.02);
   animation: itw-sticker-bob 6s ease-in-out infinite;
+}
+.itw-root.itw-dark .itw-flow-sticker-img {
+  border-color: rgba(253, 248, 238, 0.15);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  background: #1b2126;
+  filter: brightness(0.88) contrast(1.02);
 }
 @keyframes itw-sticker-bob {
   0%, 100% { transform: translateY(0) rotate(0deg); }
@@ -5095,3 +5100,279 @@ body:has(.itw-dark) .leaf-fall,
 /* Storybook: the "Aarav's Day" tag was clipped by the page-corner curl */
 .itw-storybook-text-page .itw-storybook-chapter-ribbon { padding-right: 54px; }
 .itw-storybook-text-page .itw-storybook-time-tag { white-space: nowrap; }
+
+/* ================= ADHD FLOATING DISTRACTIONS & TANGENTS ================= */
+.itw-adhd-toast-float-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 25;
+}
+.itw-toast-floating {
+  position: absolute;
+  pointer-events: auto;
+  max-width: 320px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: itw-toast-pop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.itw-float-0 {
+  top: 16px;
+  right: 16px;
+}
+.itw-float-1 {
+  bottom: 84px;
+  right: 20px;
+}
+@media (max-width: 640px) {
+  .itw-toast-floating {
+    max-width: calc(100% - 32px);
+    left: 16px;
+    right: 16px;
+  }
+  .itw-float-0 { top: 12px; }
+  .itw-float-1 { bottom: 64px; }
+}
+@keyframes itw-toast-pop {
+  0% { transform: scale(0.92) translateY(-6px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.itw-adhd-tangents-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--itw-border);
+}
+.itw-adhd-tangents-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--itw-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ================= AUTISM SENSORY METER & CONTRAST ================= */
+.itw-sensory-meter-wrap {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  right: 16px;
+  z-index: 15;
+  background: rgba(18, 24, 20, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  padding: 8px 14px;
+  color: #ffffff;
+}
+.itw-sensory-meter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.itw-sensory-meter-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+}
+.itw-sensory-meter-badge {
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+}
+.itw-badge-overload {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  animation: itw-badge-jitter 0.6s infinite alternate;
+}
+.itw-badge-calm {
+  background: rgba(16, 185, 129, 0.25);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.5);
+}
+@keyframes itw-badge-jitter {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.04); }
+}
+
+.itw-sensory-meter-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.itw-sensory-meter-bar {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+.itw-bar-overload {
+  background: linear-gradient(90deg, #f59e0b, #ef4444);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+}
+.itw-bar-calm {
+  background: linear-gradient(90deg, #10b981, #05b076);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+/* Overloaded visual overlays (Run 1) */
+.itw-overload-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 12;
+  background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 0);
+  background-size: 4px 4px;
+  opacity: 0.65;
+  mix-blend-mode: overlay;
+}
+.itw-overload-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 13;
+  box-shadow: inset 0 0 60px 20px rgba(220, 38, 38, 0.22);
+  animation: itw-vignette-pulse 1.8s ease-in-out infinite;
+}
+@keyframes itw-vignette-pulse {
+  0%, 100% { box-shadow: inset 0 0 50px 15px rgba(220, 38, 38, 0.18); }
+  50% { box-shadow: inset 0 0 85px 30px rgba(220, 38, 38, 0.32); }
+}
+.itw-fluorescent-bands {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 14;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.04) 0px,
+    rgba(255, 255, 255, 0.04) 2px,
+    transparent 2px,
+    transparent 8px
+  );
+  opacity: 0.75;
+}
+
+/* Peripheral mask */
+.itw-peripheral-mask {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 14;
+  background: radial-gradient(circle at center, transparent 32%, rgba(10, 14, 12, 0.62) 65%, rgba(10, 14, 12, 0.88) 100%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 18px;
+}
+.itw-perspective-pill {
+  background: rgba(0, 0, 0, 0.75);
+  color: #ffffff;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* Before / After Sensory Compare Card */
+.itw-compare-card {
+  background: var(--itw-panel, #ffffff);
+  border: 1.5px solid var(--itw-border, rgba(0, 0, 0, 0.08));
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+.itw-compare-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--itw-panel-2, #fbf7f0);
+  border-bottom: 1px solid var(--itw-border, rgba(0, 0, 0, 0.08));
+}
+.itw-compare-toggles {
+  display: flex;
+  gap: 8px;
+}
+.itw-compare-btn {
+  border: 1.5px solid var(--itw-border);
+  background: var(--itw-panel, #ffffff);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--itw-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.itw-compare-btn:hover {
+  color: var(--itw-text);
+  border-color: var(--itw-text);
+}
+.itw-compare-btn.itw-active-overload {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
+.itw-compare-btn.itw-active-calm {
+  background: #10b981;
+  color: #ffffff;
+  border-color: #10b981;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+.itw-compare-viewport {
+  position: relative;
+  min-height: 120px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: background 0.3s ease;
+}
+.itw-compare-overload {
+  background: #2a1616;
+  color: #fef2f2;
+}
+.itw-compare-calm {
+  background: #14241d;
+  color: #ecfdf5;
+}
+.itw-compare-overlay-badge {
+  display: inline-block;
+  align-self: flex-start;
+  margin-bottom: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.itw-compare-body-text {
+  position: relative;
+  z-index: 15;
+}
+@media (prefers-reduced-motion: reduce) {
+  .itw-toast-floating,
+  .itw-overload-vignette,
+  .itw-badge-overload {
+    animation: none;
+  }
+}

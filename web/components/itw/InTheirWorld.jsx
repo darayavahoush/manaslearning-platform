@@ -100,7 +100,7 @@ class ModuleErrorBoundary extends React.Component {
 
 /* ---------------- Settings context (sound) ---------------- */
 
-const SettingsContext = createContext({ soundOn: false });
+const SettingsContext = createContext({ soundOn: false, setSoundOn: () => {} });
 
 /* ---------------- Real media assets ----------------
    Sourced from the Hugging Face dataset at
@@ -1584,10 +1584,10 @@ function AutismSim({
   onComplete,
   onAbort,
 }) {
-  const { soundOn } = useContext(SettingsContext);
+  const { soundOn, setSoundOn } = useContext(SettingsContext);
   const [effectsEnabled, setEffectsEnabled] = useState(true);
-  const [autismSoundOn, setAutismSoundOn] = useState(false);
-  const [autismVolume, setAutismVolume] = useState(0.08);
+  const [autismSoundOn, setAutismSoundOn] = useState(true);
+  const [autismVolume, setAutismVolume] = useState(0.20);
   const effectiveSoundOn = soundOn && autismSoundOn && (supportType !== "ear_defenders");
   const [paused, setPaused] = useState(false);
   const [round, setRound] = useState(1);
@@ -1595,6 +1595,16 @@ function AutismSim({
   const [decoys, setDecoys] = useState([]);
   const [timeLeft, setTimeLeft] = useState(AUTISM_ROUND_LIMIT);
   const [flicker, setFlicker] = useState(false);
+  const [loadJitter, setLoadJitter] = useState(92);
+
+  useEffect(() => {
+    if (supportType || paused) return;
+    const iv = setInterval(() => {
+      setLoadJitter(Math.floor(88 + Math.random() * 11));
+    }, 450);
+    return () => clearInterval(iv);
+  }, [supportType, paused]);
+  const sensoryLoadPct = supportType ? (supportType === "quiet_corner" ? 18 : 24) : loadJitter;
 
   const videoRef = useRef(null);
   const [videoIdx, setVideoIdx] = useState(0);
@@ -1721,7 +1731,8 @@ function AutismSim({
       const id = cueIdRef.current++;
       const top = 10 + Math.random() * 70;
       const left = 6 + Math.random() * 76;
-      setCues((prev) => [...prev.slice(-4), { id, ...evt, top, left }]);
+      const maxCues = supportType ? 1 : 5;
+      setCues((prev) => [...prev.slice(-(maxCues - 1)), { id, ...evt, top, left }]);
       if (effectiveSoundOn && supportType !== "ear_defenders") {
         audio.cue(evt.kind, 0.45);
       }
@@ -1732,12 +1743,12 @@ function AutismSim({
       }
       const life = setTimeout(() => {
         setCues((prev) => prev.filter((c) => c.id !== id));
-      }, 1600);
-      const delay = supportType === "visual_calm" ? 2200 : 950 + Math.random() * 450;
+      }, supportType ? 1400 : 2200);
+      const delay = supportType ? 2400 : 600 + Math.random() * 350;
       const next = setTimeout(spawn, delay);
       cuesTimeoutRef.current.push(life, next);
     };
-    const kick = setTimeout(spawn, 300);
+    const kick = setTimeout(spawn, 250);
     cuesTimeoutRef.current.push(kick);
   };
 
@@ -1960,6 +1971,57 @@ function AutismSim({
         {!videoBroken && <div className="itw-scene-video-overlay" aria-hidden="true" />}
         <div className={`itw-glare-overlay${flicker && effectsEnabled ? " itw-gentle-flicker" : ""}`} aria-hidden="true" />
 
+        {/* Real-time Sensory Load HUD Meter */}
+        <div className="itw-sensory-meter-wrap" aria-live="polite">
+          <div className="itw-sensory-meter-row">
+            <span className="itw-sensory-meter-title">
+              {supportType ? "SENSORY LOAD (REGULATED)" : "SENSORY LOAD (UNFILTERED)"}
+            </span>
+            <span className={`itw-sensory-meter-badge ${supportType ? "itw-badge-calm" : "itw-badge-overload"}`}>
+              {supportType ? `${sensoryLoadPct}% • Calmer` : `${sensoryLoadPct}% • Overloaded`}
+            </span>
+          </div>
+          <div className="itw-sensory-meter-track">
+            <div
+              className={`itw-sensory-meter-bar ${supportType ? "itw-bar-calm" : "itw-bar-overload"}`}
+              style={{ width: `${sensoryLoadPct}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Overloaded state visual static, vignette, and flicker (Run 1) */}
+        {!supportType && effectsEnabled && (
+          <>
+            <div className="itw-overload-grain" aria-hidden="true" />
+            <div className="itw-overload-vignette" aria-hidden="true" />
+            <div className="itw-fluorescent-bands" aria-hidden="true" />
+          </>
+        )}
+
+        {/* Peripheral Viewing Mask (sharp center with darker surround & clear badge) */}
+        {perspective === "peripheral" && (
+          <div className="itw-peripheral-mask" aria-hidden="true">
+            <span className="itw-perspective-pill">👁️ Peripheral Vision Simulation Active</span>
+          </div>
+        )}
+
+        {/* Opt-in Sound Banner if sound muted on Run 1 */}
+        {!effectiveSoundOn && !supportType && (
+          <div className="itw-sound-alert-banner">
+            <span>🔊 Sound is off — enable to hear room reverberation:</span>
+            <button
+              type="button"
+              className="itw-pill-btn itw-pill-accent"
+              onClick={() => {
+                setAutismSoundOn(true);
+                audio.setEnabled(true);
+              }}
+            >
+              Turn On Sound →
+            </button>
+          </div>
+        )}
+
         <div className="itw-round-timer">
           <div
             className="itw-round-timer-fill"
@@ -2053,13 +2115,90 @@ function AutismSim({
   );
 }
 
+function SensoryBeforeAfterCompare({ scenario = "mall" }) {
+  const [activeMode, setActiveMode] = useState("calm"); // "overload" | "calm"
+  const { soundOn } = useContext(SettingsContext);
+
+  useEffect(() => {
+    if (!soundOn) return;
+    if (activeMode === "overload") {
+      audio.startDrone("autism-compare", { freqs: [110, 165, 240, 320], type: "sawtooth" });
+      audio.setDroneGain("autism-compare", 0.04);
+    } else {
+      audio.startDrone("autism-compare", { freqs: [110, 165], type: "sine" });
+      audio.setDroneGain("autism-compare", 0.005);
+    }
+    return () => audio.stopDrone("autism-compare");
+  }, [activeMode, soundOn]);
+
+  return (
+    <div className="itw-compare-card" style={{ margin: "24px 0" }}>
+      <div className="itw-compare-header">
+        <div style={{ fontWeight: 800, fontSize: 15, color: "var(--itw-text)" }}>
+          Interactive Contrast: Compare Sensory Overload vs. Regulated Calm
+        </div>
+        <div className="itw-compare-toggles">
+          <button
+            type="button"
+            className={`itw-compare-btn${activeMode === "overload" ? " itw-active-overload" : ""}`}
+            onClick={() => setActiveMode("overload")}
+          >
+            ⚡ Noise ON (Run 1: Overload)
+          </button>
+          <button
+            type="button"
+            className={`itw-compare-btn${activeMode === "calm" ? " itw-active-calm" : ""}`}
+            onClick={() => setActiveMode("calm")}
+          >
+            🛡️ Noise OFF (Run 2: Calm)
+          </button>
+        </div>
+      </div>
+
+      <div className={`itw-compare-viewport itw-compare-${activeMode}`}>
+        {activeMode === "overload" ? (
+          <>
+            <div className="itw-overload-grain" aria-hidden="true" />
+            <div className="itw-overload-vignette" aria-hidden="true" />
+            <div className="itw-fluorescent-bands" aria-hidden="true" />
+            <div className="itw-compare-overlay-badge itw-badge-overload">
+              SENSORY LOAD: 94% • High Overload Jitter
+            </div>
+          </>
+        ) : (
+          <div className="itw-compare-overlay-badge itw-badge-calm">
+            SENSORY LOAD: 22% • Regulated & Calmer
+          </div>
+        )}
+        <div className="itw-compare-body-text">
+          {activeMode === "overload" ? (
+            <p style={{ margin: 0, fontSize: 14, lineHeight: 1.55 }}>
+              <strong>Unfiltered Room:</strong> Competing sounds, fluorescent glare, and visual motion arrive at full volume simultaneously. The nervous system expends immense cognitive effort continuously filtering out background noise.
+            </p>
+          ) : (
+            <p style={{ margin: 0, fontSize: 14, lineHeight: 1.55 }}>
+              <strong>Supported Space:</strong> Noise attenuation and muted lighting reduce sensory input by over 70%. Energy is conserved for communication, connection, and focus.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AutismModule({ onBack, onNavigate }) {
+  const { soundOn, setSoundOn } = useContext(SettingsContext);
   const [step, setStep] = useState("intro"); // intro | scenario | run_unfiltered | reflect | support | run_supported | explain | next
   const [scenario, setScenario] = useState("mall");
   const [perspective, setPerspective] = useState("central");
   const [chosenSupport, setChosenSupport] = useState("ear_defenders");
   const [reflectionAnswers, setReflectionAnswers] = useState(() => Array(AUTISM_REFLECT_QS.length).fill(null));
   const [results, setResults] = useState({ unfiltered: null, supported: null });
+
+  useEffect(() => {
+    setSoundOn?.(true);
+    audio.setEnabled(true);
+  }, [setSoundOn]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -2255,6 +2394,8 @@ function AutismModule({ onBack, onNavigate }) {
             In an unfiltered environment, the nervous system has to spend active mental energy sorting signal from noise. That continuous filtering demand accumulates as exhaustion throughout the school or work day.
           </p>
 
+          <SensoryBeforeAfterCompare scenario={scenario} />
+
           <FlowQuestions
             questions={AUTISM_REFLECT_QS}
             answers={reflectionAnswers}
@@ -2342,6 +2483,8 @@ function AutismModule({ onBack, onNavigate }) {
               </label>
             ))}
           </div>
+
+          <SensoryBeforeAfterCompare scenario={scenario} />
 
           <div className="itw-flow-nav">
             <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("reflect")}>Back</button>
@@ -2935,31 +3078,6 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
         </div>
       </div>
 
-      {/* Notification lane (interrupted mode). Reserved, fixed-height strip ABOVE the
-          reading box: pings still pop in and compete for attention, but they can never
-          cover the answer chips, and the page does not jump when one arrives. */}
-      {mode === "interrupted" && (
-        <div className="itw-toast-lane" aria-live="polite">
-          {notifications.slice(0, 2).map((n) => (
-            <div key={n.id} className={`itw-desk-toast itw-toast-${n.styleType || "default"} itw-distraction-burst`}>
-              <span className="itw-toast-icon" aria-hidden="true">{n.icon}</span>
-              <div className="itw-toast-content">
-                <div className="itw-toast-title">{n.title}</div>
-                <div className="itw-toast-body">{n.body}</div>
-              </div>
-              <button
-                type="button"
-                className="itw-toast-close"
-                aria-label={`Dismiss ${n.title}`}
-                onClick={() => dismissNotif(n.id)}
-              >
-                ×
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* Tangent Modal */}
       {activeTangent && (
         <div className="itw-tangent-overlay" role="dialog" aria-modal="true" aria-label="Associative Thought">
@@ -2982,8 +3100,34 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
         </div>
       )}
 
-      {/* Central Reading & Focus Box */}
-      <div className={`itw-adhd-focus-box${focusSpotlight ? " itw-spotlight" : ""}`}>
+      {/* Central Reading & Focus Box - Distractions float directly on top & near text */}
+      <div className={`itw-adhd-focus-box${focusSpotlight ? " itw-spotlight" : ""}`} style={{ position: "relative" }}>
+        {/* Floating pop-in notifications directly over reading & question area */}
+        {mode === "interrupted" && notifications.length > 0 && (
+          <div className="itw-adhd-toast-float-container" aria-live="polite">
+            {notifications.slice(0, 2).map((n, idx) => (
+              <div
+                key={n.id}
+                className={`itw-desk-toast itw-toast-${n.styleType || "default"} itw-toast-floating itw-distraction-burst itw-float-${idx}`}
+              >
+                <span className="itw-toast-icon" aria-hidden="true">{n.icon}</span>
+                <div className="itw-toast-content">
+                  <div className="itw-toast-title">{n.title}</div>
+                  <div className="itw-toast-body">{n.body}</div>
+                </div>
+                <button
+                  type="button"
+                  className="itw-toast-close"
+                  aria-label={`Dismiss ${n.title}`}
+                  onClick={() => dismissNotif(n.id)}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-adhd)", letterSpacing: "0.06em" }}>
             {currentTask.topic}
@@ -3019,25 +3163,24 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
             })}
           </div>
         </div>
-      </div>
 
-      {/* Wandering-thought lane (interrupted mode): sits BELOW the answer chips so a
-          tempting tangent never blocks a target. Space is reserved even while the
-          tangent modal is open, so nothing shifts. */}
-      {mode === "interrupted" && (
-        <div className="itw-spark-lane" style={{ visibility: activeTangent ? "hidden" : "visible" }}>
-          {TANGENT_BUBBLES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className="itw-spark-thought"
-              onClick={() => openTangent(t)}
-            >
-              {t.title}
-            </button>
-          ))}
-        </div>
-      )}
+        {/* Stray thoughts right near answering options */}
+        {mode === "interrupted" && (
+          <div className="itw-adhd-tangents-strip" style={{ visibility: activeTangent ? "hidden" : "visible" }}>
+            <span className="itw-adhd-tangents-label">💭 Stray thoughts:</span>
+            {TANGENT_BUBBLES.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                className="itw-spark-thought"
+                onClick={() => openTangent(t)}
+              >
+                {t.title}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Bottom Hint */}
       <div style={{ fontSize: 13, color: "var(--itw-muted)", textAlign: "center", marginTop: 12 }}>
@@ -3050,8 +3193,14 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
 }
 
 function AdhdModule({ onBack, onNavigate }) {
+  const { setSoundOn } = useContext(SettingsContext);
   const [step, setStep] = useState("intro");
   const [intensity, setIntensity] = useState("moderate");
+
+  useEffect(() => {
+    setSoundOn?.(true);
+    audio.setEnabled(true);
+  }, [setSoundOn]);
   const [results, setResults] = useState({
     baseline: null,
     interrupted: null,
@@ -3114,7 +3263,7 @@ function AdhdModule({ onBack, onNavigate }) {
               width={1200}
               height={672}
               className="itw-scene-plate-img"
-              alt="Bangalore study desk"
+              alt="A boy sits cross-legged on a floor covered in scattered toys, books and puzzle pieces, looking overwhelmed"
             />
             <div className="itw-scene-plate-overlay">
               <span className="itw-scene-tag">📍 Setting • Bangalore School Study Desk</span>
@@ -6928,7 +7077,7 @@ function DyscalculiaModule({ onBack, onNavigate }) {
       {step === "instructions" && (
         <div className="itw-flow-page itw-flow-narrow" key="instructions">
           <div className="itw-scene-plate">
-            <img src="/decor/itw/dyscalculia-environment.webp" alt="Math manipulatives table" className="itw-scene-plate-img" />
+            <Illustration artKey="dyscalculia-environment" width={1200} height={672} className="itw-scene-plate-img" />
             <div className="itw-scene-plate-overlay">
               <span className="itw-scene-tag">📍 Setting • Kitchen & Math Resource Table</span>
               <p className="itw-scene-caption">Measuring ingredients, counting ratios, and scaling recipes: when numbers lack spatial anchors, physical manipulatives bring clarity.</p>
@@ -7686,7 +7835,7 @@ function DysgraphiaModule({ onBack, onNavigate }) {
       {step === "instructions" && (
         <div className="itw-flow-page itw-flow-narrow" key="instructions">
           <div className="itw-scene-plate">
-            <img src="/decor/itw/dysgraphia-environment.webp" alt="Biology class notebook desk" className="itw-scene-plate-img" />
+            <Illustration artKey="dysgraphia-environment" width={1200} height={672} className="itw-scene-plate-img" />
             <div className="itw-scene-plate-overlay">
               <span className="itw-scene-tag">📍 Setting • Biology Class Notebook Table</span>
               <p className="itw-scene-caption">Formulating the hypothesis is effortless; translating the thought into hand muscle motor coordination is where fatigue gathers.</p>
@@ -8644,10 +8793,16 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
 }
 
 function AuditoryProcessingModule({ onBack, onNavigate }) {
+  const { setSoundOn } = useContext(SettingsContext);
   const [step, setStep] = useState("intro");
   const [results, setResults] = useState({ baseline: null, unsupported: null, supported: null });
   const [chosenSupport, setChosenSupport] = useState("captions");
   const [reflectionAnswers, setReflectionAnswers] = useState([null]);
+
+  useEffect(() => {
+    setSoundOn?.(true);
+    audio.setEnabled(true);
+  }, [setSoundOn]);
 
   const stepIndex = AUDITORY_STEP_INDEX[step];
   const more = MODULES.filter((m) => m.key !== "auditory");
@@ -8698,7 +8853,7 @@ function AuditoryProcessingModule({ onBack, onNavigate }) {
       {step === "instructions" && (
         <div className="itw-flow-page itw-flow-narrow" key="instructions">
           <div className="itw-scene-plate">
-            <img src="/decor/itw/auditory-processing-environment.webp" alt="Resonant lecture hall" className="itw-scene-plate-img" />
+            <Illustration artKey="auditory-environment" width={1200} height={672} className="itw-scene-plate-img" />
             <div className="itw-scene-plate-overlay">
               <span className="itw-scene-tag">📍 Setting • Resonant Classroom & Hallway</span>
               <p className="itw-scene-caption">Listening across background fan hum, shoe scuffs, and hallway echoes to isolate spoken instructions.</p>
@@ -9477,7 +9632,7 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
       {step === "instructions" && (
         <div className="itw-flow-page itw-flow-narrow" key="instructions">
           <div className="itw-scene-plate">
-            <img src="/decor/itw/executive-functioning-environment.webp" alt="Morning organization desk" className="itw-scene-plate-img" />
+            <Illustration artKey="executive-environment" width={1200} height={672} className="itw-scene-plate-img" />
             <div className="itw-scene-plate-overlay">
               <span className="itw-scene-tag">📍 Setting • Morning Organization & Planning Desk</span>
               <p className="itw-scene-caption">Sorting priorities, managing sequential steps, and holding multiple deadlines in active working memory.</p>
@@ -10137,6 +10292,36 @@ function DownSyndromeStory({ onBack, onNavigate }) {
         { label: "Affirmation", val: "Pride shared across teacher, peers, and family at pickup" },
       ],
     },
+    {
+      title: "Rhythmic Drumming Circle & Song",
+      subtitle: "3:45 PM • Shaded Courtyard Colonnade",
+      image: "/decor/itw/down-syndrome-story-5.webp",
+      alt: "Aarav leading a joyful rhythm and music circle with classmates clapping together under a school banyan tree",
+      quote: "“When I play the djembe drum, my friends match my beat! We don't need any words to make joyful music together.”",
+      narrative: "Rhythmic synchronization and group percussion activate shared neural pathways that bypass speech processing barriers. Music becomes an equal-status collaborative medium where Aarav leads with natural musicality and rhythmic joy.",
+      insight: "Non-verbal creative expression reveals deep leadership strengths that conventional written assessments overlook.",
+      badge: "Rhythmic Leadership",
+      tactileCues: [
+        { label: "Auditory Entrainment", val: "Shared tempo synchronizes group motor response" },
+        { label: "Non-Verbal Flow", val: "Equal-status peer collaboration without speech pressure" },
+        { label: "Sensory Grounding", val: "Vibrational feedback through hands regulates energy" },
+      ],
+    },
+    {
+      title: "Evening at Home: Sharing the Day's Pride",
+      subtitle: "5:30 PM • Warm Family Living Porch",
+      image: "/decor/itw/down-syndrome-story-6.webp",
+      alt: "Aarav smiling at home in the evening, sharing his school drawings and accomplishments with proud family",
+      quote: "“Amma pins my leaf drawing on the kitchen wall! Appa drinks hot filter coffee and gives me a big hug for tying my laces.”",
+      narrative: "Inclusion is a continuum that bridges school, family, and community. When a child returns home with their dignity intact and their strengths celebrated, the emotional foundation for lifelong learning is deeply reinforced.",
+      insight: "Home-school partnership anchored in celebrating authentic progress builds unshakeable resilience.",
+      badge: "Family Celebration",
+      tactileCues: [
+        { label: "Decompression", val: "Warm evening snack and quiet tactile art time" },
+        { label: "Positive Mirroring", val: "Drawings proudly displayed at child eye level" },
+        { label: "Milestone Anchor", val: "Consistent affirmation between parents and educators" },
+      ],
+    },
   ];
 
   const turnToPage = (newPage) => {
@@ -10173,7 +10358,7 @@ function DownSyndromeStory({ onBack, onNavigate }) {
   }, [currentPage, turning]);
 
   const page = PAGES[currentPage];
-  const MOMENT_TABS = ["1. Schedule", "2. Garden", "3. Science", "4. Milestone"];
+  const MOMENT_TABS = ["1. Schedule", "2. Garden", "3. Science", "4. Milestone", "5. Rhythm", "6. Evening"];
 
   return (
     <section className="itw-view itw-module itw-flow" data-accent="autism">
@@ -10661,6 +10846,40 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
       communication: "When the teacher asks me to explain what I wrote, speaking it aloud is 10 times easier than the messy pencil marks on my page.",
       supported: "Accommodations in action: Speech-to-text dictation, reading rulers with tinted focus overlays, and digital notebooks ensure my academic comprehension is fully recognized.",
     },
+    {
+      time: "3:30 PM",
+      title: "Playfield & Cooperative Movement",
+      image: "/decor/itw/itw-day-period-5-playfield.webp",
+      alt: "School playfield and shaded green garden where students engage in physical movement, cooperative games, and tactile sensory breaks",
+      setting: "Open grassy field under neem trees; whistles, running footsteps, and laughter bouncing across the grounds.",
+      metrics: {
+        decibels: "78 dB • Wind gusts & cheering peers",
+        glare: "High • Afternoon sun angle across field",
+        density: "Whole class participating in stations",
+        anchor: "Neem tree shade & marked boundary cones",
+      },
+      sensory: "The open field air and physical running provide critical vestibular and proprioceptive regulation, releasing hours of built-up sensory tension.",
+      attention: "Dynamic ball games with shifting, rapid rules can feel disorienting; structured activity stations allow full, enthusiastic participation.",
+      communication: "Calling out across a windy field is hard for my vocal muscles; hand signals, visual station cards, and teammate high-fives keep me connected.",
+      supported: "Accommodations in action: Visual station markers, peer buddies, structured movement rotations, and optional quiet cool-down shade make physical activity joyful.",
+    },
+    {
+      time: "4:45 PM",
+      title: "School Bus & Returning Home",
+      image: "/decor/itw/itw-day-period-6-home.webp",
+      alt: "A calm, supportive evening home environment with warm lamplight, comfortable cushions, and quiet space to decompress after school",
+      setting: "Yellow school bus ride navigating Bangalore traffic, followed by the familiar quiet safety of home.",
+      metrics: {
+        decibels: "68 dB • Bus engine hum & traffic drone",
+        glare: "Low • Soft warm evening interior lamplight",
+        density: "Transition from peers to family space",
+        anchor: "Cozy reading corner & favorite cushion",
+      },
+      sensory: "Traffic honking and engine vibration are the final sensory hurdles of the day. Soft headphones on the bus buffer the ride smoothly.",
+      attention: "My cognitive battery is ready for rest. Having a quiet 20-minute transition period upon reaching home allows my nervous system to gently reset.",
+      communication: "When I walk through the door, my family gives me quiet hugs and a warm snack before asking about my day. Low speech pressure allows natural connection.",
+      supported: "Accommodations in action: Predictable bus seating, headphones during travel, and an unhurried post-school decompression routine protect emotional well-being.",
+    },
   ];
 
   const turnToPeriod = (newPeriod) => {
@@ -10697,7 +10916,7 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
   }, [activePeriod, turning]);
 
   const current = PERIODS[activePeriod];
-  const PERIOD_TABS = ["1. Assembly (8:30 AM)", "2. Science (10:15 AM)", "3. Lunch (12:30 PM)", "4. Studio (2:15 PM)"];
+  const PERIOD_TABS = ["1. Assembly (8:30 AM)", "2. Science (10:15 AM)", "3. Lunch (12:30 PM)", "4. Studio (2:15 PM)", "5. Playfield (3:30 PM)", "6. Evening Home (4:45 PM)"];
 
   return (
     <section className="itw-view itw-module itw-flow" data-accent="adhd">
@@ -10848,13 +11067,27 @@ export default function InTheirWorld() {
     }
     return "landing";
   });
-  const [soundOn, setSoundOn] = useState(false);
+  const [soundOn, setSoundOn] = useState(() => {
+    if (typeof window !== "undefined") {
+      const p = new URLSearchParams(window.location.search);
+      const mod = p.get("module") || window.location.hash.replace("#", "");
+      if (["autism", "adhd", "auditory"].includes(mod)) return true;
+    }
+    return false;
+  });
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window === "undefined") return false;
     const saved = window.localStorage.getItem("itw-dark-mode");
     if (saved !== null) return saved === "1";
     return window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
   });
+
+  useEffect(() => {
+    if (["autism", "adhd", "auditory"].includes(view)) {
+      setSoundOn(true);
+      audio.setEnabled(true);
+    }
+  }, [view]);
 
   useEffect(() => {
     audio.setEnabled(soundOn);
@@ -10904,7 +11137,7 @@ export default function InTheirWorld() {
 
   const accentTable = darkMode ? ACCENT_HEX_DARK : ACCENT_HEX;
   const glow = `rgba(${accentTable[view] || accentTable.landing}, .16)`;
-  const settings = useMemo(() => ({ soundOn }), [soundOn]);
+  const settings = useMemo(() => ({ soundOn, setSoundOn }), [soundOn, setSoundOn]);
 
   return (
     <SettingsContext.Provider value={settings}>

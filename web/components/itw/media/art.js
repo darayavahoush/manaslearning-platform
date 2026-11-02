@@ -221,13 +221,37 @@ export const ART_REGISTRY = {
   },
   "day-period-3-canteen": {
     src: "/decor/itw/itw-day-period-3-canteen.webp",
-    alt: "Four children of different backgrounds pot plants together at a garden table",
+    alt: "Aarav, Diya, and friends sitting together on verandah stone steps sharing homemade idlis and tiffin boxes under a flowering tree",
     width: 1376,
     height: 768,
   },
   "day-period-4-studio": {
     src: "/decor/itw/itw-day-period-4-studio.webp",
     alt: "A quiet corner with a soft bean bag, a green knitted blanket, a glowing lamp and a leafy plant",
+    width: 1376,
+    height: 768,
+  },
+  "day-period-5-playfield": {
+    src: "/decor/itw/itw-day-period-5-playfield.webp",
+    alt: "School playfield and shaded green garden where students engage in physical movement, cooperative games, and tactile sensory breaks",
+    width: 1376,
+    height: 768,
+  },
+  "day-period-6-home": {
+    src: "/decor/itw/itw-day-period-6-home.webp",
+    alt: "A calm, supportive evening home environment with warm lamplight, comfortable cushions, and quiet space to decompress after school",
+    width: 1376,
+    height: 768,
+  },
+  "down-syndrome-story-5": {
+    src: "/decor/itw/down-syndrome-story-5.webp",
+    alt: "Aarav leading a joyful rhythm and music circle with classmates clapping together under a school banyan tree",
+    width: 1376,
+    height: 768,
+  },
+  "down-syndrome-story-6": {
+    src: "/decor/itw/down-syndrome-story-6.webp",
+    alt: "Aarav smiling at home in the evening, sharing his school drawings and accomplishments with proud family",
     width: 1376,
     height: 768,
   },

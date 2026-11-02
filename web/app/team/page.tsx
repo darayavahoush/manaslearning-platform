@@ -102,23 +102,43 @@ const getInitialSession = () => {
 }
 
 export default function TeamPortal() {
+  const [mounted, setMounted] = useState(false)
   // Session & Auth
-  const [initialSession] = useState(getInitialSession)
-  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => initialSession?.user || null)
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null)
   const [loginMode, setLoginMode] = useState<'specialist' | 'admin'>('specialist')
   const [selectedStaffId, setSelectedStaffId] = useState<string>('ananya-sridhar')
   const [loginPassword, setLoginPassword] = useState<string>('ananya123')
   const [loginError, setLoginError] = useState<string>('')
   const [loginLoading, setLoginLoading] = useState<boolean>(false)
 
+  // Restore session only after mount to prevent hydration mismatch between server and client
+  useEffect(() => {
+    setMounted(true)
+    const session = getInitialSession()
+    if (session?.user) {
+      setCurrentUser(session.user)
+      if (session.user.isAdmin) {
+        setActiveStaffId('all')
+        setActiveTab('admin-members')
+      } else {
+        setActiveStaffId(session.user.id)
+        setActiveTab('availability')
+      }
+      if (session.token) {
+        fetch('/api/team/bookings', { headers: { 'x-team-key': session.token } })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((json) => {
+            if (json) setData(json)
+          })
+          .catch(() => {})
+      }
+    }
+  }, [])
+
   // Data & Workspace
   const [data, setData] = useState<{ staff: Staff[]; types: ConsultType[]; bookings: Booking[] } | null>(null)
-  const [activeStaffId, setActiveStaffId] = useState<string>(() =>
-    initialSession ? (initialSession.user.isAdmin ? 'all' : initialSession.user.id) : 'all'
-  )
-  const [activeTab, setActiveTab] = useState<'availability' | 'calendar' | 'leaves' | 'quick-book' | 'admin-members'>(() =>
-    initialSession ? (initialSession.user.isAdmin ? 'admin-members' : 'availability') : 'availability'
-  )
+  const [activeStaffId, setActiveStaffId] = useState<string>('all')
+  const [activeTab, setActiveTab] = useState<'availability' | 'calendar' | 'leaves' | 'quick-book' | 'admin-members'>('availability')
 
   // Calendar navigation
   const [today, setToday] = useState('')
@@ -194,16 +214,7 @@ export default function TeamPortal() {
         }
       })
       .catch(() => {})
-
-    if (initialSession?.token) {
-      fetch('/api/team/bookings', { headers: { 'x-team-key': initialSession.token } })
-        .then((r) => (r.ok ? r.json() : null))
-        .then((json) => {
-          if (json) setData(json)
-        })
-        .catch(() => {})
-    }
-  }, [initialSession])
+  }, [])
 
   // Handle Login
   async function handleLogin(e?: React.FormEvent) {

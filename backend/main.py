@@ -73,11 +73,16 @@ Tone & Conversational Style:
 - Avoid clinical jargon, cold robotic phrases, or bureaucratic disclaimers.
 - Keep answers concise, clear, comforting, and actionable.
 
+Multilingual Capabilities:
+- Detect the language and script the user uses (English, Tamil தமிழ், Hindi हिंदी, Telugu తెలుగు, Kannada ಕನ್ನಡ, Malayalam മലയാളം, Hinglish, Tanglish, etc.) and respond warmly, naturally, and fluently in that exact same language/script!
+- Translate concepts with deep cultural sensitivity and parental warmth.
+
 Grammar & Style Rules:
-- Flawless standard English grammar with complete sentences.
+- Flawless standard English grammar with complete sentences and natural flow.
 - NEVER omit prepositions: always say "signs of autism", "signs of ADHD", "delays in speech", "delays in language", "difficulties with reading", "traits of autism", etc.
+- Never write redundant lists or repeat the same phrases across adjacent sentences (e.g., avoid saying "like lining up toys or language delays" and then immediately following with "Repetitive play patterns like lining up toys... Language delays..."). Synthesize points smoothly into a cohesive, comforting paragraph.
 - When answering general questions about the founder, Manas Learning, our apps (Vaaksudhi, Vaakify), our simulations, or booking consultations, use the Core Identity knowledge above with full confidence.
-- For clinical or diagnostic topics, ground your response in the provided reference CONTEXT. If outside given context, gently recommend consulting a therapist or booking an appointment on our consult page.
+- For developmental, speech, or sensory questions, share reassuring, practical guidance grounded in the context, and invite parents to connect with our team via /consult whenever they want personalized support.
 """
 
 client = AzureOpenAI(
@@ -135,10 +140,12 @@ def polish_reply(text: str) -> str:
     text = re.sub(r'\b(sign|signs|symptom|symptoms|trait|traits|indicator|indicators)\s+(?:of\s+)?adhd\b', r'\1 of ADHD', text, flags=re.IGNORECASE)
     text = re.sub(r'\b(delay|delays)\s+(?:in\s+)?speech\b', r'\1 in speech', text, flags=re.IGNORECASE)
     text = re.sub(r'\b(delay|delays)\s+(?:in\s+)?language\b', r'\1 in language', text, flags=re.IGNORECASE)
-    text = re.sub(r'\b(difficulty|difficulties)\s+(?:with\s+)?speech\b', r'\1 with speech', text, flags=re.IGNORECASE)
-    text = re.sub(r'\b(difficulty|difficulties)\s+(?:with\s+)?reading\b', r'\1 with reading', text, flags=re.IGNORECASE)
-    text = re.sub(r'\b(difficulty|difficulties)\s+(?:with\s+)?writing\b', r'\1 with writing', text, flags=re.IGNORECASE)
-    text = re.sub(r'\b(difficulty|difficulties)\s+(?:with\s+)?math(?:ematics)?\b', r'\1 with math', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(difficulty|difficulties|struggle|struggles|challenge|challenges)\s+(?:with\s+)?speech\b', r'\1 with speech', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(difficulty|difficulties|struggle|struggles|challenge|challenges)\s+(?:with\s+)?reading\b', r'\1 with reading', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(difficulty|difficulties|struggle|struggles|challenge|challenges)\s+(?:with\s+)?writing\b', r'\1 with writing', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(difficulty|difficulties|struggle|struggles|challenge|challenges)\s+(?:with\s+)?math(?:ematics)?\b', r'\1 with math', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(difficulty|difficulties|struggle|struggles|challenge|challenges)\s+(?:with\s+)?motor skills\b', r'\1 with motor skills', text, flags=re.IGNORECASE)
+    text = re.sub(r'\bcan be signs autism\b', 'can be signs of autism', text, flags=re.IGNORECASE)
     text = re.sub(r'\bVaakSiddhi\b', 'Vaaksudhi', text, flags=re.IGNORECASE)
     text = re.sub(r'\bVaksudhi\b', 'Vaaksudhi', text, flags=re.IGNORECASE)
     return text.strip()
@@ -263,8 +270,24 @@ def chat(req: ChatRequest, request: Request):
         req.message,
         re.IGNORECASE
     ))
+    has_indic_or_cjk = bool(re.search(
+        r'[\u0900-\u097F\u0B80-\u0BFF\u0C00-\u0C7F\u0C80-\u0CFF\u0D00-\u0D7F\u0600-\u06FF\u4E00-\u9FFF]',
+        req.message
+    ))
+    is_romanized_indic = bool(re.search(
+        r'\b(kya hai|kya hota|kaise|batao|kripya|madad|theek|bacha|bachhe|kya karein|eppadi|enna|solla|theriyuma|therapist kitta|pesa|mudiyala|solunga|cheppandi|ela|emiti)\b',
+        req.message,
+        re.IGNORECASE
+    ))
+    is_developmental_query = bool(re.search(
+        r'\b(therapist|therapy|see a therapist|need a therapist|consult|specialist|speech delay|language delay|stimming|autism|adhd|sensory|assessment|evaluation|help my child|milestone|milestones|diagnosis|diagnosed|red flags|when to see)\b',
+        req.message,
+        re.IGNORECASE
+    ))
 
-    if (not hits or hits[0]["score"] < MIN_SCORE) and not is_site_or_founder_query:
+    should_answer_with_llm = is_site_or_founder_query or is_developmental_query or has_indic_or_cjk or is_romanized_indic
+
+    if (not hits or hits[0]["score"] < MIN_SCORE) and not should_answer_with_llm:
         reply = (
             "I want to make sure you get the most accurate, individualized guidance on that. "
             "For specific clinical questions like this, it's best to consult directly with a pediatric specialist or therapist. "
@@ -278,12 +301,16 @@ def chat(req: ChatRequest, request: Request):
             )
         else:
             context = (
-                "[Source: Manas Learning Core Knowledge]\n"
+                "[Source: Manas Learning Core Knowledge & Clinical Guidance]\n"
                 "Manas Learning was founded by Manasi Valluri (Pediatric Developmental Specialist & Special Educator) in Chennai, India. "
                 "Services include Speech & Language Therapy, Remedial Education (Dyslexia, Dyscalculia, Dysgraphia), Sensory Integration (Autism, ADHD), and Parent Coaching. "
                 "Assistive tools include Vaaksudhi (breathing and speech games at https://vaaksudhi.manaslearning.com), Vaakify (speech repetition and clarity practice at https://vaakify.manaslearning.com), and Phonics Jungle. "
                 "Consultations can be booked at /consult (Free Discovery or 1-on-1 Expert Consultation). "
-                "In Their World interactive simulations are available at /experience."
+                "In Their World interactive simulations are available at /experience.\n"
+                "Clinical Guidance on When to Consult a Therapist or Specialist:\n"
+                "Parents are encouraged to consult a specialist whenever they notice persistent challenges affecting their child's daily communication, comfort, or learning. "
+                "Key indicators include: speech and language delays (e.g. fewer words than expected, difficulty communicating needs), strong sensory sensitivities (overwhelm from loud noises, textures, bright lights), difficulties with coordination, fine motor skills, or handwriting, prolonged reading/writing/math challenges, or frequent emotional dysregulation. "
+                "Early, playful intervention gives children effective tools to thrive with confidence."
             )
         messages = [{"role": "system", "content": SYSTEM_PROMPT}]
         messages.extend(history)

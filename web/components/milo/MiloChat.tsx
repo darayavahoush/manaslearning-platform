@@ -204,6 +204,13 @@ type Msg = {
   navTargets?: NavTarget[]
 }
 
+const LANGUAGES = [
+  {code: 'en-IN', label: 'English', placeholder: 'Ask Milo a question or speak...'},
+  {code: 'ta-IN', label: 'தமிழ்', placeholder: 'மிலோவிடம் கேளுங்கள் அல்லது பேசுங்கள்...'},
+  {code: 'hi-IN', label: 'हिंदी', placeholder: 'मिलो से पूछें या बोलें...'},
+  {code: 'te-IN', label: 'తెలుగు', placeholder: 'మిలోను అడగండి లేదా మాట్లాడండి...'},
+]
+
 export default function MiloChat() {
   const router = useRouter()
   const [msgs, setMsgs] = useState<Msg[]>([
@@ -215,6 +222,9 @@ export default function MiloChat() {
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
   const [soundEnabled, setSoundEnabled] = useState(true)
+  const [selectedLang, setSelectedLang] = useState(LANGUAGES[0])
+  const [isRecording, setIsRecording] = useState(false)
+  const recognitionRef = useRef<any>(null)
   const [sid, setSid] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null
     try {
@@ -228,6 +238,56 @@ export default function MiloChat() {
   useEffect(() => {
     end.current?.scrollIntoView({behavior: 'smooth', block: 'end'})
   }, [msgs, busy])
+
+  function toggleRecording() {
+    if (typeof window === 'undefined') return
+    const SpeechRec = (window as unknown as { SpeechRecognition?: any; webkitSpeechRecognition?: any }).SpeechRecognition ||
+      (window as unknown as { SpeechRecognition?: any; webkitSpeechRecognition?: any }).webkitSpeechRecognition
+
+    if (!SpeechRec) {
+      alert('Voice input is supported in Google Chrome, Safari, and Microsoft Edge.')
+      return
+    }
+
+    if (isRecording) {
+      try {
+        recognitionRef.current?.stop()
+      } catch {}
+      setIsRecording(false)
+      return
+    }
+
+    try {
+      const rec = new SpeechRec()
+      rec.lang = selectedLang.code
+      rec.interimResults = true
+      rec.continuous = false
+
+      rec.onstart = () => {
+        setIsRecording(true)
+      }
+      rec.onresult = (event: any) => {
+        let transcript = ''
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          transcript += event.results[i][0].transcript
+        }
+        setText(transcript)
+      }
+      rec.onerror = (event: any) => {
+        console.warn('Speech recognition error:', event.error)
+        setIsRecording(false)
+      }
+      rec.onend = () => {
+        setIsRecording(false)
+      }
+
+      recognitionRef.current = rec
+      rec.start()
+    } catch (err) {
+      console.error('Failed to start speech recognition:', err)
+      setIsRecording(false)
+    }
+  }
 
   async function send(q: string) {
     q = q.trim()
@@ -491,13 +551,49 @@ export default function MiloChat() {
         <div ref={end} />
       </div>
 
+      <div className="flex items-center gap-1.5 border-t border-black/5 bg-[#faf8f4] px-3 py-1.5 text-xs text-foreground/70">
+        <span className="text-[11px] font-medium text-foreground/50 mr-1">Language:</span>
+        {LANGUAGES.map((l) => (
+          <button
+            key={l.code}
+            type="button"
+            onClick={() => setSelectedLang(l)}
+            className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition ${
+              selectedLang.code === l.code
+                ? 'bg-card-green text-white shadow-xs'
+                : 'bg-white border border-black/10 text-foreground/70 hover:bg-emerald-50 hover:text-emerald-800'
+            }`}
+          >
+            {l.label}
+          </button>
+        ))}
+      </div>
+
       <form onSubmit={(e) => { e.preventDefault(); send(text) }} className="border-t border-black/5 bg-white p-3">
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={toggleRecording}
+            aria-label={isRecording ? 'Stop listening' : 'Start voice input'}
+            title={isRecording ? 'Listening... click to stop' : `Speak in ${selectedLang.label} (Free voice input)`}
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition ${
+              isRecording
+                ? 'border-red-500 bg-red-500 text-white animate-pulse shadow-md'
+                : 'border-black/10 bg-[#faf8f4] text-foreground/70 hover:border-card-green hover:bg-emerald-50 hover:text-card-green'
+            }`}
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+          </button>
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
             maxLength={500}
-            placeholder="Ask Milo a question..."
+            placeholder={isRecording ? 'Listening... speak now' : selectedLang.placeholder}
             className="min-w-0 flex-1 rounded-full border border-black/10 bg-background px-4 py-2.5 text-sm outline-none focus:border-card-green focus:ring-2 focus:ring-card-green/30"
           />
           <button

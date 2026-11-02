@@ -44,5 +44,6 @@ next-env.d.ts
 # keep the template
 !.env.example
 /data*/
-public/sounds/
+public/sounds/*
+!public/sounds/teacher_*.mp3
 public/videos/

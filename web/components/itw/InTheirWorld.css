@@ -3447,6 +3447,65 @@ body:has(.itw-dark) .leaf-fall,
 }
 .itw-toast-close:hover { color: var(--itw-text); background: rgba(0, 0, 0, 0.08); }
 
+/* ---- ADHD distraction lanes: distractions compete for attention but never cover the answers ---- */
+.itw-toast-lane {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  min-height: 84px;            /* reserved, so toasts popping in never shift the layout */
+  margin-bottom: 4px;
+  align-items: start;
+}
+.itw-toast-lane .itw-desk-toast {
+  padding: 9px 12px;
+  gap: 9px;
+  min-width: 0;
+}
+.itw-toast-lane .itw-toast-title {
+  font-size: 12.5px;
+  margin-bottom: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.itw-toast-lane .itw-toast-body {
+  font-size: 12.5px;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.itw-toast-lane .itw-toast-icon { font-size: 18px; }
+.itw-toast-lane .itw-toast-close {
+  font-size: 20px;
+  min-width: 28px;
+  min-height: 28px;            /* comfortable tap target for the dismiss button */
+}
+.itw-spark-lane {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  min-height: 56px;            /* reserved: thought bubbles live below the chips, never on them */
+  margin-top: 4px;
+}
+.itw-spark-lane .itw-spark-thought {
+  position: relative;          /* in flow inside the lane, not floating over the content */
+  max-width: 260px;
+}
+@media (max-width: 640px) {
+  .itw-toast-lane { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .itw-spark-lane .itw-spark-thought,
+  .itw-toast-lane .itw-desk-toast { animation: none; }
+}
+
 .itw-tangent-chips {
   display: flex;
   flex-wrap: wrap;
@@ -4120,6 +4179,76 @@ body:has(.itw-dark) .leaf-fall,
   color: #fff;
   font-size: 10px;
   font-weight: 800;
+}
+
+/* ---- Dyscalculia: simulation shell, recipe scaling, supports ---- */
+.itw-dyscalc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+.itw-dyscalc-head-right { display: flex; align-items: center; gap: 12px; }
+.itw-dyscalc-tag { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--itw-dyscalculia); }
+.itw-dyscalc-title { font-size: 20px; font-weight: 800; color: var(--itw-text); margin: 4px 0 0; line-height: 1.25; }
+.itw-dyscalc-clock { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: var(--itw-muted); }
+.itw-dyscalc-card { background: var(--itw-panel-2); border: 1.5px solid var(--itw-border); border-radius: 18px; padding: 22px; }
+.itw-dyscalc-lead { font-size: 15px; line-height: 1.6; color: var(--itw-text); margin: 0 0 16px; }
+.itw-dyscalc-tally { display: flex; justify-content: space-between; align-items: center; max-width: 520px; margin: 10px auto 18px; font-size: 13px; color: var(--itw-muted); }
+.itw-dyscalc-answer { text-align: center; }
+.itw-dyscalc-q { font-size: 14px; font-weight: 800; color: var(--itw-text); margin-bottom: 12px; }
+.itw-dyscalc-picks { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+.itw-dyscalc-pick {
+  min-width: 96px; padding: 12px 26px; border-radius: 14px; font-size: 22px; font-weight: 800;
+  font-family: var(--font-display); color: var(--itw-text); background: var(--itw-panel);
+  border: 2px solid var(--itw-border); cursor: pointer; transition: transform .15s, border-color .15s, box-shadow .15s;
+}
+.itw-dyscalc-pick:hover { border-color: var(--itw-dyscalculia); transform: translateY(-2px); box-shadow: 0 8px 18px -8px rgba(29,133,133,.5); }
+.itw-dyscalc-warn { color: #c2410c; font-size: 13px; font-weight: 700; margin-top: 12px; }
+.itw-root.itw-dark .itw-dyscalc-warn { color: #fdba74; }
+.itw-dyscalc-reveal-title { text-align: center; font-weight: 800; color: var(--itw-dyscalculia); margin-bottom: 12px; }
+.itw-dyscalc-foot { font-size: 13px; color: var(--itw-muted); text-align: center; margin-top: 14px; }
+.itw-dyscalc-hint { font-size: 13px; color: var(--itw-muted); margin: 10px 0 0; }
+.itw-dyscalc-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+
+.itw-recipe-grid { display: grid; gap: 12px; }
+.itw-recipe-row {
+  display: grid; grid-template-columns: minmax(170px, 220px) 1fr; gap: 16px; align-items: center;
+  background: var(--itw-panel); border: 1.5px solid var(--itw-border); border-radius: 14px; padding: 14px 16px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.itw-recipe-row.itw-bad { border-color: #ea580c; box-shadow: 0 0 0 3px rgba(234,88,12,.15); }
+.itw-recipe-label { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; color: var(--itw-text); }
+.itw-recipe-base { width: 100%; font-family: var(--font-mono); font-size: 12px; color: var(--itw-muted); }
+.itw-recipe-entry { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.itw-recipe-times { font-family: var(--font-mono); font-weight: 800; color: var(--itw-dyscalculia); }
+.itw-recipe-unit { font-weight: 700; color: var(--itw-muted); }
+.itw-recipe-input {
+  width: 110px; padding: 10px 12px; border-radius: 10px; border: 2px solid var(--itw-border);
+  background: var(--itw-panel-2); color: var(--itw-text); font-size: 18px; font-weight: 800;
+  font-family: var(--font-mono); text-align: center;
+}
+.itw-recipe-input.itw-small { width: 78px; font-size: 15px; margin-left: 8px; padding: 6px 8px; }
+.itw-recipe-input:focus { outline: none; border-color: var(--itw-dyscalculia); box-shadow: 0 0 0 3px rgba(29,133,133,.2); }
+.itw-recipe-steps { display: grid; gap: 6px; font-size: 14px; color: var(--itw-text); flex: 1 1 100%; }
+.itw-recipe-numline { padding: 2px 4px 26px; }
+.itw-recipe-numline-read { font-family: var(--font-mono); font-size: 20px; color: var(--itw-dyscalculia); margin-bottom: 6px; }
+.itw-root .itw-recipe-numline input[type=range].itw-recipe-range { width: 100%; accent-color: var(--itw-dyscalculia); height: 28px; cursor: pointer; }
+.itw-recipe-ticks { position: relative; height: 34px; margin-top: -2px; }
+.itw-recipe-ticks span { position: absolute; transform: translateX(-50%); font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: var(--itw-muted); text-align: center; line-height: 1.2; }
+.itw-recipe-ticks span:first-child { transform: none; }
+.itw-recipe-ticks span:last-child { transform: translateX(-100%); }
+.itw-recipe-ticks i { display: block; font-style: normal; font-weight: 700; font-size: 10.5px; color: var(--itw-dyscalculia); }
+.itw-recipe-ticks .itw-tick-mid { color: var(--itw-dyscalculia); }
+.itw-recipe-blocks { display: grid; gap: 8px; }
+.itw-block-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.itw-block {
+  width: 38px; height: 38px; border-radius: 8px; cursor: pointer; padding: 0;
+  background: transparent; border: 2px dashed rgba(29,133,133,.4); transition: transform .12s, background .12s;
+}
+.itw-block.itw-base { border-style: solid; border-color: rgba(29,133,133,.7); }
+.itw-block.itw-on { background: var(--itw-dyscalculia); border-style: solid; border-color: var(--itw-dyscalculia); box-shadow: 0 3px 8px rgba(29,133,133,.35); }
+.itw-block:hover { transform: translateY(-2px); }
+.itw-block-sum { font-family: var(--font-mono); font-size: 13px; color: var(--itw-muted); }
+.itw-block-sum b { color: var(--itw-dyscalculia); }
+@media (max-width: 720px) {
+  .itw-recipe-row { grid-template-columns: 1fr; gap: 10px; }
+  .itw-dyscalc-card { padding: 16px; }
 }
 
 /* ================= DYSGRAPHIA: Mind vs Paper Contrast & Fatigue Meter ================= */

@@ -132,6 +132,12 @@ const SOUND_FILE_EXT = {
   tap: "mp3",
   tray: "mp3",
   whir: "mp3",
+  // Pre-rendered Indian English teacher clips (see scripts/generate-teacher-audio.py).
+  // Played through Web Audio so the classroom noise can genuinely mask them.
+  teacher_full: "mp3",
+  teacher_c1: "mp3",
+  teacher_c2: "mp3",
+  teacher_c3: "mp3",
 };
 
 /* ---------------- Audio engine (Web Audio API) ----------------
@@ -283,12 +289,81 @@ class AudioEngine {
     return true;
   }
 
+  // Plays a longer clip (e.g. the teacher's voice) through the same mixer as the
+  // noise, and hands back { stop, gain } so the caller can duck it under a masking
+  // noise. Resolves to null if the clip is not available (caller falls back to TTS).
+  async playClip(kind, { gain = 1, onEnded } = {}) {
+    const ctx = this.ensure();
+    if (!ctx) return null;
+    let buffer = this.samples.get(kind);
+    if (!buffer) {
+      if (this.sampleMissing.has(kind)) return null;
+      try {
+        const ext = SOUND_FILE_EXT[kind] || "mp3";
+        const res = await fetch(`/sounds/${kind}.${ext}`);
+        if (!res.ok) throw new Error("missing");
+        buffer = await ctx.decodeAudioData(await res.arrayBuffer());
+        this.samples.set(kind, buffer);
+      } catch {
+        this.sampleMissing.add(kind);
+        return null;
+      }
+    }
+    try {
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+      const g = ctx.createGain();
+      g.gain.value = gain;
+      src.connect(g);
+      g.connect(this.master);
+      src.onended = () => onEnded && onEnded();
+      src.start();
+      return {
+        gain: g,
+        base: gain,
+        duration: buffer.duration,
+        stop: () => {
+          try { src.onended = null; src.stop(); } catch {}
+        },
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  // Briefly drops a clip's level (a chair scrape landing on top of a word).
+  duckClip(handle, { to = 0.2, hold = 0.9 } = {}) {
+    if (!handle || !this.ctx) return;
+    const t = this.ctx.currentTime;
+    const g = handle.gain.gain;
+    try {
+      g.cancelScheduledValues(t);
+      g.setValueAtTime(g.value, t);
+      g.linearRampToValueAtTime(to, t + 0.08);
+      g.setValueAtTime(to, t + hold);
+      g.linearRampToValueAtTime(handle.base, t + hold + 0.3);
+    } catch {}
+  }
+
+  // Continuous bed (HVAC hum, student chatter). Uses the recorded clip when it can be
+  // loaded, otherwise a synthesized noise bed, so the room is never silent. A per-id
+  // request counter makes sure a loop whose fetch finishes AFTER stopLoop() never starts.
   loopSample(id, kind, gain = 0.5) {
     const ctx = this.ensure();
     if (!ctx) return false;
     this.stopLoop(id);
+    if (!this.loopReq) this.loopReq = new Map();
+    const req = (this.loopReq.get(id) || 0) + 1;
+    this.loopReq.set(id, req);
+    const stale = () => this.loopReq.get(id) !== req;
+
+    const register = (src, g) => {
+      if (!this.loops) this.loops = new Map();
+      this.loops.set(id, { src, g });
+    };
 
     const playLoop = (buffer) => {
+      if (stale()) return;
       try {
         const src = ctx.createBufferSource();
         src.buffer = buffer;
@@ -300,8 +375,42 @@ class AudioEngine {
         src.connect(g);
         g.connect(this.master);
         src.start();
-        if (!this.loops) this.loops = new Map();
-        this.loops.set(id, { src, g });
+        register(src, g);
+      } catch {}
+    };
+
+    const synthLoop = () => {
+      if (stale()) return;
+      try {
+        const len = Math.floor(ctx.sampleRate * 2);
+        const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        let last = 0;
+        for (let i = 0; i < len; i++) {
+          last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; // brown noise
+          d[i] = last * 3.5;
+        }
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        src.loop = true;
+        const f = ctx.createBiquadFilter();
+        if (kind === "hum") {
+          f.type = "lowpass";
+          f.frequency.value = 260;
+        } else {
+          f.type = "bandpass";
+          f.frequency.value = 900;
+          f.Q.value = 0.7;
+        }
+        const g = ctx.createGain();
+        const target = Math.max(0.05, Math.min(1.2, gain)) * (kind === "hum" ? 1.1 : 0.9);
+        g.gain.setValueAtTime(0.0001, ctx.currentTime);
+        g.gain.linearRampToValueAtTime(target, ctx.currentTime + 0.2);
+        src.connect(f);
+        f.connect(g);
+        g.connect(this.master);
+        src.start();
+        register(src, g);
       } catch {}
     };
 
@@ -319,13 +428,17 @@ class AudioEngine {
         if (decoded) {
           this.samples.set(kind, decoded);
           playLoop(decoded);
+        } else {
+          synthLoop();
         }
       })
-      .catch(() => {});
+      .catch(() => synthLoop());
     return true;
   }
 
   stopLoop(id) {
+    if (!this.loopReq) this.loopReq = new Map();
+    this.loopReq.set(id, (this.loopReq.get(id) || 0) + 1); // invalidate any in-flight start
     if (!this.loops || !this.loops.has(id)) return;
     const item = this.loops.get(id);
     try {
@@ -554,14 +667,24 @@ const audio = new AudioEngine();
 let cachedVoices = [];
 if (typeof window !== "undefined" && window.speechSynthesis) {
   cachedVoices = window.speechSynthesis.getVoices() || [];
-  window.speechSynthesis.onvoiceschanged = () => {
+  window.speechSynthesis.addEventListener("voiceschanged", () => {
     cachedVoices = window.speechSynthesis.getVoices() || [];
-  };
+  });
+}
+
+function isIndianVoice(v) {
+  if (!v) return false;
+  const l = (v.lang || "").toLowerCase().replace("_", "-");
+  if (l.startsWith("en-in") || l.startsWith("hi-in")) return true;
+  const n = (v.name || "").toLowerCase();
+  return ["rishi", "veena", "neerja", "heera", "ravi", "prabhat", "kavya", "geeta", "lekha", "india"].some((kw) => n.includes(kw));
 }
 
 function findIndianVoice() {
   if (typeof window === "undefined" || !window.speechSynthesis) return null;
-  const voices = cachedVoices.length > 0 ? cachedVoices : (window.speechSynthesis.getVoices() || []);
+  const fresh = window.speechSynthesis.getVoices() || [];
+  if (fresh.length > 0) cachedVoices = fresh;
+  const voices = cachedVoices;
   if (!voices || voices.length === 0) return null;
 
   // 1. Direct Indian English match: lang is en-IN or en_IN
@@ -2746,7 +2869,7 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, position: "relative", zIndex: 5 }}>
         <div>
           <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-adhd)", letterSpacing: "0.08em" }}>
-            {mode === "baseline" ? "Run 1 (Quiet Baseline • Mars)" : mode === "interrupted" ? "Run 1 (The Distraction Storm • Deep Sea)" : "Run 2 (Focus Spotlight • Indus Valley)"}
+            {mode === "baseline" ? "Run 1 (Quiet Baseline • Mars)" : mode === "interrupted" ? "Run 2 (The Distraction Storm • Deep Sea)" : "Run 3 (Focus Spotlight • Indus Valley)"}
           </span>
           <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
             {currentTask.title}
@@ -2760,25 +2883,17 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
         </div>
       </div>
 
-      {/* Floating Notifications in Interrupted Mode */}
-      {mode === "interrupted" && visibleNotifications.length > 0 && (
-        <div className="itw-toast-container" aria-live="polite" style={{ zIndex: 10 }}>
-          {visibleNotifications.map((n) => (
+      {/* Notification lane (interrupted mode). Reserved, fixed-height strip ABOVE the
+          reading box: pings still pop in and compete for attention, but they can never
+          cover the answer chips, and the page does not jump when one arrives. */}
+      {mode === "interrupted" && (
+        <div className="itw-toast-lane" aria-live="polite">
+          {notifications.slice(0, 2).map((n) => (
             <div key={n.id} className={`itw-desk-toast itw-toast-${n.styleType || "default"} itw-distraction-burst`}>
               <span className="itw-toast-icon" aria-hidden="true">{n.icon}</span>
               <div className="itw-toast-content">
                 <div className="itw-toast-title">{n.title}</div>
-                <div style={{ fontSize: 13, lineHeight: 1.4 }}>{n.body}</div>
-                <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
-                  <button
-                    type="button"
-                    className="itw-pill-btn"
-                    style={{ fontSize: 11, padding: "2px 8px" }}
-                    onClick={() => dismissNotif(n.id)}
-                  >
-                    Dismiss
-                  </button>
-                </div>
+                <div className="itw-toast-body">{n.body}</div>
               </div>
               <button
                 type="button"
@@ -2791,23 +2906,6 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
             </div>
           ))}
         </div>
-      )}
-
-      {/* Associative Thought Sparks in Interrupted Mode */}
-      {mode === "interrupted" && !activeTangent && (
-        <>
-          {TANGENT_BUBBLES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className="itw-spark-thought"
-              style={{ top: t.top, left: t.left, right: t.right }}
-              onClick={() => openTangent(t)}
-            >
-              {t.title}
-            </button>
-          ))}
-        </>
       )}
 
       {/* Tangent Modal */}
@@ -2870,6 +2968,24 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
           </div>
         </div>
       </div>
+
+      {/* Wandering-thought lane (interrupted mode): sits BELOW the answer chips so a
+          tempting tangent never blocks a target. Space is reserved even while the
+          tangent modal is open, so nothing shifts. */}
+      {mode === "interrupted" && (
+        <div className="itw-spark-lane" style={{ visibility: activeTangent ? "hidden" : "visible" }}>
+          {TANGENT_BUBBLES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className="itw-spark-thought"
+              onClick={() => openTangent(t)}
+            >
+              {t.title}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Bottom Hint */}
       <div style={{ fontSize: 13, color: "var(--itw-muted)", textAlign: "center", marginTop: 12 }}>
@@ -6173,15 +6289,32 @@ const SCATTERED_DOT_COORDS = [
   { x: 44, y: 42 },
 ]; // Exactly 13 scattered dots
 
-function DyscalculiaSim({ mode = "baseline", supportType = "tenframes", onComplete, onAbort }) {
+const DYSCALC_RECIPE = [
+  { id: "flour", label: "Flour", emoji: "🌾", base: 200, unit: "g", blockSize: 50 },
+  { id: "milk", label: "Milk", emoji: "🥛", base: 120, unit: "ml", blockSize: 30 },
+  { id: "sugar", label: "Sugar", emoji: "🍬", base: 60, unit: "g", blockSize: 15 },
+];
+
+function DyscalculiaSim({ mode = "baseline", supportType = "numberline", onComplete, onAbort }) {
   const { soundOn } = useContext(SettingsContext);
+  const isBaseline = mode === "baseline";
+  const isSupported = mode === "supported";
+
   const [countedDots, setCountedDots] = useState([]);
-  const [tenFrameCount, setTenFrameCount] = useState(13);
+  const [solvedDots, setSolvedDots] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [errors, setErrors] = useState(0);
 
+  // Recipe-scaling state (Run 2 + Run 3)
+  const [answers, setAnswers] = useState({ flour: "", milk: "", sugar: "" });
+  const [halves, setHalves] = useState({ flour: "", milk: "", sugar: "" });
+  const [sliders, setSliders] = useState({ flour: 200, milk: 120, sugar: 60 });
+  const [blocks, setBlocks] = useState({ flour: 4, milk: 4, sugar: 4 });
+  const [wrongIds, setWrongIds] = useState([]);
+
   const startTimeRef = useRef(0);
   const timerRef = useRef(null);
+  const doneTimeRef = useRef(0);
   const onCompleteRef = useRef(onComplete);
 
   useEffect(() => {
@@ -6193,54 +6326,92 @@ function DyscalculiaSim({ mode = "baseline", supportType = "tenframes", onComple
     timerRef.current = setInterval(() => {
       setElapsed(parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1)));
     }, 100);
-
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
 
-  const handleDotClick = (idx) => {
-    if (soundOn) audio.cue("tap");
-    if (!countedDots.includes(idx)) {
-      setCountedDots([...countedDots, idx]);
-    }
+  const stopClock = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = null;
+    doneTimeRef.current = parseFloat(((performance.now() - startTimeRef.current) / 1000).toFixed(1));
+    setElapsed(doneTimeRef.current);
+    return doneTimeRef.current;
+  }, []);
+
+  const finish = (extra = {}) => {
+    const time = doneTimeRef.current || stopClock();
+    onCompleteRef.current?.({ time, errors, calcErrors: errors, mode, ...extra });
   };
 
-  const handleSubitizePick = (val, isCorrect) => {
-    if (soundOn) audio.cue(isCorrect ? "slam" : "flicker");
-    if (!isCorrect) {
+  /* ---------- Run 1: subitizing ---------- */
+  const handleDotClick = (idx) => {
+    if (soundOn) audio.cue("tap");
+    setCountedDots((prev) => (prev.includes(idx) ? prev : [...prev, idx]));
+  };
+
+  const handleSubitizePick = (val) => {
+    const correct = val === 13;
+    if (soundOn) audio.cue(correct ? "tap" : "flicker");
+    if (!correct) {
       setErrors((e) => e + 1);
       return;
     }
-
-    if (timerRef.current) clearInterval(timerRef.current);
-    const finalTime = elapsed > 0 ? elapsed : 0.1;
-    onCompleteRef.current?.({
-      time: finalTime,
-      errors,
-      mode,
-    });
+    stopClock();
+    setSolvedDots(true);
   };
 
-  // Ten-Frame calculation
-  const fullFrames = Math.floor(tenFrameCount / 10);
-  const remainder = tenFrameCount % 10;
+  /* ---------- Run 2 / Run 3: scale the recipe 4 → 6 servings (×1.5) ---------- */
+  const readValue = (it) => {
+    if (isSupported && supportType === "numberline") return sliders[it.id];
+    if (isSupported && supportType === "blocks") return blocks[it.id] * it.blockSize;
+    return answers[it.id] === "" ? NaN : Number(answers[it.id]);
+  };
+
+  const checkRecipe = () => {
+    const wrong = DYSCALC_RECIPE.filter((it) => {
+      if (isSupported && supportType === "scaffold" && Number(halves[it.id]) !== it.base / 2) return true;
+      return readValue(it) !== it.base * 1.5;
+    }).map((it) => it.id);
+
+    if (wrong.length === 0) {
+      if (soundOn) audio.cue("tap");
+      finish();
+      return;
+    }
+    if (soundOn) audio.cue("flicker");
+    setErrors((e) => e + 1);
+    setWrongIds(wrong);
+  };
+
+  const skipRecipe = () => {
+    stopClock();
+    finish({ skipped: true });
+  };
+
+  const setAnswer = (id, v) => {
+    setAnswers((a) => ({ ...a, [id]: v.replace(/[^0-9.]/g, "") }));
+    setWrongIds((w) => w.filter((x) => x !== id));
+  };
+
+  const heading = isBaseline
+    ? { tag: "Run 1 • Quantity at a glance", title: "How many dots? Without counting." }
+    : isSupported
+    ? { tag: "Run 3 • Scaling with support", title: "Same recipe, now with a spatial anchor" }
+    : { tag: "Run 2 • Scaling in your head", title: "Make the recipe for 6 people (×1.5)" };
+
+  const supportLabel = DYSCALC_SUPPORT_CHOICES.find((s) => s.id === supportType)?.title;
 
   return (
-    <div className="itw-dyscalc-arena" role="region" aria-label="Visual Number Sense Arena">
-      {/* Header Bar */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+    <div className="itw-dyscalc-arena" role="region" aria-label="Number sense simulation">
+      <div className="itw-dyscalc-head">
         <div>
-          <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "var(--itw-dyscalculia)", letterSpacing: "0.08em" }}>
-            {mode === "baseline" ? "Run 1 (Unstructured Quantity: The Subitizing Barrier)" : "Run 2 (Visual Ten-Frames: Instant Spatial Quantity)"}
-          </span>
-          <h3 style={{ fontSize: 20, fontWeight: 800, color: "var(--itw-text)", margin: "4px 0" }}>
-            {mode === "baseline" ? "Can You Tell the Quantity at a Single Glance?" : "The Visual Solution: Grounding Quantity in Structured Space"}
-          </h3>
+          <span className="itw-dyscalc-tag">{heading.tag}</span>
+          <h3 className="itw-dyscalc-title">{heading.title}</h3>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 14, fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--itw-muted)", display: "flex", alignItems: "center", gap: 6 }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <div className="itw-dyscalc-head-right">
+          <span className="itw-dyscalc-clock">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
             </svg>
@@ -6250,173 +6421,234 @@ function DyscalculiaSim({ mode = "baseline", supportType = "tenframes", onComple
         </div>
       </div>
 
-      {mode === "baseline" ? (
-        /* Baseline mode: Demonstrating the friction of unanchored quantity */
-        <div>
-          <div style={{ background: "var(--itw-panel-2)", padding: 22, borderRadius: 18, border: "1.5px solid var(--itw-border)", margin: "16px 0" }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-dyscalculia)", textTransform: "uppercase", marginBottom: 6 }}>
-              Visual Quantity Estimation Challenge
-            </div>
-            <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--itw-text)", margin: "0 0 14px" }}>
-              In dyscalculia, the brain does not automatically &ldquo;see&rdquo; quantity without structure. Look at the scattered dots below. Without counting one by one, can you instantly tell how many there are?
-            </p>
+      {/* ============ RUN 1: dots, then reveal the ten-frame ============ */}
+      {isBaseline && (
+        <div className="itw-dyscalc-card">
+          <p className="itw-dyscalc-lead">
+            Most people sense small quantities instantly. With dyscalculia that &ldquo;number sense&rdquo; is weaker,
+            so a scatter of dots has to be counted one by one. Try it: how many dots are in the cloud?
+          </p>
 
-            {/* Scattered Dots Box */}
-            <div className="itw-scatter-cloud" title="Tap dots to count if needed">
-              {SCATTERED_DOT_COORDS.map((dot, idx) => {
-                const isCounted = countedDots.includes(idx);
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    className={`itw-scatter-dot${isCounted ? " itw-counted" : ""}`}
-                    style={{ left: `${dot.x}%`, top: `${dot.y}%` }}
-                    onClick={() => handleDotClick(idx)}
-                    aria-label={`Dot ${idx + 1}`}
-                  />
-                );
-              })}
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: 520, margin: "10px auto 20px", fontSize: 13, color: "var(--itw-muted)" }}>
-              <span>Tapped to count: <b>{countedDots.length}</b> / 13</span>
+          <div className="itw-scatter-cloud" title="Tap dots to keep track while you count">
+            {SCATTERED_DOT_COORDS.map((dot, idx) => (
               <button
+                key={idx}
                 type="button"
-                className="itw-pill-btn"
-                style={{ fontSize: 11, padding: "4px 10px" }}
-                onClick={() => setCountedDots([])}
-              >
-                Reset Count
-              </button>
-            </div>
+                className={`itw-scatter-dot${countedDots.includes(idx) ? " itw-counted" : ""}`}
+                style={{ left: `${dot.x}%`, top: `${dot.y}%` }}
+                onClick={() => handleDotClick(idx)}
+                aria-label={`Dot ${idx + 1}`}
+                disabled={solvedDots}
+              />
+            ))}
+          </div>
 
-            <div style={{ textAlign: "center", marginTop: 14 }}>
-              <div style={{ fontSize: 14, fontWeight: 800, color: "var(--itw-text)", marginBottom: 12 }}>
-                How many dots are in the cloud?
-              </div>
-              <div style={{ display: "flex", justifyContent: "center", gap: 14 }}>
+          <div className="itw-dyscalc-tally">
+            <span>Tapped so far: <b>{countedDots.length}</b></span>
+            <button type="button" className="itw-pill-btn" onClick={() => setCountedDots([])} disabled={solvedDots}>
+              Reset taps
+            </button>
+          </div>
+
+          {!solvedDots ? (
+            <div className="itw-dyscalc-answer">
+              <div className="itw-dyscalc-q">How many dots are there?</div>
+              <div className="itw-dyscalc-picks">
                 {[11, 13, 15].map((val) => (
-                  <button
-                    key={val}
-                    type="button"
-                    className="itw-pill-btn"
-                    style={{ fontSize: 18, padding: "10px 28px", fontWeight: 800 }}
-                    onClick={() => handleSubitizePick(val, val === 13)}
-                  >
-                    {val} Dots
+                  <button key={val} type="button" className="itw-dyscalc-pick" onClick={() => handleSubitizePick(val)}>
+                    {val}
                   </button>
                 ))}
               </div>
               {errors > 0 && (
-                <div style={{ color: "#d9381e", fontSize: 13, fontWeight: 700, marginTop: 10 }}>
-                  Not quite — without spatial structure, counting is prone to misjudging. Try counting the dots or recount!
+                <div className="itw-dyscalc-warn" role="status">
+                  Not quite. Tap each dot once as you count, then try again.
                 </div>
               )}
             </div>
-          </div>
-        </div>
-      ) : (
-        /* Supported mode: Rich Visual Models (Ten-Frames, Number Line, CRA model) */
-        <div>
-          <div style={{ background: "var(--itw-panel-2)", padding: 22, borderRadius: 18, border: "1.5px solid var(--itw-dyscalculia)", margin: "16px 0" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-dyscalculia)", textTransform: "uppercase" }}>
-                ✨ Standard 5×2 Ten-Frames (Concrete Visual Scaffolding)
-              </span>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--itw-muted)" }}>Adjust count:</span>
-                <button
-                  type="button"
-                  className="itw-pill-btn"
-                  onClick={() => setTenFrameCount((c) => Math.max(1, c - 1))}
-                >
-                  - 1
-                </button>
-                <button
-                  type="button"
-                  className="itw-pill-btn"
-                  onClick={() => setTenFrameCount((c) => Math.min(20, c + 1))}
-                >
-                  + 1
-                </button>
-              </div>
-            </div>
-
-            <p style={{ fontSize: 15, color: "var(--itw-text)", lineHeight: 1.6, marginBottom: 16 }}>
-              Here is the <b>exact same quantity (13)</b> organized inside standard Ten-Frames ($5 \times 2$ grid). Because 10 is full and 3 are in the second frame, your visual system registers <b>10 + 3 = 13 in under 1 second</b> without counting!
-            </p>
-
-            {/* Render Ten-Frames */}
-            <div className="itw-tenframe-container">
-              {Array.from({ length: Math.ceil(tenFrameCount / 10) }).map((_, fIdx) => {
-                const dotsInThisFrame = Math.min(10, tenFrameCount - fIdx * 10);
-                return (
-                  <div key={fIdx} className="itw-tenframe-box">
-                    <div className="itw-tenframe-label">Frame {fIdx + 1} ({dotsInThisFrame}/10)</div>
-                    <div className="itw-tenframe-grid" style={{ margin: 0 }}>
-                      {Array.from({ length: 10 }).map((_, cIdx) => (
-                        <div key={cIdx} className="itw-tenframe-cell">
-                          {cIdx < dotsInThisFrame && <span className="itw-tenframe-dot" />}
-                        </div>
-                      ))}
+          ) : (
+            <div className="itw-dyscalc-reveal">
+              <div className="itw-dyscalc-reveal-title">Yes, 13. Now see the same 13 in a ten-frame:</div>
+              <div className="itw-tenframe-container">
+                {[0, 1].map((fIdx) => {
+                  const dots = Math.min(10, 13 - fIdx * 10);
+                  return (
+                    <div key={fIdx} className="itw-tenframe-box">
+                      <div className="itw-tenframe-label">Frame {fIdx + 1} ({dots}/10)</div>
+                      <div className="itw-tenframe-grid" style={{ margin: 0 }}>
+                        {Array.from({ length: 10 }).map((_, cIdx) => (
+                          <div key={cIdx} className="itw-tenframe-cell">
+                            {cIdx < dots && <span className="itw-tenframe-dot" />}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div style={{ textAlign: "center", fontSize: 22, fontWeight: 800, fontFamily: "var(--font-mono)", color: "var(--itw-dyscalculia)", margin: "14px 0" }}>
-              = {tenFrameCount} ({fullFrames} ten{fullFrames !== 1 ? "s" : ""} + {remainder} one{remainder !== 1 ? "s" : ""})
-            </div>
-
-            {/* Interactive Visual Number Line */}
-            <div style={{ borderTop: "1px solid var(--itw-border)", paddingTop: 16, marginTop: 16 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: "var(--itw-dyscalculia)", textTransform: "uppercase", marginBottom: 6 }}>
-                Spatial Number Line with Landmark Anchors (0 to 100)
+                  );
+                })}
               </div>
-              <div className="itw-number-line-wrap">
-                <div className="itw-number-track">
-                  <div
-                    className="itw-number-pin"
-                    style={{ left: `${(tenFrameCount / 20) * 100}%` }}
-                  >
-                    {tenFrameCount}
-                  </div>
-                  {[0, 5, 10, 15, 20].map((anchor) => (
-                    <span
-                      key={anchor}
-                      className="itw-number-anchor"
-                      style={{ left: `${(anchor / 20) * 100}%` }}
-                    >
-                      {anchor}
-                    </span>
-                  ))}
-                </div>
+              <p className="itw-dyscalc-lead" style={{ textAlign: "center", margin: "12px 0 0" }}>
+                One full frame (10) plus 3 more = <b>13</b>. Structure lets you <i>see</i> the number instead of counting it.
+              </p>
+              <div style={{ textAlign: "center", marginTop: 16 }}>
+                <button type="button" className="itw-cta itw-cta-dark" onClick={() => finish()}>
+                  Continue to Run 2 →
+                </button>
               </div>
             </div>
-
-            <div style={{ textAlign: "center", marginTop: 24 }}>
-              <button
-                type="button"
-                className="itw-cta itw-cta-dark"
-                onClick={() => handleSubitizePick(tenFrameCount, true)}
-              >
-                Confirm Instant Recognition (13) ✓
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       )}
 
-      {/* Footer Reflection */}
-      <div style={{ fontSize: 13, color: "var(--itw-muted)", textAlign: "center", marginTop: 14 }}>
-        {mode === "baseline"
-          ? "Notice how unstructured dots required 4+ seconds of active manual counting — exactly what abstract numbers feel like in dyscalculia."
-          : "Notice how Ten-Frames ground abstract numbers in spatial geometry, enabling instant recognition without counting."}
+      {/* ============ RUN 2 + RUN 3: recipe scaling ============ */}
+      {!isBaseline && (
+        <div className="itw-dyscalc-card">
+          <p className="itw-dyscalc-lead">
+            <b>Cardamom cookies</b> serve 4. Two guests arrived, so make enough for <b>6</b> (that is 1.5× every amount).
+            {isSupported
+              ? <> Support in use: <b>{supportLabel}</b>.</>
+              : <> No calculator, no paper, no number line. Just your head.</>}
+          </p>
+
+          <div className="itw-recipe-grid">
+            {DYSCALC_RECIPE.map((it) => {
+              const bad = wrongIds.includes(it.id);
+              return (
+                <div key={it.id} className={`itw-recipe-row${bad ? " itw-bad" : ""}`}>
+                  <div className="itw-recipe-label">
+                    <span aria-hidden="true">{it.emoji}</span>
+                    <b>{it.label}</b>
+                    <span className="itw-recipe-base">{it.base} {it.unit} for 4</span>
+                  </div>
+
+                  {/* Run 2: plain answer box */}
+                  {(!isSupported || supportType === "scaffold") && (
+                    <div className="itw-recipe-entry">
+                      {isSupported && supportType === "scaffold" && (
+                        <div className="itw-recipe-steps">
+                          <div>Step 1 · Start from the base: <b>{it.base} {it.unit}</b></div>
+                          <label>
+                            Step 2 · Half of {it.base} is
+                            <input
+                              className="itw-recipe-input itw-small"
+                              inputMode="decimal"
+                              value={halves[it.id]}
+                              onChange={(e) => {
+                                setHalves((h) => ({ ...h, [it.id]: e.target.value.replace(/[^0-9.]/g, "") }));
+                                setWrongIds((w) => w.filter((x) => x !== it.id));
+                              }}
+                              aria-label={`Half of ${it.base} ${it.unit} of ${it.label}`}
+                            />
+                          </label>
+                          <div>Step 3 · {it.base} + half =</div>
+                        </div>
+                      )}
+                      <span className="itw-recipe-times">{isSupported ? "" : "× 1.5 ="}</span>
+                      <input
+                        className="itw-recipe-input"
+                        inputMode="decimal"
+                        placeholder="?"
+                        value={answers[it.id]}
+                        onChange={(e) => setAnswer(it.id, e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && checkRecipe()}
+                        aria-label={`Amount of ${it.label} for 6 servings`}
+                      />
+                      <span className="itw-recipe-unit">{it.unit}</span>
+                    </div>
+                  )}
+
+                  {/* Run 3 · number line */}
+                  {isSupported && supportType === "numberline" && (
+                    <div className="itw-recipe-numline">
+                      <div className="itw-recipe-numline-read">
+                        <b>{sliders[it.id]}</b> {it.unit}
+                      </div>
+                      <input
+                        type="range"
+                        className="itw-recipe-range"
+                        min={0}
+                        max={it.base * 2}
+                        step={5}
+                        value={sliders[it.id]}
+                        onChange={(e) => {
+                          setSliders((s) => ({ ...s, [it.id]: Number(e.target.value) }));
+                          setWrongIds((w) => w.filter((x) => x !== it.id));
+                        }}
+                        aria-label={`Slide to 1.5 times ${it.base} ${it.unit} of ${it.label}`}
+                      />
+                      <div className="itw-recipe-ticks" aria-hidden="true">
+                        <span style={{ left: "0%" }}>0</span>
+                        <span style={{ left: "50%" }} className="itw-tick-key">{it.base}<i>×1</i></span>
+                        <span style={{ left: "75%" }} className="itw-tick-mid"><i>halfway to ×2</i></span>
+                        <span style={{ left: "100%" }} className="itw-tick-key">{it.base * 2}<i>×2</i></span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Run 3 · concrete blocks */}
+                  {isSupported && supportType === "blocks" && (
+                    <div className="itw-recipe-blocks">
+                      <div className="itw-block-row">
+                        {Array.from({ length: 8 }).map((_, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            className={`itw-block${i < blocks[it.id] ? " itw-on" : ""}${i < 4 ? " itw-base" : ""}`}
+                            onClick={() => {
+                              setBlocks((b) => ({ ...b, [it.id]: i + 1 === b[it.id] ? i : i + 1 }));
+                              setWrongIds((w) => w.filter((x) => x !== it.id));
+                            }}
+                            aria-label={`Set ${it.label} to ${i + 1} blocks`}
+                          />
+                        ))}
+                      </div>
+                      <div className="itw-block-sum">
+                        {blocks[it.id]} blocks × {it.blockSize} {it.unit} = <b>{blocks[it.id] * it.blockSize} {it.unit}</b>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {isSupported && supportType === "blocks" && (
+            <p className="itw-dyscalc-hint">
+              The first 4 blocks (dark outline) are the original recipe. Tap blocks to build the amount for 6 servings.
+            </p>
+          )}
+
+          <div className="itw-dyscalc-actions">
+            <button type="button" className="itw-cta itw-cta-dark" onClick={checkRecipe}>
+              Check my amounts
+            </button>
+            {errors >= 3 && (
+              <button type="button" className="itw-cta itw-cta-line" onClick={skipRecipe}>
+                I would reach for a calculator here →
+              </button>
+            )}
+          </div>
+
+          {errors > 0 && (
+            <div className="itw-dyscalc-warn" role="status">
+              {wrongIds.length > 0
+                ? `Check ${wrongIds.map((id) => DYSCALC_RECIPE.find((r) => r.id === id).label.toLowerCase()).join(" and ")} again. Attempts so far: ${errors}.`
+                : `Attempts so far: ${errors}.`}
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="itw-dyscalc-foot">
+        {isBaseline
+          ? "Unstructured dots demand one-by-one counting. That is what abstract numbers can feel like in dyscalculia."
+          : isSupported
+          ? "A spatial or concrete model turns an abstract calculation into something you can see and move."
+          : "Holding 1.5× of three amounts in working memory is slow and error-prone without anything to anchor it."}
       </div>
     </div>
   );
 }
+
 function DyscalculiaModule({ onBack, onNavigate }) {
   const [step, setStep] = useState("intro");
   const [results, setResults] = useState({ baseline: null, unsupported: null, supported: null });
@@ -6483,9 +6715,9 @@ function DyscalculiaModule({ onBack, onNavigate }) {
             You are measuring ingredients for traditional cardamom cookies.
           </p>
           <ul className="itw-flow-list">
-            <li><span aria-hidden="true">•</span> In Run 1, simply adjust the ingredient amounts to match the base recipe for 4 servings.</li>
-            <li><span aria-hidden="true">•</span> In Run 2, you will experience the cognitive friction of scaling that recipe for 6 people without visual aids.</li>
-            <li><span aria-hidden="true">•</span> In Run 3, test how visual number lines and concrete scaffolding relieve mathematical strain.</li>
+            <li><span aria-hidden="true">•</span> Run 1: a quick-glance quantity check. Can you tell how many dots there are without counting?</li>
+            <li><span aria-hidden="true">•</span> Run 2: scale the cookie recipe from 4 to 6 servings (1.5×) in your head, with no aids.</li>
+            <li><span aria-hidden="true">•</span> Run 3: redo the same scaling with a visual or concrete support, and compare how it feels.</li>
           </ul>
           <div className="itw-flow-nav">
             <button type="button" className="itw-cta itw-cta-line" onClick={() => setStep("intro")}>Back</button>
@@ -6499,8 +6731,8 @@ function DyscalculiaModule({ onBack, onNavigate }) {
       {step === "run_baseline" && (
         <div className="itw-flow-page" key="run_baseline">
           <div className="itw-flow-readtop">
-            <h2 className="itw-flow-title">Run 1: Base Recipe Measurement</h2>
-            <p className="itw-flow-lead" style={{ margin: 0 }}>Notice how straightforward measuring is when quantities are already specified.</p>
+            <h2 className="itw-flow-title">Run 1: Quantity at a Glance</h2>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>Look at the dots and work out how many there are. Then see how structure changes it.</p>
           </div>
           <DyscalculiaSim mode="baseline" onComplete={handleBaselineComplete} onAbort={() => setStep("instructions")} />
         </div>
@@ -6513,7 +6745,7 @@ function DyscalculiaModule({ onBack, onNavigate }) {
             Two extra guests have joined! You must now scale the recipe from 4 servings to 6 servings (a 1.5× multiplier).
           </p>
           <ul className="itw-flow-list">
-            <li><span aria-hidden="true">•</span> Calculate 1.5× for 200g flour, 120ml milk, and 60g sugar mentally.</li>
+            <li><span aria-hidden="true">•</span> Work out 1.5× for 200g flour, 120ml milk, and 60g sugar, then type each amount.</li>
             <li><span aria-hidden="true">•</span> Notice how holding mental arithmetic calculations without visual models strains working memory.</li>
           </ul>
           <div className="itw-flow-nav">
@@ -6529,7 +6761,7 @@ function DyscalculiaModule({ onBack, onNavigate }) {
         <div className="itw-flow-page" key="run_unsupported">
           <div className="itw-flow-readtop">
             <h2 className="itw-flow-title">Run 2: Abstract Mental Calculation</h2>
-            <p className="itw-flow-lead" style={{ margin: 0 }}>Scale each ingredient by 1.5× without visual aids.</p>
+            <p className="itw-flow-lead" style={{ margin: 0 }}>Scale each ingredient by 1.5× without any visual aid, then check your amounts.</p>
           </div>
           <DyscalculiaSim mode="unsupported" onComplete={handleUnsupportedComplete} onAbort={() => setStep("unsupported_intro")} />
         </div>
@@ -6552,12 +6784,14 @@ function DyscalculiaModule({ onBack, onNavigate }) {
           >
             <div style={{ textAlign: "center", padding: 12 }}>
               <div style={{ fontSize: 13, textTransform: "uppercase", color: "var(--itw-muted)", fontWeight: 700 }}>
-                Run 1 (Direct)
+                Run 1 (Quantity glance)
               </div>
               <div style={{ fontSize: 32, fontWeight: 900, color: "var(--itw-text)", margin: "8px 0" }}>
                 {results.baseline ? `${results.baseline.time.toFixed(1)}s` : "—"}
               </div>
-              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>0 calculations</div>
+              <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
+                {results.baseline ? `${results.baseline.errors} wrong guess${results.baseline.errors === 1 ? "" : "es"}` : "—"}
+              </div>
             </div>
             <div style={{ textAlign: "center", padding: 12, borderLeft: "1px solid var(--itw-border)" }}>
               <div style={{ fontSize: 13, textTransform: "uppercase", color: "var(--itw-dyscalculia)", fontWeight: 700 }}>
@@ -6567,7 +6801,9 @@ function DyscalculiaModule({ onBack, onNavigate }) {
                 {results.unsupported ? `${results.unsupported.time.toFixed(1)}s` : "—"}
               </div>
               <div style={{ fontSize: 13, color: "var(--itw-muted)" }}>
-                {results.unsupported ? `${results.unsupported.calcErrors} adjustment attempts` : "—"}
+                {results.unsupported
+                  ? `${results.unsupported.calcErrors} wrong attempt${results.unsupported.calcErrors === 1 ? "" : "s"}${results.unsupported.skipped ? " (moved on)" : ""}`
+                  : "—"}
               </div>
             </div>
           </div>
@@ -7588,6 +7824,9 @@ const AUDITORY_QUIZ_OPTIONS = [
   { text: "Bring your completed project for Friday's lab", correct: false, maskTag: "Decoy: Format obscured by door slam" },
 ];
 
+const APD_NOISE_SAMPLES = ["hum", "scrape", "rustle", "laugh", "slam", "argue", "screech", "footsteps"];
+const APD_CLIP_SAMPLES = ["teacher_full", "teacher_c1", "teacher_c2", "teacher_c3"];
+
 function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", onComplete, onAbort }) {
   const { soundOn } = useContext(SettingsContext);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -7596,30 +7835,50 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
   const [activeSegment, setActiveSegment] = useState(null);
   const [hasPlayedOnce, setHasPlayedOnce] = useState(false);
   const [currentMaskNotice, setCurrentMaskNotice] = useState(null);
-  const [detectedVoiceName, setDetectedVoiceName] = useState("");
+  // What is actually speaking: "clip" (recorded Indian English), "tts-in" (an en-IN
+  // browser voice), "tts-other" (browser voice that is NOT Indian English), or "" (unknown yet).
+  const [voiceInfo, setVoiceInfo] = useState({ source: "", name: "" });
+  const [clipsAvailable, setClipsAvailable] = useState(false);
 
   const startTimeRef = useRef(0);
   const timerRef = useRef(null);
   const noiseIntervalRef = useRef(null);
   const maskTimeoutsRef = useRef([]);
+  const clipRef = useRef(null);
+  const utteranceRef = useRef(null); // keep a reference: Chrome can garbage-collect a speaking utterance
+  const playTokenRef = useRef(0); // bumps on every play; stale async callbacks compare against it
   const onCompleteRef = useRef(onComplete);
 
   useEffect(() => {
     onCompleteRef.current = onComplete;
   }, [onComplete]);
 
-  // Voice detection on mount & voice change
+  // Which voice will we hear? Prefer the recorded clips; else the best browser voice.
   useEffect(() => {
+    let cancelled = false;
     const resolveVoice = () => {
       const v = findIndianVoice();
-      if (v) {
-        setDetectedVoiceName(v.name);
-      }
+      if (!cancelled && v) setVoiceInfo((prev) => (prev.source === "clip" ? prev : { source: isIndianVoice(v) ? "tts-in" : "tts-other", name: v.name }));
     };
     resolveVoice();
-    if (typeof window !== "undefined" && window.speechSynthesis) {
-      window.speechSynthesis.onvoiceschanged = resolveVoice;
-    }
+    const synth = typeof window !== "undefined" ? window.speechSynthesis : null;
+    if (synth) synth.addEventListener("voiceschanged", resolveVoice);
+
+    fetch("/sounds/teacher_full.mp3", { method: "HEAD" })
+      .then((r) => {
+        if (cancelled || !r.ok) return;
+        setClipsAvailable(true);
+        setVoiceInfo({ source: "clip", name: "Indian English classroom teacher" });
+      })
+      .catch(() => {});
+
+    // Warm the sample cache so the very first masking event is the real recording, not the synth fallback.
+    [...APD_NOISE_SAMPLES, ...APD_CLIP_SAMPLES].forEach((k) => audio.loadSample(k));
+
+    return () => {
+      cancelled = true;
+      if (synth) synth.removeEventListener("voiceschanged", resolveVoice);
+    };
   }, []);
 
   // Stopwatch timer
@@ -7640,106 +7899,137 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
         window.speechSynthesis.cancel();
       } catch {}
     }
+    if (clipRef.current) {
+      clipRef.current.stop();
+      clipRef.current = null;
+    }
     if (noiseIntervalRef.current) clearInterval(noiseIntervalRef.current);
+    noiseIntervalRef.current = null;
     maskTimeoutsRef.current.forEach((t) => clearTimeout(t));
     maskTimeoutsRef.current = [];
     audio.stopLoop("classroom_drone");
-    audio.stopDrone("babble");
+    audio.stopLoop("classroom_babble");
     setIsPlayingAudio(false);
     setCurrentMaskNotice(null);
   };
 
-  // Audio Playback Engine for Classroom Announcement with Genuine Phonetic Masking in Indian Accent
-  const playAnnouncement = (customText = null, segmentId = null) => {
+  // Which runs carry classroom noise?
+  //  - unsupported: full noise, speech is masked
+  //  - supported + captions: same noisy audio, but the whiteboard captions rescue you
+  //  - supported + isolation (FM mic): the room is still noisy but the voice goes straight to your ear
+  const noisy = mode === "unsupported" || (mode === "supported" && (supportType === "captions" || supportType === "isolation"));
+  const masking = mode === "unsupported" || (mode === "supported" && supportType === "captions");
+  const noiseScale = mode === "supported" && supportType === "isolation" ? 0.22 : 1;
+
+  // Audio Playback Engine: teacher voice + a real, audible classroom.
+  const playAnnouncement = async (customText = null, segmentId = null, clipKind = null) => {
+    const token = ++playTokenRef.current;
+    const alive = () => token === playTokenRef.current;
     stopAudioArtifacts();
 
-    // 1. Explicitly enable and prime the Web Audio Engine for classroom acoustics
+    // Explicitly enable and prime the Web Audio engine (this runs inside a click, so the context may resume).
     audio.setEnabled(true);
     const ctx = audio.ensure();
     if (ctx && audio.master) {
       const now = ctx.currentTime;
       audio.master.gain.cancelScheduledValues(now);
-      audio.master.gain.setValueAtTime(0.32, now); // Audibly clear
+      audio.master.gain.setValueAtTime(0.4, now);
     }
 
     setIsPlayingAudio(true);
     setHasPlayedOnce(true);
     setActiveSegment(segmentId);
 
+    // Speech may end early or error out (no voice on this device); the room keeps going
+    // for the full masking sequence so the noise experience never silently disappears.
+    const startedAt = performance.now();
+    const minRoomMs = noisy ? 13000 : 0;
+    const finishPlayback = () => {
+      if (!alive()) return;
+      const wait = Math.max(0, minRoomMs - (performance.now() - startedAt));
+      if (wait > 0) {
+        maskTimeoutsRef.current.push(setTimeout(() => alive() && stopAudioArtifacts(), wait));
+      } else {
+        stopAudioArtifacts();
+      }
+    };
+
+    // ---- classroom noise bed + synchronized masking events ----
+    if (noisy) {
+      const s = noiseScale;
+      audio.loopSample("classroom_drone", "hum", 1.2 * s);       // HVAC hum
+      audio.loopSample("classroom_babble", "argue", 0.55 * s);   // continuous student chatter
+
+      const speechHandle = () => clipRef.current;
+      const mask = (delay, notice, cues, burst) => {
+        maskTimeoutsRef.current.push(
+          setTimeout(() => {
+            if (!alive()) return;
+            setCurrentMaskNotice(notice);
+            cues.forEach(([kind, g]) => audio.cue(kind, g * s));
+            audio.noiseBurst({ duration: 0.8, gain: burst.gain * s, filterFreq: burst.f, type: "bandpass" });
+            // The recorded voice really does get drowned out for a moment.
+            if (masking) audio.duckClip(speechHandle(), { to: 0.12, hold: 0.9 });
+          }, delay)
+        );
+      };
+      mask(2700, "⚠️ Acoustic Mask 1: Scraping chair drowns out the chapter number (/f/ onset)", [["scrape", 1.6]], { gain: 0.38, f: 1800 });
+      mask(5800, "⚠️ Acoustic Mask 2: Desk rustle & chatter drown the notebook colour (/bl/ onset)", [["rustle", 1.5], ["laugh", 1.1]], { gain: 0.35, f: 1400 });
+      mask(9000, "⚠️ Acoustic Mask 3: Heavy door slam drowns out the submission format", [["slam", 1.6], ["argue", 1.1]], { gain: 0.38, f: 2200 });
+      maskTimeoutsRef.current.push(setTimeout(() => alive() && setCurrentMaskNotice(null), 12000));
+
+      // Periodic ambient student sounds (footsteps, paper shuffles, whispers)
+      const noiseCues = ["scrape", "rustle", "screech", "footsteps", "argue"];
+      noiseIntervalRef.current = setInterval(() => {
+        if (!alive()) return;
+        audio.cue(noiseCues[Math.floor(Math.random() * noiseCues.length)], 0.85 * s);
+      }, 1500);
+    }
+
+    // ---- the teacher's voice ----
+    const kind = clipKind || "teacher_full";
+    const voiceGain = noisy ? (mode === "supported" && supportType === "isolation" ? 1.15 : 0.8) : 1;
+    const clip = await audio.playClip(kind, { gain: voiceGain, onEnded: finishPlayback });
+    if (!alive()) {
+      if (clip) clip.stop();
+      return;
+    }
+    if (clip) {
+      clipRef.current = clip;
+      setVoiceInfo({ source: "clip", name: "Indian English classroom teacher" });
+      return;
+    }
+
+    // Fallback: browser speech synthesis (accent depends on the voices installed on this device).
     const isUnsupported = mode === "unsupported";
     const textToSpeak = customText || (isUnsupported ? TEACHER_MASKED_ANNOUNCEMENT : TEACHER_FULL_ANNOUNCEMENT);
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    try {
+      if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+      window.speechSynthesis.cancel();
+    } catch {}
 
-    if (typeof window !== "undefined" && window.speechSynthesis) {
-      try {
-        if (window.speechSynthesis.paused) window.speechSynthesis.resume();
-        window.speechSynthesis.cancel();
-      } catch {}
-
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.lang = "en-IN"; // Target Indian English phonetics
-      utterance.rate = isUnsupported ? 0.90 : 0.94;
-      utterance.pitch = 1.05;
-      utterance.volume = 1.0;
-
-      const indianVoice = findIndianVoice();
-      if (indianVoice) {
-        utterance.voice = indianVoice;
-        setDetectedVoiceName(indianVoice.name);
-      }
-
-      utterance.onend = () => {
-        stopAudioArtifacts();
-      };
-      utterance.onerror = (err) => {
-        console.warn("TTS error:", err);
-        stopAudioArtifacts();
-      };
-
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = "en-IN";
+    utterance.rate = isUnsupported ? 0.9 : 0.94;
+    utterance.pitch = 1.05;
+    utterance.volume = noisy ? 0.7 : 1.0; // speech synthesis is outside the mixer, so keep it below the noise bed
+    const indianVoice = findIndianVoice();
+    if (indianVoice) {
+      utterance.voice = indianVoice;
+      setVoiceInfo({ source: isIndianVoice(indianVoice) ? "tts-in" : "tts-other", name: indianVoice.name });
+    }
+    // Stale utterances fire onend/onerror late (after cancel); ignore them.
+    utterance.onend = finishPlayback;
+    utterance.onerror = () => finishPlayback();
+    utteranceRef.current = utterance;
+    // Chrome drops speak() issued in the same tick as cancel(), so give it a beat.
+    setTimeout(() => {
+      if (!alive()) return;
       try {
         window.speechSynthesis.speak(utterance);
       } catch {}
-    }
-
-    // 2. In unsupported mode: Layer continuous room noise and synchronized phoneme noise bursts
-    if (isUnsupported) {
-      // (A) Continuous ambient classroom drone: HVAC hum + low student murmurs
-      audio.loopSample("classroom_drone", "hum", 0.92);
-      audio.startDrone("babble", { freqs: [110, 220, 330], type: "triangle" });
-
-      // (B) Synchronized acoustic masking events over critical instructions
-      const t1 = setTimeout(() => {
-        setCurrentMaskNotice("⚠️ Acoustic Mask 1: Scraping chair drowns out Chapter number (/f/ onset)");
-        audio.cue("scrape", 1.6);
-        audio.noiseBurst({ duration: 0.75, gain: 0.38, filterFreq: 1800, type: "bandpass" });
-      }, 2700);
-
-      const t2 = setTimeout(() => {
-        setCurrentMaskNotice("⚠️ Acoustic Mask 2: Desk rustle & chatter drowns notebook color (/bl/ onset)");
-        audio.cue("rustle", 1.5);
-        audio.cue("laugh", 1.1);
-        audio.noiseBurst({ duration: 0.7, gain: 0.35, filterFreq: 1400, type: "bandpass" });
-      }, 5800);
-
-      const t3 = setTimeout(() => {
-        setCurrentMaskNotice("⚠️ Acoustic Mask 3: Heavy door slam drowns out submission format");
-        audio.cue("slam", 1.6);
-        audio.cue("argue", 1.1);
-        audio.noiseBurst({ duration: 0.75, gain: 0.38, filterFreq: 2200, type: "bandpass" });
-      }, 9000);
-
-      const tClear = setTimeout(() => {
-        setCurrentMaskNotice(null);
-      }, 12000);
-
-      maskTimeoutsRef.current = [t1, t2, t3, tClear];
-
-      // (C) Periodic ambient student sounds (footsteps, paper shuffles, whispers)
-      const noiseCues = ["scrape", "rustle", "screech", "footsteps", "argue"];
-      noiseIntervalRef.current = setInterval(() => {
-        const randCue = noiseCues[Math.floor(Math.random() * noiseCues.length)];
-        audio.cue(randCue, 0.85);
-      }, 1500);
-    }
+    }, 90);
   };
 
   // Auto-play announcement on mount if sound is enabled
@@ -7750,10 +8040,14 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
       }, 350);
       return () => {
         clearTimeout(t);
+        playTokenRef.current += 1;
         stopAudioArtifacts();
       };
     }
-    return () => stopAudioArtifacts();
+    return () => {
+      playTokenRef.current += 1;
+      stopAudioArtifacts();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [soundOn, mode]);
 
@@ -7769,6 +8063,7 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
 
     if (next.length === 3) {
       if (timerRef.current) clearInterval(timerRef.current);
+      playTokenRef.current += 1;
       stopAudioArtifacts();
       if (soundOn) audio.cue("slam");
       const correctCount = next.filter((t) => AUDITORY_QUIZ_OPTIONS.find((o) => o.text === t)?.correct).length;
@@ -7852,16 +8147,21 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
                   fontWeight: 800,
                   padding: "3px 9px",
                   borderRadius: 6,
-                  background: "rgba(5, 176, 118, 0.12)",
-                  color: "#05b076",
-                  border: "1px solid rgba(5, 176, 118, 0.28)",
+                  background: voiceInfo.source === "tts-other" ? "rgba(217, 119, 6, 0.12)" : "rgba(5, 176, 118, 0.12)",
+                  color: voiceInfo.source === "tts-other" ? "#b45309" : "#05b076",
+                  border: voiceInfo.source === "tts-other" ? "1px solid rgba(217, 119, 6, 0.3)" : "1px solid rgba(5, 176, 118, 0.28)",
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 5,
                 }}
               >
-                <span>🇮🇳</span>
-                <span>Voice: Indian English ({detectedVoiceName || "en-IN Classroom Teacher"})</span>
+                <span>{voiceInfo.source === "tts-other" ? "🔈" : "🇮🇳"}</span>
+                <span>
+                  {voiceInfo.source === "clip" && "Voice: Indian English teacher (recorded)"}
+                  {voiceInfo.source === "tts-in" && `Voice: Indian English (${voiceInfo.name})`}
+                  {voiceInfo.source === "tts-other" && `Voice: ${voiceInfo.name} (no Indian English voice on this device)`}
+                  {!voiceInfo.source && "Voice: Indian English teacher"}
+                </span>
               </span>
               {isUnsupported && (
                 <span
@@ -7876,6 +8176,21 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
                   }}
                 >
                   ⚠️ Competing Classroom Noise Active (-5 dB SNR)
+                </span>
+              )}
+              {!isUnsupported && noisy && (
+                <span
+                  style={{
+                    fontSize: 11.5,
+                    fontWeight: 800,
+                    padding: "3px 9px",
+                    borderRadius: 6,
+                    background: "rgba(44, 82, 130, 0.12)",
+                    color: "var(--itw-auditory)",
+                    border: "1px solid rgba(44, 82, 130, 0.28)",
+                  }}
+                >
+                  🏫 The classroom is still noisy, but your support changes what reaches you
                 </span>
               )}
             </div>
@@ -7950,9 +8265,9 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {[
-              { id: "c1", label: "Step 1: Reading Assignment", text: "First, read Chapter 4, pages 30 to 35 in your textbook." },
-              { id: "c2", label: "Step 2: Notebook Questions", text: "Second, answer questions 2 and 5 in your blue notebook." },
-              { id: "c3", label: "Step 3: Friday Lab Outline", text: "Third, bring your project outline for Friday's lab." },
+              { id: "c1", clip: "teacher_c1", label: "Step 1: Reading Assignment", text: "First, read Chapter 4, pages 30 to 35 in your textbook." },
+              { id: "c2", clip: "teacher_c2", label: "Step 2: Notebook Questions", text: "Second, answer questions 2 and 5 in your blue notebook." },
+              { id: "c3", clip: "teacher_c3", label: "Step 3: Friday Lab Outline", text: "Third, bring your project outline for Friday's lab." },
             ].map((chunk) => (
               <button
                 key={chunk.id}
@@ -7964,7 +8279,7 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
                   borderColor: activeSegment === chunk.id ? "var(--itw-auditory)" : "var(--itw-border)",
                   background: activeSegment === chunk.id ? "rgba(44, 82, 130, 0.1)" : "var(--itw-panel)",
                 }}
-                onClick={() => playAnnouncement(chunk.text, chunk.id)}
+                onClick={() => playAnnouncement(chunk.text, chunk.id, chunk.clip)}
               >
                 🔊 {chunk.label}
               </button>
@@ -7985,6 +8300,7 @@ function AuditoryProcessingSim({ mode = "baseline", supportType = "captions", on
               <button
                 key={opt.text}
                 type="button"
+                className="itw-quiz-option"
                 onClick={() => handleToggleSelect(opt.text)}
                 style={{
                   display: "flex",

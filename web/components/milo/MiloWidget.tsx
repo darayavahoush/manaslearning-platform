@@ -1,8 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 import {useState} from 'react'
 import {usePathname} from 'next/navigation'
 import MiloChat from './MiloChat'
+import MiloAvatar from './MiloAvatar'
 
 export default function MiloWidget() {
   const [open, setOpen] = useState(false)
@@ -15,16 +15,12 @@ export default function MiloWidget() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Chat with Milo, learning and speech guide"
-        className={`group fixed bottom-6 right-6 z-50 h-16 w-16 items-center justify-center rounded-full bg-[#fffdf8] border-2 border-[#05b076] shadow-xl ring-4 ring-[#05b076]/25 transition-all duration-300 hover:scale-105 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400 ${
+        className={`group fixed bottom-6 right-6 z-50 h-16 w-16 items-center justify-center rounded-full bg-card-green shadow-xl ring-4 ring-card-green/25 transition-all duration-300 hover:scale-105 hover:ring-card-green/40 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400 ${
           open ? 'hidden pointer-events-none' : 'flex pointer-events-auto'
         }`}
       >
-        <div className="relative flex h-13 w-13 items-center justify-center overflow-hidden rounded-full p-0.5">
-          <img
-            src="/decor/milo-owl.webp"
-            alt="Milo the Owl"
-            className="h-full w-full object-cover rounded-full"
-          />
+        <div className="relative flex h-11 w-11 items-center justify-center">
+          <MiloAvatar />
         </div>
         <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center pointer-events-none" aria-hidden="true">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#f47522] opacity-75" />
@@ -37,8 +33,8 @@ export default function MiloWidget() {
         className={`${open ? 'flex' : 'hidden'} fixed z-50 flex-col overflow-hidden bg-white shadow-2xl transition-all duration-200 ${big ? 'inset-0' : 'bottom-5 right-5 h-[min(680px,85dvh)] w-[min(440px,calc(100vw-2.5rem))] rounded-2xl border border-black/10'}`}
       >
         <header className="flex items-center gap-3 bg-gradient-to-r from-[#05b076] via-[#10b981] to-[#f47522] px-4 py-3 text-white shadow-sm">
-          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border-2 border-white/80 bg-white/20 shadow-sm">
-            <img src="/decor/milo-owl.webp" alt="Milo" className="h-full w-full object-cover" />
+          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border-2 border-white/80 bg-white/20 shadow-sm p-1 flex items-center justify-center">
+            <MiloAvatar />
           </div>
           <div className="leading-tight">
             <div className="flex items-center gap-1.5">

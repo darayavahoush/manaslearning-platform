@@ -1,8 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 import {useEffect, useRef, useState} from 'react'
 import {useRouter} from 'next/navigation'
 import ReactMarkdown from 'react-markdown'
+import MiloAvatar from './MiloAvatar'
 
 const API = process.env.NEXT_PUBLIC_MILO_API || '/api/milo'
 const HUMAN_URL = '/consult'
@@ -245,7 +245,9 @@ export default function MiloChat() {
       {/* Sound toggle subheader */}
       <div className="flex items-center justify-between border-b border-black/5 bg-emerald-50/50 px-4 py-1.5 text-xs text-foreground/70">
         <span className="flex items-center gap-1.5">
-          <img src="/decor/milo-owl.webp" alt="Milo" className="h-4 w-4 rounded-full inline-block object-cover shadow-xs" />
+          <div className="h-4 w-4 shrink-0">
+            <MiloAvatar />
+          </div>
           <b>Milo Guide</b> · Always unhurried
         </span>
         <button
@@ -279,8 +281,8 @@ export default function MiloChat() {
         {msgs.map((m, i) => (
           <div key={i} className={`flex gap-2.5 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {m.role === 'milo' && (
-              <div className="mt-0.5 h-8 w-8 shrink-0 overflow-hidden rounded-full border border-card-green/30 bg-emerald-50 shadow-sm transition-transform duration-500 motion-safe:animate-pulse" aria-hidden="true">
-                <img src="/decor/milo-owl.webp" alt="Milo" className="h-full w-full object-cover" />
+              <div className="mt-0.5 h-8 w-8 shrink-0 overflow-hidden rounded-full border border-card-green/30 bg-emerald-50 p-1 flex items-center justify-center shadow-sm transition-transform duration-500 motion-safe:animate-pulse" aria-hidden="true">
+                <MiloAvatar />
               </div>
             )}
             <div className="max-w-[84%]">
@@ -395,7 +397,7 @@ export default function MiloChat() {
                 Direct Site Navigation:
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {NAV_SHORTCUTS.slice(0, 5).map((nav) => (
+                {NAV_SHORTCUTS.map((nav) => (
                   <button
                     key={nav.url}
                     type="button"
@@ -413,8 +415,8 @@ export default function MiloChat() {
 
         {busy && (
           <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-card-green/30 bg-emerald-50 shadow-sm" aria-hidden="true">
-              <img src="/decor/milo-owl.webp" alt="" className="h-full w-full object-cover" />
+            <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-card-green/30 bg-emerald-50 p-1 flex items-center justify-center shadow-sm" aria-hidden="true">
+              <MiloAvatar />
             </div>
             <div className="flex gap-1.5 rounded-2xl rounded-bl-md border border-black/5 bg-white px-4 py-3 shadow-sm" aria-label="Milo is typing">
               {[0, 150, 300].map((d) => (

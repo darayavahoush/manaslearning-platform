@@ -1,3 +1,5 @@
+import MiloAvatar from '../components/milo/MiloAvatar'
+
 const LIVE = 'https://www.manaslearning.com'
 const WHATSAPP = 'https://chat.whatsapp.com/IeobE2Zx5HMBft0xQEK7Vh?mode=gi_t'
 
@@ -90,7 +92,9 @@ export default function Home() {
 
       <section className="container mx-auto px-4 pb-16 lg:px-8">
         <div className="flex flex-col items-center gap-5 rounded-2xl border border-card-green/50 bg-card-green/10 p-8 text-center md:flex-row md:text-left">
-          <img src="/logo.png" alt="" className="h-16 w-16 object-contain" />
+          <div className="h-16 w-16 shrink-0 rounded-full bg-card-green p-2.5 shadow-md flex items-center justify-center ring-4 ring-card-green/20">
+            <MiloAvatar />
+          </div>
           <div className="flex-1">
             <h2 className="font-poppins text-2xl font-bold text-black md:text-3xl">Questions on your mind? Ask Milo.</h2>
             <p className="mt-2 text-xl text-text-brown">Milo answers everyday questions about stimming, sensory needs, speech and learning using our guides. General guidance, not medical advice, and it points you to a human when it should.</p>

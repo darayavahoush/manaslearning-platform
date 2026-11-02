@@ -1,0 +1,26 @@
+export default function MiloAvatar({ className = 'h-full w-full' }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 80 80"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
+    >
+      <ellipse cx="40" cy="48" rx="26" ry="28" fill="#E8F5E9" />
+      <ellipse cx="40" cy="54" rx="16" ry="16" fill="white" />
+      <circle cx="40" cy="28" r="22" fill="#4CAF50" />
+      <path d="M22 12 L28 22 L18 20Z" fill="#388E3C" />
+      <path d="M58 12 L52 22 L62 20Z" fill="#388E3C" />
+      <circle cx="32" cy="28" r="9" fill="white" />
+      <circle cx="48" cy="28" r="9" fill="white" />
+      <circle cx="34" cy="28" r="4.5" fill="#2E2E2E" />
+      <circle cx="50" cy="28" r="4.5" fill="#2E2E2E" />
+      <circle cx="35.5" cy="26.5" r="1.5" fill="white" />
+      <circle cx="51.5" cy="26.5" r="1.5" fill="white" />
+      <path d="M37 34 L40 40 L43 34Z" fill="#FF9800" />
+      <ellipse cx="33" cy="74" rx="6" ry="3" fill="#FF9800" />
+      <ellipse cx="47" cy="74" rx="6" ry="3" fill="#FF9800" />
+    </svg>
+  )
+}

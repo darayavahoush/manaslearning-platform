@@ -78,6 +78,19 @@ function findNavTargets(text: string): NavTarget[] {
   return found.slice(0, 3)
 }
 
+function polishMiloReply(text: string): string {
+  if (!text) return ''
+  return text
+    .replace(/\b(sign|signs)\s+autism\b/gi, '$1 of autism')
+    .replace(/\b(sign|signs)\s+adhd\b/gi, '$1 of ADHD')
+    .replace(/\b(symptom|symptoms)\s+autism\b/gi, '$1 of autism')
+    .replace(/\b(trait|traits)\s+autism\b/gi, '$1 of autism')
+    .replace(/\b(delay|delays)\s+speech\b/gi, '$1 in speech')
+    .replace(/\b(delay|delays)\s+language\b/gi, '$1 in language')
+    .replace(/\b(difficulty|difficulties)\s+speech\b/gi, '$1 with speech')
+    .trim()
+}
+
 function playMiloHoot() {
   if (typeof window === 'undefined') return
   try {
@@ -194,7 +207,7 @@ export default function MiloChat() {
         ...m,
         {
           role: 'milo',
-          text: j.reply,
+          text: polishMiloReply(j.reply),
           sources: j.sources,
           logId: j.log_id,
           tier: j.tier,

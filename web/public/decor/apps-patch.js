@@ -9,7 +9,7 @@
     {
       id: "vaaksiddhi",
       name: "VaakSiddhi",
-      href: "https://vaaksudhi.manaslearning.com",
+      href: "https://vaaksiddhi.manaslearning.com",
       title: "Playful speech and breathing practice",
       text: " gives children playful breathing, sound and voice games on a phone or laptop, and gives therapists and parents a clear view of progress after every session.",
       chips: ["Breathing games", "Sound games", "Voice games", "Therapist and parent progress"],

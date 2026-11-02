@@ -2769,13 +2769,13 @@ body:has(.itw-dark) .leaf-fall,
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 18px;
-  border-radius: 12px;
+  padding: 10px 20px;
+  border-radius: 999px;
   border: none;
   background: transparent;
   color: var(--itw-muted);
-  font-family: var(--font-display, inherit);
-  font-size: 13.5px;
+  font-family: inherit;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.2, 0.8, 0.25, 1);
@@ -2784,13 +2784,13 @@ body:has(.itw-dark) .leaf-fall,
 
 .itw-dys-tab-btn:hover {
   color: var(--itw-text);
-  background: rgba(30, 117, 93, 0.08);
+  background: rgba(44, 140, 114, 0.08);
 }
 
 .itw-dys-tab-btn.itw-active {
-  background: #1e755d;
+  background: #2c8c72;
   color: #ffffff !important;
-  box-shadow: 0 4px 14px rgba(30, 117, 93, 0.28);
+  box-shadow: 0 4px 14px rgba(44, 140, 114, 0.28);
 }
 
 /* Card Container */
@@ -3065,27 +3065,28 @@ body:has(.itw-dark) .leaf-fall,
 }
 
 .itw-dys-subtab-btn {
-  padding: 8px 16px;
-  border-radius: 99px;
+  padding: 8px 18px;
+  border-radius: 999px;
   border: 1.5px solid var(--itw-border);
   background: var(--itw-panel-2);
   color: var(--itw-muted);
-  font-size: 12.5px;
+  font-family: inherit;
+  font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .itw-dys-subtab-btn:hover {
-  border-color: #1e755d;
-  color: var(--itw-text);
+  border-color: #2c8c72;
+  color: #2c8c72;
 }
 
 .itw-dys-subtab-btn.itw-active {
-  background: #1e755d;
-  border-color: #1e755d;
+  background: #2c8c72;
+  border-color: #2c8c72;
   color: #ffffff;
-  box-shadow: 0 2px 10px rgba(30, 117, 93, 0.25);
+  box-shadow: 0 2px 10px rgba(44, 140, 114, 0.25);
 }
 
 /* Control toolbar */
@@ -3098,7 +3099,7 @@ body:has(.itw-dark) .leaf-fall,
   padding: 14px 18px;
   background: var(--itw-panel-2);
   border: 1.5px solid var(--itw-border);
-  border-radius: 14px;
+  border-radius: 16px;
   margin-bottom: 18px;
 }
 
@@ -3110,23 +3111,24 @@ body:has(.itw-dark) .leaf-fall,
 }
 
 .itw-dys-btn-primary {
-  padding: 10px 20px;
-  border-radius: 12px;
+  padding: 10px 22px;
+  border-radius: 999px;
   border: none;
-  background: #1e755d;
+  background: #2c8c72;
   color: #ffffff;
-  font-size: 13.5px;
+  font-family: inherit;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(30, 117, 93, 0.2);
+  box-shadow: 0 4px 12px rgba(44, 140, 114, 0.22);
 }
 
 .itw-dys-btn-primary:hover:not(:disabled) {
-  background: #165a47;
+  background: #23735e;
   transform: translateY(-1px);
 }
 
@@ -3136,12 +3138,13 @@ body:has(.itw-dark) .leaf-fall,
 }
 
 .itw-dys-btn-secondary {
-  padding: 10px 20px;
-  border-radius: 12px;
+  padding: 10px 22px;
+  border-radius: 999px;
   border: 1.5px solid var(--itw-border);
   background: var(--itw-panel);
   color: var(--itw-text);
-  font-size: 13.5px;
+  font-family: inherit;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
@@ -3151,27 +3154,29 @@ body:has(.itw-dark) .leaf-fall,
 }
 
 .itw-dys-btn-secondary:hover:not(:disabled) {
-  border-color: #1e755d;
-  color: #1e755d;
-  background: rgba(30, 117, 93, 0.05);
+  border-color: #2c8c72;
+  color: #2c8c72;
+  background: rgba(44, 140, 114, 0.06);
 }
 
 .itw-dys-btn-toggle {
-  padding: 8px 16px;
-  border-radius: 10px;
+  padding: 8px 18px;
+  border-radius: 999px;
   border: 1.5px solid var(--itw-border);
   background: var(--itw-panel);
   color: var(--itw-muted);
-  font-size: 12.5px;
+  font-family: inherit;
+  font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .itw-dys-btn-toggle.itw-active {
-  background: #d97706;
-  border-color: #d97706;
+  background: #2c8c72;
+  border-color: #2c8c72;
   color: #ffffff;
+  box-shadow: 0 2px 8px rgba(44, 140, 114, 0.2);
 }
 
 .itw-dys-slider-wrap {
@@ -3386,6 +3391,18 @@ body:has(.itw-dark) .leaf-fall,
 
 .itw-root.itw-dark .itw-dys-btn-primary:hover:not(:disabled) {
   background: #2dd4bf;
+}
+
+.itw-root.itw-dark .itw-dys-btn-toggle.itw-active {
+  background: #34d399;
+  border-color: #34d399;
+  color: #0f172a;
+}
+
+.itw-root.itw-dark .itw-dys-btn-secondary:hover:not(:disabled) {
+  border-color: #34d399;
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.08);
 }
 
 .itw-root.itw-dark .itw-dys-stat-num {

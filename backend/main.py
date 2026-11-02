@@ -51,20 +51,24 @@ MIN_SCORE = 0.71
 MAX_TURNS = 5
 
 SYSTEM_PROMPT = """You are a warm, gentle companion for parents and caregivers asking
-questions about stimming, sensory integration, and related topics. You answer
+questions about stimming, sensory integration, neurodiversity, and related topics. You answer
 using ONLY the reference material provided to you below.
 
-Tone:
+Tone & Conversational Style:
 - Speak like a caring, knowledgeable friend — genuine, sweet, and unhurried.
 - Use soft, encouraging language. It's okay to affirm the person's care for
   their child (e.g. "That's a thoughtful question" or "It makes sense you'd
   wonder about that").
+- Maintain natural conversational variety. Avoid robotic repetition, repetitive
+  bullet point structures, or reciting the exact same examples multiple times in consecutive sentences.
 - Avoid clinical, robotic, or bureaucratic phrasing. Avoid sounding alarmed,
   even when the topic itself is sensitive.
-- Keep answers short, clear, and reassuring — comfort first, information
+- Keep answers concise, clear, and reassuring — comfort first, information
   second, but never at the cost of accuracy.
 
-Rules:
+Grammar & Style Rules:
+- Ensure flawless, standard English grammar with complete sentences and correct prepositions
+  (for example, always say "signs of autism" or "signs of ADHD", never omit prepositions like "of" or "in").
 - Only answer using the CONTEXT provided below. Do not use outside knowledge,
   and do not guess or improvise on anything clinical.
 - If the CONTEXT doesn't contain enough to answer confidently, say so gently
@@ -120,6 +124,20 @@ def retrieve(question: str):
             }
         )
     return hits
+
+
+def polish_reply(text: str) -> str:
+    if not text:
+        return ""
+    # Standardize proper prepositions and fix common omissions
+    text = re.sub(r'\b(sign|signs)\s+autism\b', r'\1 of autism', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(sign|signs)\s+adhd\b', r'\1 of ADHD', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(symptom|symptoms)\s+autism\b', r'\1 of autism', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(trait|traits)\s+autism\b', r'\1 of autism', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(delay|delays)\s+speech\b', r'\1 in speech', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(delay|delays)\s+language\b', r'\1 in language', text, flags=re.IGNORECASE)
+    text = re.sub(r'\b(difficulty|difficulties)\s+speech\b', r'\1 with speech', text, flags=re.IGNORECASE)
+    return text.strip()
 
 
 app = FastAPI()
@@ -222,7 +240,7 @@ def chat(req: ChatRequest, request: Request):
     if hits and hits[0]["score"] >= VECTOR_CONFIDENCE_THRESHOLD:
         top = hits[0]
         m = re.match(r'^Q\d+[:.]\s*(.+?)\s*A\d*[:.]\s*(.+)$', top["content"].strip(), re.IGNORECASE | re.DOTALL)
-        reply = m.group(2).strip() if (m and len(m.group(1)) < 300) else top["content"]
+        reply = polish_reply(m.group(2).strip() if (m and len(m.group(1)) < 300) else top["content"])
         log_id = log_query(session_id, req.message, "tier1", top["score"], reply)
         history.append({"role": "user", "content": req.message})
         history.append({"role": "assistant", "content": reply})
@@ -257,7 +275,7 @@ def chat(req: ChatRequest, request: Request):
             temperature=0.3,
             max_completion_tokens=400,
         )
-        reply = resp.choices[0].message.content
+        reply = polish_reply(resp.choices[0].message.content)
         tier = "tier2"
 
     log_id = log_query(session_id, req.message, tier, hits[0]["score"] if hits else 0.0, reply)

@@ -210,7 +210,7 @@ Injected on `/experience` as a recognized `LearningResource`:
 ## Assistive Tools: VaakSiddhi & Vaakify
 
 Rendered dynamically under the Phonics Jungle card on the homepage:
-- **VaakSiddhi** (`https://vaaksudhi.manaslearning.com`): Playful breathing and voice games with therapist tracking.
+- **VaakSiddhi** (`https://vaaksiddhi.manaslearning.com`): Playful breathing and voice games with therapist tracking.
 - **Vaakify** (`https://vaakify.manaslearning.com`): Word repetition, speech clarity feedback, and at-home practice.
 - **Display Art**: Real live desktop screenshots inside laptop frames, paired with official SVG favicons inside mobile frames.
 

@@ -10,6 +10,7 @@ import React, {
 } from "react";
 import "./InTheirWorld.css";
 import "./media/media.css";
+import Illustration from "./media/Illustration";
 import CueIcon from "./media/CueIcon";
 import EffectsToggle from "./media/EffectsToggle";
 import QuietCorner from "./media/QuietCorner";
@@ -877,7 +878,7 @@ const SOON_STORIES = [
     name: "Down Syndrome & Developmental Pacing",
     sub: "Growing at My Own Pace",
     blurb: "An interactive first-person story of Aarav: celebrating strengths, visual learning, and everyday milestones.",
-    image: "/decor/itw/down-syndrome-story.webp",
+    image: "/decor/itw/itw-ds-story-cover.webp",
     meta: "Interactive Story Experience",
     badge: "Illustrated Story",
   },
@@ -894,7 +895,7 @@ const SOON_STORIES = [
     name: "A Day Through My Eyes",
     sub: "The Inclusive School Day Walkthrough",
     blurb: "Step into an everyday school day and switch between Sensory, Attention, Communication, and Supported Classroom lenses.",
-    image: "/decor/itw/day-through-my-eyes.webp",
+    image: "/decor/itw/itw-dayineyes-cover.webp",
     meta: "Perspective Lens Exhibit",
     badge: "Perspective Lens",
   },
@@ -907,8 +908,8 @@ const HOW_STEPS = [
 ];
 
 const INTRO_VIGNETTES = {
-  autism: { src: "/decor/itw/autism-sticker.webp", label: "Sensory Processing in Real Life" },
-  adhd: { src: "/decor/itw/adhd-sticker.webp", label: "A Mind With Dynamic Currents" },
+  autism: { src: "/decor/itw/itw-autism-sticker.webp", label: "Sensory Processing in Real Life" },
+  adhd: { src: "/decor/itw/itw-adhd-sticker.webp", label: "A Mind With Dynamic Currents" },
   dyslexia: { src: "/decor/itw/dyslexia-sticker.webp", label: "Phonological Decoding & Fluency" },
   speech: { src: "/decor/itw/speech-sticker.webp", label: "Expressive Communication & AAC" },
   dyscalculia: { src: "/decor/itw/dyscalculia-sticker.webp", label: "Visual Number Sense & Magnitude" },
@@ -1045,6 +1046,13 @@ function Landing({ onSelect }) {
         <div className="itw-how">
           {HOW_STEPS.map((s) => (
             <div className="itw-how-step" key={s.n}>
+              <Illustration
+                artKey={s.n === 1 ? "landing-how-choose" : s.n === 2 ? "landing-how-try" : "landing-how-understand"}
+                width={72}
+                height={72}
+                className="itw-how-spot-art"
+                decorative
+              />
               <span className="itw-how-num">{s.n}</span>
               <h3>{s.title}</h3>
               <p>{s.text}</p>
@@ -1064,6 +1072,13 @@ function Landing({ onSelect }) {
       <AboutBlock />
 
       <section className="itw-sec itw-endcta">
+        <Illustration
+          artKey="landing-consultation"
+          width={640}
+          height={360}
+          className="itw-next-steps-art"
+          alt="Warm and supportive consultation room at Manas Learning with parent, child, and clinician"
+        />
         <div>
           <h2>Understanding is the first step.<br />Clarity comes next.</h2>
           <p>Explore assessments and expert support at MANAS Learning.</p>
@@ -1541,6 +1556,7 @@ const AUTISM_SUPPORT_CHOICES = [
     subtitle: "Simulated in-app audio dampening (~80%)",
     desc: "Applies software audio attenuation to background sounds, demonstrating how dampening auditory overload frees mental focus. (Note: real ear defender attenuation varies by frequency rating).",
     tag: "Auditory Scaffolding",
+    art: "support-autism-ear-defenders",
   },
   {
     id: "visual_calm",
@@ -1548,6 +1564,7 @@ const AUTISM_SUPPORT_CHOICES = [
     subtitle: "Dim ambient motion & non-essential decoys",
     desc: "Reduces visual clutter, eliminates glare spikes, and lowers the number of competing decoys in the scene.",
     tag: "Visual Accommodation",
+    art: "support-autism-visual-calm",
   },
   {
     id: "quiet_corner",
@@ -1555,6 +1572,7 @@ const AUTISM_SUPPORT_CHOICES = [
     subtitle: "Support package: soft indirect lighting & unhurried pacing",
     desc: "Provides a holistic environmental reset combining reduced competing stimuli, softer ambient lighting, and relaxed response time.",
     tag: "Environmental Reset",
+    art: "support-autism-quiet-corner",
   },
 ];
 
@@ -2095,7 +2113,13 @@ function AutismModule({ onBack, onNavigate }) {
       {step === "scenario" && (
         <div className="itw-flow-page itw-flow-narrow" key="scenario">
           <div className="itw-scene-plate">
-            <img src="/decor/itw/autism-environment.webp" alt="School central atrium" className="itw-scene-plate-img" />
+            <Illustration
+              artKey="autism-run-brief"
+              width={1200}
+              height={672}
+              className="itw-scene-plate-img"
+              alt="School central atrium sensory environment with bright skylights, granite reflections, and bustling student traffic"
+            />
             <div className="itw-scene-plate-overlay">
               <span className="itw-scene-tag">📍 Setting • School Central Atrium & Cafeteria</span>
               <p className="itw-scene-caption">Hard tile reflections, overlapping hallway echoes, and bright overhead skylights where sensory inputs arrive all at once.</p>
@@ -2275,24 +2299,38 @@ function AutismModule({ onBack, onNavigate }) {
                   transition: "all 0.2s ease",
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      textTransform: "uppercase",
-                      fontWeight: 800,
-                      letterSpacing: "0.06em",
-                      padding: "3px 10px",
-                      borderRadius: 99,
-                      background: "var(--itw-panel-2)",
-                      color: "var(--itw-muted)",
-                    }}
-                  >
-                    {s.tag}
-                  </span>
+                <div className="itw-support-card-content">
+                  {s.art && (
+                    <Illustration
+                      artKey={s.art}
+                      width={72}
+                      height={72}
+                      className="itw-support-thumb"
+                      decorative
+                    />
+                  )}
+                  <div className="itw-support-card-text">
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          textTransform: "uppercase",
+                          fontWeight: 800,
+                          letterSpacing: "0.06em",
+                          padding: "3px 10px",
+                          borderRadius: 99,
+                          background: "var(--itw-panel-2)",
+                          color: "var(--itw-muted)",
+                        }}
+                      >
+                        {s.tag}
+                      </span>
+                    </div>
+                    {s.subtitle && <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)", marginBottom: 4 }}>{s.subtitle}</div>}
+                    <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
+                  </div>
                 </div>
-                <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
                 <input
                   type="radio"
                   name="autism-support"
@@ -2336,6 +2374,13 @@ function AutismModule({ onBack, onNavigate }) {
       {step === "explain" && (
         <div className="itw-flow-page" key="explain">
           <div className="itw-flow-narrow" style={{ margin: "0 auto 36px" }}>
+            <Illustration
+              artKey="autism-what-helps"
+              width={1200}
+              height={672}
+              className="itw-art-what-helps"
+              alt="Calm quiet sanctuary in school with soft indirect light, cushioned nook, and ear defenders enabling peaceful participation"
+            />
             <h2 className="itw-flow-title itw-center">What this means in everyday life</h2>
             <p className="itw-flow-lead itw-center">
               Sensory overload is not a behavioral problem or a lack of self-control. It is a nervous system taking in more raw sensory input than it can sort through in real time.
@@ -2500,6 +2545,7 @@ const ADHD_SUPPORT_CHOICES = [
     subtitle: "Pinned step-by-step progress anchors",
     desc: "Anchors working memory with a high-contrast checklist of completed and remaining steps so you never lose your place.",
     tag: "Working Memory Scaffolding",
+    art: "support-adhd-checklist",
   },
   {
     id: "filter",
@@ -2507,6 +2553,7 @@ const ADHD_SUPPORT_CHOICES = [
     subtitle: "Mutes external pings and tabs",
     desc: "Completely filters out sudden notification popups and hides unrelated browser tabs to protect unbroken attention.",
     tag: "Environmental Filter",
+    art: "support-adhd-filter",
   },
   {
     id: "chunking",
@@ -2514,6 +2561,7 @@ const ADHD_SUPPORT_CHOICES = [
     subtitle: "Isolates one sub-step at a time",
     desc: "Hides future steps and secondary tangents, presenting only the single immediate next action in a focused card.",
     tag: "Executive Scaffolding",
+    art: "support-adhd-chunking",
   },
 ];
 
@@ -2860,7 +2908,13 @@ function AdhdWorkspaceSim({ mode = "baseline", intensity = "moderate", supportTy
   return (
     <div className="itw-desk-sim" role="region" aria-label="ADHD Attention Regulation Simulation">
       <div className="itw-desk-bg-wrap" aria-hidden="true">
-        <img src="/decor/itw/adhd-workspace-scene.webp" alt="" className="itw-desk-bg-img" />
+        <Illustration
+          artKey="adhd-workspace"
+          width={1200}
+          height={672}
+          className="itw-desk-bg-img"
+          decorative
+        />
       </div>
 
       {/* Desk Status Bar */}
@@ -3055,7 +3109,13 @@ function AdhdModule({ onBack, onNavigate }) {
       {step === "instructions" && (
         <div className="itw-flow-page itw-flow-narrow" key="instructions">
           <div className="itw-scene-plate">
-            <img src="/decor/itw/adhd-environment.webp" alt="Bangalore study desk" className="itw-scene-plate-img" />
+            <Illustration
+              artKey="adhd-workspace"
+              width={1200}
+              height={672}
+              className="itw-scene-plate-img"
+              alt="Bangalore study desk"
+            />
             <div className="itw-scene-plate-overlay">
               <span className="itw-scene-tag">📍 Setting • Bangalore School Study Desk</span>
               <p className="itw-scene-caption">Friday afternoon homework session: multiple research articles, notebook notes, and constant background notifications.</p>
@@ -3127,6 +3187,13 @@ function AdhdModule({ onBack, onNavigate }) {
 
       {step === "interrupted_intro" && (
         <div className="itw-flow-page itw-flow-narrow" key="interrupted_intro">
+          <Illustration
+            artKey="adhd-run-brief"
+            width={1200}
+            height={672}
+            className="itw-art-run-brief"
+            alt="Study desk with an open laptop, glowing phone notification, and creative sketches competing for attention"
+          />
           <h2 className="itw-flow-title itw-center">Now, Run 2: Competing Pulls on Focus</h2>
           <p className="itw-flow-lead itw-center">
             {results.baseline
@@ -3249,24 +3316,38 @@ function AdhdModule({ onBack, onNavigate }) {
                   transition: "all 0.2s ease",
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      textTransform: "uppercase",
-                      fontWeight: 800,
-                      letterSpacing: "0.06em",
-                      padding: "3px 10px",
-                      borderRadius: 99,
-                      background: "var(--itw-panel-2)",
-                      color: "var(--itw-muted)",
-                    }}
-                  >
-                    {s.tag}
-                  </span>
+                <div className="itw-support-card-content">
+                  {s.art && (
+                    <Illustration
+                      artKey={s.art}
+                      width={72}
+                      height={72}
+                      className="itw-support-thumb"
+                      decorative
+                    />
+                  )}
+                  <div className="itw-support-card-text">
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          textTransform: "uppercase",
+                          fontWeight: 800,
+                          letterSpacing: "0.06em",
+                          padding: "3px 10px",
+                          borderRadius: 99,
+                          background: "var(--itw-panel-2)",
+                          color: "var(--itw-muted)",
+                        }}
+                      >
+                        {s.tag}
+                      </span>
+                    </div>
+                    {s.subtitle && <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)", marginBottom: 4 }}>{s.subtitle}</div>}
+                    <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
+                  </div>
                 </div>
-                <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
                 <input
                   type="radio"
                   name="adhd-support"
@@ -3308,6 +3389,13 @@ function AdhdModule({ onBack, onNavigate }) {
 
       {step === "explain" && (
         <div className="itw-flow-page itw-flow-narrow" key="explain">
+          <Illustration
+            artKey="adhd-what-helps"
+            width={1200}
+            height={672}
+            className="itw-art-what-helps"
+            alt="Organized study desk with a visual step-by-step checklist, noise-dampening headphones, and clean focused workspace"
+          />
           <h2 className="itw-flow-title itw-center">What this means in everyday life</h2>
           <p className="itw-flow-lead itw-center">
             {results.supported && results.interrupted
@@ -3900,6 +3988,7 @@ const DYS_SUPPORT_CHOICES = [
     subtitle: "Expanded kerning & 2.15x line height",
     desc: "Expands whitespace between lines and characters, reducing visual crowding and preventing line-skipping.",
     tag: "Visual Scaffolding",
+    art: "support-dyslexia-spacing",
   },
   {
     id: "ruler",
@@ -3907,6 +3996,7 @@ const DYS_SUPPORT_CHOICES = [
     subtitle: "Tinted guide overlay underneath active line",
     desc: "Anchors visual tracking with a soft contrast highlight, preventing jumping between paragraphs.",
     tag: "Tracking Support",
+    art: "support-dyslexia-ruler",
   },
   {
     id: "audio",
@@ -3914,6 +4004,7 @@ const DYS_SUPPORT_CHOICES = [
     subtitle: "Auditory narration accompaniment",
     desc: "Uses speech synthesis to read the passage aloud, liberating cognitive bandwidth for meaning and comprehension.",
     tag: "Multi-Modal Access",
+    art: "support-dyslexia-audio",
   },
 ];
 
@@ -4378,6 +4469,13 @@ function DyslexiaModule({ onBack, onNavigate }) {
             {/* Sub-Lab 1: Letter Scramble */}
             {labSubTab === "scramble" && (
               <div>
+                <Illustration
+                  artKey="dyslexia-lab-scramble"
+                  width={800}
+                  height={450}
+                  className="itw-dys-sublab-header-art"
+                  decorative
+                />
                 <div className="itw-dys-ctrl-bar">
                   <div className="itw-dys-ctrl-group">
                     <button
@@ -4429,6 +4527,13 @@ function DyslexiaModule({ onBack, onNavigate }) {
             {/* Sub-Lab 2: Mirror Confusion */}
             {labSubTab === "confusion" && (
               <div>
+                <Illustration
+                  artKey="dyslexia-lab-mirror"
+                  width={800}
+                  height={450}
+                  className="itw-dys-sublab-header-art"
+                  decorative
+                />
                 <div className="itw-dys-ctrl-bar">
                   <button
                     type="button"
@@ -4491,6 +4596,13 @@ function DyslexiaModule({ onBack, onNavigate }) {
             {/* Sub-Lab 3: Visual Crowding */}
             {labSubTab === "crowding" && (
               <div>
+                <Illustration
+                  artKey="dyslexia-lab-crowding"
+                  width={800}
+                  height={450}
+                  className="itw-dys-sublab-header-art"
+                  decorative
+                />
                 <div className="itw-dys-ctrl-bar">
                   <div className="itw-dys-ctrl-group">
                     <button type="button" className="itw-dys-btn-secondary" onClick={resetCrowding}>
@@ -4587,6 +4699,13 @@ function DyslexiaModule({ onBack, onNavigate }) {
             {/* Sub-Lab 4: Transient Blur & Saccades */}
             {labSubTab === "blur" && (
               <div>
+                <Illustration
+                  artKey="dyslexia-lab-blur"
+                  width={800}
+                  height={450}
+                  className="itw-dys-sublab-header-art"
+                  decorative
+                />
                 <div className="itw-dys-ctrl-bar">
                   <div className="itw-dys-ctrl-group">
                     <button
@@ -4654,6 +4773,13 @@ function DyslexiaModule({ onBack, onNavigate }) {
             {/* Sub-Lab 5: Floating River of Words */}
             {labSubTab === "floating" && (
               <div>
+                <Illustration
+                  artKey="dyslexia-lab-floating"
+                  width={800}
+                  height={450}
+                  className="itw-dys-sublab-header-art"
+                  decorative
+                />
                 <div className="itw-dys-ctrl-bar">
                   <div className="itw-dys-ctrl-group">
                     <button
@@ -4730,6 +4856,13 @@ function DyslexiaModule({ onBack, onNavigate }) {
         {/* TAB 2: TIMED READING CHALLENGE (BENCHMARK TEST) */}
         {activeTab === "challenge" && (
           <div className="itw-dys-card">
+            <Illustration
+              artKey="dyslexia-run-brief"
+              width={1200}
+              height={672}
+              className="itw-art-run-brief"
+              alt="Open hardcover storybook on a classroom desk with ruler and pencil, capturing the intense effort of text decoding"
+            />
             <div style={{ textAlign: "center", maxWidth: 650, margin: "0 auto 20px" }}>
               <h3 style={{ fontFamily: "var(--font-display)", fontSize: "1.5rem", marginBottom: 8, color: "var(--itw-text)" }}>
                 Side-by-Side Reading Challenge
@@ -4977,6 +5110,34 @@ function DyslexiaModule({ onBack, onNavigate }) {
         {/* TAB 4: ACCOMMODATIONS & SUPERPOWERS */}
         {activeTab === "accommodations" && (
           <div className="itw-dys-card">
+            <Illustration
+              artKey="dyslexia-what-helps"
+              width={1200}
+              height={672}
+              className="itw-art-what-helps"
+              alt="Child reading with ease using a colored tracking ruler guide and audio read-aloud headphones in a sunlit library"
+            />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14, margin: "0 0 24px" }}>
+              {DYS_SUPPORT_CHOICES.map((s) => (
+                <div key={s.id} style={{ padding: "14px 16px", borderRadius: 16, border: "1px solid var(--itw-border)", background: "var(--itw-panel)" }}>
+                  <div className="itw-support-card-content">
+                    {s.art && (
+                      <Illustration
+                        artKey={s.art}
+                        width={72}
+                        height={72}
+                        className="itw-support-thumb"
+                        decorative
+                      />
+                    )}
+                    <div className="itw-support-card-text">
+                      <div style={{ fontWeight: 800, fontSize: 15, color: "var(--itw-text)", marginBottom: 4 }}>{s.title}</div>
+                      <div style={{ fontSize: 13, color: "var(--itw-muted)", lineHeight: 1.45 }}>{s.desc}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
             <div style={{ marginBottom: 18 }}>
               <span className="itw-kicker">EVIDENCE-BASED CLASSROOM SCAFFOLDS</span>
               <h3 style={{ fontFamily: "var(--font-display)", fontSize: "1.45rem", marginBottom: 6, color: "var(--itw-text)" }}>
@@ -5272,6 +5433,7 @@ const SPEECH_SUPPORT_CHOICES = [
     subtitle: "Attentive presence with zero clock pressure",
     desc: "The conversation partner maintains warm, natural presence and gives generous silence without glancing at clocks or rushing.",
     tag: "Pacing Accommodation",
+    art: "support-speech-patient-wait",
   },
   {
     id: "no_interruption",
@@ -5279,6 +5441,7 @@ const SPEECH_SUPPORT_CHOICES = [
     subtitle: "Protects the speaker's right to complete their thought",
     desc: "Resists guessing words, filling in blanks, or finishing sentences, preserving the speaker's communicative agency.",
     tag: "Relational Respect",
+    art: "support-speech-no-interruption",
   },
   {
     id: "multimodal",
@@ -5286,6 +5449,7 @@ const SPEECH_SUPPORT_CHOICES = [
     subtitle: "Welcomes typed, spoken, or gestural input equally",
     desc: "Validates multiple modes of communication, keeping total focus on the message rather than speech mechanics.",
     tag: "Universal Design",
+    art: "support-speech-multimodal",
   },
 ];
 
@@ -5888,7 +6052,13 @@ function SpeechModule({ onBack, onNavigate }) {
       {step === "instructions" && (
         <div className="itw-flow-page itw-flow-narrow" key="instructions">
           <div className="itw-scene-plate">
-            <img src="/decor/itw/communication-environment.webp" alt="Courtyard communication bench" className="itw-scene-plate-img" />
+            <Illustration
+              artKey="speech-run-brief"
+              width={1200}
+              height={672}
+              className="itw-scene-plate-img"
+              alt="Group of classmates having an energetic discussion on a courtyard bench while a thoughtful child takes a breath to respond"
+            />
             <div className="itw-scene-plate-overlay">
               <span className="itw-scene-tag">📍 Setting • Courtyard Bench & Classroom</span>
               <p className="itw-scene-caption">The thoughts are rich and complete. The difference lies between an unhurried, listening conversational partner and a hurried clock.</p>
@@ -6067,24 +6237,38 @@ function SpeechModule({ onBack, onNavigate }) {
                   transition: "all 0.2s ease",
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      textTransform: "uppercase",
-                      fontWeight: 800,
-                      letterSpacing: "0.06em",
-                      padding: "3px 10px",
-                      borderRadius: 99,
-                      background: "var(--itw-panel-2)",
-                      color: "var(--itw-muted)",
-                    }}
-                  >
-                    {s.tag}
-                  </span>
+                <div className="itw-support-card-content">
+                  {s.art && (
+                    <Illustration
+                      artKey={s.art}
+                      width={72}
+                      height={72}
+                      className="itw-support-thumb"
+                      decorative
+                    />
+                  )}
+                  <div className="itw-support-card-text">
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          textTransform: "uppercase",
+                          fontWeight: 800,
+                          letterSpacing: "0.06em",
+                          padding: "3px 10px",
+                          borderRadius: 99,
+                          background: "var(--itw-panel-2)",
+                          color: "var(--itw-muted)",
+                        }}
+                      >
+                        {s.tag}
+                      </span>
+                    </div>
+                    {s.subtitle && <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)", marginBottom: 4 }}>{s.subtitle}</div>}
+                    <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
+                  </div>
                 </div>
-                <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
                 <input
                   type="radio"
                   name="speech-support"
@@ -6126,6 +6310,13 @@ function SpeechModule({ onBack, onNavigate }) {
       {step === "explain" && (
         <div className="itw-flow-page" key="explain">
           <div className="itw-flow-narrow" style={{ margin: "0 auto 36px" }}>
+            <Illustration
+              artKey="speech-what-helps"
+              width={1200}
+              height={672}
+              className="itw-art-what-helps"
+              alt="Teacher Meera and student in unhurried conversation on a garden bench with patient listening and warm eye contact"
+            />
             <h2 className="itw-flow-title itw-center">What this means in everyday life</h2>
             <p className="itw-flow-lead itw-center">
               A speech pause, block, or repetition is never a sign of lack of intelligence, hesitation, or unpreparedness.
@@ -6286,6 +6477,7 @@ const DYSCALC_SUPPORT_CHOICES = [
     subtitle: "Spatial quantity anchoring",
     desc: "Anchors proportional scaling on a physical visual number line so mental arithmetic is replaced by visual estimation.",
     tag: "Spatial Scaffolding",
+    art: "support-dyscalc-numberline",
   },
   {
     id: "blocks",
@@ -6293,6 +6485,7 @@ const DYSCALC_SUPPORT_CHOICES = [
     subtitle: "Concrete base-10 visual units",
     desc: "Uses the Concrete-Representational-Abstract framework: group 50g and 100g blocks visibly to reach the scaled amount.",
     tag: "Concrete Scaffolding",
+    art: "support-dyscalc-blocks",
   },
   {
     id: "scaffold",
@@ -6300,6 +6493,7 @@ const DYSCALC_SUPPORT_CHOICES = [
     subtitle: "Base + Half = Target formula",
     desc: "Deconstructs 1.5x into two atomic operations: take the original base amount, then add half of it.",
     tag: "Cognitive Scaffolding",
+    art: "support-dyscalc-scaffold",
   },
 ];
 
@@ -6770,6 +6964,13 @@ function DyscalculiaModule({ onBack, onNavigate }) {
 
       {step === "unsupported_intro" && (
         <div className="itw-flow-page itw-flow-narrow" key="unsupported_intro">
+          <Illustration
+            artKey="dyscalculia-run-brief"
+            width={1200}
+            height={672}
+            className="itw-art-run-brief"
+            alt="Kitchen table with recipe card, measuring spoons, and mixing bowls presenting a mental arithmetic scaling challenge"
+          />
           <h2 className="itw-flow-title itw-center">Now, Run 2: Scaling by 1.5×</h2>
           <p className="itw-flow-lead itw-center">
             Two extra guests have joined! You must now scale the recipe from 4 servings to 6 servings (a 1.5× multiplier).
@@ -6887,24 +7088,38 @@ function DyscalculiaModule({ onBack, onNavigate }) {
                   transition: "all 0.2s ease",
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      textTransform: "uppercase",
-                      fontWeight: 800,
-                      letterSpacing: "0.06em",
-                      padding: "3px 10px",
-                      borderRadius: 99,
-                      background: "var(--itw-panel-2)",
-                      color: "var(--itw-muted)",
-                    }}
-                  >
-                    {s.tag}
-                  </span>
+                <div className="itw-support-card-content">
+                  {s.art && (
+                    <Illustration
+                      artKey={s.art}
+                      width={72}
+                      height={72}
+                      className="itw-support-thumb"
+                      decorative
+                    />
+                  )}
+                  <div className="itw-support-card-text">
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          textTransform: "uppercase",
+                          fontWeight: 800,
+                          letterSpacing: "0.06em",
+                          padding: "3px 10px",
+                          borderRadius: 99,
+                          background: "var(--itw-panel-2)",
+                          color: "var(--itw-muted)",
+                        }}
+                      >
+                        {s.tag}
+                      </span>
+                    </div>
+                    {s.subtitle && <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)", marginBottom: 4 }}>{s.subtitle}</div>}
+                    <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
+                  </div>
                 </div>
-                <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
                 <input
                   type="radio"
                   name="dyscalc-support"
@@ -6946,6 +7161,13 @@ function DyscalculiaModule({ onBack, onNavigate }) {
 
       {step === "explain" && (
         <div className="itw-flow-page itw-flow-narrow" key="explain">
+          <Illustration
+            artKey="dyscalculia-what-helps"
+            width={1200}
+            height={672}
+            className="itw-art-what-helps"
+            alt="Student and teacher exploring fractions and proportions together with tactile counter blocks and a visual number line"
+          />
           <h2 className="itw-flow-title itw-center">What this means in everyday life</h2>
           <p className="itw-flow-lead itw-center">
             {results.supported && results.unsupported
@@ -7104,6 +7326,7 @@ const DYSGRAPH_SUPPORT_CHOICES = [
     subtitle: "Bypasses motor transcription entirely",
     desc: "Speak your thoughts aloud; speech recognition software converts your spoken ideas into clean text with zero physical motor strain.",
     tag: "Motor Bypass Accommodation",
+    art: "support-dysgraph-dictation",
   },
   {
     id: "wordbank",
@@ -7111,6 +7334,7 @@ const DYSGRAPH_SUPPORT_CHOICES = [
     subtitle: "One-click phrase assembly",
     desc: "Scaffolds transcription by allowing the learner to tap core academic phrases to construct coherent syntax with 80% fewer motor actions.",
     tag: "Executive Scaffolding",
+    art: "support-dysgraph-wordbank",
   },
   {
     id: "predictive",
@@ -7118,6 +7342,7 @@ const DYSGRAPH_SUPPORT_CHOICES = [
     subtitle: "Predictive academic autocomplete",
     desc: "Predicts multi-syllable scientific words after 1–2 letters, eliminating manual handwriting fatigue.",
     tag: "Assistive Technology",
+    art: "support-dysgraph-predictive",
   },
 ];
 
@@ -7487,6 +7712,13 @@ function DysgraphiaModule({ onBack, onNavigate }) {
 
       {step === "unsupported_intro" && (
         <div className="itw-flow-page itw-flow-narrow" key="unsupported_intro">
+          <Illustration
+            artKey="dysgraphia-run-brief"
+            width={1200}
+            height={672}
+            className="itw-art-run-brief"
+            alt="Biology classroom desk with handwritten notebook page, pencil, and blackboard diagrams showing motor transcription effort"
+          />
           <h2 className="itw-flow-title itw-center">Now, Run 2: The Physical Transcription Barrier</h2>
           <p className="itw-flow-lead itw-center">
             You must now physically transcribe the exact sentence into your science notebook.
@@ -7601,24 +7833,38 @@ function DysgraphiaModule({ onBack, onNavigate }) {
                   transition: "all 0.2s ease",
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      textTransform: "uppercase",
-                      fontWeight: 800,
-                      letterSpacing: "0.06em",
-                      padding: "3px 10px",
-                      borderRadius: 99,
-                      background: "var(--itw-panel-2)",
-                      color: "var(--itw-muted)",
-                    }}
-                  >
-                    {s.tag}
-                  </span>
+                <div className="itw-support-card-content">
+                  {s.art && (
+                    <Illustration
+                      artKey={s.art}
+                      width={72}
+                      height={72}
+                      className="itw-support-thumb"
+                      decorative
+                    />
+                  )}
+                  <div className="itw-support-card-text">
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          textTransform: "uppercase",
+                          fontWeight: 800,
+                          letterSpacing: "0.06em",
+                          padding: "3px 10px",
+                          borderRadius: 99,
+                          background: "var(--itw-panel-2)",
+                          color: "var(--itw-muted)",
+                        }}
+                      >
+                        {s.tag}
+                      </span>
+                    </div>
+                    {s.subtitle && <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)", marginBottom: 4 }}>{s.subtitle}</div>}
+                    <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
+                  </div>
                 </div>
-                <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
                 <input
                   type="radio"
                   name="dysgraph-support"
@@ -7660,6 +7906,13 @@ function DysgraphiaModule({ onBack, onNavigate }) {
 
       {step === "explain" && (
         <div className="itw-flow-page itw-flow-narrow" key="explain">
+          <Illustration
+            artKey="dysgraphia-what-helps"
+            width={1200}
+            height={672}
+            className="itw-art-what-helps"
+            alt="Student happily composing ideas using speech-to-text dictation on a tablet and concept word bank cards"
+          />
           <h2 className="itw-flow-title itw-center">What this means in everyday life</h2>
           <p className="itw-flow-lead itw-center">
             {results.supported && results.unsupported
@@ -7821,6 +8074,7 @@ const AUDITORY_SUPPORT_CHOICES = [
     subtitle: "Visual text accompaniment",
     desc: "Real-time speech-to-text projects the teacher's verbal directions word-for-word on a visual display.",
     tag: "Multi-Modal Scaffolding",
+    art: "support-auditory-captions",
   },
   {
     id: "isolation",
@@ -7828,6 +8082,7 @@ const AUDITORY_SUPPORT_CHOICES = [
     subtitle: "Clearer signal access over ambient noise",
     desc: "Uses a direct transmitter microphone to deliver the teacher's clear voice signal without room acoustic degradation or ambient chatter.",
     tag: "Acoustic Scaffolding",
+    art: "support-auditory-mic",
   },
   {
     id: "chunking",
@@ -7835,6 +8090,7 @@ const AUDITORY_SUPPORT_CHOICES = [
     subtitle: "Step-by-step audio segments",
     desc: "Replaces long, rapid verbal monologues with 3 bite-sized segments with dedicated replay buttons.",
     tag: "Pacing Scaffolding",
+    art: "support-auditory-chunking",
   },
 ];
 
@@ -8478,6 +8734,13 @@ function AuditoryProcessingModule({ onBack, onNavigate }) {
 
       {step === "unsupported_intro" && (
         <div className="itw-flow-page itw-flow-narrow" key="unsupported_intro">
+          <Illustration
+            artKey="auditory-run-brief"
+            width={1200}
+            height={672}
+            className="itw-art-run-brief"
+            alt="Classroom with students shifting in wooden desks and scraping chairs creating layers of competing acoustic background noise"
+          />
           <h2 className="itw-flow-title itw-center">Now, Run 2: Competing Classroom Murmurs</h2>
           <p className="itw-flow-lead itw-center">
             The bell is about to ring. Students are packing books, chairs are moving, and hallway voices blend with the announcement.
@@ -8592,24 +8855,38 @@ function AuditoryProcessingModule({ onBack, onNavigate }) {
                   transition: "all 0.2s ease",
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      textTransform: "uppercase",
-                      fontWeight: 800,
-                      letterSpacing: "0.06em",
-                      padding: "3px 10px",
-                      borderRadius: 99,
-                      background: "var(--itw-panel-2)",
-                      color: "var(--itw-muted)",
-                    }}
-                  >
-                    {s.tag}
-                  </span>
+                <div className="itw-support-card-content">
+                  {s.art && (
+                    <Illustration
+                      artKey={s.art}
+                      width={72}
+                      height={72}
+                      className="itw-support-thumb"
+                      decorative
+                    />
+                  )}
+                  <div className="itw-support-card-text">
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          textTransform: "uppercase",
+                          fontWeight: 800,
+                          letterSpacing: "0.06em",
+                          padding: "3px 10px",
+                          borderRadius: 99,
+                          background: "var(--itw-panel-2)",
+                          color: "var(--itw-muted)",
+                        }}
+                      >
+                        {s.tag}
+                      </span>
+                    </div>
+                    {s.subtitle && <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)", marginBottom: 4 }}>{s.subtitle}</div>}
+                    <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
+                  </div>
                 </div>
-                <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
                 <input
                   type="radio"
                   name="auditory-support"
@@ -8651,6 +8928,13 @@ function AuditoryProcessingModule({ onBack, onNavigate }) {
 
       {step === "explain" && (
         <div className="itw-flow-page itw-flow-narrow" key="explain">
+          <Illustration
+            artKey="auditory-what-helps"
+            width={1200}
+            height={672}
+            className="itw-art-what-helps"
+            alt="Inclusive classroom where the teacher wears a direct lapel transmitter and speech is projected on a live captions display"
+          />
           <h2 className="itw-flow-title itw-center">What this means in everyday life</h2>
           <p className="itw-flow-lead itw-center">
             {results.supported && results.unsupported
@@ -8815,6 +9099,7 @@ const EXEC_SUPPORT_CHOICES = [
     subtitle: "Separates immediate action from subsequent steps",
     desc: "Groups morning routines into 3 clear time horizons: what to do right now, what unlocks next, and what to finish later.",
     tag: "Visual Organization",
+    art: "support-exec-nnl",
   },
   {
     id: "roadmap",
@@ -8822,6 +9107,7 @@ const EXEC_SUPPORT_CHOICES = [
     subtitle: "Illustrates what depends on what",
     desc: "Displays an illustrative visual roadmap with clear prerequisite connections so the order of execution is immediately apparent.",
     tag: "Structural Scaffolding",
+    art: "support-exec-roadmap",
   },
   {
     id: "one_step",
@@ -8829,6 +9115,7 @@ const EXEC_SUPPORT_CHOICES = [
     subtitle: "Surfaces only the single immediate action",
     desc: "Completely hides the overwhelming multi-task list, presenting only the single immediate next action in a focused card.",
     tag: "Executive Scaffolding",
+    art: "support-exec-onestep",
   },
 ];
 
@@ -9226,6 +9513,13 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
 
       {step === "unsupported_intro" && (
         <div className="itw-flow-page itw-flow-narrow" key="unsupported_intro">
+          <Illustration
+            artKey="executive-run-brief"
+            width={1200}
+            height={672}
+            className="itw-art-run-brief"
+            alt="Morning hallway with unzipped backpack, field trip permission slip, tiffin box, and shoes needing immediate sequencing"
+          />
           <h2 className="itw-flow-title itw-center">Now, Run 2: The Morning Scramble</h2>
           <p className="itw-flow-lead itw-center">
             It is 7:30 AM. The school bus arrives in 25 minutes. 5 competing tasks are on your list, and some require prerequisites!
@@ -9341,24 +9635,38 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
                   transition: "all 0.2s ease",
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      textTransform: "uppercase",
-                      fontWeight: 800,
-                      letterSpacing: "0.06em",
-                      padding: "3px 10px",
-                      borderRadius: 99,
-                      background: "var(--itw-panel-2)",
-                      color: "var(--itw-muted)",
-                    }}
-                  >
-                    {s.tag}
-                  </span>
+                <div className="itw-support-card-content">
+                  {s.art && (
+                    <Illustration
+                      artKey={s.art}
+                      width={72}
+                      height={72}
+                      className="itw-support-thumb"
+                      decorative
+                    />
+                  )}
+                  <div className="itw-support-card-text">
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <div style={{ fontWeight: 800, fontSize: 17, color: "var(--itw-text)" }}>{s.title}</div>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          textTransform: "uppercase",
+                          fontWeight: 800,
+                          letterSpacing: "0.06em",
+                          padding: "3px 10px",
+                          borderRadius: 99,
+                          background: "var(--itw-panel-2)",
+                          color: "var(--itw-muted)",
+                        }}
+                      >
+                        {s.tag}
+                      </span>
+                    </div>
+                    {s.subtitle && <div style={{ fontSize: 13, fontWeight: 700, color: "var(--itw-muted)", marginBottom: 4 }}>{s.subtitle}</div>}
+                    <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
+                  </div>
                 </div>
-                <div style={{ fontSize: 14, color: "var(--itw-muted)", lineHeight: 1.5 }}>{s.desc}</div>
                 <input
                   type="radio"
                   name="exec-support"
@@ -9400,6 +9708,13 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
 
       {step === "explain" && (
         <div className="itw-flow-page itw-flow-narrow" key="explain">
+          <Illustration
+            artKey="executive-what-helps"
+            width={1200}
+            height={672}
+            className="itw-art-what-helps"
+            alt="Student smiling proudly in front of a colorful 3-column Now / Next / Later morning schedule board with bag ready"
+          />
           <h2 className="itw-flow-title itw-center">What this means in everyday life</h2>
           <p className="itw-flow-lead itw-center">
             {results.supported && results.unsupported
@@ -9602,6 +9917,8 @@ function DsArtPage({
         <img
           src={page.image}
           alt={page.alt}
+          width={1376}
+          height={768}
           className="itw-storybook-art-img"
           loading="eager"
         />
@@ -10025,6 +10342,8 @@ function EyesArtPage({
         <img
           src={current.image}
           alt={current.alt}
+          width={1376}
+          height={768}
           className="itw-storybook-art-img"
           loading="eager"
         />
@@ -10277,7 +10596,7 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
     {
       time: "8:30 AM",
       title: "Morning Assembly & Echoing Hallway",
-      image: "/decor/itw/day-through-my-eyes.webp",
+      image: "/decor/itw/itw-day-period-1-assembly.webp",
       alt: "Courtyard assembly with hundreds of students under bright morning sun",
       setting: "300 students standing in rows on polished granite; morning announcements booming through high-mounted horn speakers; bright sunlight glaring off courtyard pavers.",
       metrics: {
@@ -10294,7 +10613,7 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
     {
       time: "10:15 AM",
       title: "Science Laboratory & Group Project",
-      image: "/decor/itw/science-lab-story.webp",
+      image: "/decor/itw/itw-day-period-2-science.webp",
       alt: "Diverse children gathered around a wooden table examining microscope and plants",
       setting: "Tables with glassware, microscopes, and tap water; multiple group conversations happening at once.",
       metrics: {
@@ -10311,7 +10630,7 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
     {
       time: "12:30 PM",
       title: "Canteen Lunch & Neem Tree Bench",
-      image: "/decor/itw/hero-world.webp",
+      image: "/decor/itw/itw-day-period-3-canteen.webp",
       alt: "Quiet shaded garden bench under lush green trees with gentle sunlight",
       setting: "Bustling school cafeteria with stainless steel trays, cutlery clatter, and fast-moving peer banter.",
       metrics: {
@@ -10328,7 +10647,7 @@ function DayThroughMyEyesStory({ onBack, onNavigate }) {
     {
       time: "2:15 PM",
       title: "Reading & Creative Art Studio",
-      image: "/decor/itw/dyslexia-environment.webp",
+      image: "/decor/itw/itw-day-period-4-studio.webp",
       alt: "Warm quiet library with open books and art easels bathed in afternoon light",
       setting: "Afternoon classroom; students transcribing notes from the blackboard into notebooks.",
       metrics: {

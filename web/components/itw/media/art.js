@@ -188,7 +188,7 @@ export const ART_REGISTRY = {
     height: 672,
   },
   "dysgraphia-what-helps": {
-    src: "/decor/itw/itw-dysgraphia-what-helps.webp",
+    src: "/decor/itw/itw-dysgraphia-what-helps.webp?v=2",
     alt: "Student happily composing ideas using speech-to-text dictation on a tablet and concept word bank cards",
     width: 1200,
     height: 672,

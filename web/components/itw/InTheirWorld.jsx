@@ -2661,12 +2661,12 @@ const ADHD_STEPS = [
 const ADHD_STEP_INDEX = {
   instructions: 0,
   run_baseline: 1,
-  interrupted_intro: 1,
-  run_interrupted: 2,
-  reflect: 3,
-  support: 4,
-  run_supported: 4,
-  explain: 5,
+  interrupted_intro: 2,
+  run_interrupted: 3,
+  reflect: 4,
+  support: 5,
+  run_supported: 5,
+  explain: 6,
 };
 
 const ADHD_REFLECT_QS = [
@@ -5558,9 +5558,9 @@ const SPEECH_STEP_INDEX = {
   run_fast: 1,
   reflect: 2,
   support: 3,
-  run_supported: 3,
-  explain: 4,
-  next: 4,
+  run_supported: 4,
+  explain: 5,
+  next: 5,
 };
 
 const SPEECH_REFLECT_QS = [
@@ -6599,12 +6599,12 @@ const DYSCALC_STEPS = [
 const DYSCALC_STEP_INDEX = {
   instructions: 0,
   run_baseline: 1,
-  unsupported_intro: 1,
-  run_unsupported: 2,
-  reflect: 3,
-  support: 4,
-  run_supported: 4,
-  explain: 5,
+  unsupported_intro: 2,
+  run_unsupported: 3,
+  reflect: 4,
+  support: 5,
+  run_supported: 5,
+  explain: 6,
 };
 
 const DYSCALC_REFLECT_QS = [
@@ -7448,12 +7448,12 @@ const DYSGRAPH_STEPS = [
 const DYSGRAPH_STEP_INDEX = {
   instructions: 0,
   run_baseline: 1,
-  unsupported_intro: 1,
-  run_unsupported: 2,
-  reflect: 3,
-  support: 4,
-  run_supported: 4,
-  explain: 5,
+  unsupported_intro: 2,
+  run_unsupported: 3,
+  reflect: 4,
+  support: 5,
+  run_supported: 5,
+  explain: 6,
 };
 
 const DYSGRAPH_REFLECT_QS = [
@@ -8196,12 +8196,12 @@ const AUDITORY_STEPS = [
 const AUDITORY_STEP_INDEX = {
   instructions: 0,
   run_baseline: 1,
-  unsupported_intro: 1,
-  run_unsupported: 2,
-  reflect: 3,
-  support: 4,
-  run_supported: 4,
-  explain: 5,
+  unsupported_intro: 2,
+  run_unsupported: 3,
+  reflect: 4,
+  support: 5,
+  run_supported: 5,
+  explain: 6,
 };
 
 const AUDITORY_REFLECT_QS = [
@@ -9227,12 +9227,12 @@ const EXEC_STEPS = [
 const EXEC_STEP_INDEX = {
   instructions: 0,
   run_baseline: 1,
-  unsupported_intro: 1,
-  run_unsupported: 2,
-  reflect: 3,
-  support: 4,
-  run_supported: 4,
-  explain: 5,
+  unsupported_intro: 2,
+  run_unsupported: 3,
+  reflect: 4,
+  support: 5,
+  run_supported: 5,
+  explain: 6,
 };
 
 const EXEC_REFLECT_QS = [

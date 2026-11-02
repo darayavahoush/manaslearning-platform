@@ -36,7 +36,7 @@
 
   // Screen art: laptop = real live screenshot of homepage, phone = centered app favicon on clean wallpaper
   function laptopScreen(a) {
-    var src = "/decor/" + a.id + "-home-screen.webp";
+    var src = "/decor/" + a.id + "-home-screen.webp?v=3";
     return '<img src="' + src + '" alt="' + esc(a.name) + ' live homepage" style="width:100%;height:100%;object-fit:cover;object-position:top left;display:block" loading="lazy" decoding="async" />';
   }
   function phoneScreen(a) {

@@ -37,7 +37,10 @@ def _faq_scorer(s1: str, s2: str, **kwargs) -> float:
     return float(max(r_sort, r_set))
 
 
-FAQ_JSON_PATH = os.environ.get("FAQ_LOOKUP_PATH", "faq_lookup.json")
+FAQ_JSON_PATH = os.environ.get(
+    "FAQ_LOOKUP_PATH",
+    os.path.join(os.path.dirname(__file__), "faq_lookup.json")
+)
 
 
 class FaqLookup:

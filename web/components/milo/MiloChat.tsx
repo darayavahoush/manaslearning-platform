@@ -95,9 +95,14 @@ function polishMiloReply(text: string): string {
 
 const FAST_ANSWERS = [
   {
-    match: /therapist|when should i see a therapist|consult a therapist|specialist/i,
+    match: /therapist|when should i see a therapist|when to see a therapist|consult a therapist|specialist/i,
     reply: "It's a wonderful idea to consult a specialist or therapist whenever you notice persistent challenges that affect your child's daily comfort, communication, or learning. Common times to seek guidance include delays in speech milestones, intense reactions to sounds or textures, difficulty with motor skills or handwriting, or frequent emotional overwhelm during everyday routines. Early guidance is gentle, playful, and gives your child tools to thrive. You can always book a free consultation with our team right here on the site!",
     sources: [{source: 'Manas Learning Clinical Guidance', section: '', snippet: 'Clinical guidance on milestones and therapy', doc_url: '/consult'}]
+  },
+  {
+    match: /phonics jungle|phonics app/i,
+    reply: "Phonics Jungle is our interactive early literacy mobile app designed to help young learners master letter sounds, phonemic awareness, and foundational reading skills through joyful, gamified adventures.",
+    sources: [{source: 'Manas Learning Apps', section: '', snippet: 'Phonics Jungle literacy app', doc_url: '/'}]
   },
   {
     match: /what is stimming|stimming/i,

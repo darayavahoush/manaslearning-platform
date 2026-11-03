@@ -17,6 +17,10 @@ var cur = 'en';
   if (s && BY[s]) cur = s;
 })();
 
+var UNIT = /^[\d.,]+\s*[KkLlMmBb]\+?$/;
+var UNITWORD = {k: ' thousand', l: ' lakh', m: ' million', b: ' billion'};
+function expand(k) { var m = k.match(/^([\d.,]+)\s*([KkLlMmBb])(\+?)$/); return m ? m[1] + UNITWORD[m[2].toLowerCase()] + m[3] : k; }
+var grp = new WeakMap(), touchedGroups = new Set();
 var SKIPTAGS = {SCRIPT: 1, STYLE: 1, NOSCRIPT: 1, CODE: 1, PRE: 1, KBD: 1, SAMP: 1, TEXTAREA: 1, IFRAME: 1};
 var ATTRS = ['placeholder', 'title', 'alt', 'aria-label', 'aria-description'];
 var nodeOrig = new WeakMap(), nodeApplied = new WeakMap(), attrOrig = new WeakMap(), lastMut = new WeakMap();
@@ -32,6 +36,7 @@ function skipEl(el) {
 }
 function worth(t) {
   if (!t || t.length > 2500) return false;
+  if (UNIT.test(t)) return true;
   if (!/[A-Za-z]{2,}/.test(t)) return false;
   if (/^\S+@\S+\.\S+$/.test(t) || /^(https?:\/\/|www\.)\S+$/.test(t)) return false;
   return true;
@@ -59,14 +64,40 @@ function collectAttrs(el, acc) {
     }
   }
 }
+function textOf(el) { return el.textContent; }
+function tryGroup(el, acc) {
+  var kids = el.children;
+  var g = grp.get(el);
+  if (g && kids.length && textOf(kids[g.first]) === g.applied) return true;
+  if (kids.length < 3 || kids.length > 60) return false;
+  if (!/^(H[1-6]|P|DIV|SPAN|LI|A|BUTTON|LABEL)$/.test(el.tagName)) return false;
+  var toks = [], spans = [], i;
+  for (i = 0; i < kids.length; i++) {
+    var k = kids[i];
+    if (k.tagName !== 'SPAN' || k.children.length) return false;
+    var t = textOf(k).trim();
+    if (!t) continue;
+    if (/\s/.test(t)) return false;
+    toks.push(t); spans.push(k);
+  }
+  if (toks.length < 3) return false;
+  for (var c = el.firstChild; c; c = c.nextSibling) if (c.nodeType === 3 && c.nodeValue.trim()) return false;
+  var total = 0; toks.forEach(function (x) { total += x.length; });
+  var sep = total / toks.length <= 1.3 ? '' : ' ';
+  var joined = toks.join(sep);
+  if (!worth(joined)) return false;
+  acc.push({group: el, spans: spans, s: joined, snap: spans.map(textOf)});
+  return true;
+}
 function collect(root, acc) {
   if (!root) return;
   if (root.nodeType === 3) { considerText(root, acc); return; }
   if (root.nodeType !== 1 || skipEl(root)) return;
   collectAttrs(root, acc);
+  if (tryGroup(root, acc)) return;
   var w = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
     acceptNode: function (n) {
-      if (n.nodeType === 1) { if (skipEl(n)) return NodeFilter.FILTER_REJECT; collectAttrs(n, acc); return NodeFilter.FILTER_SKIP; }
+      if (n.nodeType === 1) { if (skipEl(n)) return NodeFilter.FILTER_REJECT; collectAttrs(n, acc); if (tryGroup(n, acc)) return NodeFilter.FILTER_REJECT; return NodeFilter.FILTER_SKIP; }
       return NodeFilter.FILTER_ACCEPT;
     }
   });
@@ -112,7 +143,16 @@ function apply(items) {
     if (it.done) continue;
     var parts = split(it.s), tr = mem[parts[1]];
     if (tr === undefined) continue;
-    if (it.n) {
+    if (it.group) {
+      var same = it.spans.every(function (sp, j) { return sp.isConnected && textOf(sp) === it.snap[j]; });
+      if (!same) { it.done = true; continue; }
+      var disp = it.spans.map(function (sp) { return sp.style.display; });
+      it.spans[0].textContent = tr;
+      if (it.spans[0].firstChild) nodeApplied.set(it.spans[0].firstChild, tr);
+      for (var q = 1; q < it.spans.length; q++) it.spans[q].style.display = 'none';
+      grp.set(it.group, {spans: it.spans, snap: it.snap, disp: disp, applied: tr, first: Array.prototype.indexOf.call(it.group.children, it.spans[0])});
+      touchedGroups.add(it.group);
+    } else if (it.n) {
       if (!it.n.isConnected || it.n.nodeValue !== it.s) { it.done = true; continue; }
       var nv = parts[0] + tr + parts[2];
       nodeApplied.set(it.n, nv); it.n.nodeValue = nv; touchedNodes.add(it.n);
@@ -142,7 +182,7 @@ function run(acc) {
   function next() {
     if (idx >= batches.length || gen !== myGen) return Promise.resolve();
     var cur2 = batches[idx++];
-    return translateKeys(myLang, cur2).then(function (tr) {
+    return translateKeys(myLang, cur2.map(expand)).then(function (tr) {
       if (gen !== myGen) return;
       cur2.forEach(function (k, i) { mem[k] = tr[i]; });
       saveMem(); apply(acc);
@@ -172,6 +212,14 @@ function revert() {
     nodeApplied.delete(n);
   });
   touchedNodes.clear();
+  touchedGroups.forEach(function (el) {
+    var g = grp.get(el);
+    if (g && g.spans[0].isConnected && textOf(g.spans[0]) === g.applied) {
+      g.spans.forEach(function (sp, j) { sp.textContent = g.snap[j]; sp.style.display = g.disp[j]; });
+    }
+    grp.delete(el);
+  });
+  touchedGroups.clear();
   touchedAttrs.forEach(function (el) {
     var rec = attrOrig.get(el); if (!rec) return;
     Object.keys(rec).forEach(function (a) { if (rec[a].applied !== null && el.getAttribute(a) === rec[a].applied) el.setAttribute(a, rec[a].orig); rec[a].applied = null; });
@@ -331,9 +379,9 @@ var css = '#ml-lang{position:relative;display:inline-flex;align-items:center;mar
   + '#ml-panel.open{display:flex}'
   + '#ml-q{margin:10px;padding:10px 12px;border:1px solid #bbb;border-radius:10px;font-size:16px}'
   + '#ml-list{overflow:auto;padding:0 8px 10px;display:grid;grid-template-columns:1fr 1fr;gap:6px}'
-  + '#ml-list button{display:flex;flex-direction:column;align-items:flex-start;text-align:start;padding:8px 10px;border:1px solid #e3e3e3;border-radius:10px;background:#fff;color:#111;cursor:pointer;min-height:48px}'
+  + '#ml-panel,#ml-panel *{box-sizing:border-box}#ml-list button{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;height:auto;line-height:1.3;overflow:visible;text-align:start;padding:9px 12px;border:1px solid #e3e3e3;border-radius:10px;background:#fff;color:#111;cursor:pointer;min-height:48px}'
   + '#ml-list button:hover{background:#f3f7ff}#ml-list button[aria-current=true]{border-color:#2563eb;background:#eaf1ff}'
-  + '#ml-list b{font-size:17px;font-weight:600}#ml-list small{font-size:12px;color:#555}'
+  + '#ml-list b{display:block;font-size:17px;font-weight:600;line-height:1.35}#ml-list small{display:block;font-size:12px;line-height:1.3;color:#555}'
   + '@media(max-width:640px){#ml-panel{left:10px!important;right:10px!important;top:auto!important;bottom:10px;max-height:75vh}#ml-list{grid-template-columns:1fr}#ml-btn .ml-lab{display:none}}'
   + '#ml-bar{position:fixed;top:0;left:0;height:3px;width:0;background:#2563eb;z-index:2147483001;transition:width .4s;pointer-events:none}'
   + '#ml-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);max-width:min(90vw,460px);padding:12px 16px;background:#222;color:#fff;border-radius:10px;font:500 15px/1.4 system-ui,sans-serif;z-index:2147483002;display:none}'
@@ -432,5 +480,7 @@ function start() {
   if (cur !== 'en') { loadMem(cur); fullScan(); }
 }
 window.mlI18n = {get lang() { return cur; }, set: setLang, languages: LANGS};
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+// Wait for the page to finish loading and hydrating before touching the DOM; changing text earlier makes React report error 418.
+function boot() { setTimeout(function () { (window.requestIdleCallback || setTimeout)(start, {timeout: 3000}); }, 1200); }
+if (document.readyState === 'complete') boot(); else window.addEventListener('load', boot);
 `

@@ -777,7 +777,7 @@ const MODULES = [
     tag: "Numerical reasoning",
     name: "Dyscalculia",
     sub: "Do the Math",
-    blurb: "Working with quantities, proportions, and mental math when numbers lack spatial anchors.",
+    blurb: "Working with quantities, proportions, and mental maths when numbers lack spatial anchors.",
     image: "/decor/itw/dyscalculia-environment.webp",
     statBig: "~5.6%–8.2%",
     statRest: "estimated prevalence in Indian school cohorts (Scaria et al., 2023 meta-analysis)",
@@ -2526,7 +2526,7 @@ function AutismModule({ onBack, onNavigate }) {
             />
             <h2 className="itw-flow-title itw-center">What this means in everyday life</h2>
             <p className="itw-flow-lead itw-center">
-              Sensory overload is not a behavioral problem or a lack of self-control. It is a nervous system taking in more raw sensory input than it can sort through in real time.
+              Sensory overload is not a behavioural problem or a lack of self-control. It is a nervous system taking in more raw sensory input than it can sort through in real time.
             </p>
 
             <div
@@ -4656,7 +4656,7 @@ function DyslexiaModule({ onBack, onNavigate }) {
                 </div>
 
                 <div className="itw-dys-output-stage">
-                  <p>{displayScrambledText}</p>
+                  <p translate="no">{displayScrambledText}</p>
                 </div>
 
                 <div className="itw-storybook-insight-box" style={{ marginTop: 18 }}>
@@ -5104,7 +5104,7 @@ function DyslexiaModule({ onBack, onNavigate }) {
                 </div>
 
                 <div className="itw-dys-passage-box">
-                  <p>{displayChallengeDyslexiaText}</p>
+                  <p translate="no">{displayChallengeDyslexiaText}</p>
                 </div>
 
                 <div style={{ marginTop: 16 }}>
@@ -5212,7 +5212,7 @@ function DyslexiaModule({ onBack, onNavigate }) {
             </div>
 
             {/* Live rendered sandbox stage */}
-            <div
+            <div translate="no"
               className="itw-dys-output-stage"
               style={{
                 letterSpacing: activeFilters.has("crowding") ? "-1.8px" : "normal",
@@ -6183,7 +6183,7 @@ function SpeechModule({ onBack, onNavigate }) {
             <p className="itw-flow-lead">
               For people with developmental stuttering, word-finding delays, or speech-sound differences, the thought is
               fully formed and ready in the mind. The friction occurs when conversational turn-taking is rushed.
-              In this activity, you will experience how pacing and listener behavior completely reshape the communication experience.
+              In this activity, you will experience how pacing and listener behaviour completely reshape the communication experience.
             </p>
             <ul className="itw-flow-meta">
               <li><span aria-hidden="true">•</span> Takes 2–3 minutes</li>
@@ -6499,7 +6499,7 @@ function SpeechModule({ onBack, onNavigate }) {
               },
               {
                 num: "~10% Caseload",
-                label: "proportion of pediatric clients presenting to specialized tertiary clinics who stutter — a clinical caseload denominator, not a general community prevalence figure",
+                label: "proportion of paediatric clients presenting to specialized tertiary clinics who stutter — a clinical caseload denominator, not a general community prevalence figure",
                 src: "All India Institute of Speech and Hearing (AIISH Mysore) Clinical Registry",
               },
               {
@@ -7374,13 +7374,13 @@ function DyscalculiaModule({ onBack, onNavigate }) {
                 "Use concrete measuring cups and physical coins during cooking and shopping to anchor quantities in physical space.",
                 "Provide visual analog clocks with color-coded intervals rather than purely digital numbers.",
                 "Encourage finger-counting and tactile counters without stigma — they serve as essential external working memory.",
-                "Break multi-step math homework into one problem per page to eliminate visual crowding.",
+                "Break multi-step maths homework into one problem per page to eliminate visual crowding.",
               ]}
               classroom={[
                 "Provide grid or graph paper during arithmetic tasks to assist spatial column and decimal alignment.",
                 "Permit the use of visual number lines and multiplication matrices during assessments.",
                 "Separate grading of conceptual mathematical reasoning from raw mental arithmetic accuracy.",
-                "Adopt the Concrete-Representational-Abstract (CRA) teaching progression across math concepts.",
+                "Adopt the Concrete-Representational-Abstract (CRA) teaching progression across maths concepts.",
               ]}
             />
           </div>
@@ -9276,9 +9276,9 @@ const EXEC_SUPPORT_CHOICES = [
 
 const EXEC_TASKS = [
   { id: "slip", title: "1. Sign Science Museum Field Trip Slip", desc: "Parent is leaving in 5 minutes! Must be signed before bag packing.", category: "prereq", unlocks: "pack" },
-  { id: "math", title: "2. Complete Last 2 Math Problems", desc: "Science & math worksheet due today. Must finish before packing.", category: "prereq", unlocks: "pack" },
+  { id: "math", title: "2. Complete the Last 2 Maths Problems", desc: "Science and maths worksheet due today. Must finish before packing.", category: "prereq", unlocks: "pack" },
   { id: "uniform", title: "3. Put on School Uniform & Shoes", desc: "Cannot leave house without proper dress code.", category: "routine", unlocks: "bus" },
-  { id: "pack", title: "4. Pack Backpack with Books & Signed Slip", desc: "Requires signed slip + finished math worksheet inside.", category: "next", requires: ["slip", "math"] },
+  { id: "pack", title: "4. Pack Backpack with Books & Signed Slip", desc: "Requires signed slip + finished maths worksheet inside.", category: "next", requires: ["slip", "math"] },
   { id: "breakfast", title: "5. Eat Nutritious Morning Breakfast", desc: "Fuel for the day before walking out to the bus stop.", category: "routine", unlocks: "bus" },
 ];
 
@@ -9680,7 +9680,7 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
             It is 7:30 AM. The school bus arrives in 25 minutes. 5 competing tasks are on your list, and some require prerequisites!
           </p>
           <ul className="itw-flow-list">
-            <li><span aria-hidden="true">•</span> You cannot pack your backpack until the field trip slip is signed and math homework is finished.</li>
+            <li><span aria-hidden="true">•</span> You cannot pack your backpack until the field trip slip is signed and the maths homework is finished.</li>
             <li><span aria-hidden="true">•</span> Notice how holding dependencies in working memory while sequencing tasks creates cognitive friction.</li>
           </ul>
           <div className="itw-flow-nav">
@@ -9902,7 +9902,7 @@ function ExecutiveFunctioningModule({ onBack, onNavigate }) {
               facts={[
                 {
                   num: "30% – 40%",
-                  label: "co-occurrence with ADHD, autism, dyslexia, and stress; executive differences are widespread across pediatric neurotypes",
+                  label: "co-occurrence with ADHD, autism, dyslexia, and stress; executive differences are widespread across paediatric neurotypes",
                   src: "Diamond (2013), Executive Functions Annual Review of Psychology",
                 },
                 {

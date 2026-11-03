@@ -65,7 +65,7 @@ function Card({s, bookings, k, now}: {s: Staff; bookings: B[]; k: string; now: n
                   <button onClick={() => setD({...d, weeklyHours: d.weeklyHours.filter((_, j) => j !== idx)})} className="px-1 text-muted-gray" aria-label="Remove">✕</button>
                 </span>
               ))}
-              <button onClick={() => setD({...d, weeklyHours: [...d.weeklyHours, {day, start: '10:00', end: '17:00'}]})} className="text-xs text-primary">+ add hours</button>
+              <button onClick={() => setD({...d, weeklyHours: [...d.weeklyHours, {day, start: '10:30', end: '19:00'}]})} className="text-xs text-primary">+ add hours</button>
             </div>
           )
         })}

@@ -24,12 +24,12 @@ export default function Confirm() {
         {state === 'ok' && r ? (
           <>
             <h1 className="font-patrick text-4xl text-primary">{r.needsPayment ? 'Email confirmed!' : 'You’re booked!'}</h1>
-            <p className="mt-4 text-text-brown">{r.title} on <b>{when} IST</b>.{r.needsPayment ? ' Your slot is held. The payment step is added in a later patch.' : ' A calendar invite is on its way to your inbox.'}</p>
+            <p className="mt-4 text-text-brown">{r.title} on <b>{when} IST</b>.{r.needsPayment ? ' Your slot is held. Log in to My consultations to pay and finish booking.' : ' A calendar invite is on its way to your inbox.'}</p>
             <a href="https://www.manaslearning.com" className="mt-8 inline-block rounded-full bg-cream-dark px-6 py-3 text-sm font-semibold text-text-brown hover:bg-primary hover:text-white">Back to Manas Learning</a>
           </>
         ) : state === 'err' || !token ? (
           <>
-            <h1 className="font-patrick text-4xl text-card-red">Hmm, that didn’t work</h1>
+            <h1 className="font-patrick text-4xl text-card-red">Sorry, that didn’t work</h1>
             <p className="mt-4 text-text-brown">{msg || 'This link is not valid.'}</p>
             <a href="/consult" className="mt-8 inline-block rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-orange">Book a new time</a>
           </>

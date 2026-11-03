@@ -10,7 +10,7 @@ const FEELS = [
   {name: 'Speech', line: 'Push through a word that will not come out in time.', tone: 'border-card-green/60 bg-card-green/15'},
 ]
 const SERVICES = [
-  {title: 'Speech and language', text: 'Support for children who are late to talk, hard to understand, or finding it difficult to put words together.'},
+  {title: 'Speech and language', text: 'Support for children who talk late, are hard to understand, or find it difficult to put words together.'},
   {title: 'Learning support', text: 'Help with reading, writing, maths and attention, including dyslexia and dyscalculia.'},
   {title: 'Sensory and behaviour', text: 'Understanding stimming, sensory needs and everyday regulation at home and at school.'},
   {title: 'Parent guidance', text: 'Practical, step-by-step ideas so families know what to try between sessions.'},
@@ -18,7 +18,7 @@ const SERVICES = [
 const CONSULTS = [
   {title: 'Free consultation', tag: 'Free', text: 'A short first conversation to share your concerns and find out what support fits.'},
   {title: 'Expert consultation', tag: 'Specialist', text: 'A deeper session with a specialist to look at your child’s needs in detail.'},
-  {title: 'IEP consultation', tag: 'School support', text: 'Help planning an Individualised Education Plan together with your child’s school.'},
+  {title: 'IEP consultation', tag: 'School support', text: 'Help planning an Individualised Education Programme (IEP) together with your child’s school.'},
 ]
 
 const h2 = 'font-poppins text-3xl font-bold text-black md:text-4xl'
@@ -33,7 +33,7 @@ export default function Home() {
       <section className="bg-cream">
         <div className="container mx-auto flex flex-col items-center px-4 py-20 text-center md:py-28">
           <h1 className="font-poppins max-w-4xl text-4xl font-bold leading-tight text-black md:text-6xl">Your child&apos;s progress starts with one step</h1>
-          <p className="mt-6 max-w-3xl text-2xl text-text-brown md:text-3xl">Take the first step toward clarity, confidence, and better learning. We&apos;ll guide you from here.</p>
+          <p className="mt-6 max-w-3xl text-2xl text-text-brown md:text-3xl">Take the first step toward clarity, confidence and better learning. We&apos;ll guide you from here.</p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <a href="/consult" className={btnOrange}>Book Expert Consultation</a>
             <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className={btnGreen}>Join Community</a>
@@ -57,7 +57,7 @@ export default function Home() {
         </div>
         <div className="mt-8 text-center">
           <a href="/experience" className={btnOrange}>Start the experience</a>
-          <p className="mt-3 text-lg text-black/60">Built to build empathy, not to diagnose.</p>
+          <p className="mt-3 text-lg text-black/60">Designed to build empathy, not to diagnose.</p>
         </div>
       </section>
 
@@ -97,7 +97,7 @@ export default function Home() {
           </div>
           <div className="flex-1">
             <h2 className="font-poppins text-2xl font-bold text-black md:text-3xl">Questions on your mind? Ask Milo.</h2>
-            <p className="mt-2 text-xl text-text-brown">Milo answers everyday questions about stimming, sensory needs, speech and learning using our guides. General guidance, not medical advice, and it points you to a human when it should.</p>
+            <p className="mt-2 text-xl text-text-brown">Milo answers everyday questions about stimming, sensory needs, speech and learning using our guides. It gives general guidance, not medical advice, and it points you to a person when you need one.</p>
           </div>
           <a href="/milo" className={btnGreen}>Chat with Milo</a>
         </div>
@@ -109,7 +109,7 @@ export default function Home() {
           <div className="mt-10 grid gap-5 md:grid-cols-3">
             <div className={`${card} border-black/10`}>
               <h3 className="font-poppins text-xl font-bold text-black">Visit</h3>
-              <p className="mt-2 text-xl text-text-brown">10G, Sapphire, Olympia Opaline, OMR, Navalur, Chennai, Tamilnadu, India - 600130.</p>
+              <p className="mt-2 text-xl text-text-brown">10G, Sapphire, Olympia Opaline, OMR, Navalur, Chennai, Tamil Nadu 600130, India.</p>
               <a href="https://www.google.com/maps/search/?api=1&query=Olympia+Opaline+Navalur+Chennai" target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-xl text-primary underline">Get directions</a>
             </div>
             <div className={`${card} border-black/10`}>

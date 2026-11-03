@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     })
   }
 
-  const db = readDB()
+  const db = await readDB()
   const target = db.staff.find((s) =>
     (typeof staffId === 'string' && s.id === staffId) ||
     (typeof email === 'string' && s.email.toLowerCase() === email.toLowerCase().trim()))

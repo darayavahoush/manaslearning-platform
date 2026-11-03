@@ -13,7 +13,7 @@ export function makeIcs(b: Booking, t: ConsultType, s: Staff, method: 'REQUEST' 
   const lines = [
     'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Manas Learning//Booking//EN', 'CALSCALE:GREGORIAN', `METHOD:${method}`,
     'BEGIN:VEVENT',
-    `UID:${b.id}@manaslearning.com`, `DTSTAMP:${stamp(Date.now())}`, `SEQUENCE:${cancel ? 1 : 0}`,
+    `UID:${b.id}@manaslearning.com`, `DTSTAMP:${stamp(Date.now())}`, `SEQUENCE:${(b.sequence ?? 0) + (cancel ? 1 : 0)}`,
     `DTSTART:${stamp(Date.parse(b.startAt))}`, `DTEND:${stamp(Date.parse(b.endAt))}`,
     `SUMMARY:${esc(`${t.title} - Manas Learning`)}`, `DESCRIPTION:${esc(desc)}`,
     `LOCATION:${url ? esc(url) : 'Online'}`, `STATUS:${cancel ? 'CANCELLED' : 'CONFIRMED'}`,

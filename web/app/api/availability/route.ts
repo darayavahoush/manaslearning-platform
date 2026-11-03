@@ -5,7 +5,7 @@ import {getSlots} from '@/lib/slots'
 export async function GET(req: Request) {
   const u = new URL(req.url)
   const month = u.searchParams.get('month') || ''
-  const db = readDB()
+  const db = await readDB()
   const t = db.consultTypes.find((x) => x.id === u.searchParams.get('type') && x.active)
   if (!t || !/^\d{4}-\d{2}$/.test(month)) return NextResponse.json({})
   const [y, m] = month.split('-').map(Number)

@@ -1001,7 +1001,7 @@ export default function TeamPortal() {
                           onChange={(e) => {
                             let next = [...editStaff.weeklyHours]
                             if (e.target.checked) {
-                              next.push({ day: dayNum, start: '10:00', end: '17:00' })
+                              next.push({ day: dayNum, start: '10:30', end: '19:00' })
                             } else {
                               next = next.filter((h) => h.day !== dayNum)
                             }

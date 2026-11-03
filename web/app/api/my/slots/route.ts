@@ -9,7 +9,7 @@ export async function GET(req: Request) {
   const p = readParent(req)
   if (!p) return unauthorized()
   const id = new URL(req.url).searchParams.get('id')
-  const db = readDB()
+  const db = await readDB()
   const b = db.bookings.find((x) => x.id === id && x.email.toLowerCase() === p.sub)
   if (!b) return NextResponse.json({error: 'Booking not found.'}, {status: 404})
   const t = db.consultTypes.find((x) => x.id === b.typeId)!

@@ -11,6 +11,7 @@
     "prebuild": "node scripts/fetch-itw-assets.mjs"
   },
   "dependencies": {
+    "@azure/storage-blob": "^12.34.0",
     "@types/nodemailer": "^8.0.2",
     "next": "16.4.3",
     "nodemailer": "^10.2.1",

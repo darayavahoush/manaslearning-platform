@@ -88,11 +88,11 @@ export function readSession(req: Request): Session | null {
 }
 
 /** Any signed-in team member (admin or active staff). */
-export function requireTeam(req: Request): Session | null {
+export async function requireTeam(req: Request): Promise<Session | null> {
   const s = readSession(req)
   if (!s) return null
   if (s.role === 'admin') return s
-  return readDB().staff.some((x) => x.id === s.sub && x.active) ? s : null
+  return (await readDB()).staff.some((x) => x.id === s.sub && x.active) ? s : null
 }
 
 export function requireAdmin(req: Request): Session | null {

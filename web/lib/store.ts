@@ -1,6 +1,10 @@
-// Data layer. Local JSON file for now; swap this file for a Sanity adapter later.
+// Data layer. One JSON document, stored in Azure Blob Storage when AZURE_STORAGE_CONNECTION_STRING is set
+// (required on Vercel, whose disk is read-only) and in a local file otherwise (development).
+// Writes are checked against the blob's ETag, so two simultaneous requests can never overwrite each other:
+// the loser re-reads and retries. Change data with updateDB(); readDB() is for read-only paths.
 import fs from 'node:fs'
 import path from 'node:path'
+import {BlobServiceClient, type BlockBlobClient} from '@azure/storage-blob'
 import {hashPassword} from '@/lib/password'
 
 export type ConsultType = {id: string; title: string; description: string; durationMins: number; bufferMins: number; priceINR: number; minNoticeHours: number; maxDaysAhead: number; active: boolean; /** defaults to true for everything except free-counselling */ requiresLogin?: boolean}
@@ -44,23 +48,20 @@ const seed: DB = {
   configVersion: CONFIG_VERSION,
 }
 
-export function readDB(): DB {
-  if (!fs.existsSync(FILE)) {
-    fs.mkdirSync(path.dirname(FILE), {recursive: true})
-    fs.writeFileSync(FILE, JSON.stringify(seed, null, 2))
-  }
-  const db: DB = JSON.parse(fs.readFileSync(FILE, 'utf8'))
-  // One-time migration: hash any legacy plaintext staff password, then drop it from disk.
-  let migrated = false
+
+/** Brings an older data file up to date. Returns true if anything changed. */
+function normalize(db: DB): boolean {
+  let changed = false
+  // Hash any legacy plaintext staff password, then drop it.
   for (const s of db.staff) {
     if (s.password) {
       if (!s.passwordHash) s.passwordHash = hashPassword(s.password)
       delete s.password
-      migrated = true
+      changed = true
     }
   }
-  // One-time config migration for existing data files: new session length, booking notice and
-  // consultation hours. Applied once; later edits from the team page are kept.
+  // One-time config migration: new session length, booking notice and consultation hours.
+  // Applied once; later edits from the team page are kept.
   if ((db.configVersion ?? 0) < CONFIG_VERSION) {
     for (const t of db.consultTypes) {
       t.minNoticeHours = 1
@@ -68,11 +69,118 @@ export function readDB(): DB {
     }
     for (const st of db.staff) st.weeklyHours = hoursStandard.map((h) => ({...h}))
     db.configVersion = CONFIG_VERSION
-    migrated = true
+    changed = true
   }
-  if (migrated) writeDB(db)
-  return db
+  return changed
 }
-export function writeDB(db: DB) {
+
+// ---------- backends ----------
+type Loaded = {db: DB; etag?: string; raw: string | null}
+
+const CONN = process.env.AZURE_STORAGE_CONNECTION_STRING
+const CONTAINER = process.env.AZURE_STORAGE_CONTAINER || 'manas-data'
+let blobP: Promise<BlockBlobClient> | undefined
+function blob(): Promise<BlockBlobClient> {
+  blobP ??= (async () => {
+    const c = BlobServiceClient.fromConnectionString(CONN!).getContainerClient(CONTAINER)
+    await c.createIfNotExists()
+    return c.getBlockBlobClient('db.json')
+  })().catch((e) => { blobP = undefined; throw e })
+  return blobP
+}
+const status = (e: unknown) => (e as {statusCode?: number})?.statusCode
+
+async function azLoad(): Promise<Loaded | null> {
+  const b = await blob()
+  try {
+    const r = await b.download() // content and ETag come from the same response
+    const chunks: Buffer[] = []
+    for await (const c of r.readableStreamBody as AsyncIterable<Buffer | string>) chunks.push(Buffer.from(c))
+    const raw = Buffer.concat(chunks).toString('utf8')
+    return {db: JSON.parse(raw), etag: r.etag, raw}
+  } catch (e) {
+    if (status(e) === 404) return null
+    throw e
+  }
+}
+/** Returns false if somebody else changed the blob since we read it. */
+async function azSave(db: DB, etag?: string): Promise<boolean> {
+  const b = await blob()
+  const body = JSON.stringify(db)
+  try {
+    await b.upload(body, Buffer.byteLength(body), {
+      blobHTTPHeaders: {blobContentType: 'application/json'},
+      conditions: etag ? {ifMatch: etag} : {ifNoneMatch: '*'},
+    })
+    return true
+  } catch (e) {
+    if (status(e) === 412 || status(e) === 409) return false
+    throw e
+  }
+}
+
+function fileLoad(): Loaded {
+  if (!fs.existsSync(FILE)) return {db: structuredClone(seed), raw: null}
+  const raw = fs.readFileSync(FILE, 'utf8')
+  return {db: JSON.parse(raw), raw}
+}
+function fileSave(db: DB) {
+  fs.mkdirSync(path.dirname(FILE), {recursive: true})
   fs.writeFileSync(FILE, JSON.stringify(db, null, 2))
+}
+
+function requireBackend() {
+  if (!CONN && process.env.VERCEL) throw new Error('AZURE_STORAGE_CONNECTION_STRING is not set. Vercel\'s disk is read-only, so the app needs Azure Blob Storage.')
+}
+
+async function load(): Promise<Loaded> {
+  requireBackend()
+  if (!CONN) return fileLoad()
+  const l = await azLoad()
+  return l ?? {db: structuredClone(seed), raw: null}
+}
+
+/** Current data. Never blocks on a write; if the file is old or missing, the up-to-date copy is saved first. */
+export async function readDB(): Promise<DB> {
+  const l = await load()
+  const changed = normalize(l.db)
+  if (changed || l.raw === null) {
+    try {
+      if (!CONN) fileSave(l.db)
+      else await azSave(l.db, l.etag) // if we lose a race here, the next read redoes it
+    } catch (e) { console.error('[store] could not save upgraded data', e) }
+  }
+  return l.db
+}
+
+/**
+ * Change the data safely. `fn` edits the db it is given (it must be synchronous and have no side
+ * effects other than editing it, because it re-runs if another request got there first) and may
+ * return a value. Nothing is written if fn changed nothing. Do slow work (email, payments) after.
+ */
+export async function updateDB<T>(fn: (db: DB) => T): Promise<T> {
+  requireBackend()
+  if (!CONN) {
+    // No await between read and write, so no other request can slip in.
+    const l = fileLoad()
+    const before = JSON.stringify(l.db)
+    normalize(l.db)
+    const out = fn(l.db)
+    if (l.raw === null || JSON.stringify(l.db) !== before) fileSave(l.db)
+    return out
+  }
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const l = (await azLoad()) ?? {db: structuredClone(seed), etag: undefined, raw: null}
+    const before = JSON.stringify(l.db)
+    normalize(l.db)
+    const out = fn(l.db)
+    if (l.raw === null || JSON.stringify(l.db) !== before) {
+      if (!(await azSave(l.db, l.etag))) {
+        await new Promise((r) => setTimeout(r, 20 + Math.random() * 80 * (attempt + 1)))
+        continue
+      }
+    }
+    return out
+  }
+  throw new Error('Too many simultaneous changes. Please try again.')
 }

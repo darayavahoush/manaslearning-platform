@@ -1,4 +1,4 @@
-import {readDB, writeDB} from '@/lib/store'
+import {readDB, updateDB} from '@/lib/store'
 import {sendReminderEmail} from '@/lib/mail'
 import {normalizePhone, sendSms} from '@/lib/sms'
 
@@ -9,23 +9,29 @@ const istTime = (iso: string) => new Date(Date.parse(iso) + 19800000).toISOStrin
 /** Email + SMS to the parent about 1 hour before each confirmed session. Safe to run every few minutes. */
 export async function runReminders(now = Date.now()) {
   const out = {checked: 0, emails: 0, sms: 0, failed: 0}
-  const ids = readDB().bookings
+  const ids = (await readDB()).bookings
     .filter((b) => b.status === 'confirmed' && Date.parse(b.startAt) > now && Date.parse(b.startAt) - now <= LEAD_MS)
     .map((b) => b.id)
 
   for (const id of ids) {
-    // Claim the reminder before sending (no await between read and write), so overlapping runs can't double-send.
-    const db = readDB()
-    const b = db.bookings.find((x) => x.id === id)!
-    const done = b.reminder?.startAt === b.startAt ? b.reminder : undefined // a reschedule re-arms it
-    const needEmail = !done?.email, needSms = !done?.sms
+    // Claim the reminder before sending, in one locked step, so overlapping runs can't double-send.
+    const claim = await updateDB((db) => {
+      const b = db.bookings.find((x) => x.id === id)
+      if (!b || b.status !== 'confirmed') return null
+      const done = b.reminder?.startAt === b.startAt ? b.reminder : undefined // a reschedule re-arms it
+      const needEmail = !done?.email, needSms = !done?.sms
+      if (!needEmail && !needSms) return {skip: true} as const
+      b.reminder = {startAt: b.startAt, email: true, sms: true}
+      return {
+        b: {...b}, needEmail, needSms,
+        t: db.consultTypes.find((x) => x.id === b.typeId)!,
+        s: db.staff.find((x) => x.id === b.staffId)!,
+      }
+    })
+    if (!claim) continue
     out.checked++
-    if (!needEmail && !needSms) continue
-    b.reminder = {startAt: b.startAt, email: true, sms: true}
-    writeDB(db)
-
-    const t = db.consultTypes.find((x) => x.id === b.typeId)!
-    const s = db.staff.find((x) => x.id === b.staffId)!
+    if ('skip' in claim) continue
+    const {b, t, s, needEmail, needSms} = claim
     const failed = {email: false, sms: false}
 
     if (needEmail) {
@@ -41,9 +47,10 @@ export async function runReminders(now = Date.now()) {
     }
     if (failed.email || failed.sms) {
       out.failed++
-      const fresh = readDB()
-      const f = fresh.bookings.find((x) => x.id === id)
-      if (f && f.reminder?.startAt === b.startAt) { f.reminder = {startAt: b.startAt, email: !failed.email, sms: !failed.sms}; writeDB(fresh) } // retried on the next run
+      await updateDB((db) => {
+        const f = db.bookings.find((x) => x.id === id)
+        if (f && f.reminder?.startAt === b.startAt) f.reminder = {startAt: b.startAt, email: !failed.email, sms: !failed.sms} // retried on the next run
+      })
     }
   }
   return out

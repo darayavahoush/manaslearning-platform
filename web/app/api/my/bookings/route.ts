@@ -9,10 +9,10 @@ export async function GET(req: Request) {
   const p = readParent(req)
   if (!p) return unauthorized()
   // Safety net: if they paid but never came back from Paytm, pick the payment up now.
-  for (const b of readDB().bookings)
-    if (b.email.toLowerCase() === p.sub && b.status === 'pending_payment' && b.payOrders?.length) await reconcile(b.payOrders[b.payOrders.length - 1])
+  const pending = (await readDB()).bookings.filter((b) => b.email.toLowerCase() === p.sub && b.status === 'pending_payment' && b.payOrders?.length)
+  for (const b of pending) await reconcile(b.payOrders![b.payOrders!.length - 1])
 
-  const db = readDB()
+  const db = await readDB()
   const now = Date.now()
   const rows = db.bookings
     .filter((b) => b.email.toLowerCase() === p.sub && b.status !== 'pending_email')

@@ -57,7 +57,6 @@ export default function Consult() {
       setMonth(td.slice(0, 7))
       setIsIepUnlocked(iepAllowed)
       setTypes(list)
-      setTypes(list)
       const initial =
         (iepAllowed && list.find((x) => x.id === 'iep-consultation')) ||
         (q.get('type') && list.find((x) => x.id === q.get('type') && x.id !== 'iep-consultation')) ||
@@ -94,7 +93,7 @@ export default function Consult() {
         <h1 className="mt-5 font-patrick text-4xl text-primary">{done.pendingEmail ? 'Check your email' : done.needsPayment ? 'Almost there!' : 'You’re booked!'}</h1>
         <p className="mt-4 text-text-brown">
           {done.pendingEmail
-            ? <>We sent a confirmation link to <b>{f.email}</b>. Click it to confirm <b>{t?.title}</b> on <b>{longDay(date)}</b> at <b>{slot ? t12(slot.label) : ''} IST</b>. We’re holding your time for 15 minutes.{done.needsPayment && <> This session has a fee; our team will contact you to arrange payment before it.</>}</>
+            ? <>We sent a confirmation link to <b>{f.email}</b>. Click it to confirm <b>{t?.title}</b> on <b>{longDay(date)}</b> at <b>{slot ? t12(slot.label) : ''} IST</b>. We’re holding your time for 15 minutes.{done.needsPayment && <> This session has a fee, and our team will contact you to arrange payment before the session.</>}</>
             : done.needsPayment ? 'Your slot is held. Our team will contact you to arrange the consultation fee before your session.'
             : `${t?.title} on ${longDay(date)} at ${slot ? t12(slot.label) : ''} IST. A confirmation email with a calendar invite is on its way.`}
         </p>
@@ -130,7 +129,7 @@ export default function Consult() {
           {isIepUnlocked && (
             <div className="mb-4 flex items-center gap-2.5 rounded-2xl border border-emerald-300 bg-emerald-50/90 px-4 py-3 text-sm font-semibold text-emerald-900 shadow-sm">
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-white text-sm">★</span>
-              <span>Individualized Education Programme (IEP) Consultation Unlocked — Directly linked with your paid assessment profile.</span>
+              <span>Individualised Education Programme (IEP) consultation unlocked. It is linked to your paid assessment profile.</span>
             </div>
           )}
 
@@ -152,7 +151,7 @@ export default function Consult() {
                   />
                   {x.id === 'iep-consultation' && (
                     <span className="absolute top-2.5 right-2.5 rounded-full bg-emerald-700 px-2.5 py-0.5 text-xs font-bold text-white shadow">
-                      Dashboard Exclusive
+                      Dashboard only
                     </span>
                   )}
                 </div>
@@ -176,7 +175,7 @@ export default function Consult() {
                 <div>
                   <span className="font-semibold text-emerald-950">Looking for an IEP Consultation?</span>
                   <p className="mt-0.5 text-text-brown/80">
-                    Individualized Education Programme (IEP) planning sessions are unlocked directly from your parent dashboard after completing a comprehensive paid assessment.
+                    Individualised Education Programme (IEP) planning sessions are unlocked from your parent dashboard once you complete a comprehensive paid assessment.
                   </p>
                 </div>
               </div>
@@ -202,9 +201,9 @@ export default function Consult() {
               <div className="grid gap-6 md:grid-cols-[1.2fr_1fr]">
                 <div>
                   <div className="mb-3 flex items-center justify-between">
-                    <button disabled={month <= today.slice(0, 7)} onClick={() => setMonth(shiftMonth(month, -1))} className="h-9 w-9 rounded-full bg-cream-dark text-text-brown hover:bg-amber/40 disabled:opacity-30">←</button>
+                    <button disabled={month <= today.slice(0, 7)} aria-label="Previous month" onClick={() => setMonth(shiftMonth(month, -1))} className="h-9 w-9 rounded-full bg-cream-dark text-text-brown hover:bg-amber/40 disabled:opacity-30">←</button>
                     <div className="font-semibold text-text-brown">{month && monthName(month)}</div>
-                    <button onClick={() => setMonth(shiftMonth(month, 1))} className="h-9 w-9 rounded-full bg-cream-dark text-text-brown hover:bg-amber/40">→</button>
+                    <button aria-label="Next month" onClick={() => setMonth(shiftMonth(month, 1))} className="h-9 w-9 rounded-full bg-cream-dark text-text-brown hover:bg-amber/40">→</button>
                   </div>
                   <div className="grid grid-cols-7 gap-1 text-center text-sm font-medium text-muted-gray">
                     {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => <div key={d}>{d}</div>)}
@@ -214,7 +213,7 @@ export default function Consult() {
                       if (!d) return <div key={i} />
                       const ok = !!avail[d]
                       return (
-                        <button key={d} disabled={!ok} onClick={() => setDate(d)}
+                        <button key={d} disabled={!ok} aria-label={longDay(d)} aria-pressed={d === date} onClick={() => setDate(d)}
                           className={`aspect-square rounded-xl text-base transition ${d === date ? 'bg-primary font-bold text-white shadow-md' : ok ? 'bg-accent-green/60 font-medium text-text-brown hover:bg-accent-green' : 'text-muted-gray/60'} ${d === today && d !== date ? 'ring-2 ring-primary' : ''}`}>
                           {Number(d.slice(8))}
                         </button>

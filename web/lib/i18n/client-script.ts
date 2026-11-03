@@ -31,7 +31,7 @@ function skipEl(el) {
   if (SKIPTAGS[el.tagName]) return true;
   if (el.getAttribute && (el.getAttribute('translate') === 'no' || el.hasAttribute('data-no-translate'))) return true;
   if (el.classList && el.classList.contains('notranslate')) return true;
-  if (el.id === 'ml-lang' || el.id === 'ml-panel') return true;
+  if (el.id === 'ml-lang' || el.id === 'ml-panel' || el.id === 'ml-au') return true;
   return false;
 }
 function worth(t) {
@@ -108,7 +108,7 @@ function considerText(n, acc) {
   var s = n.nodeValue;
   if (!s || nodeApplied.get(n) === s) return;
   var p = n.parentElement;
-  if (p && p.closest && p.closest('[translate="no"],.notranslate,[data-no-translate],script,style,noscript,code,pre,textarea,#ml-lang,#ml-panel')) return;
+  if (p && p.closest && p.closest('[translate="no"],.notranslate,[data-no-translate],script,style,noscript,code,pre,textarea,#ml-lang,#ml-panel,#ml-au')) return;
   if (!worth(s.trim())) return;
   nodeOrig.set(n, s);
   acc.push({n: n, s: s});
@@ -288,6 +288,7 @@ function setLang(code, opts) {
   applyLook(code);
   updateButton();
   if (code !== 'en') { loadMem(code); fullScan(); }
+  if (typeof auOnLang === 'function') auOnLang();
   document.dispatchEvent(new CustomEvent('ml:langchange', {detail: {lang: code, previous: prev}}));
   // Recorded-clip samples are decoded once when the Experience page opens, so reload it to pick up the new language.
   if (!opts.silent && prev !== code && path.indexOf('/experience') === 0) location.reload();
@@ -478,6 +479,7 @@ function start() {
   mo.observe(document.documentElement, {childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS});
   applyLook(cur);
   if (cur !== 'en') { loadMem(cur); fullScan(); }
+  if (typeof auInit === 'function') auInit();
 }
 window.mlI18n = {get lang() { return cur; }, set: setLang, languages: LANGS};
 // Wait for the page to finish loading and hydrating before touching the DOM; changing text earlier makes React report error 418.

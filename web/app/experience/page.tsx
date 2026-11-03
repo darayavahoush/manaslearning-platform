@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'In Their World — Experience What They Feel | Manas Learning',
     description:
-      'First-person interactive simulations and illustrated storybooks of autism, ADHD, dyslexia, and speech differences. Evidence-grounded, empathetic, and paired with actionable accommodations.',
+      'First-person interactive simulations and illustrated storybooks of autism, ADHD, dyslexia, and speech differences. Evidence-grounded, empathetic and paired with practical accommodations.',
     url: 'https://web-vert-nu-vcsh56lv8l.vercel.app/experience',
     siteName: 'Manas Learning',
     images: [
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'In Their World — Experience What They Feel',
     description:
-      'First-person interactive simulations of sensory, attentional, and reading differences. Designed with pediatric clinical rigor.',
+      'First-person interactive simulations of sensory, attentional, and reading differences. Designed with paediatric clinical rigour.',
     images: ['/decor/itw/supportive-environment.webp'],
   },
 }
@@ -58,7 +58,7 @@ const jsonLd = {
     url: 'https://www.manaslearning.com',
   },
   learningResourceType: 'Interactive Simulation',
-  educationalLevel: 'Educator, Parent, and Student Professional Development',
+  educationalLevel: 'Parent, educator and professional development',
   inLanguage: 'en-IN',
   isAccessibleForFree: true,
 }

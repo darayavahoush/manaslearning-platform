@@ -1,7 +1,7 @@
 import MiloChat from '../../components/milo/MiloChat'
 import MiloAvatar from '../../components/milo/MiloAvatar'
 
-export const metadata = {title: 'Milo - Manas Learning'}
+export const metadata = {title: 'Milo'}
 
 export default function MiloPage() {
   return (

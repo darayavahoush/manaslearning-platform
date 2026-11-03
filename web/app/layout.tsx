@@ -14,7 +14,7 @@ const patrick = Patrick_Hand({subsets: ['latin'], weight: '400', variable: '--fo
 export const metadata: Metadata = {
   title: { default: 'Manas Learning — Child Development & Inclusive Learning Centre', template: '%s — Manas Learning' },
   description:
-    'Pediatric learning, speech therapy, and sensory support for children in Chennai. Featuring free consultations, Milo our AI learning guide, and interactive simulations of neurodiverse learning experiences.',
+    'Paediatric learning, speech therapy and sensory support for children in Chennai. Featuring free consultations, Milo our AI learning guide, and interactive simulations of neurodiverse learning experiences.',
   keywords: [
     'Manas Learning',
     'special education Chennai',
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Manas Learning — Child Development & Inclusive Learning Centre',
     description:
-      'Pediatric learning, speech, and sensory support for children with free consultations, Milo AI assistant, and empathetic neurodiversity simulations.',
+      'Paediatric learning, speech and sensory support for children, with free consultations, the Milo AI assistant and empathetic neurodiversity simulations.',
     url: 'https://www.manaslearning.com',
     siteName: 'Manas Learning',
     images: [
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Manas Learning — Child Development & Inclusive Learning Centre',
-    description: 'Empathetic pediatric therapy, AI learning guidance, and interactive neurodiversity experiences.',
+    description: 'Empathetic paediatric therapy, AI learning guidance and interactive neurodiversity experiences.',
     images: ['/decor/itw/supportive-environment.webp'],
   },
 }
@@ -81,7 +81,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         <header className="sticky top-0 z-50 w-full bg-white px-[10px] py-3 shadow-[0_1px_0_rgba(0,0,0,0.04)] md:py-4">
           <div className="container mx-auto flex items-center justify-between gap-4">
             <a href="/" className="relative h-[50px] w-[70px] shrink-0">
-              <img src="/logo.png" alt="Manas Learning Logo" className="absolute inset-0 h-full w-full object-contain object-left lg:scale-150" />
+              <img src="/logo.png" alt="Manas Learning logo" className="absolute inset-0 h-full w-full object-contain object-left lg:scale-150" />
             </a>
             <nav aria-label="Main" className="hidden flex-1 items-center justify-center gap-7 xl:gap-9 lg:flex">
               {NAV.map(([label, href], i) => (
@@ -101,14 +101,14 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
           <div className="container mx-auto px-4 py-10 md:px-6 md:py-14 lg:px-8">
             <div className="flex flex-col gap-8 lg:flex-row lg:justify-between lg:gap-16">
               <div className="space-y-6 lg:max-w-md">
-                <img src="/logo.png" alt="Manas Learning Logo" width={150} height={150} className="h-[110px] w-[110px] object-contain object-left" />
+                <img src="/logo.png" alt="Manas Learning logo" width={150} height={150} className="h-[110px] w-[110px] object-contain object-left" />
                 <div className="flex gap-4">
                   {SOCIAL.map((s) => (
                     <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label} className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white transition-colors ${s.bg}`}><s.Icon size={18} /></a>
                   ))}
                 </div>
                 <div className="itw-footer-text space-y-3 text-lg text-black">
-                  <p className="leading-relaxed">10G, Sapphire, Olympia Opaline, OMR, Navalur<br />Chennai, Tamilnadu, India - 600130.</p>
+                  <p className="leading-relaxed">10G, Sapphire, Olympia Opaline, OMR, Navalur<br />Chennai, Tamil Nadu 600130, India.</p>
                   <p>Enquiry: <a className="underline hover:text-card-blue" href="mailto:support@manaslearning.com">support@manaslearning.com</a><br />
                     <a className="hover:text-card-blue" href="tel:+919884031293">(+91) 988-403-1293</a></p>
                 </div>

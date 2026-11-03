@@ -148,7 +148,7 @@ export default function MyConsultations() {
       </div>
       {paid === 'success' && <p className="mb-4 rounded-xl bg-accent-green/60 px-4 py-2 text-base text-text-brown">Payment received. Your consultation is confirmed and a calendar invite is on its way.</p>}
       {paid === 'failed' && <p className="mb-4 rounded-xl bg-card-red/10 px-4 py-2 text-base text-card-red">The payment didn’t go through. You haven’t been charged. You can try again below while your time is held.</p>}
-      {paid === 'pending' && <p className="mb-4 rounded-xl bg-amber-50 px-4 py-2 text-base text-amber-950">We’re still waiting for the bank to confirm your payment. Refresh in a minute. If it succeeded, this page will update.</p>}
+      {paid === 'pending' && <p className="mb-4 rounded-xl bg-amber-50 px-4 py-2 text-base text-amber-950">We’re still waiting for your bank to confirm the payment. Please refresh this page in a minute. If the payment went through, it will update.</p>}
       {msg && <p className="mb-4 rounded-xl bg-card-red/10 px-4 py-2 text-base text-card-red">{msg}</p>}
       {rows.length === 0 && <p className="rounded-3xl bg-white p-8 text-center text-text-brown shadow-sm">No consultations yet. When you book one with this email, it will show up here.</p>}
       {upcoming.length > 0 && <section className="grid gap-4"><h2 className="text-base font-semibold uppercase tracking-wide text-brown-light">Upcoming</h2>{upcoming.map(card)}</section>}

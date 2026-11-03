@@ -8,8 +8,8 @@ const LIVE = process.env.LIVE_ORIGIN || 'https://www.manaslearning.com'
 
 // Paths served by this Next app itself. Everything else comes from the live site.
 const OWN = [
-  '/consult', '/milo', '/experience', '/confirm', '/team', '/my',
-  '/api/types', '/api/availability', '/api/slots', '/api/book', '/api/confirm', '/api/team', '/api/milo', '/api/auth', '/api/my',
+  '/consult', '/milo', '/experience', '/confirm', '/team', '/my', '/pay',
+  '/api/types', '/api/availability', '/api/slots', '/api/book', '/api/confirm', '/api/team', '/api/milo', '/api/auth', '/api/my', '/api/pay', '/api/cron',
   '/web-static', '/logo.png', '/decor', '/_next/static/immutable', '/sounds',
   '/_next/webpack-hmr', '/__nextjs',
 ]

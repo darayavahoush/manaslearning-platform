@@ -11,7 +11,7 @@ export const needsLogin = (t: ConsultType) => t.requiresLogin ?? t.id !== 'free-
 export type Actions = {canCancel: boolean; canReschedule: boolean; note?: string}
 
 export function bookingActions(b: Booking, t: ConsultType, now = Date.now()): Actions {
-  const live = b.status === 'confirmed' || b.status === 'pending_payment'
+  const live = b.status === 'confirmed' || (b.status === 'pending_payment' && !(b.payBy !== undefined && b.payBy < now))
   const start = Date.parse(b.startAt)
   if (!live || start <= now) return {canCancel: false, canReschedule: false}
   if (!needsLogin(t)) return {canCancel: true, canReschedule: false}

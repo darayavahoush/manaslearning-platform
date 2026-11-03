@@ -37,8 +37,7 @@ export async function POST(req: Request) {
   }
 
   const hoursStandard = [1, 2, 3, 4, 5]
-    .map((day) => ({ day, start: '10:00', end: '17:00' }))
-    .concat([{ day: 6, start: '10:00', end: '14:00' }])
+    .map((day) => ({ day, start: '10:30', end: '19:00' }))
 
   const pw = String(body.password ?? '').trim()
   if (pw.length < 10) {

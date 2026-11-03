@@ -103,3 +103,37 @@ export async function sendLoginCode(email: string, code: string) {
     console.log(`[mail] SMTP not configured. Login code for ${email}: ${code}`)
   }
 }
+
+export async function sendReminderEmail(b: Booking, t: ConsultType, s: Staff) {
+  const ms = Date.parse(b.startAt) + 19800000
+  const date = new Date(ms).toLocaleDateString('en-IN', {weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC'})
+  const time = new Date(ms).toISOString().slice(11, 16)
+  const url = process.env.MEETING_URL || ''
+  const subject = `Reminder: your ${t.title} starts at ${time} IST`
+  const html = `<div style="background:#fffaec;padding:24px;font-family:Arial,Helvetica,sans-serif;color:#222">
+  <div style="max-width:560px;margin:auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #f5f0e1">
+    <div style="background:#f47522;color:#fff;padding:20px 24px;font-size:22px;font-weight:bold">Manas Learning</div>
+    <div style="padding:24px">
+      <h2 style="margin:0 0 12px;color:#76310a">Your consultation starts in about an hour</h2>
+      <p>Hi ${h(b.parentName)},</p>
+      <table style="width:100%;background:#fdf8ee;border-radius:12px;padding:12px;font-size:14px">
+        <tr><td style="color:#96654a">Session</td><td><b>${h(t.title)}</b></td></tr>
+        <tr><td style="color:#96654a">With</td><td>${h(s.name)}${s.role ? ', ' + h(s.role) : ''}</td></tr>
+        <tr><td style="color:#96654a">When</td><td>${date}, ${time} IST (${t.durationMins} min)</td></tr>
+        ${url ? `<tr><td style="color:#96654a">Join</td><td><a href="${h(url)}" style="color:#f47522">${h(url)}</a></td></tr>` : ''}
+      </table>
+      <p style="font-size:13px;color:#96654a">Please join a couple of minutes early. Need to change something? Log in at manaslearning.com/my/consultations.</p>
+    </div>
+  </div></div>`
+  const from = process.env.MAIL_FROM || 'Manas Learning <no-reply@manaslearning.com>'
+  if (process.env.SMTP_HOST) {
+    const port = Number(process.env.SMTP_PORT || 587)
+    const tr = nodemailer.createTransport({host: process.env.SMTP_HOST, port, secure: port === 465, auth: {user: process.env.SMTP_USER, pass: process.env.SMTP_PASS}})
+    await tr.sendMail({from, to: b.email, subject, html})
+  } else {
+    const dir = path.join(process.env.DATA_DIR || path.join(process.cwd(), 'data'), 'outbox')
+    fs.mkdirSync(dir, {recursive: true})
+    fs.writeFileSync(path.join(dir, `${Date.now()}-reminder-${b.id.slice(-8)}.html`), `<!-- To: ${b.email} | Subject: ${subject} -->\n${html}`)
+    console.log(`[mail] SMTP not configured. Reminder for ${b.email}`)
+  }
+}

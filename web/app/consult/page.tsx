@@ -4,20 +4,20 @@ import type {FormEvent, ReactNode} from 'react'
 import ParentLogin from '../ParentLogin'
 import {clearParentToken, getParentToken, parentFetch} from '../parentAuth'
 
-type T = {id: string; title: string; description: string; durationMins: number; priceINR: number; requiresLogin?: boolean}
+type T = {id: string; title: string; description: string; durationMins: number; priceINR: number; requiresLogin?: boolean; payOnline?: boolean}
 type S = {startAt: string; label: string}
 const ist = (ms: number) => new Date(ms + 19800000).toISOString().slice(0, 10)
 const longDay = (d: string) => new Date(d + 'T00:00:00Z').toLocaleDateString('en-IN', {weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC'})
 const monthName = (m: string) => new Date(m + '-01T00:00:00Z').toLocaleDateString('en-IN', {month: 'long', year: 'numeric', timeZone: 'UTC'})
 const shiftMonth = (m: string, n: number) => { const [y, mo] = m.split('-').map(Number); return new Date(Date.UTC(y, mo - 1 + n, 1)).toISOString().slice(0, 7) }
 const t12 = (hm: string) => { const [h, m] = hm.split(':').map(Number); return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}` }
-const input = 'w-full rounded-xl border border-cream-dark bg-cream px-4 py-3 text-sm outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20'
+const input = 'w-full rounded-xl border border-cream-dark bg-cream px-4 py-3 text-base outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/20'
 
 function Step({n, title, children}: {n: number; title: string; children: ReactNode}) {
   return (
     <section className="relative rounded-3xl bg-white p-5 shadow-[0_4px_24px_rgba(118,49,10,0.08)] sm:p-7">
       <div className="mb-4 flex items-center gap-3">
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">{n}</span>
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-base font-bold text-white">{n}</span>
         <h2 className="font-patrick text-2xl text-text-brown">{title}</h2>
       </div>
       {children}
@@ -81,6 +81,7 @@ export default function Consult() {
     const r = await parentFetch('/api/book', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({...f, typeId: t.id, startAt: slot.startAt})})
     const j = await r.json()
     setBusy(false)
+    if (r.ok && j.needsPayment && j.payOnline) { window.location.href = `/pay?booking=${encodeURIComponent(j.bookingId)}`; return }
     if (r.ok) setDone({needsPayment: j.needsPayment, pendingEmail: j.pendingEmail})
     else if (r.status === 401) { clearParentToken(); setParent(null) }
     else { setMsg(j.error || 'Something went wrong.'); if (r.status === 409) { setSlot(null); loadSlots(); loadAvail() } }
@@ -97,9 +98,9 @@ export default function Consult() {
             : done.needsPayment ? 'Your slot is held. Our team will contact you to arrange the consultation fee before your session.'
             : `${t?.title} on ${longDay(date)} at ${slot ? t12(slot.label) : ''} IST. A confirmation email with a calendar invite is on its way.`}
         </p>
-        {done.pendingEmail && <p className="mt-3 text-sm text-brown-light">Can’t see it? Check spam or promotions.</p>}
-        {parent && <a href="/my/consultations" className="mt-8 mr-3 inline-block rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-orange">View my consultations</a>}
-        <a href="https://www.manaslearning.com" className="mt-8 inline-block rounded-full bg-cream-dark px-6 py-3 text-sm font-semibold text-text-brown hover:bg-primary hover:text-white">Back to Manas Learning</a>
+        {done.pendingEmail && <p className="mt-3 text-base text-brown-light">Can’t see it? Check spam or promotions.</p>}
+        {parent && <a href="/my/consultations" className="mt-8 mr-3 inline-block rounded-full bg-primary px-6 py-3 text-base font-semibold text-white hover:bg-brand-orange">View my consultations</a>}
+        <a href="https://www.manaslearning.com" className="mt-8 inline-block rounded-full bg-cream-dark px-6 py-3 text-base font-semibold text-text-brown hover:bg-primary hover:text-white">Back to Manas Learning</a>
       </div>
     </main>
   )
@@ -119,7 +120,7 @@ export default function Consult() {
           <h1 className="relative font-patrick text-5xl text-primary sm:text-6xl">Book a consultation</h1>
         </span>
         <p className="mx-auto mt-3 max-w-xl text-text-brown">Talk to our team about your child’s learning journey. Choose a session, pick a time that suits you, and confirm by email.</p>
-        <div className="mt-5 flex flex-wrap justify-center gap-2 text-xs font-medium text-text-brown">
+        <div className="mt-5 flex flex-wrap justify-center gap-2 text-sm font-medium text-text-brown">
           {['1. Choose a session', '2. Pick a time', '3. Confirm by email'].map((x) => <span key={x} className="rounded-full bg-white/80 px-4 py-1.5 shadow-sm">{x}</span>)}
         </div>
       </section>
@@ -127,8 +128,8 @@ export default function Consult() {
       <main className="mx-auto -mt-2 grid max-w-4xl gap-6 px-5 pb-8">
         <Step n={1} title="Choose a session">
           {isIepUnlocked && (
-            <div className="mb-4 flex items-center gap-2.5 rounded-2xl border border-emerald-300 bg-emerald-50/90 px-4 py-3 text-xs font-semibold text-emerald-900 shadow-sm">
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-white text-[11px]">★</span>
+            <div className="mb-4 flex items-center gap-2.5 rounded-2xl border border-emerald-300 bg-emerald-50/90 px-4 py-3 text-sm font-semibold text-emerald-900 shadow-sm">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-700 text-white text-sm">★</span>
               <span>Individualized Education Programme (IEP) Consultation Unlocked — Directly linked with your paid assessment profile.</span>
             </div>
           )}
@@ -150,28 +151,28 @@ export default function Consult() {
                     onError={(e) => { e.currentTarget.style.display = 'none' }}
                   />
                   {x.id === 'iep-consultation' && (
-                    <span className="absolute top-2.5 right-2.5 rounded-full bg-emerald-700 px-2.5 py-0.5 text-[10px] font-bold text-white shadow">
+                    <span className="absolute top-2.5 right-2.5 rounded-full bg-emerald-700 px-2.5 py-0.5 text-xs font-bold text-white shadow">
                       Dashboard Exclusive
                     </span>
                   )}
                 </div>
                 <div className="font-semibold text-text-brown text-base">{x.title}</div>
-                <div className="mt-1 text-xs text-brown-light">
+                <div className="mt-1 text-sm text-brown-light">
                   {x.durationMins} min · <span className="font-semibold text-card-green">{x.priceINR ? `₹${x.priceINR}` : 'Free'}</span>
                 </div>
-                {x.description && <p className="mt-2 text-xs text-brown-light line-clamp-2">{x.description}</p>}
+                {x.description && <p className="mt-2 text-sm text-brown-light line-clamp-2">{x.description}</p>}
               </button>
             ))}
           </div>
 
           {t?.requiresLogin && (
-            <p className="mt-4 rounded-2xl bg-cream px-4 py-3 text-xs text-text-brown">{t.title} needs a login. {parent ? <>You’re logged in as <b>{parent}</b>.</> : 'You’ll be asked to log in with an email code after you pick a time.'} Free counselling doesn’t need one.</p>
+            <p className="mt-4 rounded-2xl bg-cream px-4 py-3 text-sm text-text-brown">{t.title} needs a login. {parent ? <>You’re logged in as <b>{parent}</b>.</> : 'You’ll be asked to log in with an email code after you pick a time.'} Free counselling doesn’t need one.</p>
           )}
 
           {!isIepUnlocked && (
-            <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-emerald-200/80 bg-[#f4faf6] p-4 text-xs text-text-brown">
+            <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-emerald-200/80 bg-[#f4faf6] p-4 text-sm text-text-brown">
               <div className="flex items-start gap-2.5">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-bold text-white">i</span>
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">i</span>
                 <div>
                   <span className="font-semibold text-emerald-950">Looking for an IEP Consultation?</span>
                   <p className="mt-0.5 text-text-brown/80">
@@ -181,7 +182,7 @@ export default function Consult() {
               </div>
               <a
                 href="https://www.manaslearning.com/login"
-                className="shrink-0 inline-flex items-center justify-center rounded-full bg-emerald-700 px-4 py-2 text-xs font-bold text-white transition hover:bg-emerald-800 shadow-sm"
+                className="shrink-0 inline-flex items-center justify-center rounded-full bg-emerald-700 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-800 shadow-sm"
               >
                 Parent Login →
               </a>
@@ -193,11 +194,11 @@ export default function Consult() {
           {t && (
             <>
               {t && t.priceINR > 0 && (
-                <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-950">
-                  <b>Fee: ₹{t.priceINR}.</b> You are not charged on this page. Online payment is not switched on yet, so our team will contact you to arrange payment before your session.
+                <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+                  <b>Fee: ₹{t.priceINR}.</b> {t.payOnline ? 'After you confirm your details you’ll be taken to a secure Paytm page to pay. Your time is held for 30 minutes while you pay.' : 'You are not charged on this page. Online payment is not switched on yet, so our team will contact you to arrange payment before your session.'}
                 </div>
               )}
-              <p className="-mt-2 mb-4 text-xs text-brown-light">All times are India time (IST).</p>
+              <p className="-mt-2 mb-4 text-sm text-brown-light">All times are India time (IST).</p>
               <div className="grid gap-6 md:grid-cols-[1.2fr_1fr]">
                 <div>
                   <div className="mb-3 flex items-center justify-between">
@@ -205,7 +206,7 @@ export default function Consult() {
                     <div className="font-semibold text-text-brown">{month && monthName(month)}</div>
                     <button onClick={() => setMonth(shiftMonth(month, 1))} className="h-9 w-9 rounded-full bg-cream-dark text-text-brown hover:bg-amber/40">→</button>
                   </div>
-                  <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-medium text-muted-gray">
+                  <div className="grid grid-cols-7 gap-1 text-center text-sm font-medium text-muted-gray">
                     {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => <div key={d}>{d}</div>)}
                   </div>
                   <div className="mt-1 grid grid-cols-7 gap-1">
@@ -214,13 +215,13 @@ export default function Consult() {
                       const ok = !!avail[d]
                       return (
                         <button key={d} disabled={!ok} onClick={() => setDate(d)}
-                          className={`aspect-square rounded-xl text-sm transition ${d === date ? 'bg-primary font-bold text-white shadow-md' : ok ? 'bg-accent-green/60 font-medium text-text-brown hover:bg-accent-green' : 'text-muted-gray/60'} ${d === today && d !== date ? 'ring-2 ring-primary' : ''}`}>
+                          className={`aspect-square rounded-xl text-base transition ${d === date ? 'bg-primary font-bold text-white shadow-md' : ok ? 'bg-accent-green/60 font-medium text-text-brown hover:bg-accent-green' : 'text-muted-gray/60'} ${d === today && d !== date ? 'ring-2 ring-primary' : ''}`}>
                           {Number(d.slice(8))}
                         </button>
                       )
                     })}
                   </div>
-                  <div className="mt-3 flex gap-4 text-[11px] text-brown-light">
+                  <div className="mt-3 flex gap-4 text-sm text-brown-light">
                     <span className="flex items-center gap-1"><i className="inline-block h-3 w-3 rounded bg-accent-green" />Times available</span>
                     <span className="flex items-center gap-1"><i className="inline-block h-3 w-3 rounded ring-2 ring-primary" />Today</span>
                   </div>
@@ -228,10 +229,10 @@ export default function Consult() {
                 <div className="rounded-2xl bg-cream p-4">
                   <div className="font-semibold text-text-brown">{date ? longDay(date) : 'Select a day'}</div>
                   <div className="mt-3 grid grid-cols-2 gap-2">
-                    {!date && <p className="col-span-2 text-sm text-muted-gray">Green days have open times.</p>}
-                    {date && slots.length === 0 && <p className="col-span-2 text-sm text-muted-gray">No times left this day.</p>}
+                    {!date && <p className="col-span-2 text-base text-muted-gray">Green days have open times.</p>}
+                    {date && slots.length === 0 && <p className="col-span-2 text-base text-muted-gray">No times left this day.</p>}
                     {slots.map((s) => (
-                      <button key={s.startAt} onClick={() => setSlot(s)} className={`rounded-xl border px-3 py-2 text-sm transition ${slot?.startAt === s.startAt ? 'border-primary bg-primary text-white shadow-md' : 'border-cream-dark bg-white text-text-brown hover:border-primary'}`}>{t12(s.label)}</button>
+                      <button key={s.startAt} onClick={() => setSlot(s)} className={`rounded-xl border px-3 py-2 text-base transition ${slot?.startAt === s.startAt ? 'border-primary bg-primary text-white shadow-md' : 'border-cream-dark bg-white text-text-brown hover:border-primary'}`}>{t12(s.label)}</button>
                     ))}
                   </div>
                 </div>
@@ -248,7 +249,7 @@ export default function Consult() {
 
         {t && slot && (!t.requiresLogin || parent) && (
           <Step n={3} title="Your details">
-            {parent && <p className="mb-3 flex items-center justify-between gap-3 rounded-xl bg-cream px-4 py-2 text-xs text-text-brown"><span>Logged in as <b>{parent}</b></span><button type="button" onClick={() => { clearParentToken(); setParent(null) }} className="underline">Log out</button></p>}
+            {parent && <p className="mb-3 flex items-center justify-between gap-3 rounded-xl bg-cream px-4 py-2 text-sm text-text-brown"><span>Logged in as <b>{parent}</b></span><button type="button" onClick={() => { clearParentToken(); setParent(null) }} className="underline">Log out</button></p>}
             <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2">
               <input required className={input} placeholder="Your name *" value={f.parentName} onChange={(e) => setF({...f, parentName: e.target.value})} />
               <input required type="email" disabled={!!parent} className={`${input} disabled:opacity-70`} placeholder="Email * (we’ll send a confirmation link)" value={parent ?? f.email} onChange={(e) => setF({...f, email: e.target.value})} />
@@ -256,9 +257,9 @@ export default function Consult() {
               <input className={input} placeholder="Child’s name" value={f.childName} onChange={(e) => setF({...f, childName: e.target.value})} />
               <input className={input} placeholder="Child’s age" value={f.childAge} onChange={(e) => setF({...f, childAge: e.target.value})} />
               <textarea className={`${input} sm:col-span-2`} rows={3} placeholder="What would you like help with?" value={f.concern} onChange={(e) => setF({...f, concern: e.target.value})} />
-              {msg && <p className="rounded-xl bg-card-red/10 px-4 py-2 text-sm text-card-red sm:col-span-2">{msg}</p>}
+              {msg && <p className="rounded-xl bg-card-red/10 px-4 py-2 text-base text-card-red sm:col-span-2">{msg}</p>}
               <button disabled={busy} className="rounded-full bg-primary px-6 py-3.5 font-semibold text-white shadow-md transition hover:bg-brand-orange disabled:opacity-60 sm:col-span-2">
-                {busy ? 'Booking…' : `Book ${longDay(date)} at ${t12(slot.label)}`}
+                {busy ? 'Booking…' : t.priceINR > 0 && t.payOnline ? `Continue to payment · ${longDay(date)} at ${t12(slot.label)}` : `Book ${longDay(date)} at ${t12(slot.label)}`}
               </button>
             </form>
           </Step>

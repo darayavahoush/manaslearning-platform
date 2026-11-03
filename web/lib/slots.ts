@@ -1,4 +1,8 @@
-import type {DB, ConsultType, Staff} from './store'
+import type {Booking, DB, ConsultType, Staff} from './store'
+
+/** Bookings that no longer hold a slot: cancelled, or an unconfirmed/unpaid hold that has run out. */
+export const isDead = (b: Booking, now = Date.now()) =>
+  b.status === 'cancelled' || (b.status === 'pending_email' && (b.expiresAt ?? 0) < now) || (b.status === 'pending_payment' && b.payBy !== undefined && b.payBy < now)
 
 const msAt = (d: string, hm: string) => Date.parse(`${d}T${hm}:00+05:30`) // India time, no DST
 export const istDate = (ms: number) => new Date(ms + 19800000).toISOString().slice(0, 10)
@@ -17,7 +21,7 @@ function staffSlots(s: Staff, t: ConsultType, date: string) {
 
 export function isFree(db: DB, s: Staff, t: ConsultType, st: number) {
   const blockEnd = st + (t.durationMins + t.bufferMins) * 60000
-  return !db.bookings.some((b) => b.staffId === s.id && b.status !== 'cancelled' && !(b.status === 'pending_email' && (b.expiresAt ?? 0) < Date.now()) && st < b.blockEnd && blockEnd > Date.parse(b.startAt))
+  return !db.bookings.some((b) => b.staffId === s.id && !isDead(b) && st < b.blockEnd && blockEnd > Date.parse(b.startAt))
 }
 
 export function getSlots(db: DB, t: ConsultType, date: string, now = Date.now()) {

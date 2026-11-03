@@ -1,8 +1,10 @@
 'use client'
 import {useEffect, useState} from 'react'
 import type {FormEvent, ReactNode} from 'react'
+import ParentLogin from '../ParentLogin'
+import {clearParentToken, getParentToken, parentFetch} from '../parentAuth'
 
-type T = {id: string; title: string; description: string; durationMins: number; priceINR: number}
+type T = {id: string; title: string; description: string; durationMins: number; priceINR: number; requiresLogin?: boolean}
 type S = {startAt: string; label: string}
 const ist = (ms: number) => new Date(ms + 19800000).toISOString().slice(0, 10)
 const longDay = (d: string) => new Date(d + 'T00:00:00Z').toLocaleDateString('en-IN', {weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC'})
@@ -36,7 +38,13 @@ export default function Consult() {
   const [f, setF] = useState({parentName: '', email: '', phone: '', childName: '', childAge: '', concern: ''})
   const [msg, setMsg] = useState('')
   const [done, setDone] = useState<null | {needsPayment: boolean; pendingEmail?: boolean}>(null)
+  const [parent, setParent] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    if (!getParentToken()) return
+    parentFetch('/api/auth/me').then(async (r) => { if (r.ok) setParent((await r.json()).email); else clearParentToken() })
+  }, [])
 
   useEffect(() => {
     const q = new URLSearchParams(window.location.search)
@@ -70,10 +78,11 @@ export default function Consult() {
     e.preventDefault()
     if (!t || !slot) return
     setBusy(true); setMsg('')
-    const r = await fetch('/api/book', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({...f, typeId: t.id, startAt: slot.startAt})})
+    const r = await parentFetch('/api/book', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({...f, typeId: t.id, startAt: slot.startAt})})
     const j = await r.json()
     setBusy(false)
     if (r.ok) setDone({needsPayment: j.needsPayment, pendingEmail: j.pendingEmail})
+    else if (r.status === 401) { clearParentToken(); setParent(null) }
     else { setMsg(j.error || 'Something went wrong.'); if (r.status === 409) { setSlot(null); loadSlots(); loadAvail() } }
   }
 
@@ -89,6 +98,7 @@ export default function Consult() {
             : `${t?.title} on ${longDay(date)} at ${slot ? t12(slot.label) : ''} IST. A confirmation email with a calendar invite is on its way.`}
         </p>
         {done.pendingEmail && <p className="mt-3 text-sm text-brown-light">Can’t see it? Check spam or promotions.</p>}
+        {parent && <a href="/my/consultations" className="mt-8 mr-3 inline-block rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-orange">View my consultations</a>}
         <a href="https://www.manaslearning.com" className="mt-8 inline-block rounded-full bg-cream-dark px-6 py-3 text-sm font-semibold text-text-brown hover:bg-primary hover:text-white">Back to Manas Learning</a>
       </div>
     </main>
@@ -153,6 +163,10 @@ export default function Consult() {
               </button>
             ))}
           </div>
+
+          {t?.requiresLogin && (
+            <p className="mt-4 rounded-2xl bg-cream px-4 py-3 text-xs text-text-brown">{t.title} needs a login. {parent ? <>You’re logged in as <b>{parent}</b>.</> : 'You’ll be asked to log in with an email code after you pick a time.'} Free counselling doesn’t need one.</p>
+          )}
 
           {!isIepUnlocked && (
             <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-emerald-200/80 bg-[#f4faf6] p-4 text-xs text-text-brown">
@@ -226,11 +240,18 @@ export default function Consult() {
           )}
         </Step>
 
-        {t && slot && (
+        {t && slot && t.requiresLogin && !parent && (
+          <Step n={3} title="Log in to book">
+            <ParentLogin onLoggedIn={setParent} intro={`${t.title} needs a quick login so your booking shows up in your dashboard. We’ll email you a 6-digit code.`} />
+          </Step>
+        )}
+
+        {t && slot && (!t.requiresLogin || parent) && (
           <Step n={3} title="Your details">
+            {parent && <p className="mb-3 flex items-center justify-between gap-3 rounded-xl bg-cream px-4 py-2 text-xs text-text-brown"><span>Logged in as <b>{parent}</b></span><button type="button" onClick={() => { clearParentToken(); setParent(null) }} className="underline">Log out</button></p>}
             <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2">
               <input required className={input} placeholder="Your name *" value={f.parentName} onChange={(e) => setF({...f, parentName: e.target.value})} />
-              <input required type="email" className={input} placeholder="Email * (we’ll send a confirmation link)" value={f.email} onChange={(e) => setF({...f, email: e.target.value})} />
+              <input required type="email" disabled={!!parent} className={`${input} disabled:opacity-70`} placeholder="Email * (we’ll send a confirmation link)" value={parent ?? f.email} onChange={(e) => setF({...f, email: e.target.value})} />
               <input required className={input} placeholder="Phone / WhatsApp *" value={f.phone} onChange={(e) => setF({...f, phone: e.target.value})} />
               <input className={input} placeholder="Child’s name" value={f.childName} onChange={(e) => setF({...f, childName: e.target.value})} />
               <input className={input} placeholder="Child’s age" value={f.childAge} onChange={(e) => setF({...f, childAge: e.target.value})} />

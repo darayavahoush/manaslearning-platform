@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {hashPassword} from '@/lib/password'
 
-export type ConsultType = {id: string; title: string; description: string; durationMins: number; bufferMins: number; priceINR: number; minNoticeHours: number; maxDaysAhead: number; active: boolean}
+export type ConsultType = {id: string; title: string; description: string; durationMins: number; bufferMins: number; priceINR: number; minNoticeHours: number; maxDaysAhead: number; active: boolean; /** defaults to true for everything except free-counselling */ requiresLogin?: boolean}
 export type Staff = {
   id: string
   name: string
@@ -18,8 +18,9 @@ export type Staff = {
   password?: string
   phone?: string
 }
-export type Booking = {id: string; typeId: string; staffId: string; startAt: string; endAt: string; blockEnd: number; status: string; parentName: string; email: string; phone: string; childName: string; childAge: string; concern: string; createdAt: string; confirmToken?: string; expiresAt?: number; paymentStatus?: 'not_required' | 'pending' | 'paid'}
-export type DB = {consultTypes: ConsultType[]; staff: Staff[]; bookings: Booking[]}
+export type Booking = {id: string; typeId: string; staffId: string; startAt: string; endAt: string; blockEnd: number; status: string; parentName: string; email: string; phone: string; childName: string; childAge: string; concern: string; createdAt: string; confirmToken?: string; expiresAt?: number; paymentStatus?: 'not_required' | 'pending' | 'paid'; rescheduleCount?: number; sequence?: number; cancelledBy?: 'parent' | 'team'; cancelledAt?: string; rescheduledAt?: string}
+export type LoginCode = {email: string; hash: string; exp: number; sentAt: number; attempts: number}
+export type DB = {consultTypes: ConsultType[]; staff: Staff[]; bookings: Booking[]; loginCodes?: LoginCode[]}
 
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data')
 const FILE = path.join(DATA_DIR, 'db.json')

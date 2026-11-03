@@ -52,20 +52,39 @@ export function signSession(sub: string, role: Session['role']): string {
   return `${body}.${sig}`
 }
 
-export function readSession(req: Request): Session | null {
-  const token = req.headers.get('x-team-key')
+/** Sign any payload (must contain a numeric `exp`). Used for parent sessions. */
+export function signPayload(payload: Record<string, unknown>): string {
+  const body = b64(JSON.stringify(payload))
+  const sig = crypto.createHmac('sha256', sessionSecret()).update(body).digest('base64url')
+  return `${body}.${sig}`
+}
+
+export function verifyPayload<T extends {exp: number}>(token: string | null | undefined): T | null {
   if (!token) return null
   const [body, sig] = token.split('.')
   if (!body || !sig) return null
   const expected = crypto.createHmac('sha256', sessionSecret()).update(body).digest('base64url')
   if (!safeEqual(sig, expected)) return null
   try {
-    const s = JSON.parse(Buffer.from(body, 'base64url').toString('utf8')) as Session
+    const s = JSON.parse(Buffer.from(body, 'base64url').toString('utf8')) as T
     if (!s || typeof s.exp !== 'number' || s.exp < Date.now()) return null
     return s
   } catch {
     return null
   }
+}
+
+/** Keyed hash for short-lived secrets such as login codes. */
+export function keyedHash(s: string): string {
+  return crypto.createHmac('sha256', sessionSecret()).update(s).digest('hex')
+}
+export {safeEqual}
+
+export function readSession(req: Request): Session | null {
+  const s = verifyPayload<Session>(req.headers.get('x-team-key'))
+  // A parent token is signed with the same secret, so insist on a team role.
+  if (!s || (s.role !== 'admin' && s.role !== 'staff')) return null
+  return s
 }
 
 /** Any signed-in team member (admin or active staff). */

@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   const b = db.bookings.find((x) => x.id === id)
   if (!b) return NextResponse.json({error: 'Not found'}, {status: 404})
   if (b.status === 'cancelled') return NextResponse.json({ok: true})
-  b.status = 'cancelled'
+  b.status = 'cancelled'; b.cancelledBy = 'team'; b.cancelledAt = new Date().toISOString()
   writeDB(db)
   const t = db.consultTypes.find((x) => x.id === b.typeId)!
   const s = db.staff.find((x) => x.id === b.staffId)!

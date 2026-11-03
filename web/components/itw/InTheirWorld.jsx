@@ -4656,7 +4656,7 @@ function DyslexiaModule({ onBack, onNavigate }) {
                 </div>
 
                 <div className="itw-dys-output-stage">
-                  <p>{displayScrambledText}</p>
+                  <p translate="no">{displayScrambledText}</p>
                 </div>
 
                 <div className="itw-storybook-insight-box" style={{ marginTop: 18 }}>
@@ -5104,7 +5104,7 @@ function DyslexiaModule({ onBack, onNavigate }) {
                 </div>
 
                 <div className="itw-dys-passage-box">
-                  <p>{displayChallengeDyslexiaText}</p>
+                  <p translate="no">{displayChallengeDyslexiaText}</p>
                 </div>
 
                 <div style={{ marginTop: 16 }}>
@@ -5212,7 +5212,7 @@ function DyslexiaModule({ onBack, onNavigate }) {
             </div>
 
             {/* Live rendered sandbox stage */}
-            <div
+            <div translate="no"
               className="itw-dys-output-stage"
               style={{
                 letterSpacing: activeFilters.has("crowding") ? "-1.8px" : "normal",

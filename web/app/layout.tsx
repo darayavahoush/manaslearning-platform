@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-html-link-for-pages, @next/next/no-img-element */
 import type {Metadata} from 'next'
+import Script from 'next/script'
 import {Poppins, Patrick_Hand} from 'next/font/google'
 import './globals.css'
 import {Year} from './Year'
@@ -87,7 +88,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
                 <a key={label} href={href} className={`text-xl transition-colors duration-200 hover:text-primary ${i === 0 ? 'font-bold text-primary' : 'text-black'}`}>{label}</a>
               ))}
             </nav>
-            <a href={LIVE + '/login'} className="rounded-lg border border-primary/40 bg-primary/10 px-5 py-1.5 text-xl text-primary transition hover:bg-primary/20">Login</a>
+            <div className="flex items-center"><div id="ml-lang-slot" suppressHydrationWarning /><a href={LIVE + '/login'} className="rounded-lg border border-primary/40 bg-primary/10 px-5 py-1.5 text-xl text-primary transition hover:bg-primary/20">Login</a></div>
           </div>
           <nav aria-label="Main mobile" className="container mx-auto mt-2 flex gap-5 overflow-x-auto pb-1 text-lg lg:hidden">
             {NAV.map(([label, href]) => <a key={label} href={href} className="shrink-0 text-black hover:text-primary">{label}</a>)}
@@ -138,6 +139,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
           </div>
         </footer>
         <MiloWidget />
+        <Script src="/api/i18n/client" strategy="afterInteractive" />
       </body>
     </html>
   )

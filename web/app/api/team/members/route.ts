@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, connection } from 'next/server'
 import { requireAdmin, publicStaff, hashPassword } from '@/lib/auth'
 import { readDB, updateDB, type Staff } from '@/lib/store'
 
@@ -6,6 +6,7 @@ const verifyAuth = (req: Request) => !!requireAdmin(req)
 
 // Public: the booking UI needs names/roles only. No email, phone, or credentials.
 export async function GET() {
+  await connection() // read live data per request; never prerender at build time
   const db = await readDB()
   return NextResponse.json({
     ok: true,

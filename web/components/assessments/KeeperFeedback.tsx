@@ -1,4 +1,5 @@
 "use client";
+import ClinicianReportButton, { rowsFromSentences } from "./ClinicianReport";
 import { useEffect, useState } from "react";
 
 type Res = {
@@ -55,6 +56,7 @@ export default function KeeperFeedback({ quest, nickname, observations }: { ques
           <ul>{res.noticed.map((n, i) => <li key={i}>{n}</li>)}</ul>
           {res.clinicianQuestions.length > 0 && (<><h3 style={{ marginTop: 16 }}>Questions you could bring to a clinician</h3><ul>{res.clinicianQuestions.map((n, i) => <li key={i}>{n}</li>)}</ul></>)}
           {res.homeGames.length > 0 && (<><h3 style={{ marginTop: 16 }}>Ideas to try at home</h3><ul>{res.homeGames.map((g, i) => <li key={i}><strong>{g.title}.</strong> {g.how}</li>)}</ul></>)}
+          <div style={{ marginTop: 16, textAlign: "center" }}><ClinicianReportButton quest={quest} nickname={nickname} rows={rowsFromSentences(res.noticed)} clinicianQuestions={res.clinicianQuestions} wording={res.source === "llm" ? "ai" : "template"} /></div>
           <p style={{ fontSize: 12, opacity: 0.7, marginTop: 16 }}>Nothing from this session is saved. Wording written {res.source === "llm" ? "by an AI model from this session's observations, checked automatically" : "from a fixed template"}.</p>
         </div>
       )}

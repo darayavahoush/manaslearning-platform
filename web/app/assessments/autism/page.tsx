@@ -1,4 +1,5 @@
 'use client'
+import ClinicianReportButton from '../../../components/assessments/ClinicianReport'
 import {useState, useEffect, useRef, useMemo} from 'react'
 import Link from 'next/link'
 import KeeperFeedback from '../../../components/assessments/KeeperFeedback'
@@ -1004,6 +1005,9 @@ function __McInner() {
               </div>
             )}
 
+            {agentResult && showClinicalDossier && (() => { const a: any = agentResult; return (
+              <div className="mb-4 flex justify-center"><ClinicianReportButton quest="autism" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} /></div>
+            ) })()}
             {/* GROWN-UP SUMMARY */}
             {showClinicalDossier && (
               <div className="rounded-3xl border-2 border-[#CBD5E1] bg-white p-8 md:p-12 shadow-2xl">

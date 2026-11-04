@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 
 // Story-Keeper: turns RAW play observations into (1) a child-facing legend and
 // (2) parent-facing notes. Nothing is stored or logged. No norms, scores or diagnoses.
-export const runtime = "nodejs";
 
 type Obs = Record<string, any>;
 type Out = {

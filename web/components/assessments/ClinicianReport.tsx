@@ -72,13 +72,22 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
   const [open, setOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const closeRef = useRef<HTMLButtonElement>(null)
+  const printRef = useRef<HTMLButtonElement>(null)
+  const openerRef = useRef<HTMLButtonElement>(null)
   useEffect(() => setMounted(true), [])
   useEffect(() => {
     if (!open) return
-    closeRef.current?.focus()
-    const k = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    printRef.current?.focus()
+    const k = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setOpen(false); return }
+      if (e.key !== 'Tab') return
+      const a = printRef.current, b = closeRef.current
+      if (!a || !b) return
+      if (e.shiftKey && document.activeElement === a) { e.preventDefault(); b.focus() }
+      else if (!e.shiftKey && document.activeElement === b) { e.preventDefault(); a.focus() }
+    }
     window.addEventListener('keydown', k)
-    return () => window.removeEventListener('keydown', k)
+    return () => { window.removeEventListener('keydown', k); openerRef.current?.focus() }
   }, [open])
 
   const q = QUEST[p.quest]
@@ -87,17 +96,18 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} style={{ minHeight: 44, padding: '8px 18px', borderRadius: 999, border: '1.5px solid #8A7F6E', background: '#F4ECDC', color: '#2F2A24', fontWeight: 700, cursor: 'pointer' }}>
+      <button type="button" ref={openerRef} onClick={() => setOpen(true)} style={{ minHeight: 44, padding: '8px 18px', borderRadius: 999, border: '1.5px solid #8A7F6E', background: '#F4ECDC', color: '#2F2A24', fontWeight: 700, cursor: 'pointer' }}>
         Clinician summary (print or save as PDF)
       </button>
       {open && mounted && createPortal(
         <div className="cr-portal" role="dialog" aria-modal="true" aria-label="Clinician summary">
           <style>{CSS}</style>
           <div className="cr-tools">
-            <button type="button" className="cr-btn" onClick={() => window.print()}>Print or save as PDF</button>
+            <button type="button" className="cr-btn" ref={printRef} onClick={() => window.print()}>Print or save as PDF</button>
             <button type="button" className="cr-btn ghost" ref={closeRef} onClick={() => setOpen(false)}>Close</button>
           </div>
           <article className="cr-paper">
+            <table className="cr-wrap"><tfoot><tr><td className="cr-pfoot">Not a diagnostic report · {p.variant === 'questions' ? 'Question-based' : 'Play-based'} screening summary · {p.nickname || 'No name given'} · {date}</td></tr></tfoot><tbody><tr><td>
             <header className="cr-sec">
               <p className="cr-kicker">{p.variant === 'questions' ? 'Question-based screening summary' : 'Play-based screening summary'} · Not a diagnostic report</p>
               <h1>{p.variant === 'questions' ? q.title.replace('play screener', 'question screener') : q.title}</h1>
@@ -111,11 +121,11 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
 
             <section className="cr-sec cr-box">
               <h2>Please read first</h2>
-              <ul>{LIMITS.map((l, i) => <li key={i}>{l}</li>)}</ul>
+              <ul>{LIMITS.map((l, i) => <li key={i}>{i === 0 && p.variant === 'questions' ? l.replace('child-friendly play activities', 'a short set of child-friendly questions') : l}</li>)}</ul>
               <p className="cr-small">The activities sampled: {p.variant === 'questions' ? QSAMPLED[p.quest] : q.sampled}</p>
             </section>
 
-            <section className="cr-sec">
+            <section className="cr-sec cr-flow">
               <h2>What was recorded</h2>
               <table className="cr-table">
                 <thead><tr><th>Activity</th><th>Recorded in this session</th></tr></thead>
@@ -142,7 +152,7 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
               <table className="cr-meta cr-cond"><tbody>
                 <tr><th>Child seemed</th><td>☐ rested &nbsp; ☐ tired &nbsp; ☐ unwell &nbsp; ☐ hungry</td></tr>
                 <tr><th>Mood while playing</th><td>☐ eager &nbsp; ☐ calm &nbsp; ☐ bored &nbsp; ☐ frustrated &nbsp; ☐ anxious</td></tr>
-                <tr><th>Device</th><td>☐ phone &nbsp; ☐ tablet &nbsp; ☐ laptop or desktop &nbsp; ☐ touch screen &nbsp; ☐ mouse</td></tr>
+                <tr><th>Device</th><td>☐ phone &nbsp; ☐ tablet &nbsp; ☐ laptop or desktop &nbsp; ☐ touch &nbsp; ☐ mouse</td></tr>
                 <tr><th>Setting</th><td>☐ quiet &nbsp; ☐ noisy &nbsp; ☐ interrupted &nbsp; ☐ adult helped with answers</td></tr>
                 <tr><th>Known hearing or vision concern</th><td>☐ no &nbsp; ☐ yes: <span className="cr-inline" /></td></tr>
                 <tr><th>Regular medication</th><td>☐ no &nbsp; ☐ yes: <span className="cr-inline" /></td></tr>
@@ -171,6 +181,7 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
             <footer className="cr-sec cr-small">
               Nothing from this session was saved on a server. The figures were produced in the browser{p.wording ? `, and the wording was written ${p.wording === 'ai' ? 'with the help of an AI model and checked automatically against the recorded numbers' : 'from a fixed template'}` : ''}. This summary is not a medical device and is not a diagnosis.
             </footer>
+          </td></tr></tbody></table>
           </article>
         </div>,
         document.body,
@@ -180,7 +191,7 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
 }
 
 const CSS = `
-.cr-portal{position:fixed;inset:0;z-index:9999;overflow-y:auto;background:#EFEAE0;color:#1F1B16;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.5}
+.cr-portal{position:fixed;inset:0;z-index:9999;overflow-y:auto;overscroll-behavior:contain;background:#EFEAE0;color:#1F1B16;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.5}
 .cr-tools{position:sticky;top:0;display:flex;gap:10px;justify-content:center;padding:10px;background:#EFEAE0;border-bottom:1px solid #D9CDB4}
 .cr-btn{min-height:44px;padding:8px 20px;border-radius:999px;border:1.5px solid #3F6F5C;background:#3F6F5C;color:#fff;font-weight:700;cursor:pointer}
 .cr-btn.ghost{background:transparent;color:#1F1B16;border-color:#8A7F6E}
@@ -201,6 +212,11 @@ const CSS = `
 .cr-table thead th{width:auto}
 .cr-name{width:30%;font-weight:600}
 .cr-line{height:26px}
+.cr-wrap{width:100%;border-collapse:collapse}
+.cr-wrap>tbody>tr>td,.cr-wrap>tfoot>tr>td{padding:0;border:0;vertical-align:top}
+.cr-wrap>tfoot{display:none}
+.cr-pfoot{font-size:10px;color:#51493E;border-top:1px solid #CFC5AE!important;padding-top:6px!important}
+.cr-paper h2{break-after:avoid}
 .cr-inline{display:inline-block;width:170px;border-bottom:1px solid #1F1B16}
 .cr-lines span{display:block;height:28px;border-bottom:1px solid #8A7F6E}
 @media (max-width:640px){.cr-paper{padding:20px 16px;margin:0}}
@@ -210,6 +226,10 @@ const CSS = `
   .cr-tools{display:none!important}
   .cr-paper{box-shadow:none!important;margin:0!important;padding:0!important;max-width:none!important}
   .cr-sec,.cr-table tr,.cr-meta tr{break-inside:avoid}
+  .cr-sec.cr-flow{break-inside:auto}
+  .cr-table thead{display:table-header-group}
+  .cr-wrap>tfoot{display:table-footer-group}
+  .cr-wrap>tbody>tr>td{padding-bottom:14px!important}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   @page{margin:14mm}
 }

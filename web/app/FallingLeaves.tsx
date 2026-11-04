@@ -17,6 +17,7 @@ export function FallingLeaves() {
       {LEAVES.map((l, i) => (
         <img
           key={i} src="/decor/leaf.webp" alt=""
+          loading="lazy"
           className="leaf-fall absolute top-0 select-none"
           style={{
             left: `${l.left}%`, width: l.size * 2.6, maxWidth: '22vw',

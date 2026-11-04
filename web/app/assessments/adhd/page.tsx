@@ -374,7 +374,7 @@ export default function AdhdAssessmentPage() {
         {/* Breadcrumb & Navigation */}
         <div className="mb-6 flex items-center justify-between text-sm text-[#78716C]">
           <div className="flex items-center gap-2">
-            <Link href="/assessments" className="hover:text-[#05B076] transition-colors">← All Assessments</Link>
+            <Link href="/assessments" prefetch={false} className="hover:text-[#05B076] transition-colors">← All Assessments</Link>
             <span>/</span>
             <span className="font-semibold text-[#111827]">Manas FocusTrack™ ADHD Battery</span>
           </div>
@@ -388,8 +388,8 @@ export default function AdhdAssessmentPage() {
           <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-xl">
             <div className="flex flex-col md:flex-row gap-8 items-center">
               <div className="flex-1">
-                <div className="inline-flex items-center gap-2 rounded-full bg-[#F47522]/15 px-3.5 py-1 text-xs font-bold text-[#C2410C] uppercase tracking-wider mb-4">
-                  ★ Research-Grade Gamified Battery • Standardized Assessment
+                <div className="inline-flex items-center gap-2 rounded-full bg-[#05B076]/15 px-3.5 py-1 text-xs font-bold text-[#065F46] uppercase tracking-wider mb-4">
+                  ★ Research-Grade Gamified Battery • Free Open Access Beta
                 </div>
                 <h1 className="font-patrick text-4xl md:text-5xl text-[#0F172A] leading-tight mb-4">
                   Manas FocusTrack™ <span className="text-[#05B076]">ADHD Cognitive Battery</span>
@@ -419,10 +419,10 @@ export default function AdhdAssessmentPage() {
                     onClick={() => { playSound('tap'); setStage('profile') }}
                     className="rounded-full bg-gradient-to-r from-[#05B076] to-[#049A68] px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-[#05B076]/25 hover:shadow-xl hover:scale-[1.02] transition-all"
                   >
-                    Start Complete Assessment • ₹799
+                    Start Free Assessment (Open Access) →
                   </button>
                   <span className="text-xs text-[#64748B]">
-                    Includes full game battery, instant T-Score profile, and school accommodation blueprint.
+                    100% Free during Open Access • Includes full game battery, instant T-Score profile, and school accommodation blueprint.
                   </span>
                 </div>
               </div>
@@ -432,6 +432,7 @@ export default function AdhdAssessmentPage() {
                   <img
                     src="/decor/itw/itw-adhd-sticker.webp"
                     alt="FocusTrack Attention Explorer"
+                    loading="lazy"
                     className="max-h-full max-w-full object-contain filter drop-shadow-md"
                   />
                 </div>

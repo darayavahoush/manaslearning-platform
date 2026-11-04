@@ -8,8 +8,8 @@ import MiloWidget from '../components/milo/MiloWidget'
 import {FallingLeaves} from './FallingLeaves'
 import {FaLinkedinIn, FaFacebookF, FaInstagram, FaYoutube} from 'react-icons/fa6'
 
-const poppins = Poppins({subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-poppins'})
-const patrick = Patrick_Hand({subsets: ['latin'], weight: '400', variable: '--font-patrick'})
+const poppins = Poppins({subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-poppins', display: 'swap'})
+const patrick = Patrick_Hand({subsets: ['latin'], weight: '400', variable: '--font-patrick', display: 'swap'})
 
 export const metadata: Metadata = {
   title: { default: 'Manas Learning — Child Development & Inclusive Learning Centre', template: '%s — Manas Learning' },

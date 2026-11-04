@@ -4,8 +4,13 @@
 // 2) Adds a "Book a Consultation" item to the live header menu.
 export const SITE_PATCH = '<script>' + String.raw`
 (function () {
-  var OWN = ['/consult', '/milo', '/experience', '/confirm', '/team'];
-  var TEXT = {'experience what they feel': '/experience', 'book a consultation': '/consult', 'book expert consultation': '/consult'};
+  var OWN = ['/consult', '/milo', '/experience', '/confirm', '/team', '/assessments', '/pay'];
+  var TEXT = {
+    'experience what they feel': '/experience',
+    'book a consultation': '/consult',
+    'book expert consultation': '/consult',
+    'assessments': '/assessments'
+  };
 
   function ownPath(href) {
     try {

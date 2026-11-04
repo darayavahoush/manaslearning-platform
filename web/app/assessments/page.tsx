@@ -97,11 +97,11 @@ export default function AssessmentsHubPage() {
         <div className="mb-20">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-[#F47522]">Flagship Interactive Batteries</div>
-              <h2 className="font-patrick text-3xl sm:text-4xl text-[#0F172A]">New Gamified Paid Assessments</h2>
+              <div className="text-xs font-bold uppercase tracking-wider text-[#05B076]">Flagship Interactive Batteries</div>
+              <h2 className="font-patrick text-3xl sm:text-4xl text-[#0F172A]">Gamified Clinical Assessments <span className="text-[#05B076] text-xl font-poppins font-semibold">(Free Open Access Beta)</span></h2>
             </div>
-            <span className="hidden sm:inline-block rounded-full bg-[#F47522]/10 px-3.5 py-1 text-xs font-bold text-[#C2410C]">
-              Real-Time Millisecond Cognitive Tracking
+            <span className="hidden sm:inline-block rounded-full bg-[#05B076]/10 px-3.5 py-1 text-xs font-bold text-[#065F46]">
+              100% Free • Open Access Clinical Batteries
             </span>
           </div>
 
@@ -109,7 +109,7 @@ export default function AssessmentsHubPage() {
             {/* 1. MANAS FOCUSTRACK ADHD BATTERY */}
             <div className="relative rounded-3xl border-2 border-[#05B076]/30 bg-white p-8 md:p-10 shadow-xl hover:shadow-2xl transition-all flex flex-col justify-between overflow-hidden">
               <div className="absolute top-0 right-0 rounded-bl-2xl bg-gradient-to-r from-[#05B076] to-[#049A68] px-4 py-1.5 text-xs font-bold text-white shadow-sm">
-                RESEARCH GRADE • CPT-3 NORMED
+                FREE OPEN ACCESS • CPT-3 NORMED
               </div>
 
               <div>
@@ -140,7 +140,7 @@ export default function AssessmentsHubPage() {
                     <span className="font-bold text-[#05B076] block">Hit RT & RTV</span>
                     <span className="text-[#64748B]">Attention lapse & fatigue slope</span>
                   </div>
-                  <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
+                  <div className="rounded-xl bg-[#F8FAFC] border border-[#F47522] block">
                     <span className="font-bold text-[#F47522] block">Omission vs. Commission</span>
                     <span className="text-[#64748B]">Inattention vs. Impulsivity T-Scores</span>
                   </div>
@@ -157,14 +157,15 @@ export default function AssessmentsHubPage() {
 
               <div className="pt-6 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <span className="text-2xl font-bold text-[#0F172A]">₹799</span>
-                  <span className="text-xs text-[#64748B] ml-2">/ $15 USD (Complete Battery & Report)</span>
+                  <span className="text-2xl font-bold text-[#05B076]">FREE</span>
+                  <span className="text-xs font-semibold text-[#065F46] ml-2">Open Access (Full Battery & Diagnostic Report)</span>
                 </div>
                 <Link
                   href="/assessments/adhd"
+                  prefetch={false}
                   className="rounded-full bg-gradient-to-r from-[#05B076] to-[#049A68] px-6 py-3 text-sm font-bold text-white shadow-md hover:shadow-lg hover:scale-105 transition-all"
                 >
-                  Start FocusTrack ADHD Battery →
+                  Start Free FocusTrack ADHD Battery →
                 </Link>
               </div>
             </div>
@@ -172,7 +173,7 @@ export default function AssessmentsHubPage() {
             {/* 2. MANAS PRISM AUTISM PROFILE */}
             <div className="relative rounded-3xl border-2 border-[#3B82F6]/30 bg-white p-8 md:p-10 shadow-xl hover:shadow-2xl transition-all flex flex-col justify-between overflow-hidden">
               <div className="absolute top-0 right-0 rounded-bl-2xl bg-gradient-to-r from-[#3B82F6] to-[#2563EB] px-4 py-1.5 text-xs font-bold text-white shadow-sm">
-                RESEARCH GRADE • ADOS-2 MAPPED
+                FREE OPEN ACCESS • ADOS-2 MAPPED
               </div>
 
               <div>
@@ -220,14 +221,15 @@ export default function AssessmentsHubPage() {
 
               <div className="pt-6 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <span className="text-2xl font-bold text-[#0F172A]">₹799</span>
-                  <span className="text-xs text-[#64748B] ml-2">/ $15 USD (Complete Profile & Report)</span>
+                  <span className="text-2xl font-bold text-[#3B82F6]">FREE</span>
+                  <span className="text-xs font-semibold text-[#1D4ED8] ml-2">Open Access (Full Profile & Diagnostic Blueprint)</span>
                 </div>
                 <Link
                   href="/assessments/autism"
+                  prefetch={false}
                   className="rounded-full bg-gradient-to-r from-[#3B82F6] to-[#2563EB] px-6 py-3 text-sm font-bold text-white shadow-md hover:shadow-lg hover:scale-105 transition-all"
                 >
-                  Start PRISM Autism Profile →
+                  Start Free PRISM Autism Profile →
                 </Link>
               </div>
             </div>
@@ -298,6 +300,7 @@ export default function AssessmentsHubPage() {
                   <span className="text-[11px] text-[#94A3B8]">⏳ {item.duration}</span>
                   <Link
                     href={item.link}
+                    prefetch={false}
                     className="text-xs font-bold text-[#05B076] hover:text-[#049A68] hover:underline"
                   >
                     View Details →
@@ -321,6 +324,7 @@ export default function AssessmentsHubPage() {
           </div>
           <Link
             href="/consult"
+            prefetch={false}
             className="rounded-full bg-white px-8 py-3.5 text-sm font-bold text-[#049A68] shadow-lg hover:bg-[#F8FAFC] hover:scale-105 transition-all shrink-0"
           >
             Book Free Discovery Consultation →

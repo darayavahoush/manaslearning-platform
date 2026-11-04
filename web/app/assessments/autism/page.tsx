@@ -313,7 +313,7 @@ export default function AutismAssessmentPage() {
         {/* Breadcrumb */}
         <div className="mb-6 flex items-center justify-between text-sm text-[#78716C]">
           <div className="flex items-center gap-2">
-            <Link href="/assessments" className="hover:text-[#05B076] transition-colors">← All Assessments</Link>
+            <Link href="/assessments" prefetch={false} className="hover:text-[#05B076] transition-colors">← All Assessments</Link>
             <span>/</span>
             <span className="font-semibold text-[#111827]">Manas PRISM™ Autism Profile</span>
           </div>
@@ -328,7 +328,7 @@ export default function AutismAssessmentPage() {
             <div className="flex flex-col md:flex-row gap-8 items-center">
               <div className="flex-1">
                 <div className="inline-flex items-center gap-2 rounded-full bg-[#3B82F6]/15 px-3.5 py-1 text-xs font-bold text-[#1D4ED8] uppercase tracking-wider mb-4">
-                  ★ Research-Grade Neurodevelopmental Battery • Autism Profile
+                  ★ Research-Grade Neurodevelopmental Battery • Free Open Access Beta
                 </div>
                 <h1 className="font-patrick text-4xl md:text-5xl text-[#0F172A] leading-tight mb-4">
                   Manas PRISM™ <span className="text-[#3B82F6]">Autism Social & Sensory Profile</span>
@@ -358,10 +358,10 @@ export default function AutismAssessmentPage() {
                     onClick={() => { playSound('tap'); setStage('profile') }}
                     className="rounded-full bg-gradient-to-r from-[#3B82F6] to-[#2563EB] px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-[#3B82F6]/25 hover:shadow-xl hover:scale-[1.02] transition-all"
                   >
-                    Start Complete Assessment • ₹799
+                    Start Free Assessment (Open Access) →
                   </button>
                   <span className="text-xs text-[#64748B]">
-                    Full 4-domain gamified battery + downloadable clinical profile and sensory accommodations.
+                    100% Free during Open Access • Full 4-domain gamified battery + downloadable clinical profile and sensory accommodations.
                   </span>
                 </div>
               </div>
@@ -371,6 +371,7 @@ export default function AutismAssessmentPage() {
                   <img
                     src="/decor/itw/itw-autism-sticker.webp"
                     alt="PRISM Autism Profile"
+                    loading="lazy"
                     className="max-h-full max-w-full object-contain filter drop-shadow-md"
                   />
                 </div>

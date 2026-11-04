@@ -9,16 +9,6 @@ interface ScreenerItem {
   desc: string
   badge: string
   link: string
-  image: string
-  alt: string
-  themeColor: string
-  accentBorder: string
-  bgGradient: string
-  badgeBg: string
-  badgeText: string
-  buttonBg: string
-  buttonHover: string
-  chips: string[]
 }
 
 const STANDARD_ASSESSMENTS: ScreenerItem[] = [
@@ -28,18 +18,8 @@ const STANDARD_ASSESSMENTS: ScreenerItem[] = [
     price: 'Free Screener',
     duration: '20 mins',
     desc: 'Evaluates phonemic awareness, rapid letter-sound decoding, and reading fluency markers.',
-    badge: 'Reading & Literacy',
-    link: '/experience?module=dyslexia',
-    image: '/decor/itw/dyslexia-sticker.webp',
-    alt: 'Dyslexia Reading Screener',
-    themeColor: '#05B076',
-    accentBorder: 'border-[#A7F3D0]',
-    bgGradient: 'from-[#ECFDF5] to-[#D1FAE5]',
-    badgeBg: 'bg-[#05B076]/10',
-    badgeText: 'text-[#065F46]',
-    buttonBg: 'bg-[#05B076]',
-    buttonHover: 'hover:bg-[#047857]',
-    chips: ['Phonological Loop', 'Decoding Latency']
+    badge: 'Clinical Screener',
+    link: '/experience?module=dyslexia'
   },
   {
     id: 'dyscalculia',
@@ -47,18 +27,8 @@ const STANDARD_ASSESSMENTS: ScreenerItem[] = [
     price: 'Free Screener',
     duration: '20 mins',
     desc: 'Assesses subitizing, mental number line calibration, and mathematical reasoning.',
-    badge: 'Cognitive & Math',
-    link: '/experience?module=dyscalculia',
-    image: '/decor/itw/dyscalculia-sticker.webp',
-    alt: 'Dyscalculia Math Assessment',
-    themeColor: '#0D9488',
-    accentBorder: 'border-[#99F6E4]',
-    bgGradient: 'from-[#F0FDFA] to-[#CCFBF1]',
-    badgeBg: 'bg-[#0D9488]/10',
-    badgeText: 'text-[#115E59]',
-    buttonBg: 'bg-[#0D9488]',
-    buttonHover: 'hover:bg-[#0F766E]',
-    chips: ['Subitizing Acuity', 'Mental Number Line']
+    badge: 'Cognitive Screener',
+    link: '/experience?module=dyscalculia'
   },
   {
     id: 'dysgraphia',
@@ -66,18 +36,8 @@ const STANDARD_ASSESSMENTS: ScreenerItem[] = [
     price: 'Free Screener',
     duration: '25 mins',
     desc: 'Measures fine-motor transcription drag, pencil grip posture, and writing fatigue.',
-    badge: 'Motor & Writing',
-    link: '/experience?module=dysgraphia',
-    image: '/decor/itw/dysgraphia-sticker.webp',
-    alt: 'Dysgraphia Fine Motor Assessment',
-    themeColor: '#C2410C',
-    accentBorder: 'border-[#FED7AA]',
-    bgGradient: 'from-[#FFF7ED] to-[#FFEDD5]',
-    badgeBg: 'bg-[#C2410C]/10',
-    badgeText: 'text-[#9A3412]',
-    buttonBg: 'bg-[#C2410C]',
-    buttonHover: 'hover:bg-[#9A3412]',
-    chips: ['Orthographic Loop', 'Motor Drag Factor']
+    badge: 'Motor Assessment',
+    link: '/experience?module=dysgraphia'
   },
   {
     id: 'speech',
@@ -86,17 +46,7 @@ const STANDARD_ASSESSMENTS: ScreenerItem[] = [
     duration: '30 mins',
     desc: 'Evaluates receptive vs. expressive speech, phonetic clarity, and vocabulary milestones.',
     badge: 'Speech Pathology',
-    link: '/experience?module=speech',
-    image: '/decor/itw/speech-sticker.webp',
-    alt: 'Speech & Language Articulation',
-    themeColor: '#E11D48',
-    accentBorder: 'border-[#FECDD3]',
-    bgGradient: 'from-[#FFF1F2] to-[#FFE4E6]',
-    badgeBg: 'bg-[#E11D48]/10',
-    badgeText: 'text-[#9F1239]',
-    buttonBg: 'bg-[#E11D48]',
-    buttonHover: 'hover:bg-[#BE123C]',
-    chips: ['Phonemic Inventory', 'Expressive Syntax']
+    link: '/experience?module=speech'
   },
   {
     id: 'spd',
@@ -104,18 +54,8 @@ const STANDARD_ASSESSMENTS: ScreenerItem[] = [
     price: 'Free Profile',
     duration: '20 mins',
     desc: 'Screens for tactile, vestibular, and auditory over/under-responsiveness across daily routines.',
-    badge: 'Sensory Modulation',
-    link: '/experience?module=autism',
-    image: '/decor/itw/itw-autism-sticker.webp',
-    alt: 'Sensory Processing Profile',
-    themeColor: '#2563EB',
-    accentBorder: 'border-[#BFDBFE]',
-    bgGradient: 'from-[#EFF6FF] to-[#DBEAFE]',
-    badgeBg: 'bg-[#2563EB]/10',
-    badgeText: 'text-[#1E40AF]',
-    buttonBg: 'bg-[#2563EB]',
-    buttonHover: 'hover:bg-[#1D4ED8]',
-    chips: ['Vestibular Profile', 'Tactile Sanctuary']
+    badge: 'Sensory Profile',
+    link: '/experience?module=autism'
   },
   {
     id: 'nvld',
@@ -124,17 +64,7 @@ const STANDARD_ASSESSMENTS: ScreenerItem[] = [
     duration: '25 mins',
     desc: 'Identifies visual-spatial vs. verbal discrepancy and non-verbal social cue interpretation.',
     badge: 'Neuropsychological',
-    link: '/experience?module=executive',
-    image: '/decor/itw/auditory-sticker.webp',
-    alt: 'Non-Verbal Learning Disability',
-    themeColor: '#7C3AED',
-    accentBorder: 'border-[#DDD6FE]',
-    bgGradient: 'from-[#FAF5FF] to-[#EDE9FE]',
-    badgeBg: 'bg-[#7C3AED]/10',
-    badgeText: 'text-[#5B21B6]',
-    buttonBg: 'bg-[#7C3AED]',
-    buttonHover: 'hover:bg-[#6D28D9]',
-    chips: ['Visuospatial Index', 'Social Context Cues']
+    link: '/experience?module=executive'
   },
   {
     id: 'dcd',
@@ -143,17 +73,7 @@ const STANDARD_ASSESSMENTS: ScreenerItem[] = [
     duration: '25 mins',
     desc: 'Assesses gross and fine motor planning, physical coordination, and spatial orientation.',
     badge: 'Motor Planning',
-    link: '/consult',
-    image: '/decor/itw/itw-landing-how-try.webp',
-    alt: 'Developmental Coordination Dyspraxia',
-    themeColor: '#D97706',
-    accentBorder: 'border-[#FDE68A]',
-    bgGradient: 'from-[#FFFBEB] to-[#FEF3C7]',
-    badgeBg: 'bg-[#D97706]/10',
-    badgeText: 'text-[#92400E]',
-    buttonBg: 'bg-[#D97706]',
-    buttonHover: 'hover:bg-[#B45309]',
-    chips: ['Bilateral Motor Flow', 'Praxis Sequencing']
+    link: '/consult'
   },
   {
     id: 'executive',
@@ -162,17 +82,7 @@ const STANDARD_ASSESSMENTS: ScreenerItem[] = [
     duration: '20 mins',
     desc: 'Screens for organization, cognitive task-initiation, and working memory barriers.',
     badge: 'Executive Function',
-    link: '/experience?module=executive',
-    image: '/decor/itw/executive-sticker.webp',
-    alt: 'Executive Functioning & Memory',
-    themeColor: '#16A34A',
-    accentBorder: 'border-[#BBF7D0]',
-    bgGradient: 'from-[#F0FDF4] to-[#DCFCE7]',
-    badgeBg: 'bg-[#16A34A]/10',
-    badgeText: 'text-[#166534]',
-    buttonBg: 'bg-[#16A34A]',
-    buttonHover: 'hover:bg-[#15803D]',
-    chips: ['Working Memory Span', 'Task Initiation']
+    link: '/experience?module=executive'
   }
 ]
 
@@ -407,68 +317,32 @@ export default function AssessmentsHubPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {STANDARD_ASSESSMENTS.map((item) => (
               <div
                 key={item.id}
-                className="group rounded-3xl bg-white border border-[#E2E8F0] hover:border-[#05B076]/40 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden"
+                className="rounded-2xl bg-white border border-[#E2E8F0] p-6 shadow-sm hover:shadow-md hover:border-[#05B076]/40 transition-all flex flex-col justify-between"
               >
                 <div>
-                  {/* Visual Header with Hand-Painted Sticker */}
-                  <div className={`relative h-44 w-full bg-gradient-to-tr ${item.bgGradient} p-4 flex items-center justify-center overflow-hidden border-b ${item.accentBorder}`}>
-                    <div className="absolute top-3 left-3">
-                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${item.badgeBg} ${item.badgeText} shadow-sm backdrop-blur-sm`}>
-                        {item.badge}
-                      </span>
-                    </div>
-                    <div className="absolute top-3 right-3">
-                      <span className="text-xs font-bold text-[#065F46] bg-white/90 px-2.5 py-0.5 rounded-full shadow-sm">
-                        {item.price}
-                      </span>
-                    </div>
-                    <img
-                      src={item.image}
-                      alt={item.alt}
-                      loading="lazy"
-                      className="h-28 w-28 object-contain filter drop-shadow-md group-hover:scale-110 transition-transform duration-300"
-                    />
+                  <div className="flex items-center justify-between mb-3.5">
+                    <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#F1F5F9] text-[#475569]">
+                      {item.badge}
+                    </span>
+                    <span className="text-xs font-bold text-[#05B076]">{item.price}</span>
                   </div>
-
-                  {/* Card Content */}
-                  <div className="p-5">
-                    <h3 className="font-patrick text-xl text-[#0F172A] mb-2 leading-snug group-hover:text-[#05B076] transition-colors">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs text-[#64748B] leading-relaxed mb-4">
-                      {item.desc}
-                    </p>
-
-                    {/* Clinical Dimension Chips */}
-                    <div className="flex flex-wrap gap-1.5 mb-2">
-                      {item.chips.map((chip, ci) => (
-                        <span
-                          key={ci}
-                          className="text-[10px] font-semibold text-[#475569] bg-[#F1F5F9] px-2 py-0.5 rounded-md"
-                        >
-                          {chip}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+                  <h3 className="font-patrick text-xl text-[#0F172A] mb-2 leading-snug">{item.title}</h3>
+                  <p className="text-xs text-[#64748B] leading-relaxed mb-4">{item.desc}</p>
                 </div>
 
-                {/* Footer Link */}
-                <div className="p-5 pt-0">
-                  <div className="pt-3 border-t border-[#F1F5F9] flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-[#64748B]">⏱ {item.duration}</span>
-                    <Link
-                      href={item.link}
-                      prefetch={false}
-                      className={`rounded-full ${item.buttonBg} ${item.buttonHover} px-3.5 py-1.5 text-xs font-bold text-white shadow-sm hover:shadow transition-all`}
-                    >
-                      Start Screener →
-                    </Link>
-                  </div>
+                <div className="pt-3 border-t border-[#F8FAFC] flex items-center justify-between">
+                  <span className="text-[11px] text-[#94A3B8]">⏳ {item.duration}</span>
+                  <Link
+                    href={item.link}
+                    prefetch={false}
+                    className="text-xs font-bold text-[#05B076] hover:text-[#049A68] hover:underline"
+                  >
+                    View Details →
+                  </Link>
                 </div>
               </div>
             ))}

@@ -557,15 +557,32 @@ export default function AdhdFantasyAssessmentPage() {
   }
 
   return (
-    <main data-no-listen="true" className="min-h-screen bg-[#FFFDF8] py-8 px-4 font-poppins text-[#1F2937]">
-      <div className="mx-auto max-w-4xl">
+    <main data-no-listen="true" className="relative min-h-screen bg-[#0B132B] py-8 px-4 font-poppins text-[#1F2937] overflow-x-hidden selection:bg-amber-400 selection:text-amber-950">
+      {/* Immersive Fantasy Sky Citadel Celestial Backdrop */}
+      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+        {/* Full-bleed citadel illustration with ambient atmospheric blur */}
+        <img
+          src="/decor/itw/quest-sky-citadel-banner.webp"
+          alt="Sky Citadel Panorama"
+          className="w-full h-full object-cover object-center opacity-30 filter blur-[2px] scale-105"
+        />
+        {/* Enchanted celestial overlays & radial starlight glows */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0B132B]/75 via-[#1C2541]/70 to-[#0B132B]/90" />
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[55rem] h-[30rem] rounded-full bg-gradient-to-b from-amber-400/20 via-orange-500/10 to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute top-1/3 -left-32 w-96 h-96 rounded-full bg-cyan-400/15 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-10 -right-32 w-96 h-96 rounded-full bg-amber-300/15 blur-3xl pointer-events-none" />
+        {/* Floating starlight constellation specks */}
+        <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#FDE68A_1px,transparent_1px)] [background-size:32px_32px]" />
+      </div>
+
+      <div className="mx-auto max-w-4xl relative z-10">
         {/* Navigation & Realm Indicator */}
-        <div className="mb-6 flex items-center justify-between text-xs text-[#78716C]">
-          <Link href="/assessments" prefetch={false} className="font-bold text-[#05B076] hover:underline flex items-center gap-1.5">
+        <div className="mb-6 flex items-center justify-between text-xs">
+          <Link href="/assessments" prefetch={false} className="font-bold text-amber-300 hover:text-amber-200 hover:underline flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-amber-300/30 shadow-sm">
             ← Assessment Directory
           </Link>
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-amber-500/15 px-3 py-1 font-bold text-amber-900 border border-amber-300">
+            <span className="rounded-full bg-black/40 backdrop-blur-md px-3.5 py-1.5 font-bold text-amber-200 border border-amber-400/40 shadow-sm">
               Conners CPT-3 Standard • Research-Grade Pediatric Battery
             </span>
           </div>
@@ -682,7 +699,7 @@ export default function AdhdFantasyAssessmentPage() {
 
         {/* 2. CHAPTER 1 STORY: THE OBSERVATORY */}
         {stage === 'cpt_story' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white overflow-hidden shadow-2xl">
+          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
             <div className="relative h-60 md:h-72 w-full overflow-hidden bg-gradient-to-b from-[#FEF3C7] to-[#DCFCE7]">
               <img
                 src="/decor/itw/quest-sky-citadel-banner.webp"
@@ -751,7 +768,7 @@ export default function AdhdFantasyAssessmentPage() {
 
         {/* 3. CHAPTER 1 GAMEPLAY: CPT-3 VIGILANCE */}
         {stage === 'cpt_game' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-2xl text-center select-none">
+          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
                 Sighting {cptTrialIndex + 1} of {CPT_TOTAL_TRIALS}
@@ -773,30 +790,30 @@ export default function AdhdFantasyAssessmentPage() {
 
             <div
               onClick={handleCptTap}
-              className="relative mx-auto my-6 flex h-72 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 border-amber-100 bg-gradient-to-b from-[#FEFCE8] to-[#FFFDF8] shadow-2xl transition-all hover:border-amber-200 active:scale-95 overflow-hidden"
+              className="relative mx-auto my-6 flex h-72 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 border-amber-300/80 bg-gradient-to-b from-[#0F172A] via-[#1E293B] to-[#0A0F1D] shadow-[0_0_50px_rgba(245,158,11,0.25)] transition-all hover:border-amber-400 active:scale-95 overflow-hidden"
             >
               {cptStimulus === 'target' && (
                 <div className="flex flex-col items-center animate-bounce">
-                  <img src="/decor/itw/quest-sunbird-target.webp" alt="Target" className="w-32 h-32 object-contain filter drop-shadow-md" />
-                  <span className="mt-2 text-xs font-black tracking-wider text-amber-800 uppercase bg-white/95 px-3 py-1 rounded-full shadow-sm">
-                    TAP NOW / SPACEBAR
+                  <img src="/decor/itw/quest-sunbird-target.webp" alt="Target" className="w-32 h-32 object-contain filter drop-shadow-[0_0_15px_rgba(245,158,11,0.7)]" />
+                  <span className="mt-2 text-xs font-black tracking-wider text-amber-950 uppercase bg-amber-300 px-3.5 py-1 rounded-full shadow-lg border border-amber-400">
+                    ★ TAP NOW / SPACEBAR ★
                   </span>
                 </div>
               )}
               {cptStimulus === 'distractor' && (
                 <div className="flex flex-col items-center animate-pulse">
-                  <VelvetDuskmothSvg className="w-32 h-32"/>
-                  <span className="mt-2 text-xs font-black tracking-wider text-[#DC2626] uppercase bg-white/95 px-3 py-1 rounded-full shadow-sm">
+                  <VelvetDuskmothSvg className="w-32 h-32 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]"/>
+                  <span className="mt-2 text-xs font-black tracking-wider text-white uppercase bg-rose-600 px-3.5 py-1 rounded-full shadow-lg border border-rose-400">
                     FREEZE! DO NOT TAP!
                   </span>
                 </div>
               )}
               {!cptStimulus && (
-                <div className="text-center text-[#94A3B8]">
-                  <div className="h-16 w-16 mx-auto mb-2 rounded-full border-2 border-dashed border-amber-300 flex items-center justify-center">
-                    <CompassRoseSvg className="w-6 h-6 text-amber-400" />
+                <div className="text-center text-amber-200/80">
+                  <div className="h-16 w-16 mx-auto mb-2 rounded-full border-2 border-dashed border-amber-400/50 flex items-center justify-center bg-white/5">
+                    <CompassRoseSvg className="w-6 h-6 text-amber-300" />
                   </div>
-                  <span className="text-xs font-semibold text-amber-800">Watching the sky vortex...</span>
+                  <span className="text-xs font-semibold text-amber-200">Watching the sky vortex...</span>
                 </div>
               )}
             </div>
@@ -813,7 +830,7 @@ export default function AdhdFantasyAssessmentPage() {
 
         {/* 4. CHAPTER 2 STORY: THE STARFIRE FLANKER */}
         {stage === 'flanker_story' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white overflow-hidden shadow-2xl">
+          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
             <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#0F172A]">
               <img
                 src="/decor/itw/itw-adhd-support-focus-shield.webp"
@@ -863,7 +880,7 @@ export default function AdhdFantasyAssessmentPage() {
 
         {/* 5. CHAPTER 2 GAMEPLAY: FLANKER */}
         {stage === 'flanker_game' && currentFlanker && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-2xl text-center select-none">
+          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
                 Formation {flankerTrialIndex + 1} of {FLANKER_TOTAL_TRIALS}
@@ -902,7 +919,7 @@ export default function AdhdFantasyAssessmentPage() {
 
         {/* 6. CHAPTER 3 STORY: THE ASTROLABE MEMORY MATRIX */}
         {stage === 'memory_story' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white overflow-hidden shadow-2xl">
+          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
             <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#1E1B4B]">
               <img
                 src="/decor/itw/quest-sky-citadel-banner.webp"
@@ -945,7 +962,7 @@ export default function AdhdFantasyAssessmentPage() {
 
         {/* 7. CHAPTER 3 GAMEPLAY: ASTROLABE */}
         {stage === 'memory_game' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-2xl text-center select-none">
+          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
                 Level {memoryLevel} of 3 • Constellation Span: {memoryLevel + 2}
@@ -980,7 +997,7 @@ export default function AdhdFantasyAssessmentPage() {
 
         {/* 8. CHAPTER 4: THE SKY GUARDIAN'S DILEMMAS */}
         {stage === 'situational_story' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white overflow-hidden shadow-2xl">
+          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
             <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#064E3B]">
               <img
                 src="/decor/itw/itw-adhd-support-checklist.webp"
@@ -1023,7 +1040,7 @@ export default function AdhdFantasyAssessmentPage() {
 
         {/* 9. CHAPTER 4 GAMEPLAY: SITUATIONAL QUESTIONS */}
         {stage === 'situational_game' && activeScenarios[situationalIndex] && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-2xl select-none">
+          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl select-none">
             <div className="flex justify-between items-center mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
                 Council Trial {situationalIndex + 1} of {activeScenarios.length}
@@ -1062,7 +1079,7 @@ export default function AdhdFantasyAssessmentPage() {
 
         {/* 10. LOADING AGENTIC EVALUATION */}
         {stage === 'agent_eval' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-12 shadow-2xl text-center">
+          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-12 shadow-2xl text-center">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full border-4 border-amber-500 border-t-transparent animate-spin flex items-center justify-center">
               <AstrolabeCrystalSvg className="w-8 h-8 text-amber-500" />
             </div>

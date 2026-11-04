@@ -436,15 +436,32 @@ export default function AutismFantasyAssessmentPage() {
   }
 
   return (
-    <main data-no-listen="true" className="min-h-screen bg-[#F0FDF4] py-8 px-4 font-poppins text-[#1F2937]">
-      <div className="mx-auto max-w-4xl">
+    <main data-no-listen="true" className="relative min-h-screen bg-[#041D15] py-8 px-4 font-poppins text-[#1F2937] overflow-x-hidden selection:bg-teal-400 selection:text-teal-950">
+      {/* Immersive Fantasy Whispering Groves Twilight Backdrop */}
+      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+        {/* Full-bleed groves illustration with soft ambient atmospheric glow */}
+        <img
+          src="/decor/itw/quest-lumina-groves-banner.webp"
+          alt="Whispering Groves Panorama"
+          className="w-full h-full object-cover object-center opacity-30 filter blur-[2px] scale-105"
+        />
+        {/* Bioluminescent twilight ambient overlays & emerald firefly halos */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#041D15]/80 via-[#063324]/75 to-[#021811]/90" />
+        <div className="absolute -top-40 left-1/3 w-[50rem] h-[30rem] rounded-full bg-gradient-to-b from-teal-400/20 via-emerald-500/10 to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 -right-32 w-96 h-96 rounded-full bg-cyan-400/15 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-10 -left-32 w-96 h-96 rounded-full bg-emerald-400/15 blur-3xl pointer-events-none" />
+        {/* Gentle firefly particles pattern */}
+        <div className="absolute inset-0 opacity-30 bg-[radial-gradient(#34D399_1px,transparent_1px)] [background-size:28px_28px]" />
+      </div>
+
+      <div className="mx-auto max-w-4xl relative z-10">
         {/* Navigation & Realm Indicator */}
-        <div className="mb-6 flex items-center justify-between text-xs text-[#78716C]">
-          <Link href="/assessments" prefetch={false} className="font-bold text-[#0D9488] hover:underline flex items-center gap-1.5">
+        <div className="mb-6 flex items-center justify-between text-xs">
+          <Link href="/assessments" prefetch={false} className="font-bold text-teal-300 hover:text-teal-200 hover:underline flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-teal-300/30 shadow-sm">
             ← Assessment Directory
           </Link>
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-teal-500/15 px-3 py-1 font-bold text-teal-900 border border-teal-300">
+            <span className="rounded-full bg-black/40 backdrop-blur-md px-3.5 py-1.5 font-bold text-teal-200 border border-teal-400/40 shadow-sm">
               ADOS-2 & SPM-2 Standard • Research-Grade Pediatric Profile
             </span>
           </div>
@@ -561,7 +578,7 @@ export default function AutismFantasyAssessmentPage() {
 
         {/* 2. CHAPTER 1 STORY: ARIA'S POTTERY VERANDA */}
         {stage === 'ja_story' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white overflow-hidden shadow-2xl">
+          <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
             <div className="relative h-60 md:h-72 w-full overflow-hidden bg-gradient-to-b from-[#CCFBF1] to-[#DBEAFE]">
               <img
                 src="/decor/itw/quest-lumina-groves-banner.webp"
@@ -606,7 +623,7 @@ export default function AutismFantasyAssessmentPage() {
 
         {/* 3. CHAPTER 1 GAMEPLAY: JOINT ATTENTION */}
         {stage === 'ja_game' && JA_TRIALS[jaTrialIndex] && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-2xl text-center select-none">
+          <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
                 Encounter {jaTrialIndex + 1} of {JA_TRIALS.length}
@@ -656,7 +673,7 @@ export default function AutismFantasyAssessmentPage() {
 
         {/* 4. CHAPTER 2 STORY: THE WHISPERING RIVER (THEORY OF MIND) */}
         {stage === 'tom_story' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white overflow-hidden shadow-2xl">
+          <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
             <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#1E3A8A]">
               <img
                 src="/decor/itw/quest-lumina-groves-banner.webp"
@@ -700,7 +717,7 @@ export default function AutismFantasyAssessmentPage() {
 
         {/* 5. CHAPTER 2 GAMEPLAY: THEORY OF MIND */}
         {stage === 'tom_game' && activeTomVignettes[tomTrialIndex] && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-2xl select-none">
+          <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl select-none">
             <div className="flex justify-between items-center mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
                 Story {tomTrialIndex + 1} of {activeTomVignettes.length}
@@ -736,7 +753,7 @@ export default function AutismFantasyAssessmentPage() {
 
         {/* 6. CHAPTER 3: SENSORY SANCTUARY CALIBRATION */}
         {stage === 'sensory_story' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white overflow-hidden shadow-2xl">
+          <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
             <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#064E3B]">
               <img
                 src="/decor/itw/quest-sanctuary-haven.webp"
@@ -826,7 +843,7 @@ export default function AutismFantasyAssessmentPage() {
 
         {/* 7. CHAPTER 4 GAMEPLAY: ALCHEMICAL DCCS */}
         {stage === 'dccs_game' && DCCS_CARDS[dccsIndex] && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-2xl text-center select-none">
+          <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-4">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
                 Gem {dccsIndex + 1} of {DCCS_CARDS.length}
@@ -872,7 +889,7 @@ export default function AutismFantasyAssessmentPage() {
 
         {/* 8. LOADING AGENT */}
         {stage === 'agent_eval' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-12 shadow-2xl text-center">
+          <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-12 shadow-2xl text-center">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full border-4 border-teal-500 border-t-transparent animate-spin flex items-center justify-center">
               <CrystalGlyphSvg className="w-8 h-8 text-teal-600" />
             </div>

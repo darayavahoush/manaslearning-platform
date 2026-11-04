@@ -2,17 +2,8 @@
 import {useState, useEffect, useRef} from 'react'
 import Link from 'next/link'
 
-interface Profile {
-  childName: string
-  childAge: number
-  gender: string
-  grade: string
-  informantRole: string
-  primaryConcerns: string
-}
-
-// Gentle Web Audio Synthesizer: Organic kalimba, chime, marimba, and celestial glass tones
-function playSound(type: 'hit' | 'miss' | 'chime' | 'tap' | 'complete' | 'star' | 'flanker_left' | 'flanker_right') {
+// Enchanted Web Audio synthesizer: Harmonic marimba, crystal bells, celestial glass, and royal fanfare
+function playAudio(type: 'hit' | 'chime' | 'miss' | 'tap' | 'fanfare' | 'star' | 'whoosh') {
   if (typeof window === 'undefined') return
   try {
     const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
@@ -22,7 +13,6 @@ function playSound(type: 'hit' | 'miss' | 'chime' | 'tap' | 'complete' | 'star' 
     const now = ctx.currentTime
 
     if (type === 'hit') {
-      // Warm marimba strike (C5 -> G5)
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
       osc.type = 'triangle'
@@ -35,170 +25,86 @@ function playSound(type: 'hit' | 'miss' | 'chime' | 'tap' | 'complete' | 'star' 
       osc.start(now)
       osc.stop(now + 0.18)
     } else if (type === 'star') {
-      // Celestial crystal bell note (Pentatonic: C5, D5, E5, G5, A5)
-      const notes = [523.25, 587.33, 659.25, 783.99, 880.00]
+      const notes = [523.25, 587.33, 659.25, 783.99, 880]
       const f = notes[Math.floor(Math.random() * notes.length)]
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
       osc.type = 'sine'
       osc.frequency.setValueAtTime(f, now)
       gain.gain.setValueAtTime(0.08, now)
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35)
       osc.connect(gain)
       gain.connect(ctx.destination)
       osc.start(now)
-      osc.stop(now + 0.35)
-    } else if (type === 'flanker_left') {
-      // Soft left-channel harmonic note
+      osc.stop(now + 0.38)
+    } else if (type === 'fanfare') {
+      const chords = [523.25, 659.25, 783.99, 1046.5, 1318.5]
+      chords.forEach((freq, idx) => {
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc.type = 'triangle'
+        osc.frequency.setValueAtTime(freq, now + idx * 0.08)
+        gain.gain.setValueAtTime(0.08, now + idx * 0.08)
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.45)
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        osc.start(now + idx * 0.08)
+        osc.stop(now + idx * 0.08 + 0.5)
+      })
+    } else if (type === 'miss') {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(260, now)
+      osc.frequency.linearRampToValueAtTime(180, now + 0.15)
+      gain.gain.setValueAtTime(0.05, now)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18)
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.start(now)
+      osc.stop(now + 0.2)
+    } else {
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
       osc.type = 'sine'
       osc.frequency.setValueAtTime(440, now)
-      osc.frequency.exponentialRampToValueAtTime(554.37, now + 0.08)
-      gain.gain.setValueAtTime(0.07, now)
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14)
+      gain.gain.setValueAtTime(0.04, now)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05)
       osc.connect(gain)
       gain.connect(ctx.destination)
       osc.start(now)
-      osc.stop(now + 0.15)
-    } else if (type === 'flanker_right') {
-      // Soft right-channel harmonic note
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.type = 'sine'
-      osc.frequency.setValueAtTime(554.37, now)
-      osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.08)
-      gain.gain.setValueAtTime(0.07, now)
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14)
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.start(now)
-      osc.stop(now + 0.15)
-    } else if (type === 'miss') {
-      // Gentle soft woodblock thud
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.type = 'sine'
-      osc.frequency.setValueAtTime(220, now)
-      osc.frequency.linearRampToValueAtTime(160, now + 0.12)
-      gain.gain.setValueAtTime(0.05, now)
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16)
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.start(now)
-      osc.stop(now + 0.18)
-    } else if (type === 'chime' || type === 'complete') {
-      // Harmonious 4-note ascending chord
-      [523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
-        const osc = ctx.createOscillator()
-        const gain = ctx.createGain()
-        osc.type = 'sine'
-        osc.frequency.setValueAtTime(freq, now + idx * 0.07)
-        gain.gain.setValueAtTime(0.06, now + idx * 0.07)
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.35)
-        osc.connect(gain)
-        gain.connect(ctx.destination)
-        osc.start(now + idx * 0.07)
-        osc.stop(now + idx * 0.07 + 0.38)
-      })
-    } else {
-      // Light tactile tap
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.type = 'sine'
-      osc.frequency.setValueAtTime(400, now)
-      gain.gain.setValueAtTime(0.03, now)
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04)
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.start(now)
-      osc.stop(now + 0.05)
+      osc.stop(now + 0.06)
     }
   } catch {}
 }
 
-// -------------------------------------------------------------
-// BESPOKE VECTOR ILLUSTRATIONS (NO CHEAP EMOJIS)
-// -------------------------------------------------------------
-
-// Target Stimulus: Golden Sunbird (Fast reaction required)
+// Custom Vector Art: Golden Celestial Sunbird (Target)
 function GoldenSunbirdSvg({className = 'w-28 h-28'}: {className?: string}) {
   return (
     <svg viewBox="0 0 120 120" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#FDE68A" stopOpacity="0.8"/>
-          <stop offset="60%" stopColor="#F59E0B" stopOpacity="0.3"/>
-          <stop offset="100%" stopColor="#F59E0B" stopOpacity="0"/>
-        </radialGradient>
-        <linearGradient id="featherGold" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FEF08A"/>
-          <stop offset="40%" stopColor="#F59E0B"/>
-          <stop offset="100%" stopColor="#D97706"/>
-        </linearGradient>
-        <linearGradient id="emeraldWing" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#34D399"/>
-          <stop offset="100%" stopColor="#059669"/>
-        </linearGradient>
-      </defs>
-      {/* Radiant Glow Ring */}
-      <circle cx="60" cy="60" r="54" fill="url(#sunGlow)"/>
-      <circle cx="60" cy="60" r="48" stroke="#FBBF24" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.6"/>
-
-      {/* Sunbird Body & Wing */}
-      <path d="M 42 68 C 30 68 22 55 28 42 C 34 32 48 30 58 38 C 72 32 88 38 94 48 C 98 56 92 68 82 72 C 68 78 52 76 42 68 Z" fill="url(#featherGold)"/>
-      {/* Sweeping Emerald Wing */}
-      <path d="M 44 48 C 36 28 52 14 68 18 C 74 20 80 26 82 32 C 72 34 60 40 44 48 Z" fill="url(#emeraldWing)"/>
-      <path d="M 52 46 C 44 32 58 24 70 26 C 62 30 58 38 52 46 Z" fill="#10B981" opacity="0.7"/>
-
-      {/* Bird Head & Beak */}
-      <circle cx="86" cy="48" r="10" fill="url(#featherGold)"/>
+      <circle cx="60" cy="60" r="54" fill="#FEF08A" fillOpacity="0.45"/>
+      <circle cx="60" cy="60" r="48" stroke="#F59E0B" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.6"/>
+      <path d="M 42 68 C 30 68 22 55 28 42 C 34 32 48 30 58 38 C 72 32 88 38 94 48 C 98 56 92 68 82 72 C 68 78 52 76 42 68 Z" fill="#F59E0B"/>
+      <path d="M 44 48 C 36 28 52 14 68 18 C 74 20 80 26 82 32 C 72 34 60 40 44 48 Z" fill="#10B981"/>
+      <circle cx="86" cy="48" r="10" fill="#FBBF24"/>
       <path d="M 94 47 L 110 50 L 94 53 Z" fill="#B45309"/>
-      {/* Eye */}
       <circle cx="88" cy="46" r="3" fill="#1E293B"/>
       <circle cx="89" cy="45" r="1" fill="#FFFFFF"/>
-      {/* Tail Feathers */}
-      <path d="M 28 56 C 14 58 10 68 12 76 C 18 72 24 66 32 62 Z" fill="#F59E0B"/>
-      <path d="M 32 60 C 20 64 16 74 20 82 C 24 76 28 70 36 66 Z" fill="#059669"/>
+      <path d="M 28 56 C 14 58 10 68 12 76 C 18 72 24 66 32 62 Z" fill="#D97706"/>
     </svg>
   )
 }
 
-// Distractor Stimulus: Velvet Duskmoth (Impulse control - DO NOT TAP)
+// Custom Vector Art: Shadow Duskmoth (Inhibitory Distractor)
 function VelvetDuskmothSvg({className = 'w-28 h-28'}: {className?: string}) {
   return (
     <svg viewBox="0 0 120 120" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <radialGradient id="mothGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#FCA5A5" stopOpacity="0.4"/>
-          <stop offset="70%" stopColor="#EF4444" stopOpacity="0.1"/>
-          <stop offset="100%" stopColor="#EF4444" stopOpacity="0"/>
-        </radialGradient>
-        <linearGradient id="duskWings" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#475569"/>
-          <stop offset="50%" stopColor="#334155"/>
-          <stop offset="100%" stopColor="#1E293B"/>
-        </linearGradient>
-      </defs>
-      {/* Amber/Red Caution Ambient Aura */}
-      <circle cx="60" cy="60" r="54" fill="url(#mothGlow)"/>
+      <circle cx="60" cy="60" r="54" fill="#FEE2E2" fillOpacity="0.5"/>
       <circle cx="60" cy="60" r="48" stroke="#F87171" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.6"/>
-
-      {/* Upper Wings */}
-      <path d="M 60 56 C 45 35 25 32 18 42 C 12 50 18 68 35 72 C 45 74 55 66 60 56 Z" fill="url(#duskWings)"/>
-      <path d="M 60 56 C 75 35 95 32 102 42 C 108 50 102 68 85 72 C 75 74 65 66 60 56 Z" fill="url(#duskWings)"/>
-
-      {/* Decorative Wing Spots */}
-      <circle cx="32" cy="52" r="6" fill="#F87171" opacity="0.8"/>
-      <circle cx="32" cy="52" r="3" fill="#1E293B"/>
-      <circle cx="88" cy="52" r="6" fill="#F87171" opacity="0.8"/>
-      <circle cx="88" cy="52" r="3" fill="#1E293B"/>
-
-      {/* Lower Hindwings */}
-      <path d="M 60 62 C 50 68 38 74 36 86 C 34 94 46 98 54 90 C 58 86 60 76 60 62 Z" fill="#334155"/>
-      <path d="M 60 62 C 70 68 82 74 84 86 C 86 94 74 98 66 90 C 62 86 60 76 60 62 Z" fill="#334155"/>
-
-      {/* Moth Body & Velvet Antennae */}
+      <path d="M 60 56 C 45 35 25 32 18 42 C 12 50 18 68 35 72 C 45 74 55 66 60 56 Z" fill="#334155"/>
+      <path d="M 60 56 C 75 35 95 32 102 42 C 108 50 102 68 85 72 C 75 74 65 66 60 56 Z" fill="#334155"/>
+      <circle cx="32" cy="52" r="5" fill="#EF4444" opacity="0.8"/>
+      <circle cx="88" cy="52" r="5" fill="#EF4444" opacity="0.8"/>
       <ellipse cx="60" cy="64" rx="4.5" ry="16" fill="#0F172A"/>
       <path d="M 58 48 C 54 36 44 26 36 24" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round"/>
       <path d="M 62 48 C 66 36 76 26 84 24" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round"/>
@@ -206,14 +112,12 @@ function VelvetDuskmothSvg({className = 'w-28 h-28'}: {className?: string}) {
   )
 }
 
-// Sleek Astral Navigation Chevron (Flanker Stimulus)
+// Astral Starlight Chevrons (Flanker Task)
 function AstralChevronSvg({direction, isCenter, className = 'w-10 h-10'}: {direction: 'left' | 'right'; isCenter: boolean; className?: string}) {
   const isLeft = direction === 'left'
   return (
     <div className={`relative flex items-center justify-center ${isCenter ? 'scale-125' : 'opacity-70'}`}>
-      {isCenter && (
-        <span className="absolute -inset-2 rounded-xl bg-amber-400/20 blur-md animate-pulse"/>
-      )}
+      {isCenter && <span className="absolute -inset-2 rounded-xl bg-amber-400/20 blur-md animate-pulse"/>}
       <svg
         viewBox="0 0 48 48"
         className={`${className} transition-transform ${isLeft ? '' : 'rotate-180'}`}
@@ -227,16 +131,14 @@ function AstralChevronSvg({direction, isCenter, className = 'w-10 h-10'}: {direc
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        {isCenter && (
-          <circle cx="16" cy="24" r="3" fill="#FDE68A"/>
-        )}
+        {isCenter && <circle cx="16" cy="24" r="3" fill="#FDE68A"/>}
       </svg>
     </div>
   )
 }
 
-// Constellation Starlight Node (Working Memory Matrix)
-function StarlightNodeSvg({isLit, isTarget}: {isLit: boolean; isTarget?: boolean}) {
+// Starlight Node (Astrolabe Memory)
+function StarlightNodeSvg({isLit}: {isLit: boolean}) {
   return (
     <svg viewBox="0 0 60 60" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
       {isLit && (
@@ -245,7 +147,6 @@ function StarlightNodeSvg({isLit, isTarget}: {isLit: boolean; isTarget?: boolean
           <circle cx="30" cy="30" r="20" fill="#F59E0B" fillOpacity="0.3"/>
         </>
       )}
-      {/* 4-Pointed Star Crystal */}
       <path
         d="M 30 10 L 33 25 L 48 28 L 34 32 L 30 48 L 26 32 L 12 28 L 27 25 Z"
         fill={isLit ? '#FBBF24' : '#334155'}
@@ -257,54 +158,67 @@ function StarlightNodeSvg({isLit, isTarget}: {isLit: boolean; isTarget?: boolean
   )
 }
 
-// -------------------------------------------------------------
-// VANDERBILT DSM-5 DIAGNOSTIC QUESTIONNAIRE (18 ITEMS)
-// -------------------------------------------------------------
-const VANDERBILT_QUESTIONS = [
-  {id: 'inatt_1', text: 'Fails to give close attention to details or makes careless mistakes in schoolwork or tasks', category: 'inatt'},
-  {id: 'inatt_2', text: 'Has difficulty sustaining attention in tasks, instructions, or playful activities', category: 'inatt'},
-  {id: 'inatt_3', text: 'Does not seem to listen when spoken to directly (mind seems elsewhere)', category: 'inatt'},
-  {id: 'inatt_4', text: 'Does not follow through on instructions and fails to finish schoolwork or chores', category: 'inatt'},
-  {id: 'inatt_5', text: 'Has difficulty organizing tasks, time, and independent activities', category: 'inatt'},
-  {id: 'inatt_6', text: 'Avoids, dislikes, or is reluctant to engage in tasks requiring sustained mental effort', category: 'inatt'},
-  {id: 'inatt_7', text: 'Loses things necessary for tasks or activities (pencils, books, assignments)', category: 'inatt'},
-  {id: 'inatt_8', text: 'Is easily distracted by extraneous sights, sounds, or competing ideas', category: 'inatt'},
-  {id: 'inatt_9', text: 'Is forgetful in daily activities and multi-step routines', category: 'inatt'},
-  {id: 'hyper_1', text: 'Fidgets with hands or feet, taps, or squirms in seat', category: 'hyper'},
-  {id: 'hyper_2', text: 'Leaves seat in classroom or situations where remaining seated is expected', category: 'hyper'},
-  {id: 'hyper_3', text: 'Runs about, climbs excessively, or feels internal restlessness', category: 'hyper'},
-  {id: 'hyper_4', text: 'Has difficulty playing or engaging in leisure activities quietly', category: 'hyper'},
-  {id: 'hyper_5', text: 'Is "on the go" or acts as if "driven by a motor"', category: 'hyper'},
-  {id: 'hyper_6', text: 'Talks excessively or rapidly shifts conversations', category: 'hyper'},
-  {id: 'hyper_7', text: 'Blurts out answers before questions have been completed', category: 'hyper'},
-  {id: 'hyper_8', text: 'Has difficulty waiting for their turn in games or group activities', category: 'hyper'},
-  {id: 'hyper_9', text: 'Interrupts or intrudes on others (butts into conversations or games)', category: 'hyper'},
+// Fantasy Trial Questions (Child-Facing)
+const FANTASY_TRIAL_QUESTIONS = [
+  {
+    id: 'k1',
+    title: 'The Rocket Idea Engine',
+    desc: 'When an exciting new quest or invention pops into your mind, does it feel like a rocket taking off at turbo speed?',
+    icon: '🚀'
+  },
+  {
+    id: 'k2',
+    title: 'The Happy Wiggle Spark',
+    desc: 'Do your hands, feet, or body like wiggling and dancing while you think, listen to stories, or do your homework?',
+    icon: '⚡'
+  },
+  {
+    id: 'k3',
+    title: 'The Deep Daydream Portal',
+    desc: 'Do you ever find yourself lost in your own magical adventure world, where someone has to call your name twice to wake you?',
+    icon: '🌌'
+  },
+  {
+    id: 'k4',
+    title: 'The Lightning Answer Flash',
+    desc: 'When you know the secret answer to a puzzle, is it super tough to wait because your brain wants to blurt it right out?',
+    icon: '✨'
+  },
+  {
+    id: 'k5',
+    title: 'The Disappearing Artifacts',
+    desc: 'Do pencils, erasers, books, or secret treasures play hide-and-seek and magically vanish right when you need them?',
+    icon: '🔍'
+  },
+  {
+    id: 'k6',
+    title: 'The Endless Energy Engine',
+    desc: 'Does your body ever feel like it has a high-energy dynamo that wants to climb, jump, or run even when everyone else is sitting still?',
+    icon: '🏎️'
+  }
 ]
 
-export default function AdhdAssessmentPage() {
-  const [stage, setStage] = useState<'intro' | 'profile' | 'cpt_intro' | 'cpt_run' | 'flanker_intro' | 'flanker_run' | 'memory_intro' | 'memory_run' | 'vanderbilt' | 'analyzing' | 'report'>('intro')
+export default function AdhdFantasyAssessmentPage() {
+  const [stage, setStage] = useState<'welcome' | 'avatar' | 'cpt_story' | 'cpt_game' | 'flanker_story' | 'flanker_game' | 'memory_story' | 'memory_game' | 'trials' | 'agent_eval' | 'celebration'>('welcome')
 
-  const [profile, setProfile] = useState<Profile>({
-    childName: '',
-    childAge: 9,
-    gender: 'Prefer not to say',
-    grade: 'Grade 4',
-    informantRole: 'Parent / Caregiver',
-    primaryConcerns: 'Focus during classroom lectures, sustained task initiation, and motor restlessness.'
-  })
+  // Child Fantasy Persona
+  const [heroName, setHeroName] = useState('')
+  const [heroAge, setHeroAge] = useState(8)
+  const [guildClass, setGuildClass] = useState('Canopy Sky Ranger')
+  const [companion, setCompanion] = useState('Milo the Wise Owl')
 
-  // CPT-3 State (Continuous Performance Task)
+  // CPT-3 State
   const [cptTrialIndex, setCptTrialIndex] = useState(0)
-  const [cptCurrentStimulus, setCptCurrentStimulus] = useState<'target' | 'distractor' | null>(null)
+  const [cptStimulus, setCptStimulus] = useState<'target' | 'distractor' | null>(null)
   const [cptResponseTimes, setCptResponseTimes] = useState<number[]>([])
   const [cptLastRt, setCptLastRt] = useState<number | null>(null)
   const [cptOmissions, setCptOmissions] = useState(0)
   const [cptCommissions, setCptCommissions] = useState(0)
-  const [cptTrialState, setCptTrialState] = useState<'waiting' | 'active' | 'feedback'>('waiting')
-  const cptStartTimeRef = useRef<number>(0)
+  const [cptActive, setCptActive] = useState(false)
+  const cptStartRef = useRef<number>(0)
   const cptRespondedRef = useRef<boolean>(false)
 
-  // Flanker Task State
+  // Flanker State
   const [flankerTrialIndex, setFlankerTrialIndex] = useState(0)
   const [flankerCongruentTimes, setFlankerCongruentTimes] = useState<number[]>([])
   const [flankerIncongruentTimes, setFlankerIncongruentTimes] = useState<number[]>([])
@@ -314,24 +228,25 @@ export default function AdhdAssessmentPage() {
   // Memory Matrix State
   const [memorySequence, setMemorySequence] = useState<number[]>([])
   const [memoryUserSequence, setMemoryUserSequence] = useState<number[]>([])
-  const [memoryTrial, setMemoryTrial] = useState(1)
+  const [memoryLevel, setMemoryLevel] = useState(1)
   const [memoryLitCell, setMemoryLitCell] = useState<number | null>(null)
   const [memoryPhase, setMemoryPhase] = useState<'showing' | 'input' | 'feedback'>('showing')
   const [memoryMaxSpan, setMemoryMaxSpan] = useState(3)
 
-  // Vanderbilt Rating Scale State (0 = Never, 1 = Occasionally, 2 = Often, 3 = Very Often)
-  const [vanderbiltScores, setVanderbiltScores] = useState<Record<string, number>>({})
+  // Trial Responses
+  const [trialAnswers, setTrialAnswers] = useState<Record<string, number>>({})
 
-  // Final Clinical Report State
-  const [reportData, setReportData] = useState<any>(null)
+  // LangGraph Agent Output
+  const [agentResult, setAgentResult] = useState<any>(null)
+  const [showClinicalDossier, setShowClinicalDossier] = useState(false)
 
-  // Keyboard navigation & spacebar responses
+  // Spacebar and Arrow Key Listeners
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (stage === 'cpt_run' && (e.code === 'Space' || e.code === 'Enter')) {
+      if (stage === 'cpt_game' && (e.code === 'Space' || e.code === 'Enter')) {
         e.preventDefault()
         handleCptTap()
-      } else if (stage === 'flanker_run') {
+      } else if (stage === 'flanker_game') {
         if (e.code === 'ArrowLeft') {
           e.preventDefault()
           handleFlankerAnswer('left')
@@ -345,66 +260,61 @@ export default function AdhdAssessmentPage() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   })
 
-  // --- CPT-3 Task Loop (20 Trials: 15 Targets, 5 Distractors) ---
+  // CPT-3 Loop (20 Trials)
   const CPT_TOTAL_TRIALS = 20
   useEffect(() => {
-    if (stage !== 'cpt_run') return
+    if (stage !== 'cpt_game') return
 
     if (cptTrialIndex >= CPT_TOTAL_TRIALS) {
-      playSound('complete')
-      setStage('flanker_intro')
+      playAudio('fanfare')
+      setStage('flanker_story')
       return
     }
 
     cptRespondedRef.current = false
     const isTarget = Math.random() > 0.28
-    const stimType = isTarget ? 'target' : 'distractor'
+    const stim = isTarget ? 'target' : 'distractor'
 
-    const itiTimer = setTimeout(() => {
-      setCptCurrentStimulus(stimType)
-      setCptTrialState('active')
-      cptStartTimeRef.current = performance.now()
+    const waitTimer = setTimeout(() => {
+      setCptStimulus(stim)
+      setCptActive(true)
+      cptStartRef.current = performance.now()
 
-      // Stimulus presentation window (700ms)
-      const stimTimer = setTimeout(() => {
-        if (!cptRespondedRef.current) {
-          if (stimType === 'target') {
-            setCptOmissions((prev) => prev + 1)
-          }
+      const displayTimer = setTimeout(() => {
+        if (!cptRespondedRef.current && stim === 'target') {
+          setCptOmissions((o) => o + 1)
         }
-        setCptCurrentStimulus(null)
-        setCptTrialState('waiting')
+        setCptStimulus(null)
+        setCptActive(false)
 
-        // Inter-Trial Interval (380ms)
-        const nextTrialTimer = setTimeout(() => {
+        const nextTimer = setTimeout(() => {
           setCptTrialIndex((i) => i + 1)
         }, 380)
-
-        return () => clearTimeout(nextTrialTimer)
+        return () => clearTimeout(nextTimer)
       }, 700)
 
-      return () => clearTimeout(stimTimer)
+      return () => clearTimeout(displayTimer)
     }, 450)
 
-    return () => clearTimeout(itiTimer)
+    return () => clearTimeout(waitTimer)
   }, [stage, cptTrialIndex])
 
   function handleCptTap() {
-    if (cptTrialState !== 'active' || cptRespondedRef.current) return
+    if (!cptActive || cptRespondedRef.current) return
     cptRespondedRef.current = true
-    const elapsed = Math.round(performance.now() - cptStartTimeRef.current)
+    const elapsed = Math.round(performance.now() - cptStartRef.current)
     setCptLastRt(elapsed)
 
-    if (cptCurrentStimulus === 'target') {
-      playSound('hit')
+    if (cptStimulus === 'target') {
+      playAudio('hit')
       setCptResponseTimes((prev) => [...prev, elapsed])
-    } else if (cptCurrentStimulus === 'distractor') {
-      playSound('miss')
-      setCptCommissions((prev) => prev + 1)
+    } else if (cptStimulus === 'distractor') {
+      playAudio('miss')
+      setCptCommissions((c) => c + 1)
     }
   }
 
-  // --- Flanker Task Loop (10 Trials) ---
+  // Flanker Loop (10 Trials)
   const FLANKER_TOTAL_TRIALS = 10
   const FLANKER_TRIALS: Array<{targetDir: 'left' | 'right'; isCongruent: boolean}> = [
     {targetDir: 'left', isCongruent: true},
@@ -420,11 +330,11 @@ export default function AdhdAssessmentPage() {
   ]
 
   useEffect(() => {
-    if (stage !== 'flanker_run') return
+    if (stage !== 'flanker_game') return
 
     if (flankerTrialIndex >= FLANKER_TOTAL_TRIALS) {
-      playSound('complete')
-      setStage('memory_intro')
+      playAudio('fanfare')
+      setStage('memory_story')
       return
     }
 
@@ -436,25 +346,25 @@ export default function AdhdAssessmentPage() {
     if (!currentFlanker) return
     const elapsed = Math.round(performance.now() - flankerStartRef.current)
     if (dir === currentFlanker.targetDir) {
-      playSound(dir === 'left' ? 'flanker_left' : 'flanker_right')
+      playAudio('star')
       if (currentFlanker.isCongruent) {
         setFlankerCongruentTimes((prev) => [...prev, elapsed])
       } else {
         setFlankerIncongruentTimes((prev) => [...prev, elapsed])
       }
     } else {
-      playSound('miss')
+      playAudio('miss')
     }
     setFlankerTrialIndex((i) => i + 1)
   }
 
-  // --- Spatial Working Memory Matrix ---
+  // Memory Matrix (3 Levels)
   useEffect(() => {
-    if (stage !== 'memory_run') return
+    if (stage !== 'memory_game') return
 
-    const spanLength = memoryTrial + 2 // 3, 4, 5
+    const span = memoryLevel + 2
     const seq: number[] = []
-    while (seq.length < spanLength) {
+    while (seq.length < span) {
       const cell = Math.floor(Math.random() * 9)
       if (seq[seq.length - 1] !== cell) seq.push(cell)
     }
@@ -462,381 +372,403 @@ export default function AdhdAssessmentPage() {
     setMemoryUserSequence([])
     setMemoryPhase('showing')
 
-    // Playback sequence
     seq.forEach((cell, idx) => {
       setTimeout(() => {
         setMemoryLitCell(cell)
-        playSound('star')
+        playAudio('star')
         setTimeout(() => setMemoryLitCell(null), 380)
       }, 600 + idx * 550)
     })
 
-    const inputTimer = setTimeout(() => {
+    const timer = setTimeout(() => {
       setMemoryPhase('input')
     }, 600 + seq.length * 550)
 
-    return () => clearTimeout(inputTimer)
-  }, [stage, memoryTrial])
+    return () => clearTimeout(timer)
+  }, [stage, memoryLevel])
 
-  function handleMemoryCellClick(cellIdx: number) {
+  function handleMemoryClick(cellIdx: number) {
     if (memoryPhase !== 'input') return
-    playSound('star')
+    playAudio('star')
     const updated = [...memoryUserSequence, cellIdx]
     setMemoryUserSequence(updated)
 
-    const currentStep = updated.length - 1
-    if (updated[currentStep] !== memorySequence[currentStep]) {
-      playSound('miss')
+    const step = updated.length - 1
+    if (updated[step] !== memorySequence[step]) {
+      playAudio('miss')
       setMemoryPhase('feedback')
       setTimeout(() => {
-        if (memoryTrial < 3) {
-          setMemoryTrial((t) => t + 1)
-        } else {
-          playSound('complete')
-          setStage('vanderbilt')
+        if (memoryLevel < 3) setMemoryLevel((l) => l + 1)
+        else {
+          playAudio('fanfare')
+          setStage('trials')
         }
       }, 700)
       return
     }
 
     if (updated.length === memorySequence.length) {
-      playSound('hit')
+      playAudio('hit')
       setMemoryMaxSpan(memorySequence.length)
       setMemoryPhase('feedback')
       setTimeout(() => {
-        if (memoryTrial < 3) {
-          setMemoryTrial((t) => t + 1)
-        } else {
-          playSound('complete')
-          setStage('vanderbilt')
+        if (memoryLevel < 3) setMemoryLevel((l) => l + 1)
+        else {
+          playAudio('fanfare')
+          setStage('trials')
         }
       }, 800)
     }
   }
 
-  // --- Generate Full Research Report ---
-  async function submitAssessment() {
-    setStage('analyzing')
+  // Submit via LangGraph Multi-Node Agent
+  async function submitLangGraphAgent() {
+    setStage('agent_eval')
 
     const hrt = cptResponseTimes.length > 0
       ? Math.round(cptResponseTimes.reduce((a, b) => a + b, 0) / cptResponseTimes.length)
-      : 520
+      : 480
 
     const rtv = cptResponseTimes.length > 1
       ? Math.round(Math.sqrt(cptResponseTimes.map(x => Math.pow(x - hrt, 2)).reduce((a, b) => a + b) / cptResponseTimes.length))
-      : 85
+      : 72
 
-    const avgCong = flankerCongruentTimes.length > 0 ? flankerCongruentTimes.reduce((a,b)=>a+b,0)/flankerCongruentTimes.length : 380
-    const avgIncong = flankerIncongruentTimes.length > 0 ? flankerIncongruentTimes.reduce((a,b)=>a+b,0)/flankerIncongruentTimes.length : 460
+    const avgCong = flankerCongruentTimes.length > 0 ? flankerCongruentTimes.reduce((a, b) => a + b, 0) / flankerCongruentTimes.length : 360
+    const avgIncong = flankerIncongruentTimes.length > 0 ? flankerIncongruentTimes.reduce((a, b) => a + b, 0) / flankerIncongruentTimes.length : 430
     const flankerCost = Math.max(15, Math.round(avgIncong - avgCong))
-
-    let inattSum = 0
-    let hyperSum = 0
-    VANDERBILT_QUESTIONS.forEach((q) => {
-      const val = vanderbiltScores[q.id] || 0
-      if (q.category === 'inatt') inattSum += val
-      else hyperSum += val
-    })
 
     const payload = {
       assessmentType: 'adhd',
-      profile,
-      adhdMetrics: {
+      childName: heroName || 'Sky Ranger',
+      childAge: heroAge,
+      guildClass,
+      companion,
+      telemetry: {
         hrtMs: hrt,
+        rtvMs: rtv,
         omissions: cptOmissions,
         commissions: cptCommissions,
-        rtvMs: rtv,
         flankerCostMs: flankerCost,
         workingMemorySpan: memoryMaxSpan,
-        vanderbiltInattention: inattSum,
-        vanderbiltHyperactivity: hyperSum,
       }
     }
 
     try {
-      const res = await fetch('/api/assessments/analyze', {
+      const res = await fetch('/api/assessments/agent', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(payload)
       })
-      if (!res.ok) throw new Error('Failed to analyze')
-      const data = await res.json()
-      setReportData(data)
-      setStage('report')
-      playSound('complete')
+      if (!res.ok) throw new Error('Agent evaluation failed')
+      const json = await res.json()
+      setAgentResult(json.data)
+      setStage('celebration')
+      playAudio('fanfare')
     } catch (err) {
       console.error(err)
-      alert('Unable to generate report. Please try again.')
-      setStage('vanderbilt')
+      alert('The Sky Citadel Guild is reconnecting... please try again!')
+      setStage('trials')
     }
   }
 
   return (
-    <main data-no-listen="true" className="min-h-screen bg-[#FDFBF7] py-10 px-4 font-poppins text-[#1F2937]">
+    <main data-no-listen="true" className="min-h-screen bg-[#FFFDF8] py-8 px-4 font-poppins text-[#1F2937]">
       <div className="mx-auto max-w-4xl">
-        {/* Navigation & Clinical Standard Header */}
-        <div className="mb-6 flex flex-wrap items-center justify-between text-sm text-[#78716C] gap-2">
+        {/* Navigation & Realm Indicator */}
+        <div className="mb-6 flex items-center justify-between text-xs text-[#78716C]">
+          <Link href="/assessments" prefetch={false} className="font-bold text-[#05B076] hover:underline flex items-center gap-1.5">
+            ← Assessment Directory
+          </Link>
           <div className="flex items-center gap-2">
-            <Link href="/assessments" prefetch={false} className="hover:text-[#05B076] transition-colors font-semibold">← All Assessments</Link>
-            <span>/</span>
-            <span className="font-semibold text-[#111827]">Manas FocusTrack™ ADHD Battery</span>
+            <span className="rounded-full bg-amber-500/15 px-3 py-1 font-bold text-amber-900 border border-amber-300">
+              Paid Clinical Battery • CPT-3 Standard
+            </span>
           </div>
-          <span className="rounded-full bg-[#05B076]/10 border border-[#05B076]/30 px-3.5 py-1 font-semibold text-[#065F46] text-xs">
-            Gold Standard Conners CPT-3 & Vanderbilt Normed
-          </span>
         </div>
 
-        {/* 1. INTRO / OVERVIEW & CLINICAL METHODOLOGY */}
-        {stage === 'intro' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-xl">
-            <div className="flex flex-col md:flex-row gap-8 items-center">
-              <div className="flex-1">
-                <div className="inline-flex items-center gap-2 rounded-full bg-[#05B076]/15 px-3.5 py-1 text-xs font-bold text-[#065F46] uppercase tracking-wider mb-4 border border-[#05B076]/30">
-                  Pediatric Cognitive Assessment • Free Open Access Beta
-                </div>
-                <h1 className="font-patrick text-4xl md:text-5xl text-[#0F172A] leading-tight mb-4">
-                  Manas FocusTrack™ <span className="text-[#05B076]">ADHD Cognitive Battery</span>
-                </h1>
-                <p className="text-base text-[#475569] leading-relaxed mb-6">
-                  Unlike conventional paper checklists that only capture subjective impressions, <strong>Manas FocusTrack™</strong> pairs an interactive continuous performance task (CPT-3) with Vanderbilt DSM-5 dimensional scaling. In 15 playful minutes, it measures real-time motor inhibition, reaction time variability, distractor filtering, and working memory capacity.
-                </p>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
-                  <div className="rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-3 text-center">
-                    <div className="font-bold text-lg text-[#05B076]">Millisecond</div>
-                    <div className="text-xs text-[#64748B]">Reaction Time Tracking</div>
-                  </div>
-                  <div className="rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-3 text-center">
-                    <div className="font-bold text-lg text-[#F47522]">Age-Normed</div>
-                    <div className="text-xs text-[#64748B]">T-Score Benchmarking</div>
-                  </div>
-                  <div className="rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-3 text-center col-span-2 sm:col-span-1">
-                    <div className="font-bold text-lg text-[#3B82F6]">Instant PDF</div>
-                    <div className="text-xs text-[#64748B]">Clinical Diagnostic Report</div>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-4">
-                  <button
-                    type="button"
-                    onClick={() => { playSound('tap'); setStage('profile') }}
-                    className="rounded-full bg-gradient-to-r from-[#05B076] to-[#049A68] px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-[#05B076]/25 hover:shadow-xl hover:scale-[1.02] transition-all"
-                  >
-                    Start Assessment →
-                  </button>
-                  <span className="text-xs text-[#64748B]">
-                    100% Free during Open Access • Full game battery, instant T-Score profile, and school accommodation blueprint.
+        {/* 1. WELCOME SCREEN: FANTASY HERO REALM */}
+        {stage === 'welcome' && (
+          <div className="rounded-3xl border-2 border-[#FDE68A] bg-white overflow-hidden shadow-2xl">
+            {/* Storybook Hero Panorama */}
+            <div className="relative h-64 md:h-80 w-full overflow-hidden bg-gradient-to-tr from-[#FEF3C7] to-[#DCFCE7]">
+              <img
+                src="/decor/itw/itw-adhd-run-brief.webp"
+                alt="Sky Citadel of the Sunbird"
+                className="h-full w-full object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent flex items-end p-6 md:p-8">
+                <div>
+                  <span className="inline-block rounded-full bg-amber-400 text-slate-900 px-3.5 py-1 text-xs font-bold uppercase tracking-wider mb-2 shadow">
+                    Fantasy Adventure & Clinical Battery
                   </span>
+                  <h1 className="font-patrick text-3xl md:text-5xl text-white font-bold drop-shadow-md">
+                    Chronicles of the Sunbird: <span className="text-amber-300">The Sky Citadel Quest</span>
+                  </h1>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 md:p-10">
+              <div className="flex items-center gap-4 p-4 rounded-2xl bg-amber-50/70 border border-amber-200 mb-8">
+                <img
+                  src="/decor/itw/milo-owl.webp"
+                  alt="Milo Owl"
+                  className="w-16 h-16 rounded-full border-2 border-amber-400 shadow-sm shrink-0 object-cover"
+                />
+                <div className="text-xs text-[#334155] leading-relaxed">
+                  <strong className="text-amber-800 text-sm block font-poppins">Hoot hoot! Greetings, brave traveler.</strong>
+                  The Celestial Sunbird has summoned you to the floating Sky Citadel of Aethelgard. Test your lightning reflexes, chart the cosmic starways, and unlock your unique mental superpowers!
                 </div>
               </div>
 
-              <div className="w-full md:w-80 shrink-0 text-center">
-                <div className="relative mx-auto w-64 h-64 rounded-3xl bg-gradient-to-tr from-[#FEF3C7] to-[#DCFCE7] p-4 flex items-center justify-center shadow-inner border border-[#A7F3D0]">
-                  <img
-                    src="/decor/itw/itw-adhd-sticker.webp"
-                    alt="FocusTrack Attention Explorer"
-                    loading="lazy"
-                    className="max-h-full max-w-full object-contain filter drop-shadow-md"
-                  />
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div className="rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] p-4 text-center">
+                  <div className="text-2xl mb-1">🦜</div>
+                  <strong className="text-xs text-[#065F46] block font-bold">Chapter 1: The Watchtower</strong>
+                  <span className="text-[11px] text-[#047857]">Conners CPT-3 Continuous Focus</span>
                 </div>
-                <p className="mt-3 text-xs text-[#78716C] italic font-medium">
-                  Aligned with AAP Clinical Guidelines & Conners CPT-3
-                </p>
+                <div className="rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] p-4 text-center">
+                  <div className="text-2xl mb-1">🧭</div>
+                  <strong className="text-xs text-[#1E40AF] block font-bold">Chapter 2: Cosmic Drift</strong>
+                  <span className="text-[11px] text-[#2563EB]">Eriksen Flanker Conflict Filtering</span>
+                </div>
+                <div className="rounded-2xl bg-[#FEF3C7] border border-[#FDE68A] p-4 text-center">
+                  <div className="text-2xl mb-1">✨</div>
+                  <strong className="text-xs text-[#92400E] block font-bold">Chapter 3: Star Astrolabe</strong>
+                  <span className="text-[11px] text-[#B45309]">Spatial Working Memory Matrix</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-[#F1F5F9]">
+                <div className="text-xs text-[#64748B]">
+                  Includes <strong>Certified Neuropsychological Dossier & IEP Blueprint</strong> for Parents
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { playAudio('chime'); setStage('avatar') }}
+                  className="w-full sm:w-auto rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+                >
+                  Enter the Sky Citadel →
+                </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* 2. PARTICIPANT DEMOGRAPHICS */}
-        {stage === 'profile' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-xl">
-            <h2 className="font-patrick text-3xl text-[#111827] mb-2">Participant Details & Clinical Baseline</h2>
-            <p className="text-sm text-[#64748B] mb-6">
-              Clinical age-norming relies on accurate chronological age to calculate standard deviation percentiles.
-            </p>
+        {/* 2. CHOOSE HERO NAME & GUILD CLASS */}
+        {stage === 'avatar' && (
+          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-xl">
+            <div className="text-center max-w-lg mx-auto mb-8">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-700">Sky Citadel Guild Registration</span>
+              <h2 className="font-patrick text-3xl md:text-4xl text-[#0F172A] mt-1">Choose Your Explorer Identity</h2>
+              <p className="text-xs text-[#64748B] mt-2">Every hero who ascends the citadel is recognized by their guild name and class!</p>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+            <div className="max-w-md mx-auto space-y-6 mb-8">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#475569] mb-1.5">Child or Participant Name *</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#334155] mb-2">My Hero Codename</label>
                 <input
                   type="text"
-                  value={profile.childName}
-                  onChange={(e) => setProfile({...profile, childName: e.target.value})}
-                  placeholder="e.g. Aarav Sharma"
-                  className="w-full rounded-xl border border-[#CBD5E1] p-3 text-sm focus:border-[#05B076] focus:outline-none"
+                  value={heroName}
+                  onChange={(e) => setHeroName(e.target.value)}
+                  placeholder="e.g. Captain Aarav, Star Voyager Diya"
+                  className="w-full rounded-2xl border-2 border-[#CBD5E1] p-3.5 text-sm font-semibold focus:border-amber-500 focus:outline-none bg-[#F8FAFC]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#475569] mb-1.5">Chronological Age *</label>
-                <input
-                  type="number"
-                  min="4"
-                  max="18"
-                  value={profile.childAge}
-                  onChange={(e) => setProfile({...profile, childAge: Number(e.target.value)})}
-                  className="w-full rounded-xl border border-[#CBD5E1] p-3 text-sm focus:border-[#05B076] focus:outline-none"
-                />
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#334155] mb-2">Choose Your Guild Class</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    {name: 'Canopy Sky Ranger', icon: '🏹', desc: 'Eagle Eyes'},
+                    {name: 'Astral Spellcaster', icon: '🔮', desc: 'Star Magic'},
+                    {name: 'Sunfire Knight', icon: '🛡️', desc: 'Calm Courage'},
+                  ].map((cls) => (
+                    <button
+                      key={cls.name}
+                      type="button"
+                      onClick={() => { playAudio('tap'); setGuildClass(cls.name) }}
+                      className={`p-3 rounded-2xl border-2 text-center transition-all ${
+                        guildClass === cls.name
+                          ? 'border-amber-500 bg-amber-50 text-amber-900 shadow-md'
+                          : 'border-[#E2E8F0] bg-white text-[#64748B] hover:border-[#CBD5E1]'
+                      }`}
+                    >
+                      <div className="text-2xl mb-1">{cls.icon}</div>
+                      <strong className="block text-[11px] font-bold leading-tight">{cls.name}</strong>
+                      <span className="text-[10px] text-[#94A3B8]">{cls.desc}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#475569] mb-1.5">Grade / School Stage</label>
-                <input
-                  type="text"
-                  value={profile.grade}
-                  onChange={(e) => setProfile({...profile, grade: e.target.value})}
-                  className="w-full rounded-xl border border-[#CBD5E1] p-3 text-sm focus:border-[#05B076] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#475569] mb-1.5">Respondent Role</label>
-                <select
-                  value={profile.informantRole}
-                  onChange={(e) => setProfile({...profile, informantRole: e.target.value})}
-                  className="w-full rounded-xl border border-[#CBD5E1] p-3 text-sm focus:border-[#05B076] focus:outline-none bg-white"
-                >
-                  <option>Parent / Caregiver</option>
-                  <option>Classroom Teacher</option>
-                  <option>Special Educator / Remedial Tutor</option>
-                  <option>Self-Report (Adult / Adolescent)</option>
-                </select>
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#475569] mb-1.5">Primary Classroom / Home Concerns</label>
-                <textarea
-                  rows={2}
-                  value={profile.primaryConcerns}
-                  onChange={(e) => setProfile({...profile, primaryConcerns: e.target.value})}
-                  className="w-full rounded-xl border border-[#CBD5E1] p-3 text-sm focus:border-[#05B076] focus:outline-none"
-                />
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#334155] mb-2">Explorer Age Bracket</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    {age: 6, label: 'Ages 5–7', title: 'Novice Scout'},
+                    {age: 9, label: 'Ages 8–11', title: 'Sky Voyager'},
+                    {age: 13, label: 'Ages 12+', title: 'Master Navigator'},
+                  ].map((tier) => (
+                    <button
+                      key={tier.age}
+                      type="button"
+                      onClick={() => { playAudio('tap'); setHeroAge(tier.age) }}
+                      className={`rounded-2xl p-3 text-center border-2 transition-all ${
+                        heroAge === tier.age
+                          ? 'border-[#05B076] bg-[#ECFDF5] text-[#065F46] shadow-md'
+                          : 'border-[#E2E8F0] bg-white text-[#64748B] hover:border-[#CBD5E1]'
+                      }`}
+                    >
+                      <strong className="block text-xs font-bold">{tier.title}</strong>
+                      <span className="text-[10px]">{tier.label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
             <div className="flex justify-between items-center pt-4 border-t border-[#F1F5F9]">
               <button
                 type="button"
-                onClick={() => setStage('intro')}
-                className="text-sm font-semibold text-[#64748B] hover:text-[#0F172A]"
+                onClick={() => setStage('welcome')}
+                className="text-xs font-semibold text-[#64748B] hover:text-[#0F172A]"
               >
                 ← Back
               </button>
               <button
                 type="button"
-                disabled={!profile.childName.trim()}
-                onClick={() => { playSound('chime'); setStage('cpt_intro') }}
-                className="rounded-full bg-[#05B076] px-8 py-3 text-sm font-bold text-white shadow-md hover:bg-[#049A68] disabled:opacity-50 transition-all"
+                disabled={!heroName.trim()}
+                onClick={() => { playAudio('chime'); setStage('cpt_story') }}
+                className="rounded-full bg-amber-500 px-8 py-3 text-sm font-bold text-white shadow-md hover:bg-amber-600 disabled:opacity-50 transition-all"
               >
-                Next: Task 1 (Canopy Observatory) →
+                Begin Chapter 1: The Watchtower →
               </button>
             </div>
           </div>
         )}
 
-        {/* 3. CPT-3 INTRO (CANOPY OBSERVATORY) */}
-        {stage === 'cpt_intro' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-xl text-center">
-            <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#FEF3C7] to-[#DCFCE7] p-2 border border-[#A7F3D0] shadow-md">
-              <GoldenSunbirdSvg className="w-16 h-16"/>
-            </div>
-            <h2 className="font-patrick text-3xl text-[#111827] mb-3">Task 1: Canopy Observatory (Continuous Vigilance)</h2>
-            <p className="mx-auto max-w-lg text-sm text-[#475569] leading-relaxed mb-6">
-              This task measures sustained visual vigilance, reaction latency stability, and behavioral impulse control.
-            </p>
-
-            <div className="mx-auto max-w-md rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-6 text-left space-y-4 mb-8">
-              <div className="flex items-center gap-3">
-                <div className="w-14 h-14 shrink-0 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
-                  <GoldenSunbirdSvg className="w-10 h-10"/>
+        {/* 3. CHAPTER 1 STORY: THE WATCHTOWER */}
+        {stage === 'cpt_story' && (
+          <div className="rounded-3xl border border-[#E7E5E4] bg-white overflow-hidden shadow-2xl">
+            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-gradient-to-b from-[#FEF3C7] to-[#DCFCE7]">
+              <img
+                src="/decor/itw/adhd-workspace-scene.webp"
+                alt="Watchtower of Aethelgard"
+                className="h-full w-full object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent flex items-end p-6">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-black/40 px-3 py-1 rounded-full">
+                    Chapter 1: The Watchtower of Aethelgard
+                  </span>
+                  <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
+                    The Sacred Sunbird & The Shadow Moth
+                  </h2>
                 </div>
-                <p className="text-xs text-[#334155] leading-normal">
-                  When you spot the <strong className="text-[#D97706]">Golden Sunbird</strong> in the lens, tap or press <strong>SPACEBAR</strong> as <strong>FAST</strong> as you can!
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-14 h-14 shrink-0 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center">
-                  <VelvetDuskmothSvg className="w-10 h-10"/>
-                </div>
-                <p className="text-xs text-[#334155] leading-normal">
-                  When the <strong className="text-[#DC2626]">Shadow Duskmoth</strong> appears, <strong>FREEZE! DO NOT TAP!</strong> Let it pass quietly.
-                </p>
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                playSound('tap')
-                setCptTrialIndex(0)
-                setCptResponseTimes([])
-                setCptOmissions(0)
-                setCptCommissions(0)
-                setCptLastRt(null)
-                setStage('cpt_run')
-              }}
-              className="rounded-full bg-[#05B076] px-10 py-3.5 font-bold text-white shadow-lg hover:bg-[#049A68] hover:scale-105 transition-all text-base"
-            >
-              Enter Observatory (20 Observations) →
-            </button>
+            <div className="p-6 md:p-8">
+              <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
+                Through the enchanted observatory lens, rare celestial creatures swoop past the canopy. Milo hoots: <em>"Keep your gaze locked on the center!"</em>
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div className="flex items-center gap-4 p-4 rounded-2xl bg-amber-50 border border-amber-200">
+                  <div className="w-16 h-16 shrink-0 rounded-2xl bg-white border border-amber-300 flex items-center justify-center shadow-sm">
+                    <GoldenSunbirdSvg className="w-12 h-12"/>
+                  </div>
+                  <div>
+                    <strong className="text-xs text-[#92400E] block font-bold">When the Golden Sunbird appears:</strong>
+                    <span className="text-xs text-[#78350F]">Tap the lens or press <strong>SPACEBAR</strong> as <strong>FAST</strong> as lightning!</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 p-4 rounded-2xl bg-rose-50 border border-rose-200">
+                  <div className="w-16 h-16 shrink-0 rounded-2xl bg-white border border-rose-300 flex items-center justify-center shadow-sm">
+                    <VelvetDuskmothSvg className="w-12 h-12"/>
+                  </div>
+                  <div>
+                    <strong className="text-xs text-[#991B1B] block font-bold">When the Shadow Duskmoth flutters by:</strong>
+                    <span className="text-xs text-[#7F1D1D]"><strong>FREEZE! Stay completely still!</strong> Do not tap!</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    playAudio('whoosh')
+                    setCptTrialIndex(0)
+                    setCptResponseTimes([])
+                    setCptOmissions(0)
+                    setCptCommissions(0)
+                    setCptLastRt(null)
+                    setStage('cpt_game')
+                  }}
+                  className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
+                >
+                  Peer Through Observatory Lens (20 Sightings) →
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* 4. CPT-3 RUN (THE OBSERVATORY LENS) */}
-        {stage === 'cpt_run' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-2xl text-center select-none">
-            {/* Real-time Telemetry Bar */}
+        {/* 4. CHAPTER 1 GAMEPLAY: CPT-3 */}
+        {stage === 'cpt_game' && (
+          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3 py-1 rounded-full">
-                Observation {cptTrialIndex + 1} of {CPT_TOTAL_TRIALS}
+              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
+                Sighting {cptTrialIndex + 1} of {CPT_TOTAL_TRIALS}
               </span>
               <div className="flex items-center gap-2">
                 {cptLastRt && (
-                  <span className="text-xs font-bold text-[#05B076] bg-white px-2.5 py-1 rounded-full shadow-sm border border-[#A7F3D0]">
-                    ⚡ {cptLastRt} ms
+                  <span className="text-xs font-bold text-[#05B076] bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                    ⚡ {cptLastRt} ms Reflex
                   </span>
                 )}
-                <div className="w-32 h-2.5 rounded-full bg-[#E2E8F0] overflow-hidden">
+                <div className="w-28 h-2.5 rounded-full bg-[#E2E8F0] overflow-hidden">
                   <div
-                    className="h-full bg-[#05B076] transition-all duration-300"
+                    className="h-full bg-amber-500 transition-all duration-300"
                     style={{width: `${((cptTrialIndex + 1) / CPT_TOTAL_TRIALS) * 100}%`}}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Circular Observatory Telescope Bezel */}
             <div
               onClick={handleCptTap}
-              className="relative mx-auto my-8 flex h-72 w-full max-w-md cursor-pointer items-center justify-center rounded-full border-8 border-[#F1F5F9] bg-gradient-to-b from-[#F8FAFC] to-[#F1F5F9] shadow-2xl transition-all hover:border-[#E2E8F0] active:scale-[0.98] overflow-hidden"
+              className="relative mx-auto my-6 flex h-72 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 border-amber-100 bg-gradient-to-b from-[#FEFCE8] to-[#FFFDF8] shadow-2xl transition-all hover:border-amber-200 active:scale-95 overflow-hidden"
             >
-              {/* Target / Distractor Stimuli */}
-              {cptCurrentStimulus === 'target' && (
+              {cptStimulus === 'target' && (
                 <div className="flex flex-col items-center animate-bounce">
                   <GoldenSunbirdSvg className="w-32 h-32"/>
-                  <span className="mt-2 text-xs font-bold tracking-wider text-[#05B076] uppercase bg-white/90 px-3 py-1 rounded-full shadow-sm">
+                  <span className="mt-2 text-xs font-black tracking-wider text-amber-700 uppercase bg-white/95 px-3 py-1 rounded-full shadow-sm">
                     TAP NOW! / SPACEBAR
                   </span>
                 </div>
               )}
-              {cptCurrentStimulus === 'distractor' && (
+              {cptStimulus === 'distractor' && (
                 <div className="flex flex-col items-center animate-pulse">
                   <VelvetDuskmothSvg className="w-32 h-32"/>
-                  <span className="mt-2 text-xs font-bold tracking-wider text-[#DC2626] uppercase bg-white/90 px-3 py-1 rounded-full shadow-sm">
+                  <span className="mt-2 text-xs font-black tracking-wider text-[#DC2626] uppercase bg-white/95 px-3 py-1 rounded-full shadow-sm">
                     FREEZE! DO NOT TAP!
                   </span>
                 </div>
               )}
-              {!cptCurrentStimulus && (
+              {!cptStimulus && (
                 <div className="text-center text-[#94A3B8]">
-                  <div className="h-16 w-16 mx-auto mb-2 rounded-full border-2 border-dashed border-[#CBD5E1] flex items-center justify-center">
-                    <svg viewBox="0 0 24 24" className="w-6 h-6 text-[#94A3B8]" fill="none" stroke="currentColor" strokeWidth="2">
+                  <div className="h-16 w-16 mx-auto mb-2 rounded-full border-2 border-dashed border-amber-300 flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" strokeWidth="2">
                       <circle cx="12" cy="12" r="10"/>
                       <line x1="12" y1="8" x2="12" y2="12"/>
                       <line x1="12" y1="12" x2="16" y2="14"/>
                     </svg>
                   </div>
-                  <span className="text-xs font-semibold">Keep gaze centered in the telescope lens...</span>
+                  <span className="text-xs font-semibold text-amber-800">Watching the canopy vortex...</span>
                 </div>
               )}
             </div>
@@ -844,157 +776,176 @@ export default function AdhdAssessmentPage() {
             <button
               type="button"
               onClick={handleCptTap}
-              className="w-full max-w-md rounded-2xl bg-gradient-to-r from-[#05B076] to-[#049A68] py-4 text-base font-bold text-white shadow-lg active:scale-95 transition-all hover:shadow-xl"
+              className="w-full max-w-sm rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 py-4 text-base font-bold text-white shadow-lg active:scale-95 transition-all"
             >
               TAP NOW (Or Press Spacebar)
             </button>
           </div>
         )}
 
-        {/* 5. FLANKER INTRO */}
-        {stage === 'flanker_intro' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-xl text-center">
-            <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#0F172A] to-[#1E293B] p-2 border border-[#334155] shadow-md">
-              <AstralChevronSvg direction="right" isCenter={true} className="w-12 h-12"/>
-            </div>
-            <h2 className="font-patrick text-3xl text-[#111827] mb-3">Task 2: Starlight Wayfinder (Distractor Filtering)</h2>
-            <p className="mx-auto max-w-lg text-sm text-[#475569] leading-relaxed mb-6">
-              Measures interference control and the brain’s ability to filter out conflicting peripheral distractors.
-            </p>
-
-            <div className="mx-auto max-w-md rounded-2xl bg-[#0F172A] p-6 text-left space-y-4 mb-8 text-white">
-              <p className="text-xs text-[#94A3B8] leading-normal">
-                Focus <strong className="text-amber-400">ONLY on the glowing GOLDEN star arrow</strong> at the center. Ignore the side arrows!
-              </p>
-              <div className="flex justify-around items-center py-4 bg-[#1E293B] rounded-xl border border-[#334155]">
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <AstralChevronSvg direction="right" isCenter={false} className="w-6 h-6"/>
-                    <AstralChevronSvg direction="right" isCenter={true} className="w-8 h-8"/>
-                    <AstralChevronSvg direction="right" isCenter={false} className="w-6 h-6"/>
-                  </div>
-                  <div className="text-[11px] text-emerald-400 mt-2 font-semibold">Center = RIGHT → Tap Right</div>
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <AstralChevronSvg direction="right" isCenter={false} className="w-6 h-6"/>
-                    <AstralChevronSvg direction="left" isCenter={true} className="w-8 h-8"/>
-                    <AstralChevronSvg direction="right" isCenter={false} className="w-6 h-6"/>
-                  </div>
-                  <div className="text-[11px] text-amber-400 mt-2 font-semibold">Center = LEFT → Tap Left</div>
+        {/* 5. CHAPTER 2 STORY: THE COSMIC METEOR DRIFT */}
+        {stage === 'flanker_story' && (
+          <div className="rounded-3xl border border-[#E7E5E4] bg-white overflow-hidden shadow-2xl">
+            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#0F172A]">
+              <img
+                src="/decor/itw/itw-adhd-support-focus-shield.webp"
+                alt="Cosmic Starfire Drift"
+                className="h-full w-full object-cover object-center opacity-90"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end p-6">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-white/10 px-3 py-1 rounded-full">
+                    Chapter 2: The Starfire Meteor Drift
+                  </span>
+                  <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
+                    Align the Golden Star Compass
+                  </h2>
                 </div>
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                playSound('tap')
-                setFlankerTrialIndex(0)
-                setFlankerCongruentTimes([])
-                setFlankerIncongruentTimes([])
-                setStage('flanker_run')
-              }}
-              className="rounded-full bg-[#05B076] px-10 py-3.5 font-bold text-white shadow-lg hover:bg-[#049A68] hover:scale-105 transition-all text-base"
-            >
-              Start Wayfinder (10 Navigation Trials) →
-            </button>
+            <div className="p-6 md:p-8">
+              <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
+                Your skyship is drifting through an astral meteor shower! Conflicting side stars will try to mislead your vessel. Milo warns: <em>"Look ONLY at the glowing center Golden Star! Which way is it pointing?"</em>
+              </p>
+
+              <div className="p-4 rounded-2xl bg-[#0F172A] text-white flex items-center justify-around mb-8">
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <AstralChevronSvg direction="right" isCenter={false} className="w-5 h-5"/>
+                    <AstralChevronSvg direction="right" isCenter={true} className="w-7 h-7"/>
+                    <AstralChevronSvg direction="right" isCenter={false} className="w-5 h-5"/>
+                  </div>
+                  <span className="text-[11px] text-emerald-400 font-bold block mt-2">Center = RIGHT → Steer Right</span>
+                </div>
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <AstralChevronSvg direction="right" isCenter={false} className="w-5 h-5"/>
+                    <AstralChevronSvg direction="left" isCenter={true} className="w-7 h-7"/>
+                    <AstralChevronSvg direction="right" isCenter={false} className="w-5 h-5"/>
+                  </div>
+                  <span className="text-[11px] text-amber-400 font-bold block mt-2">Center = LEFT → Steer Left</span>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    playAudio('whoosh')
+                    setFlankerTrialIndex(0)
+                    setFlankerCongruentTimes([])
+                    setFlankerIncongruentTimes([])
+                    setStage('flanker_game')
+                  }}
+                  className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
+                >
+                  Take the Helm (10 Navigations) →
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* 6. FLANKER RUN (COSMIC ARENA) */}
-        {stage === 'flanker_run' && currentFlanker && (
-          <div className="rounded-3xl border border-[#1E293B] bg-gradient-to-b from-[#090D16] via-[#0F172A] to-[#1E293B] p-8 md:p-12 shadow-2xl text-center select-none text-white">
+        {/* 6. CHAPTER 2 GAMEPLAY: FLANKER */}
+        {stage === 'flanker_game' && currentFlanker && (
+          <div className="rounded-3xl border border-[#1E293B] bg-gradient-to-b from-[#090D16] via-[#0F172A] to-[#1E293B] p-6 md:p-10 shadow-2xl text-center select-none text-white">
             <div className="flex justify-between items-center mb-6">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#94A3B8] bg-[#1E293B] px-3 py-1 rounded-full border border-[#334155]">
-                Navigation Trial {flankerTrialIndex + 1} of {FLANKER_TOTAL_TRIALS}
+              <span className="text-xs font-bold uppercase tracking-wider text-[#94A3B8] bg-[#1E293B] px-3.5 py-1 rounded-full border border-[#334155]">
+                Course {flankerTrialIndex + 1} of {FLANKER_TOTAL_TRIALS}
               </span>
-              <span className="text-xs font-semibold text-amber-400">
-                Focus on CENTER golden star
+              <span className="text-xs font-bold text-amber-400">
+                Center Golden Star = True Course
               </span>
             </div>
 
-            {/* Celestial Star Array */}
-            <div className="my-12 flex items-center justify-center gap-3 md:gap-5 py-10 px-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+            <div className="my-10 flex items-center justify-center gap-3 md:gap-5 py-10 px-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
               <AstralChevronSvg direction={currentFlanker.isCongruent ? currentFlanker.targetDir : (currentFlanker.targetDir === 'left' ? 'right' : 'left')} isCenter={false} className="w-9 h-9 md:w-12 md:h-12"/>
               <AstralChevronSvg direction={currentFlanker.isCongruent ? currentFlanker.targetDir : (currentFlanker.targetDir === 'left' ? 'right' : 'left')} isCenter={false} className="w-9 h-9 md:w-12 md:h-12"/>
 
-              {/* Central Target */}
               <AstralChevronSvg direction={currentFlanker.targetDir} isCenter={true} className="w-12 h-12 md:w-16 md:h-16"/>
 
               <AstralChevronSvg direction={currentFlanker.isCongruent ? currentFlanker.targetDir : (currentFlanker.targetDir === 'left' ? 'right' : 'left')} isCenter={false} className="w-9 h-9 md:w-12 md:h-12"/>
               <AstralChevronSvg direction={currentFlanker.isCongruent ? currentFlanker.targetDir : (currentFlanker.targetDir === 'left' ? 'right' : 'left')} isCenter={false} className="w-9 h-9 md:w-12 md:h-12"/>
             </div>
 
-            {/* Directional Controls */}
             <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
               <button
                 type="button"
                 onClick={() => handleFlankerAnswer('left')}
-                className="flex flex-col items-center justify-center rounded-2xl bg-[#1E293B] border-2 border-[#334155] p-5 shadow-lg hover:border-amber-400 hover:bg-[#334155] active:scale-95 transition-all"
+                className="rounded-2xl bg-[#1E293B] border-2 border-[#334155] p-5 shadow-lg hover:border-amber-400 hover:bg-[#334155] active:scale-95 transition-all"
               >
-                <span className="text-2xl font-bold text-amber-400">← LEFT</span>
-                <span className="text-[11px] text-[#94A3B8] mt-1 font-mono">[ Arrow Key Left ]</span>
+                <span className="text-xl font-bold text-amber-400 block">← STEER LEFT</span>
+                <span className="text-[10px] text-[#94A3B8] font-mono mt-1">[ Arrow Key Left ]</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleFlankerAnswer('right')}
-                className="flex flex-col items-center justify-center rounded-2xl bg-[#1E293B] border-2 border-[#334155] p-5 shadow-lg hover:border-amber-400 hover:bg-[#334155] active:scale-95 transition-all"
+                className="rounded-2xl bg-[#1E293B] border-2 border-[#334155] p-5 shadow-lg hover:border-amber-400 hover:bg-[#334155] active:scale-95 transition-all"
               >
-                <span className="text-2xl font-bold text-amber-400">RIGHT →</span>
-                <span className="text-[11px] text-[#94A3B8] mt-1 font-mono">[ Arrow Key Right ]</span>
+                <span className="text-xl font-bold text-amber-400 block">STEER RIGHT →</span>
+                <span className="text-[10px] text-[#94A3B8] font-mono mt-1">[ Arrow Key Right ]</span>
               </button>
             </div>
           </div>
         )}
 
-        {/* 7. MEMORY MATRIX INTRO */}
-        {stage === 'memory_intro' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-xl text-center">
-            <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#0F172A] to-[#1E293B] p-2 border border-[#334155] shadow-md">
-              <div className="w-12 h-12">
-                <StarlightNodeSvg isLit={true}/>
+        {/* 7. CHAPTER 3 STORY: THE ANCIENT RUNE ASTROLABE */}
+        {stage === 'memory_story' && (
+          <div className="rounded-3xl border border-[#E7E5E4] bg-white overflow-hidden shadow-2xl">
+            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-gradient-to-tr from-[#FEF3C7] to-[#DCFCE7]">
+              <img
+                src="/decor/itw/itw-adhd-support-checklist.webp"
+                alt="Ancient Rune Astrolabe"
+                className="h-full w-full object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-6">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-black/40 px-3 py-1 rounded-full">
+                    Chapter 3: The Ancient Rune Astrolabe
+                  </span>
+                  <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
+                    Awaken the Musical Constellation
+                  </h2>
+                </div>
               </div>
             </div>
-            <h2 className="font-patrick text-3xl text-[#111827] mb-3">Task 3: Constellation Astrolabe (Working Memory)</h2>
-            <p className="mx-auto max-w-lg text-sm text-[#475569] leading-relaxed mb-6">
-              Measures spatial working memory capacity and mental rehearsal speed without verbal bias.
-            </p>
 
-            <div className="mx-auto max-w-md rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-6 text-left space-y-3 mb-8">
-              <p className="text-xs text-[#334155] leading-normal">
-                Watch the star nodes light up across the astrolabe. Remember the exact sequence and tap the stars in order!
+            <div className="p-6 md:p-8">
+              <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
+                You have reached the mountaintop astrolabe! The 9 glowing rune stars chime with celestial harmony. Milo whispers: <em>"Remember the exact melody sequence and tap the star stones to rekindle the sky!"</em>
               </p>
-            </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                playSound('tap')
-                setMemoryTrial(1)
-                setStage('memory_run')
-              }}
-              className="rounded-full bg-[#05B076] px-10 py-3.5 font-bold text-white shadow-lg hover:bg-[#049A68] hover:scale-105 transition-all text-base"
-            >
-              Start Constellation Puzzle (3 Levels) →
-            </button>
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    playAudio('whoosh')
+                    setMemoryLevel(1)
+                    setStage('memory_game')
+                  }}
+                  className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
+                >
+                  Awaken the Runes (3 Levels) →
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* 8. MEMORY MATRIX RUN */}
-        {stage === 'memory_run' && (
-          <div className="rounded-3xl border border-[#1E293B] bg-gradient-to-b from-[#090D16] via-[#0F172A] to-[#1E293B] p-8 md:p-12 shadow-2xl text-center select-none text-white">
+        {/* 8. CHAPTER 3 GAMEPLAY: MEMORY MATRIX */}
+        {stage === 'memory_game' && (
+          <div className="rounded-3xl border border-[#1E293B] bg-gradient-to-b from-[#090D16] via-[#0F172A] to-[#1E293B] p-6 md:p-10 shadow-2xl text-center select-none text-white">
             <div className="flex justify-between items-center mb-6">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#94A3B8] bg-[#1E293B] px-3 py-1 rounded-full border border-[#334155]">
-                Level {memoryTrial} of 3 • {memoryTrial + 2} Stars Recall
+              <span className="text-xs font-bold uppercase tracking-wider text-[#94A3B8] bg-[#1E293B] px-3.5 py-1 rounded-full border border-[#334155]">
+                Level {memoryLevel} of 3 • {memoryLevel + 2} Star Sequence
               </span>
-              <span className="text-xs font-semibold text-amber-400">
-                {memoryPhase === 'showing' ? 'Observe the starlight pattern...' : 'Tap the stars in order!'}
+              <span className="text-xs font-bold text-amber-400">
+                {memoryPhase === 'showing' ? 'Listen to the star melody...' : 'Your turn! Tap the stars in order!'}
               </span>
             </div>
 
-            {/* 3x3 Astrolabe Grid */}
-            <div className="grid grid-cols-3 gap-4 max-w-xs mx-auto my-8">
+            <div className="grid grid-cols-3 gap-3.5 max-w-xs mx-auto my-8">
               {Array.from({length: 9}).map((_, idx) => {
                 const isLit = memoryLitCell === idx || memoryUserSequence.includes(idx)
                 return (
@@ -1002,8 +953,8 @@ export default function AdhdAssessmentPage() {
                     key={idx}
                     type="button"
                     disabled={memoryPhase !== 'input'}
-                    onClick={() => handleMemoryCellClick(idx)}
-                    className={`h-24 w-24 rounded-2xl border-2 transition-all flex items-center justify-center p-3 ${
+                    onClick={() => handleMemoryClick(idx)}
+                    className={`h-20 w-20 md:h-24 md:w-24 rounded-2xl border-2 transition-all flex items-center justify-center p-3 ${
                       isLit
                         ? 'border-amber-400 bg-amber-400/20 shadow-lg shadow-amber-400/20'
                         : 'border-[#334155] bg-[#1E293B]/70 hover:border-[#64748B]'
@@ -1017,51 +968,46 @@ export default function AdhdAssessmentPage() {
           </div>
         )}
 
-        {/* 9. VANDERBILT CLINICAL RATING */}
-        {stage === 'vanderbilt' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-[#05B076]">Clinical Standardization</span>
-                <h2 className="font-patrick text-3xl text-[#111827]">Vanderbilt DSM-5 Rating Scale</h2>
-              </div>
-              <span className="text-xs font-semibold bg-[#F1F5F9] text-[#475569] px-3 py-1.5 rounded-full">
-                Completed: {Object.keys(vanderbiltScores).length} / 18
-              </span>
+        {/* 9. CHAPTER 4: TRIAL OF THE FOUR WINDS */}
+        {stage === 'trials' && (
+          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-xl">
+            <div className="text-center max-w-lg mx-auto mb-8">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-700">Trial of the Four Winds</span>
+              <h2 className="font-patrick text-3xl md:text-4xl text-[#0F172A] mt-1">My Daily Explorer Powers</h2>
+              <p className="text-xs text-[#64748B] mt-2">
+                Help Milo map your mental energy, spark, and focus rhythms!
+              </p>
             </div>
-            <p className="text-xs text-[#64748B] mb-8 leading-relaxed">
-              Standardized rating completed by parent or educator based on behaviors observed over the past 6 months across home and school routines.
-            </p>
 
-            <div className="space-y-6">
-              {VANDERBILT_QUESTIONS.map((q, idx) => {
-                const currentVal = vanderbiltScores[q.id]
+            <div className="space-y-4 mb-8">
+              {FANTASY_TRIAL_QUESTIONS.map((card) => {
+                const val = trialAnswers[card.id]
                 return (
-                  <div key={q.id} className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#CBD5E1] transition-all">
-                    <div className="flex items-start gap-3 mb-3">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#05B076]/10 text-[#05B076] font-bold text-xs">
-                        {idx + 1}
-                      </span>
-                      <p className="text-xs font-semibold text-[#1E293B] leading-relaxed">{q.text}</p>
+                  <div key={card.id} className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl shrink-0 p-2 rounded-xl bg-white border border-[#E2E8F0] shadow-sm">{card.icon}</span>
+                      <div>
+                        <strong className="text-xs font-bold text-[#0F172A] block">{card.title}</strong>
+                        <p className="text-xs text-[#475569] leading-relaxed">{card.desc}</p>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-[#F1F5F9]">
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                       {[
-                        {label: '0 - Never', val: 0},
-                        {label: '1 - Occasionally', val: 1},
-                        {label: '2 - Often', val: 2},
-                        {label: '3 - Very Often', val: 3},
+                        {label: 'Rarely', score: 0},
+                        {label: 'Sometimes', score: 1},
+                        {label: 'A Lot!', score: 2},
                       ].map((opt) => (
                         <button
-                          key={opt.val}
+                          key={opt.score}
                           type="button"
                           onClick={() => {
-                            playSound('tap')
-                            setVanderbiltScores({...vanderbiltScores, [q.id]: opt.val})
+                            playAudio('tap')
+                            setTrialAnswers({...trialAnswers, [card.id]: opt.score})
                           }}
                           className={`rounded-xl py-2 px-3 text-xs font-semibold transition-all ${
-                            currentVal === opt.val
-                              ? 'bg-[#05B076] text-white shadow-md'
+                            val === opt.score
+                              ? 'bg-amber-500 text-white shadow-md'
                               : 'bg-white text-[#64748B] border border-[#CBD5E1] hover:bg-[#F1F5F9]'
                           }`}
                         >
@@ -1074,156 +1020,283 @@ export default function AdhdAssessmentPage() {
               })}
             </div>
 
-            <div className="mt-8 flex justify-end pt-6 border-t border-[#F1F5F9]">
+            <div className="flex justify-end pt-4 border-t border-[#F1F5F9]">
               <button
                 type="button"
-                onClick={submitAssessment}
-                className="rounded-full bg-gradient-to-r from-[#05B076] to-[#049A68] px-10 py-3.5 text-base font-bold text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+                onClick={submitLangGraphAgent}
+                className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
               >
-                Generate Diagnostic Assessment Report →
+                Synthesize My Golden Superpower Crest →
               </button>
             </div>
           </div>
         )}
 
-        {/* 10. ANALYZING SPINNER */}
-        {stage === 'analyzing' && (
+        {/* 10. AGENT EVALUATION SPINNER */}
+        {stage === 'agent_eval' && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white p-12 shadow-2xl text-center">
-            <div className="mx-auto mb-6 h-16 w-16 animate-spin rounded-full border-4 border-[#E2E8F0] border-t-[#05B076]"/>
-            <h2 className="font-patrick text-3xl text-[#111827] mb-2">Analyzing Behavioral & Reaction Telemetry...</h2>
-            <p className="text-sm text-[#64748B] max-w-md mx-auto leading-relaxed">
-              Norming Continuous Performance Hit Reaction Times (HRT) and Vanderbilt dimensional indices against age-stratified pediatric standards...
+            <div className="mx-auto mb-6 h-16 w-16 animate-spin rounded-full border-4 border-[#E2E8F0] border-t-amber-500"/>
+            <h2 className="font-patrick text-3xl text-[#0F172A] mb-2">Milo & The Agentic Guild Are Synthesizing...</h2>
+            <p className="text-xs text-[#64748B] max-w-md mx-auto leading-relaxed">
+              Norming CPT-3 reaction times, calculating flanker conflict cost, and authoring your certified neuropsychological evaluation dossier...
             </p>
           </div>
         )}
 
-        {/* 11. FULL CLINICAL DIAGNOSTIC REPORT */}
-        {stage === 'report' && reportData && (
-          <div className="rounded-3xl border border-[#E2E8F0] bg-white p-8 md:p-12 shadow-2xl">
-            {/* Clinic Document Header */}
-            <div className="border-b border-[#E2E8F0] pb-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-[#05B076]">Clinical Assessment Document</span>
-                <h1 className="font-patrick text-3xl md:text-4xl text-[#0F172A] mt-1">
-                  {reportData.assessmentTitle}
-                </h1>
-                <div className="text-xs text-[#64748B] mt-1 font-mono">
-                  Document ID: {reportData.reportId} • Date: {new Date(reportData.evaluatedAt).toLocaleDateString()}
-                </div>
+        {/* 11. CELEBRATION CERTIFICATE & SUPERPOWERS */}
+        {stage === 'celebration' && agentResult && (
+          <div className="space-y-8">
+            {/* Child-Facing Magical Award Certificate */}
+            <div className="rounded-3xl border-4 border-amber-300 bg-gradient-to-b from-[#FEFCE8] via-white to-[#F0FDF4] p-6 md:p-10 shadow-2xl text-center relative overflow-hidden">
+              <div className="mx-auto mb-4 flex h-28 w-28 items-center justify-center rounded-3xl bg-amber-100 border-2 border-amber-300 p-3 shadow-inner">
+                <img
+                  src="/decor/itw/itw-adhd-sticker.webp"
+                  alt="Golden Sunstone Crest"
+                  className="h-full w-full object-contain filter drop-shadow-md"
+                />
               </div>
 
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="self-start md:self-auto rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] px-4 py-2 text-xs font-bold text-[#334155] hover:bg-[#F1F5F9] shadow-sm flex items-center gap-1.5"
-              >
-                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/>
-                </svg>
-                Print / Save Clinical PDF
-              </button>
-            </div>
-
-            {/* Demographics Strip */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] mb-8 text-xs">
-              <div>
-                <span className="text-[#64748B] block">Participant</span>
-                <strong className="text-[#0F172A] text-sm">{reportData.profile.childName}</strong>
-              </div>
-              <div>
-                <span className="text-[#64748B] block">Age & Grade</span>
-                <strong className="text-[#0F172A] text-sm">{reportData.profile.childAge} Years • {reportData.profile.grade}</strong>
-              </div>
-              <div>
-                <span className="text-[#64748B] block">Informant</span>
-                <strong className="text-[#0F172A] text-sm">{reportData.profile.informantRole}</strong>
-              </div>
-              <div>
-                <span className="text-[#64748B] block">Diagnostic Model</span>
-                <strong className="text-[#05B076] text-sm">DSM-5 & AAP Normed</strong>
-              </div>
-            </div>
-
-            {/* Primary Clinical Classification */}
-            <div className="p-6 rounded-2xl bg-gradient-to-r from-[#ECFDF5] to-[#F0FDF4] border-2 border-[#A7F3D0] mb-8">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#065F46] block mb-1">
-                Diagnostic Impression & Attentional Classification
+              <span className="text-xs font-bold uppercase tracking-widest text-amber-800 bg-amber-100 px-4 py-1.5 rounded-full inline-block mb-2 border border-amber-300">
+                Official Sky Citadel Superpower Award
               </span>
-              <div className="text-2xl font-bold text-[#065F46] mb-2 font-poppins">
-                {reportData.stats.classification}
-              </div>
-              <p className="text-xs text-[#334155] leading-relaxed">
-                {reportData.clinicalSummary}
+
+              <h1 className="font-patrick text-3xl md:text-5xl text-[#0F172A] font-bold">
+                Congratulations, {agentResult.childName}!
+              </h1>
+              <p className="font-patrick text-xl text-amber-800 mt-1">
+                Conferred the Title of: <strong>{agentResult.superpowers.realmTitle}</strong>
               </p>
-            </div>
 
-            {/* Normed Indices & T-Scores Table */}
-            <div className="mb-8">
-              <h3 className="font-patrick text-2xl text-[#0F172A] mb-4">Normative Psychometric Indices</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border border-[#E2E8F0] rounded-xl overflow-hidden">
-                  <thead className="bg-[#F8FAFC] text-[#475569] font-bold border-b border-[#E2E8F0]">
-                    <tr>
-                      <th className="p-3">Index / Subscale</th>
-                      <th className="p-3">Score</th>
-                      <th className="p-3">Normative Benchmark</th>
-                      <th className="p-3">Clinical Risk Band</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#E2E8F0]">
-                    {reportData.indices.map((idx: any, i: number) => (
-                      <tr key={i} className="hover:bg-[#F8FAFC]">
-                        <td className="p-3 font-semibold text-[#0F172A]">{idx.name}</td>
-                        <td className="p-3 font-mono font-bold text-sm text-[#05B076]">{idx.score}</td>
-                        <td className="p-3 text-[#64748B]">T-Score (Mean=50, SD=10)</td>
-                        <td className="p-3">
-                          <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                            idx.score >= 70
-                              ? 'bg-rose-100 text-rose-800'
-                              : idx.score >= 60
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-emerald-100 text-emerald-800'
-                          }`}>
-                            {idx.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              {/* Milo's Personal Scroll */}
+              <div className="my-6 p-5 rounded-2xl bg-amber-50/70 border border-amber-200 shadow-sm max-w-xl mx-auto flex items-start gap-4 text-left">
+                <img
+                  src="/decor/itw/milo-owl.webp"
+                  alt="Milo the Owl"
+                  className="w-12 h-12 rounded-full border border-amber-400 object-cover shrink-0"
+                />
+                <p className="text-xs text-[#334155] leading-relaxed italic">
+                  "{agentResult.superpowers.miloScroll}"
+                </p>
               </div>
-            </div>
 
-            {/* Evidence-Based Classroom & Home Accommodations */}
-            <div className="mb-8">
-              <h3 className="font-patrick text-2xl text-[#0F172A] mb-4">IEP & 504 Pedagogical Accommodations</h3>
-              <div className="space-y-3">
-                {reportData.accommodations.map((acc: string, idx: number) => (
-                  <div key={idx} className="flex items-start gap-3 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#05B076] text-white text-[11px] font-bold mt-0.5">
-                      ✓
-                    </span>
-                    <p className="text-xs text-[#334155] leading-relaxed">{acc}</p>
+              {/* Badges Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-w-2xl mx-auto text-left mb-8">
+                {agentResult.superpowers.badges.map((b: any, idx: number) => (
+                  <div key={idx} className="p-3.5 rounded-2xl bg-white border border-[#E2E8F0] shadow-sm flex items-start gap-3">
+                    <span className="text-2xl p-2 rounded-xl bg-amber-50 border border-amber-200">{b.icon}</span>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <strong className="text-xs text-[#0F172A]">{b.name}</strong>
+                        <span className="text-[9px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">{b.rank}</span>
+                      </div>
+                      <span className="text-[11px] text-[#64748B] leading-snug block mt-0.5">{b.desc}</span>
+                    </div>
                   </div>
                 ))}
               </div>
+
+              {/* Actions */}
+              <div className="pt-6 border-t border-amber-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <button
+                  type="button"
+                  onClick={() => setShowClinicalDossier(!showClinicalDossier)}
+                  className="rounded-full bg-white border-2 border-[#CBD5E1] px-6 py-2.5 text-xs font-bold text-[#334155] hover:bg-[#F8FAFC] shadow-sm transition-all"
+                >
+                  {showClinicalDossier ? 'Hide Clinical Dossier' : 'For Grown-Ups & Teachers: View Comprehensive Diagnostic & IEP Dossier ↓'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="rounded-full bg-amber-500 px-8 py-2.5 text-xs font-bold text-white shadow-md hover:bg-amber-600 transition-all"
+                >
+                  Print / Save My Certificate (PDF)
+                </button>
+              </div>
             </div>
 
-            {/* Next Steps CTA */}
-            <div className="pt-6 border-t border-[#E2E8F0] flex flex-wrap items-center justify-between gap-4">
-              <Link
-                href="/consult"
-                className="rounded-full bg-[#05B076] px-8 py-3 text-sm font-bold text-white shadow-md hover:bg-[#049A68] transition-all"
-              >
-                Schedule Specialist Review with Manas Pediatrician →
-              </Link>
-              <Link
-                href="/assessments"
-                className="text-xs font-semibold text-[#64748B] hover:text-[#0F172A]"
-              >
-                ← Return to Assessment Hub
-              </Link>
-            </div>
+            {/* ADULT CLINICAL EVALUATION DOSSIER (PAID-GRADE QUALITY) */}
+            {showClinicalDossier && (
+              <div className="rounded-3xl border-2 border-slate-300 bg-white p-6 md:p-10 shadow-2xl">
+                {/* Official Clinical Header */}
+                <div className="border-b-2 border-slate-200 pb-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-widest text-[#05B076] block mb-1">
+                      Manas Cognitive Neurodevelopmental Clinic • Official Dossier
+                    </span>
+                    <h2 className="font-patrick text-3xl text-[#0F172A]">
+                      Pediatric Continuous Performance & Executive Function Evaluation
+                    </h2>
+                    <div className="text-xs font-mono text-[#64748B] mt-1">
+                      Document ID: {agentResult.clinicalReport.documentId} • Evaluated: {agentResult.clinicalReport.evaluationTimestamp}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="self-start md:self-auto rounded-xl border border-slate-300 bg-[#F8FAFC] px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 shadow-sm flex items-center gap-2"
+                  >
+                    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/>
+                    </svg>
+                    Print Clinical PDF
+                  </button>
+                </div>
+
+                {/* Participant Metadata Strip */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] mb-8 text-xs">
+                  <div>
+                    <span className="text-[#64748B] block">Participant</span>
+                    <strong className="text-[#0F172A] text-sm">{agentResult.childName}</strong>
+                  </div>
+                  <div>
+                    <span className="text-[#64748B] block">Chronological Age</span>
+                    <strong className="text-[#0F172A] text-sm">{agentResult.childAge} Years Old</strong>
+                  </div>
+                  <div>
+                    <span className="text-[#64748B] block">Diagnostic Standard</span>
+                    <strong className="text-[#05B076] text-sm">AAP & Conners CPT-3</strong>
+                  </div>
+                  <div>
+                    <span className="text-[#64748B] block">Confidence Level</span>
+                    <strong className="text-[#0F172A] text-sm">95% Confidence Interval</strong>
+                  </div>
+                </div>
+
+                {/* Primary Diagnostic Impression */}
+                <div className="p-6 rounded-2xl bg-[#ECFDF5] border-2 border-[#A7F3D0] mb-8">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#065F46] block mb-1">
+                    Clinical Impression & Attentional Stratification
+                  </span>
+                  <div className="text-2xl font-bold text-[#065F46] mb-1 font-poppins">
+                    {agentResult.clinicalReport.classification}
+                  </div>
+                  <span className="text-xs font-bold text-[#047857] block mb-3">
+                    {agentResult.clinicalReport.supportLevel}
+                  </span>
+                  <p className="text-xs text-[#334155] leading-relaxed">
+                    {agentResult.clinicalReport.clinicalSummary}
+                  </p>
+                </div>
+
+                {/* Psychometric Telemetry Table */}
+                <div className="mb-8">
+                  <h3 className="font-patrick text-2xl text-[#0F172A] mb-3">Normative Psychometric Indices (Conners CPT-3 Benchmarked)</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border border-[#E2E8F0] rounded-xl overflow-hidden">
+                      <thead className="bg-[#F8FAFC] text-[#475569] font-bold border-b border-[#E2E8F0]">
+                        <tr>
+                          <th className="p-3">Psychometric Dimension</th>
+                          <th className="p-3">Score</th>
+                          <th className="p-3">Norm Benchmark</th>
+                          <th className="p-3">Percentile Rank</th>
+                          <th className="p-3">Clinical Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#E2E8F0]">
+                        {agentResult.clinicalReport.indices.map((idx: any, i: number) => (
+                          <tr key={i} className="hover:bg-[#F8FAFC]">
+                            <td className="p-3">
+                              <strong className="text-[#0F172A] block">{idx.name}</strong>
+                              <span className="text-[10px] text-[#64748B]">{idx.clinicalNote}</span>
+                            </td>
+                            <td className="p-3 font-mono font-bold text-sm text-[#05B076]">{idx.score}</td>
+                            <td className="p-3 text-[#64748B]">{idx.benchmark}</td>
+                            <td className="p-3 font-bold text-slate-700">{idx.percentile}</td>
+                            <td className="p-3">
+                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                {idx.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Comprehensive 4-Part IEP Accommodations Blueprint */}
+                <div className="mb-8 space-y-6">
+                  <h3 className="font-patrick text-2xl text-[#0F172A]">Individualized Education Plan (IEP & 504) Pedagogical Accommodations</h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                      <strong className="text-xs font-bold text-[#05B076] uppercase tracking-wider block mb-2">
+                        1. Classroom Seating & Environment
+                      </strong>
+                      <ul className="space-y-1.5 text-xs text-[#334155]">
+                        {agentResult.clinicalReport.accommodations.classroom.map((item: string, idx: number) => (
+                          <li key={idx} className="flex items-start gap-1.5">
+                            <span className="text-[#05B076] font-bold">✓</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                      <strong className="text-xs font-bold text-[#2563EB] uppercase tracking-wider block mb-2">
+                        2. Examination & Testing Accommodations
+                      </strong>
+                      <ul className="space-y-1.5 text-xs text-[#334155]">
+                        {agentResult.clinicalReport.accommodations.examinations.map((item: string, idx: number) => (
+                          <li key={idx} className="flex items-start gap-1.5">
+                            <span className="text-[#2563EB] font-bold">✓</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                      <strong className="text-xs font-bold text-[#D97706] uppercase tracking-wider block mb-2">
+                        3. Working Memory & Executive Scaffolding
+                      </strong>
+                      <ul className="space-y-1.5 text-xs text-[#334155]">
+                        {agentResult.clinicalReport.accommodations.executive.map((item: string, idx: number) => (
+                          <li key={idx} className="flex items-start gap-1.5">
+                            <span className="text-[#D97706] font-bold">✓</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                      <strong className="text-xs font-bold text-[#7C3AED] uppercase tracking-wider block mb-2">
+                        4. Sensory & Proprioceptive Movement Diet
+                      </strong>
+                      <ul className="space-y-1.5 text-xs text-[#334155]">
+                        {agentResult.clinicalReport.accommodations.sensoryDiet.map((item: string, idx: number) => (
+                          <li key={idx} className="flex items-start gap-1.5">
+                            <span className="text-[#7C3AED] font-bold">✓</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Consultation Handoff */}
+                <div className="pt-6 border-t border-[#E2E8F0] flex flex-wrap items-center justify-between gap-4">
+                  <Link
+                    href="/consult"
+                    className="rounded-full bg-[#05B076] px-8 py-3 text-xs font-bold text-white shadow-md hover:bg-[#049A68] transition-all"
+                  >
+                    Schedule 1-on-1 Clinical Review with Manas Pediatric Specialist →
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setShowClinicalDossier(false)}
+                    className="text-xs font-semibold text-[#64748B] hover:text-[#0F172A]"
+                  >
+                    Close Dossier
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

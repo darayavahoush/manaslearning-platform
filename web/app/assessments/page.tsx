@@ -239,7 +239,7 @@ export default function AssessmentsHubPage() {
                 </div>
 
                 <p className="text-sm text-[#475569] leading-relaxed mb-6">
-                  Combines the <strong>Jungle Safari Continuous Performance Test (CPT-3)</strong>, the <strong>Starlight Flanker Task</strong>, and <strong>Constellation Working Memory Matrix</strong> with dimensional Vanderbilt ratings. Measures millisecond reaction times, attentional consistency (RTV), omission misses, and motor impulsivity.
+                  An enchanting fantasy quest for kids (<em>Chronicles of the Sunbird: Sky Citadel Quest</em>) paired with an adult neuropsychological evaluation. Features <strong>Canopy Continuous Performance Vigilance (CPT-3)</strong>, the <strong>Starfire Flanker Task</strong>, and <strong>Rune Astrolabe Memory Matrix</strong>. Delivers reaction time variability (RTV), impulsivity T-Scores, and a 4-part IEP accommodations blueprint.
                 </p>
 
                 <div className="grid grid-cols-2 gap-3 mb-6 text-xs">
@@ -308,7 +308,7 @@ export default function AssessmentsHubPage() {
                 </div>
 
                 <p className="text-sm text-[#475569] leading-relaxed mb-6">
-                  Evaluates 4 core neurodevelopmental dimensions through interactive play: <strong>Joint Attention & Social Referencing</strong>, <strong>Contextual Theory of Mind & Nuance</strong>, <strong>Audiovisual Sensory Thresholds</strong>, and <strong>Set-Shifting Cognitive Flexibility (DCCS)</strong>.
+                  An enchanting fantasy quest for kids (<em>Whispering Groves of Lumina: Crystal Lantern Quest</em>) paired with an adult neurodevelopmental dossier. Evaluates 4 core dimensions: <strong>Joint Attention Referencing (ADOS-2)</strong>, <strong>Contextual Theory of Mind</strong>, <strong>SPM-2 Sensory Sanctuary Calibration</strong>, and <strong>Alchemical Set-Shifting (DCCS)</strong>. Delivers a complete clinical sensory diet and IEP blueprint.
                 </p>
 
                 <div className="grid grid-cols-2 gap-3 mb-6 text-xs">

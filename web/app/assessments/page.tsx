@@ -100,13 +100,16 @@ export default function AssessmentsHubPage() {
         {/* Header Hero */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 rounded-full bg-[#05B076]/15 px-4 py-1.5 text-xs font-bold text-[#065F46] uppercase tracking-wider mb-4 border border-[#05B076]/30 shadow-sm backdrop-blur-sm">
-            Research-Grade Pediatric Evaluations • Open Community Access
+            Play-Based Screening Activities • Not a Diagnosis
           </div>
           <h1 className="font-patrick text-4xl sm:text-5xl md:text-6xl text-[#0F172A] leading-tight mb-5 drop-shadow-sm">
             Understand Your Child’s Mind With <span className="text-[#05B076]">Playful Precision</span>
           </h1>
           <p className="text-base sm:text-lg text-[#475569] leading-relaxed">
-            Standard paper questionnaires miss reaction time nuances, momentary lapses, and sensory thresholds. Our research-grounded assessments combine <strong>gamified cognitive quests</strong> with <strong>validated clinical benchmarks</strong> to deliver actionable IEP accommodations and developmental clarity.
+            Playful quests that show how your child responds to attention, social and sensory tasks, with a plain-language summary you can take to a clinician.
+          </p>
+          <p className="mt-4 text-xs text-[#64748B] leading-relaxed">
+            These are screening-style play activities. They are not a diagnostic tool and do not replace an evaluation by a qualified professional.
           </p>
         </div>
 
@@ -120,7 +123,7 @@ export default function AssessmentsHubPage() {
               </h2>
             </div>
             <span className="self-start sm:self-auto rounded-full bg-[#F47522]/10 border border-[#F47522]/30 px-3.5 py-1 text-xs font-bold text-[#C2410C]">
-              Real-Time Millisecond Cognitive Tracking
+              Reaction-Time and Accuracy Tracking
             </span>
           </div>
 
@@ -136,13 +139,13 @@ export default function AssessmentsHubPage() {
                 />
                 <div className="absolute top-3 right-3 z-10">
                   <span className="rounded-full bg-black/60 backdrop-blur-md px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-amber-300 border border-amber-400/40">
-                    RESEARCH GRADE • CPT-3 NORMED
+                    PLAY-BASED • NOT A DIAGNOSIS
                   </span>
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent flex items-end p-6">
                   <div>
                     <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300 bg-black/40 px-3 py-1 rounded-full">
-                      CPT-3 Normed • Sustained Vigilance
+                      Attention & Focus Quest
                     </span>
                     <h3 className="font-patrick text-3xl text-white font-bold mt-1">
                       Manas FocusTrack™ ADHD Battery
@@ -154,33 +157,33 @@ export default function AssessmentsHubPage() {
               <div className="p-7 sm:p-9 flex-1 flex flex-col justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#05B076] mb-4">
-                    <span>Conners CPT-3 Standard</span>
+                    <span>Spotting game</span>
                     <span>•</span>
-                    <span>Vanderbilt DSM-5-TR</span>
+                    <span>Steering game</span>
                     <span>•</span>
-                    <span>Ages 5–16 & Adults</span>
+                    <span>Ages 5–16</span>
                   </div>
 
                   <p className="text-sm text-[#475569] leading-relaxed mb-6">
-                    An enchanting fantasy quest for kids (<em>Chronicles of the Sunbird: Sky Citadel Quest</em>) paired with an adult neuropsychological evaluation. Measures <strong>Canopy Continuous Vigilance (CPT-3)</strong>, <strong>Starfire Flanker Conflict Cost</strong>, and <strong>Rune Astrolabe Memory Matrix</strong>. Computes millisecond reaction time variability (RTV), impulsivity T-Scores, and a 4-part IEP blueprint.
+                    A fantasy quest for kids (<em>Chronicles of the Sunbird: Sky Citadel Quest</em>) with a plain-language summary for parents. It has a sunbird-spotting game, a steering game with distractions, a sequence-memory game and a patience game. It shows counts and reaction speeds from one play session. It does not compare your child with other children and cannot show whether a child has ADHD.
                   </p>
 
                   <div className="grid grid-cols-2 gap-3 mb-6 text-xs">
                     <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
-                      <span className="font-bold text-[#05B076] block mb-0.5">Hit RT & RTV</span>
-                      <span className="text-[#64748B]">Attention lapse & fatigue slope</span>
+                      <span className="font-bold text-[#05B076] block mb-0.5">Tap speed</span>
+                      <span className="text-[#64748B]">How speed changes while playing</span>
                     </div>
                     <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
-                      <span className="font-bold text-[#C2410C] block mb-0.5">Omission vs. Commission</span>
-                      <span className="text-[#64748B]">Inattention vs. Impulsivity T-Scores</span>
+                      <span className="font-bold text-[#C2410C] block mb-0.5">Missed vs. early taps</span>
+                      <span className="text-[#64748B]">Counts, not scores</span>
                     </div>
                     <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
                       <span className="font-bold text-[#2563EB] block mb-0.5">Flanker Conflict Cost</span>
-                      <span className="text-[#64748B]">Interference control capacity</span>
+                      <span className="text-[#64748B]">Steering through distractions</span>
                     </div>
                     <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
-                      <span className="font-bold text-[#7C3AED] block mb-0.5">IEP Accommodations</span>
-                      <span className="text-[#64748B]">Classroom & home sensory plan</span>
+                      <span className="font-bold text-[#7C3AED] block mb-0.5">Ideas to Try</span>
+                      <span className="text-[#64748B]">Classroom & home ideas</span>
                     </div>
                   </div>
                 </div>
@@ -188,7 +191,7 @@ export default function AssessmentsHubPage() {
                 <div className="pt-6 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <span className="text-2xl font-bold text-[#0F172A]">₹799</span>
-                    <span className="text-xs text-[#64748B] ml-2">/ $15 USD (Complete Battery & Diagnostic Report)</span>
+                    <span className="text-xs text-[#64748B] ml-2">/ $15 USD (Play activity & parent summary)</span>
                   </div>
                   <Link
                     href="/assessments/adhd"
@@ -212,13 +215,13 @@ export default function AssessmentsHubPage() {
                 />
                 <div className="absolute top-3 right-3 z-10">
                   <span className="rounded-full bg-black/60 backdrop-blur-md px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-teal-300 border border-teal-400/40">
-                    RESEARCH GRADE • ADOS-2 MAPPED
+                    PLAY-BASED • NOT A DIAGNOSIS
                   </span>
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent flex items-end p-6">
                   <div>
                     <span className="text-[11px] font-bold uppercase tracking-wider text-teal-300 bg-black/40 px-3 py-1 rounded-full">
-                      ADOS-2 & SPM-2 Mapped • Sensory Diet
+                      Social & Sensory Comfort Quest
                     </span>
                     <h3 className="font-patrick text-3xl text-white font-bold mt-1">
                       Manas PRISM™ Autism Profile
@@ -230,33 +233,33 @@ export default function AssessmentsHubPage() {
               <div className="p-7 sm:p-9 flex-1 flex flex-col justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#0D9488] mb-4">
-                    <span>ADOS-2 Observational</span>
+                    <span>Gaze-following game</span>
                     <span>•</span>
-                    <span>SPM-2 Sensory Profile</span>
+                    <span>Feelings match</span>
                     <span>•</span>
-                    <span>SCQ Standard</span>
+                    <span>Comfort preferences</span>
                   </div>
 
                   <p className="text-sm text-[#475569] leading-relaxed mb-6">
-                    An enchanting fantasy quest for kids (<em>Whispering Groves of Lumina: Crystal Lantern Quest</em>) paired with an adult neurodevelopmental dossier. Evaluates <strong>Joint Attention Referencing (ADOS-2)</strong>, <strong>Contextual Theory of Mind</strong>, <strong>Sensory Sanctuary Calibration</strong>, and <strong>Alchemical Set-Shifting (DCCS)</strong>. Delivers an individualized sensory diet and accommodation blueprint.
+                    A fantasy quest for kids (<em>Whispering Groves of Lumina: Crystal Lantern Quest</em>) with a plain-language summary for parents. It has a gaze-following game, a feelings-matching game, a cosy sensory sanctuary and a sorting game. It shows what your child chose and how quickly. It does not compare your child with other children and cannot show whether a child is autistic.
                   </p>
 
                   <div className="grid grid-cols-2 gap-3 mb-6 text-xs">
                     <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
-                      <span className="font-bold text-[#2563EB] block mb-0.5">Social Referencing</span>
-                      <span className="text-[#64748B]">Gaze & pointing latency tracking</span>
+                      <span className="font-bold text-[#2563EB] block mb-0.5">Following Gaze</span>
+                      <span className="text-[#64748B]">Gaze & pointing game</span>
                     </div>
                     <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
                       <span className="font-bold text-[#05B076] block mb-0.5">Sensory Modulation</span>
-                      <span className="text-[#64748B]">Flicker, acoustic & tactile map</span>
+                      <span className="text-[#64748B]">Light, sound & touch comfort</span>
                     </div>
                     <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
-                      <span className="font-bold text-[#C2410C] block mb-0.5">Set-Shifting Cost</span>
-                      <span className="text-[#64748B]">Cognitive flexibility vs. routine</span>
+                      <span className="font-bold text-[#C2410C] block mb-0.5">Sorting Game</span>
+                      <span className="text-[#64748B]">Switching sorting rules</span>
                     </div>
                     <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
-                      <span className="font-bold text-[#7C3AED] block mb-0.5">Sensory Diet Blueprint</span>
-                      <span className="text-[#64748B]">De-escalation & classroom plan</span>
+                      <span className="font-bold text-[#7C3AED] block mb-0.5">Ideas to Try</span>
+                      <span className="text-[#64748B]">Calm-down & classroom ideas</span>
                     </div>
                   </div>
                 </div>
@@ -264,7 +267,7 @@ export default function AssessmentsHubPage() {
                 <div className="pt-6 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <span className="text-2xl font-bold text-[#0F172A]">₹799</span>
-                    <span className="text-xs text-[#64748B] ml-2">/ $15 USD (Complete Profile & Diagnostic Blueprint)</span>
+                    <span className="text-xs text-[#64748B] ml-2">/ $15 USD (Play activity & parent summary)</span>
                   </div>
                   <Link
                     href="/assessments/autism"
@@ -283,10 +286,10 @@ export default function AssessmentsHubPage() {
         <div className="mb-20 rounded-3xl bg-gradient-to-b from-[#FEF3C7]/60 to-[#FFFBEB]/80 border-2 border-[#FDE68A] p-8 md:p-12 shadow-md">
           <div className="text-center max-w-2xl mx-auto mb-10">
             <h2 className="font-patrick text-3xl sm:text-4xl text-[#78350F] mb-3">
-              Why Gamified Testing Outperforms Static Paper Questionnaires
+              Why Play-Based Activities?
             </h2>
             <p className="text-sm text-[#92400E] leading-relaxed">
-              Neurodivergent children often mask or become anxious when confronted with dry questions. Gamified tasks reveal organic cognitive strategies in a low-stakes, joyful environment.
+              Many children find dry questionnaires stressful. Games can feel lower-pressure and show how a child approaches a task. They complement, and never replace, a professional evaluation.
             </p>
           </div>
 
@@ -297,20 +300,20 @@ export default function AssessmentsHubPage() {
               </h3>
               <ul className="space-y-2.5 text-xs text-[#64748B] list-disc list-inside leading-relaxed">
                 <li>Subjective recall bias from tired parents or overwhelmed teachers.</li>
-                <li>Zero objective reaction-time latency or cognitive fatigue measurement.</li>
-                <li>Cannot differentiate true attentional inattention from motor impulsivity.</li>
-                <li>Abstract questions provoke anxiety and masking in young children.</li>
+                <li>No record of reaction time or of how a task changes over a few minutes.</li>
+                <li>Rely on adult memory of everyday behaviour.</li>
+                <li>Abstract questions can be hard for young children.</li>
               </ul>
             </div>
 
             <div className="rounded-2xl bg-white p-6 border border-[#05B076]/40 shadow-sm">
               <h3 className="font-bold text-base text-[#05B076] flex items-center gap-2 mb-3">
-                <span className="font-mono text-sm font-bold">✓</span> Manas Gamified Clinical Battery Advantages
+                <span className="font-mono text-sm font-bold">✓</span> Manas Play Activity Advantages
               </h3>
               <ul className="space-y-2.5 text-xs text-[#1E293B] list-disc list-inside leading-relaxed">
-                <li>Millisecond-precision response recording via standardized CPT-3 paradigms.</li>
-                <li>Separates motor inhibition (commissions) from executive drift (omissions).</li>
-                <li>Direct measurement of joint attention referencing and sensory thresholds.</li>
+                <li>Reaction times and accuracy are recorded during play.</li>
+                <li>Shows missed taps and early taps separately.</li>
+                <li>Shows how a child follows gaze and which sensory levels feel comfortable.</li>
                 <li>Play-based, non-pathologizing environment that highlights innate strengths.</li>
               </ul>
             </div>

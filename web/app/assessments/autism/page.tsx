@@ -412,12 +412,12 @@ export default function AutismFantasyAssessmentPage() {
   async function submitAutismAgent() {
     setStage('agent_eval')
 
-    const jaLatency = jaResponseTimes.length > 0
-      ? Math.round(jaResponseTimes.reduce((a, b) => a + b, 0) / jaResponseTimes.length)
-      : 740
-
-    const jaAccuracy = Math.round((jaCorrectCount / JA_TRIALS.length) * 100)
-    const sensoryTotal = Math.round(((sensoryLight + sensorySound + sensoryTouch) / 30) * 100)
+    const medianOf = (xs: number[]) => {
+      if (!xs.length) return null
+      const s = [...xs].sort((a, b) => a - b)
+      const m = Math.floor(s.length / 2)
+      return Math.round(s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2)
+    }
 
     const payload = {
       assessmentType: 'autism',
@@ -425,11 +425,16 @@ export default function AutismFantasyAssessmentPage() {
       childAge: guardianAge,
       guildClass: guildAffinity,
       telemetry: {
-        jaLatencyMs: jaLatency,
-        jaAccuracy,
-        tomScore,
-        sensoryScore: sensoryTotal,
-        perseverations: 0
+        jaTrials: JA_TRIALS.length,
+        jaCorrect: jaCorrectCount,
+        jaMedianMs: medianOf(jaResponseTimes),
+        feelingsTrials: EMOTION_MIRROR_TRIALS.length,
+        feelingsCorrect: Math.round(tomScore / 25),
+        lightLevel: sensoryLight,
+        soundLevel: sensorySound,
+        touchLevel: sensoryTouch,
+        sortCount: dccsTimes.length,
+        sortMedianMs: medianOf(dccsTimes)
       }
     }
 
@@ -478,7 +483,7 @@ export default function AutismFantasyAssessmentPage() {
           </Link>
           <div className="flex items-center gap-2">
             <span className="rounded-full bg-black/40 backdrop-blur-md px-3.5 py-1.5 font-bold text-teal-200 border border-teal-400/40 shadow-sm">
-              ADOS-2 & SPM-2 Standard • Research-Grade Pediatric Profile
+              Play-Based Social & Sensory Quest • Not a Diagnosis
             </span>
           </div>
         </div>
@@ -570,7 +575,7 @@ export default function AutismFantasyAssessmentPage() {
                   >
                     {[4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map((age) => (
                       <option key={age} value={age}>
-                        Age {age} (Normed Cohort Band {age <= 6 ? '4–6 yrs' : age <= 10 ? '7–10 yrs' : '11–16 yrs'})
+                        Age {age}
                       </option>
                     ))}
                   </select>
@@ -938,10 +943,10 @@ export default function AutismFantasyAssessmentPage() {
               <CrystalGlyphSvg className="w-8 h-8 text-teal-600" />
             </div>
             <h2 className="font-patrick text-3xl text-[#0F172A] mb-2">
-              Aria & The Grove Council Are Synthesizing Profile...
+              Aria and the Grove Council are writing your summary...
             </h2>
             <p className="text-xs sm:text-sm text-[#64748B] max-w-md mx-auto">
-              Computing ADOS-2 joint attention latency, Theory of Mind contextual nuance, and SPM-2 sensory modulation accommodations.
+              Turning the play into a plain-language summary.
             </p>
           </div>
         )}
@@ -988,7 +993,7 @@ export default function AutismFantasyAssessmentPage() {
                     onClick={() => setShowClinicalDossier(!showClinicalDossier)}
                     className="rounded-full bg-gradient-to-r from-slate-900 to-slate-800 text-white px-8 py-3 text-xs font-bold shadow-md hover:bg-slate-700 transition-all"
                   >
-                    {showClinicalDossier ? 'Hide Clinical Evaluation Dossier' : 'View Clinical Neurodevelopmental Dossier & Sensory Diet (Adult Mode) →'}
+                    {showClinicalDossier ? 'Hide grown-up summary' : 'View grown-up summary →'}
                   </button>
                   <Link
                     href="/consult"
@@ -1000,102 +1005,51 @@ export default function AutismFantasyAssessmentPage() {
               </div>
             </div>
 
-            {/* ADULT CLINICAL DOSSIER WITH ADOS-2 & SPM-2 NORMATIVE BENCHMARKS */}
+            {/* GROWN-UP SUMMARY */}
             {showClinicalDossier && (
               <div className="rounded-3xl border-2 border-[#CBD5E1] bg-white p-8 md:p-12 shadow-2xl">
-                <div className="border-b border-[#E2E8F0] pb-6 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#64748B]">
-                      Official Clinical Evaluation Dossier • {agentResult.clinicalReport.documentId}
-                    </span>
-                    <h2 className="font-patrick text-3xl sm:text-4xl text-[#0F172A] font-bold mt-1">
-                      ADOS-2 & SPM-2 Observational Profile
-                    </h2>
-                    <span className="text-xs text-[#0D9488] font-semibold">
-                      {agentResult.clinicalReport.protocolStandard}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs text-[#64748B] block">Evaluated on</span>
-                    <strong className="text-xs text-[#0F172A]">{agentResult.clinicalReport.evaluationTimestamp}</strong>
-                  </div>
-                </div>
-
-                {/* Demographics Summary */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] mb-8 text-xs">
-                  <div>
-                    <span className="text-[#64748B] block">Participant</span>
-                    <strong className="text-[#0F172A] text-sm">{agentResult.childName}</strong>
-                  </div>
-                  <div>
-                    <span className="text-[#64748B] block">Chronological Age</span>
-                    <strong className="text-[#0F172A] text-sm">{agentResult.childAge} Years Old</strong>
-                  </div>
-                  <div>
-                    <span className="text-[#64748B] block">Diagnostic Reference</span>
-                    <strong className="text-[#0D9488] text-sm">ADOS-2 & SPM-2 Standard</strong>
-                  </div>
-                  <div>
-                    <span className="text-[#64748B] block">Confidence Level</span>
-                    <strong className="text-[#0F172A] text-sm">95% Confidence Interval</strong>
-                  </div>
-                </div>
-
-                {/* Primary Diagnostic Impression */}
-                <div className="p-6 rounded-2xl bg-[#F0FDF4] border-2 border-[#A7F3D0] mb-8">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#065F46] block mb-1">
-                    Clinical Social-Sensory Stratification
+                <div className="border-b border-[#E2E8F0] pb-6 mb-6">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-[#64748B]">
+                    Grown-up summary • {agentResult.clinicalReport.generatedOn}
                   </span>
-                  <div className="text-2xl font-bold text-[#065F46] mb-1 font-poppins">
-                    {agentResult.clinicalReport.classification}
-                  </div>
-                  <span className="text-xs font-bold text-[#047857] block mb-3">
-                    {agentResult.clinicalReport.supportLevel}
-                  </span>
-                  <p className="text-xs text-[#334155] leading-relaxed">
-                    {agentResult.clinicalReport.clinicalSummary}
+                  <h2 className="font-patrick text-3xl sm:text-4xl text-[#0F172A] font-bold mt-1">
+                    What we noticed while playing
+                  </h2>
+                  <p className="text-xs text-[#475569] mt-2 leading-relaxed">
+                    {agentResult.clinicalReport.summary}
                   </p>
                 </div>
 
-                {/* Psychometric Telemetry Table with Norms and Percentiles */}
+                <div role="note" className="p-4 rounded-2xl bg-[#FFFBEB] border border-[#FDE68A] mb-8 text-xs text-[#78350F] leading-relaxed">
+                  <strong>This is not a diagnosis.</strong> It shows counts and speeds from one short play session. Nothing here is compared with other children, and many everyday things change it: tiredness, mood, the device, or how much your child enjoyed the game. If you have concerns about attention, communication or sensory comfort, please talk to a paediatrician or another qualified clinician.
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                  {agentResult.clinicalReport.indices.map((idx: any, i: number) => (
+                    <div key={i} className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                      <strong className="text-sm text-[#0F172A] block">{idx.name}</strong>
+                      <div className="font-mono font-bold text-sm mt-1" style={{color: '#0D9488'}}>{idx.value}</div>
+                      <span className="text-[11px] text-[#64748B] block mt-1">{idx.detail}</span>
+                      <span className="text-[11px] text-[#475569] block mt-2 leading-relaxed">{idx.note}</span>
+                    </div>
+                  ))}
+                </div>
+
                 <div className="mb-8">
-                  <h3 className="font-patrick text-2xl text-[#0F172A] mb-3">Normative Psychometric Indices (ADOS-2 & SPM-2 Mapped)</h3>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs border border-[#E2E8F0] rounded-xl overflow-hidden">
-                      <thead className="bg-[#F8FAFC] text-[#475569] font-bold border-b border-[#E2E8F0]">
-                        <tr>
-                          <th className="p-3">Social / Sensory Dimension</th>
-                          <th className="p-3">Score Index</th>
-                          <th className="p-3">Norm Benchmark</th>
-                          <th className="p-3">Percentile Rank</th>
-                          <th className="p-3">Clinical Cutoff Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#E2E8F0]">
-                        {agentResult.clinicalReport.indices.map((idx: any, i: number) => (
-                          <tr key={i} className="hover:bg-[#F8FAFC]">
-                            <td className="p-3">
-                              <strong className="text-[#0F172A] block">{idx.name}</strong>
-                              <span className="text-[10px] text-[#64748B]">{idx.clinicalNote}</span>
-                            </td>
-                            <td className="p-3 font-mono font-bold text-sm text-[#0D9488]">{idx.score}</td>
-                            <td className="p-3 text-[#64748B]">{idx.benchmark}</td>
-                            <td className="p-3 font-bold text-slate-700">{idx.percentile}</td>
-                            <td className="p-3">
-                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-teal-100 text-teal-800">
-                                {idx.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <h3 className="font-patrick text-2xl text-[#0F172A] mb-3">Questions you could bring to a clinician</h3>
+                  <ul className="space-y-1.5 text-xs text-[#334155]">
+                    {agentResult.clinicalReport.questions.map((q: string, i: number) => (
+                      <li key={i} className="flex items-start gap-1.5">
+                        <span className="font-bold" style={{color: '#0D9488'}}>?</span>
+                        <span>{q}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
 
                 {/* Individualized Sensory Diet & Accommodations Blueprint */}
                 <div className="mb-8 space-y-6">
-                  <h3 className="font-patrick text-2xl text-[#0F172A]">Individualized Sensory Diet & Pedagogical Blueprint</h3>
+                  <h3 className="font-patrick text-2xl text-[#0F172A]">Ideas to discuss with your school or clinician</h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
@@ -1161,14 +1115,14 @@ export default function AutismFantasyAssessmentPage() {
                     href="/consult"
                     className="rounded-full bg-[#0D9488] px-8 py-3 text-xs font-bold text-white shadow-md hover:bg-[#0F766E] transition-all"
                   >
-                    Schedule 1-on-1 Clinical Review with Manas Pediatric Specialist →
+                    Talk to a Manas specialist →
                   </Link>
                   <button
                     type="button"
                     onClick={() => setShowClinicalDossier(false)}
                     className="text-xs font-semibold text-[#64748B] hover:text-[#0F172A]"
                   >
-                    Close Dossier
+                    Close summary
                   </button>
                 </div>
               </div>

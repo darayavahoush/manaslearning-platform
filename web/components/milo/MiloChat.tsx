@@ -154,17 +154,17 @@ const FAST_ANSWERS = [
   },
   {
     match: /adhd assessment|adhd test|focustrack/i,
-    reply: "Our new Manas FocusTrack™ Gamified ADHD Assessment combines a real-time continuous performance task (CPT-3 Safari Vigilance), Starlight Flanker distractor filtering, and spatial working memory with Vanderbilt DSM-5 dimensional scaling. In 15 playful minutes, it measures millisecond reaction times, attentional consistency (RTV), and impulse inhibition, generating an immediate research-grade clinical diagnostic report with classroom IEP accommodations at /assessments/adhd!",
+    reply: "Manas FocusTrack is a play-based attention quest for children (a spotting game, a steering game, a sequence-memory game and a patience game) at /assessments/adhd. It gives parents a plain-language summary of counts and reaction speeds from one session. It is not a diagnosis and does not compare your child with other children. If you have concerns, please talk to a paediatrician or qualified clinician, or book a consultation at /consult.",
     sources: [{source: 'Manas Clinical Assessments', section: '', snippet: 'Manas FocusTrack ADHD Battery', doc_url: '/assessments/adhd'}]
   },
   {
     match: /autism assessment|autism test|prism/i,
-    reply: "Our new Manas PRISM™ Gamified Autism Assessment is mapped to ADOS-2, CARS-2, and SPM-2 clinical frameworks. It evaluates joint attention referencing, contextual Theory of Mind nuance, sensory thresholds (visual flicker, acoustic noise, tactile tolerance), and cognitive set-shifting flexibility. It generates a comprehensive neurodevelopmental profile and sensory diet blueprint at /assessments/autism!",
+    reply: "Manas PRISM is a play-based social and sensory quest for children (a gaze-following game, a feelings-matching game, a comfort sanctuary and a sorting game) at /assessments/autism. It gives parents a plain-language summary of what their child chose and how quickly. It is not a diagnosis. If you have concerns, please talk to a paediatrician or qualified clinician, or book a consultation at /consult.",
     sources: [{source: 'Manas Clinical Assessments', section: '', snippet: 'Manas PRISM Autism Profile', doc_url: '/assessments/autism'}]
   },
   {
     match: /assessments?|tests?|screeners?/i,
-    reply: "We offer comprehensive, research-grade pediatric assessments at /assessments, including our two new flagship gamified evaluations: Manas FocusTrack™ for ADHD (CPT-3 & Flanker) and Manas PRISM™ for Autism & Sensory Processing (ADOS-2 & SPM-2). We also provide specialized screeners for Dyslexia, Dyscalculia, Dysgraphia, Speech, and SPD!",
+    reply: "You can find our play-based activities at /assessments: Manas FocusTrack (attention) and Manas PRISM (social and sensory comfort), plus screeners for reading, math, handwriting, speech and sensory processing. These are screening-style activities, not diagnoses. For concerns about your child, a consultation at /consult is the best next step.",
     sources: [{source: 'Manas Clinical Assessments', section: '', snippet: 'Assessments Hub', doc_url: '/assessments'}]
   }
 ]

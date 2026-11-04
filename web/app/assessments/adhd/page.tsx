@@ -131,6 +131,49 @@ function AstrolabeCrystalSvg({className = 'w-6 h-6'}: {className?: string}) {
   )
 }
 
+// --- Go/no-go task: fixed, balanced order so every child sees the same trials ---------------------------
+// G = sunbird (tap), N = moth (wait). 14 sunbirds, 6 moths, never two moths in a row.
+const CPT_ORDER = 'GGNGGGNGGNGGGNGGNGGN'
+// Wait before each shape appears (ms). Same four values as before, in a fixed order, five of each.
+const CPT_WAITS = [1200, 2050, 850, 1600, 1600, 850, 2050, 1200, 850, 1200, 1600, 2050, 2050, 1600, 1200, 850, 1200, 850, 2050, 1600]
+// A tap counts from the moment the shape appears until this long after, even if the shape has already gone.
+const CPT_WINDOW_MS = 1000
+// A "hit" faster than this is counted as an early tap, not as a reaction.
+const CPT_MIN_RT_MS = 150
+// Arrow game: centre arrow direction (L/R) and whether the side arrows match (C) or conflict (I).
+const FLANKER_ORDER = ['LC', 'RI', 'RC', 'LC', 'LI', 'RC', 'RI', 'LC', 'RC', 'LI', 'LC', 'RI']
+
+// Flat, hand-built target and distractor. Same size, no glow, no motion, so only the shape tells them apart.
+function SunbirdTarget({className = 'w-28 h-28'}: {className?: string}) {
+  return (
+    <svg role="img" aria-label="Sunbird" viewBox="-8 -4 136 128" className={className}>
+      <path d="M30 66 L6 56 L10 68 L3 78 L14 78 L9 90 L36 78 Z" fill="#C8671F" />
+      <ellipse cx="60" cy="66" rx="28" ry="19" transform="rotate(-12 60 66)" fill="#F0BE4D" />
+      <path d="M44 66 C48 42 74 36 86 54 C74 66 58 72 44 66 Z" fill="#E08A2E" />
+      <circle cx="88" cy="46" r="14" fill="#F0BE4D" />
+      <path d="M80 36 L79 24 L86 32 L91 21 L94 34 Z" fill="#E08A2E" />
+      <path d="M99 44 L114 50 L99 55 Z" fill="#C8671F" />
+      <circle cx="91" cy="44" r="2.6" fill="#2B2118" />
+      <path d="M56 84 L54 96 M66 84 L68 96" stroke="#C8671F" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function MothDistractor({className = 'w-28 h-28'}: {className?: string}) {
+  return (
+    <svg role="img" aria-label="Moth" viewBox="-8 -4 136 128" className={className}>
+      <path d="M60 56 L8 40 C4 58 14 76 44 76 Z" fill="#B7AFCB" />
+      <path d="M60 56 L112 40 C116 58 106 76 76 76 Z" fill="#B7AFCB" />
+      <path d="M60 64 L22 84 C26 98 44 100 58 86 Z" fill="#8C84A8" />
+      <path d="M60 64 L98 84 C94 98 76 100 62 86 Z" fill="#8C84A8" />
+      <path d="M24 50 L14 46 M30 58 L18 56 M96 50 L106 46 M90 58 L102 56" stroke="#8C84A8" strokeWidth="2" strokeLinecap="round" />
+      <ellipse cx="60" cy="66" rx="7.5" ry="26" fill="#554C73" />
+      <circle cx="60" cy="38" r="7" fill="#554C73" />
+      <path d="M56 33 C50 24 44 20 36 20 M64 33 C70 24 76 20 84 20" stroke="#D5CFE3" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function GoldenSunbirdSvg({className = 'w-28 h-28'}: {className?: string}) {
   return (
     <svg viewBox="0 0 120 120" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -252,6 +295,11 @@ function __McInner() {
   // Randomized Flanker State
   const FLANKER_TOTAL_TRIALS = 12
   const [flankerTrialIndex, setFlankerTrialIndex] = useState(0)
+  const [cptAnticipatory, setCptAnticipatory] = useState(0)
+  const cptWindowOpenRef = useRef(false)
+  const cptStimRef = useRef<'target' | 'distractor' | null>(null)
+  const cptRtLogRef = useRef<{i: number; rt: number}[]>([])
+  const flankerTotalsRef = useRef({congruent: 0, incongruent: 0})
   const [flankerCongruentTimes, setFlankerCongruentTimes] = useState<number[]>([])
   const [flankerIncongruentTimes, setFlankerIncongruentTimes] = useState<number[]>([])
   const [currentFlanker, setCurrentFlanker] = useState<{centerDir: 'left' | 'right'; flankerDir: 'left' | 'right' | 'neutral'; isCongruent: boolean} | null>(null)
@@ -263,7 +311,7 @@ function __McInner() {
   const [memoryUserSequence, setMemoryUserSequence] = useState<number[]>([])
   const [memoryLitCell, setMemoryLitCell] = useState<number | null>(null)
   const [memoryPhase, setMemoryPhase] = useState<'showing' | 'input' | 'feedback'>('showing')
-  const [memoryMaxSpan, setMemoryMaxSpan] = useState(3)
+  const [memoryMaxSpan, setMemoryMaxSpan] = useState(0)
 
   // Chapter 4: Sunstone Charge State (100% Game, Zero Questions)
   const [chargeTrialIndex, setChargeTrialIndex] = useState(0)
@@ -301,7 +349,8 @@ function __McInner() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   })
 
-  // CPT-3 Trial Loop with Inter-Stimulus Jitter (900ms - 2100ms)
+  // Go/no-go loop. Fixed order (CPT_ORDER / CPT_WAITS). A tap counts from when the shape appears until
+  // CPT_WINDOW_MS later, even if the shape has gone. Every timer is cleared when the trial or stage changes.
   useEffect(() => {
     if (stage !== 'cpt_game') return
 
@@ -311,50 +360,58 @@ function __McInner() {
       return
     }
 
+    const stim = CPT_ORDER[cptTrialIndex % CPT_ORDER.length] === 'G' ? 'target' : 'distractor'
+    const wait = CPT_WAITS[cptTrialIndex % CPT_WAITS.length]
+    const displayDuration = heroAge <= 7 ? 680 : heroAge <= 11 ? 540 : 440
+    const timers: ReturnType<typeof setTimeout>[] = []
+    const later = (fn: () => void, ms: number) => { timers.push(setTimeout(fn, ms)) }
+
     cptRespondedRef.current = false
-    const isTarget = Math.random() > 0.28
-    const stim = isTarget ? 'target' : 'distractor'
+    cptWindowOpenRef.current = false
+    cptStimRef.current = null
 
-    // Jittered inter-stimulus interval to test true endogenous vigilance
-    const jitteredWait = [850, 1200, 1600, 2050][Math.floor(Math.random() * 4)]
-
-    const waitTimer = setTimeout(() => {
+    later(() => {
+      cptStimRef.current = stim
+      cptWindowOpenRef.current = true
       setCptStimulus(stim)
       setCptActive(true)
       cptStartRef.current = performance.now()
+      // re-stamp once the browser has painted the shape, so the clock starts when the child can see it
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (cptStimRef.current === stim && !cptRespondedRef.current) cptStartRef.current = performance.now()
+      }))
+      later(() => { setCptStimulus(null); setCptActive(false) }, displayDuration)
+      later(() => {
+        cptWindowOpenRef.current = false
+        if (stim === 'target' && !cptRespondedRef.current) setCptOmissions((o) => o + 1)
+        later(() => setCptTrialIndex((i) => i + 1), 340)
+      }, CPT_WINDOW_MS)
+    }, wait)
 
-      // Adaptive stimulus display duration
-      const displayDuration = heroAge <= 7 ? 680 : heroAge <= 11 ? 540 : 440
-
-      const displayTimer = setTimeout(() => {
-        if (!cptRespondedRef.current && stim === 'target') {
-          setCptOmissions((o) => o + 1)
-        }
-        setCptStimulus(null)
-        setCptActive(false)
-
-        const nextTimer = setTimeout(() => {
-          setCptTrialIndex((i) => i + 1)
-        }, 340)
-        return () => clearTimeout(nextTimer)
-      }, displayDuration)
-
-      return () => clearTimeout(displayTimer)
-    }, jitteredWait)
-
-    return () => clearTimeout(waitTimer)
+    return () => timers.forEach(clearTimeout)
   }, [stage, cptTrialIndex, heroAge])
 
   function handleCptTap() {
-    if (!cptActive || cptRespondedRef.current) return
+    // nothing is on screen: not a hit and not a miss, but worth recording
+    if (!cptWindowOpenRef.current) {
+      setCptAnticipatory((n) => n + 1)
+      return
+    }
+    if (cptRespondedRef.current) return
     cptRespondedRef.current = true
     const elapsed = Math.round(performance.now() - cptStartRef.current)
-    setCptLastRt(elapsed)
 
-    if (cptStimulus === 'target') {
+    if (cptStimRef.current === 'target') {
+      if (elapsed < CPT_MIN_RT_MS) {
+        setCptAnticipatory((n) => n + 1)
+        playAudio('hit')
+        return
+      }
+      setCptLastRt(elapsed)
       playAudio('hit')
       setCptResponseTimes((prev) => [...prev, elapsed])
-    } else if (cptStimulus === 'distractor') {
+      cptRtLogRef.current.push({i: cptTrialIndex, rt: elapsed})
+    } else {
       playAudio('miss')
       setCptCommissions((c) => c + 1)
     }
@@ -370,9 +427,9 @@ function __McInner() {
       return
     }
 
-    const dirs: ('left' | 'right')[] = ['left', 'right']
-    const center = dirs[Math.floor(Math.random() * 2)]
-    const isCongruent = Math.random() > 0.45
+    const spec = FLANKER_ORDER[flankerTrialIndex % FLANKER_ORDER.length]
+    const center: 'left' | 'right' = spec[0] === 'L' ? 'left' : 'right'
+    const isCongruent = spec[1] === 'C'
     const flanker = isCongruent ? center : center === 'left' ? 'right' : 'left'
 
     setCurrentFlanker({centerDir: center, flankerDir: flanker, isCongruent})
@@ -381,6 +438,7 @@ function __McInner() {
 
   function handleFlankerAnswer(dir: 'left' | 'right') {
     if (!currentFlanker) return
+    flankerTotalsRef.current[currentFlanker.isCongruent ? 'congruent' : 'incongruent'] += 1
     const elapsed = Math.round(performance.now() - flankerStartRef.current)
 
     if (dir === currentFlanker.centerDir) {
@@ -535,6 +593,13 @@ function __McInner() {
     const avgIncong = meanOf(flankerIncongruentTimes)
     const flankerCost = avgCong !== null && avgIncong !== null ? Math.max(0, Math.round(avgIncong - avgCong)) : null
 
+    const halfOf = (from: number, to: number) => {
+      const xs = cptRtLogRef.current.filter((x) => x.i >= from && x.i < to).map((x) => x.rt)
+      const m = meanOf(xs)
+      return xs.length >= 3 && m !== null ? Math.round(m) : null
+    }
+    const cptTargets = CPT_ORDER.slice(0, CPT_TOTAL_TRIALS).split('').filter((x) => x === 'G').length
+
     const payload = {
       assessmentType: 'adhd',
       childName: heroName || 'Canopy Ranger',
@@ -553,7 +618,14 @@ function __McInner() {
         flankerIncongruentN: flankerIncongruentTimes.length,
         workingMemorySpan: memoryMaxSpan > 0 ? memoryMaxSpan : null,
         prematureReleases,
-        chargeTrials: CHARGE_TRIALS.length
+        chargeTrials: CHARGE_TRIALS.length,
+        cptTargets,
+        cptNonTargets: CPT_TOTAL_TRIALS - cptTargets,
+        cptAnticipatory,
+        rtFirstHalfMs: halfOf(0, CPT_TOTAL_TRIALS / 2),
+        rtSecondHalfMs: halfOf(CPT_TOTAL_TRIALS / 2, CPT_TOTAL_TRIALS),
+        flankerCongruentTotal: flankerTotalsRef.current.congruent,
+        flankerIncongruentTotal: flankerTotalsRef.current.incongruent
       }
     }
 
@@ -740,7 +812,7 @@ function __McInner() {
                     Chapter 1: The Watchtower of Aethelgard
                   </span>
                   <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    The Celestial Sunbird & The Shadow Duskmoth
+                    The Sunbird and the Moth
                   </h2>
                 </div>
               </div>
@@ -748,27 +820,27 @@ function __McInner() {
 
             <div className="p-6 md:p-8">
               <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
-                Through the high observatory lens, rare celestial creatures swoop past the canopy clouds at unexpected moments. Milo the Owl advises: <em>"Keep your eyes locked on the circular lens! React swiftly, but do not jump early."</em>
+                Watch the circle. Sometimes the sunbird appears and sometimes the moth does. Tap for the sunbird and wait for the moth. Milo the Owl says: <em>“Be quick, but wait until you see which one it is.”</em>
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 <div className="flex items-center gap-4 p-4 rounded-2xl bg-amber-50 border border-amber-200">
                   <div className="w-16 h-16 shrink-0 rounded-2xl bg-white border border-amber-300 flex items-center justify-center shadow-sm overflow-hidden p-1">
-                    <img src="/decor/itw/quest-sunbird-target.webp" alt="Celestial Sunbird" className="h-full w-full object-contain" />
+                    <SunbirdTarget className="h-full w-full" />
                   </div>
                   <div>
-                    <strong className="text-xs text-[#92400E] block font-bold">When the Golden Sunbird appears:</strong>
-                    <span className="text-xs text-[#78350F]">Tap the screen or press <strong>SPACEBAR</strong> as <strong>FAST</strong> as lightning!</span>
+                    <strong className="text-xs text-[#92400E] block font-bold">When the sunbird appears:</strong>
+                    <span className="text-xs text-[#78350F]">Tap the screen or press <strong>SPACEBAR</strong> as fast as you can.</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4 p-4 rounded-2xl bg-rose-50 border border-rose-200">
                   <div className="w-16 h-16 shrink-0 rounded-2xl bg-white border border-rose-300 flex items-center justify-center shadow-sm">
-                    <VelvetDuskmothSvg className="w-12 h-12"/>
+                    <MothDistractor className="w-12 h-12" />
                   </div>
                   <div>
-                    <strong className="text-xs text-[#991B1B] block font-bold">When the Velvet Duskmoth flutters by:</strong>
-                    <span className="text-xs text-[#7F1D1D]"><strong>FREEZE! Stay completely still!</strong> Do not touch any keys!</span>
+                    <strong className="text-xs text-[#991B1B] block font-bold">When the moth appears:</strong>
+                    <span className="text-xs text-[#7F1D1D]"><strong>Wait.</strong> Do not tap.</span>
                   </div>
                 </div>
               </div>
@@ -783,11 +855,14 @@ function __McInner() {
                     setCptOmissions(0)
                     setCptCommissions(0)
                     setCptLastRt(null)
+                    setCptAnticipatory(0)
+                    cptRtLogRef.current = []
+                    flankerTotalsRef.current = {congruent: 0, incongruent: 0}
                     setStage('cpt_game')
                   }}
                   className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
                 >
-                  Peer Through Observatory Lens (20 Sightings) →
+                  Start (20 sightings) →
                 </button>
               </div>
             </div>
@@ -817,23 +892,17 @@ function __McInner() {
             </div>
 
             <div
-              onClick={handleCptTap}
-              className="relative mx-auto my-6 flex h-72 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 border-amber-300/80 bg-gradient-to-b from-[#0F172A] via-[#1E293B] to-[#0A0F1D] shadow-[0_0_50px_rgba(245,158,11,0.25)] transition-all hover:border-amber-400 active:scale-95 overflow-hidden"
+              onPointerDown={handleCptTap}
+              className="relative mx-auto my-6 flex h-72 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 border-amber-300/80 bg-[#1E293B] transition-all hover:border-amber-400 active:scale-95 overflow-hidden"
             >
               {cptStimulus === 'target' && (
-                <div className="flex flex-col items-center animate-bounce">
-                  <img src="/decor/itw/quest-sunbird-target.webp" alt="Target" className="w-32 h-32 object-contain filter drop-shadow-[0_0_15px_rgba(245,158,11,0.7)]" />
-                  <span className="mt-2 text-xs font-black tracking-wider text-amber-950 uppercase bg-amber-300 px-3.5 py-1 rounded-full shadow-lg border border-amber-400">
-                    ★ TAP NOW / SPACEBAR ★
-                  </span>
+                <div className="flex flex-col items-center">
+                  <SunbirdTarget className="w-32 h-32" />
                 </div>
               )}
               {cptStimulus === 'distractor' && (
-                <div className="flex flex-col items-center animate-pulse">
-                  <VelvetDuskmothSvg className="w-32 h-32 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]"/>
-                  <span className="mt-2 text-xs font-black tracking-wider text-white uppercase bg-rose-600 px-3.5 py-1 rounded-full shadow-lg border border-rose-400">
-                    FREEZE! DO NOT TAP!
-                  </span>
+                <div className="flex flex-col items-center">
+                  <MothDistractor className="w-32 h-32" />
                 </div>
               )}
               {!cptStimulus && (
@@ -848,7 +917,8 @@ function __McInner() {
 
             <button
               type="button"
-              onClick={handleCptTap}
+              onPointerDown={handleCptTap}
+              onClick={(e) => { if (e.detail === 0) handleCptTap() }}
               className="w-full max-w-sm rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 py-4 text-base font-bold text-white shadow-lg active:scale-95 transition-all"
             >
               TAP NOW (Or Spacebar)

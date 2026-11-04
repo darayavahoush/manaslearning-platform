@@ -47,3 +47,4 @@ next-env.d.ts
 public/sounds/*
 !public/sounds/teacher_*.mp3
 public/videos/
+*.bak*

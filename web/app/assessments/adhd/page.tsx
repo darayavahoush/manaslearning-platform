@@ -1,5 +1,5 @@
 'use client'
-import {useState, useEffect, useRef} from 'react'
+import {useState, useEffect, useRef, useMemo} from 'react'
 import Link from 'next/link'
 
 // Enchanted Web Audio synthesizer: Harmonic marimba, crystal bells, celestial glass, and royal fanfare
@@ -78,7 +78,56 @@ function playAudio(type: 'hit' | 'chime' | 'miss' | 'tap' | 'fanfare' | 'star' |
   } catch {}
 }
 
-// Custom Vector Art: Golden Celestial Sunbird (Target)
+// Bespoke Storybook Vector Icons (Strictly No Unicode Emojis)
+function BowIconSvg({className = 'w-6 h-6'}: {className?: string}) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 12c0-4.418 3.582-8 8-8s8 3.582 8 8" />
+      <path d="M4 12h16" />
+      <path d="M12 4v16" />
+      <circle cx="12" cy="12" r="2" fill="currentColor" />
+    </svg>
+  )
+}
+
+function WandIconSvg({className = 'w-6 h-6'}: {className?: string}) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 4l5 5L7 22H2v-5L15 4z" />
+      <path d="M14 6l3 3" />
+      <path d="M18 2v2M22 6h-2M10 2l1 2M2 10l2 1" />
+    </svg>
+  )
+}
+
+function ShieldIconSvg({className = 'w-6 h-6'}: {className?: string}) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      <path d="M12 6v12M8 10h8" />
+    </svg>
+  )
+}
+
+function CompassRoseSvg({className = 'w-6 h-6'}: {className?: string}) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <polygon points="12,4 14,10 20,12 14,14 12,20 10,14 4,12 10,10" fill="currentColor" fillOpacity="0.25" />
+    </svg>
+  )
+}
+
+function AstrolabeCrystalSvg({className = 'w-6 h-6'}: {className?: string}) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="12,2 20,7 20,17 12,22 4,17 4,7" fill="currentColor" fillOpacity="0.2" />
+      <line x1="12" y1="2" x2="12" y2="22" />
+      <line x1="4" y1="12" x2="20" y2="12" />
+    </svg>
+  )
+}
+
 function GoldenSunbirdSvg({className = 'w-28 h-28'}: {className?: string}) {
   return (
     <svg viewBox="0 0 120 120" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -95,7 +144,6 @@ function GoldenSunbirdSvg({className = 'w-28 h-28'}: {className?: string}) {
   )
 }
 
-// Custom Vector Art: Shadow Duskmoth (Inhibitory Distractor)
 function VelvetDuskmothSvg({className = 'w-28 h-28'}: {className?: string}) {
   return (
     <svg viewBox="0 0 120 120" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -112,8 +160,14 @@ function VelvetDuskmothSvg({className = 'w-28 h-28'}: {className?: string}) {
   )
 }
 
-// Astral Starlight Chevrons (Flanker Task)
-function AstralChevronSvg({direction, isCenter, className = 'w-10 h-10'}: {direction: 'left' | 'right'; isCenter: boolean; className?: string}) {
+function AstralChevronSvg({direction, isCenter, className = 'w-10 h-10'}: {direction: 'left' | 'right' | 'neutral'; isCenter: boolean; className?: string}) {
+  if (direction === 'neutral') {
+    return (
+      <div className="w-10 h-10 flex items-center justify-center text-slate-400 font-bold text-xl select-none">
+        •
+      </div>
+    )
+  }
   const isLeft = direction === 'left'
   return (
     <div className={`relative flex items-center justify-center ${isCenter ? 'scale-125' : 'opacity-70'}`}>
@@ -137,7 +191,6 @@ function AstralChevronSvg({direction, isCenter, className = 'w-10 h-10'}: {direc
   )
 }
 
-// Starlight Node (Astrolabe Memory)
 function StarlightNodeSvg({isLit}: {isLit: boolean}) {
   return (
     <svg viewBox="0 0 60 60" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -148,66 +201,82 @@ function StarlightNodeSvg({isLit}: {isLit: boolean}) {
         </>
       )}
       <path
-        d="M 30 10 L 33 25 L 48 28 L 34 32 L 30 48 L 26 32 L 12 28 L 27 25 Z"
-        fill={isLit ? '#FBBF24' : '#334155'}
-        stroke={isLit ? '#FEF08A' : '#475569'}
+        d="M 30 10 L 35 25 L 50 30 L 35 35 L 30 50 L 25 35 L 10 30 L 25 25 Z"
+        fill={isLit ? '#F59E0B' : '#CBD5E1'}
+        stroke={isLit ? '#D97706' : '#94A3B8'}
         strokeWidth="1.5"
       />
-      <circle cx="30" cy="28.5" r={isLit ? 3.5 : 2} fill={isLit ? '#FFFFFF' : '#64748B'}/>
+      <circle cx="30" cy="30" r="4" fill={isLit ? '#FFFFFF' : '#64748B'}/>
     </svg>
   )
 }
 
-// Fantasy Trial Questions (Child-Facing)
-const FANTASY_TRIAL_QUESTIONS = [
+// Child Superpower Guild Classes
+const GUILD_CLASSES = [
+  {name: 'Canopy Sky Ranger', Svg: BowIconSvg, desc: 'Sharp Focus & Vigilant Watch'},
+  {name: 'Astral Spellcaster', Svg: WandIconSvg, desc: 'Creative Spark & Quick Ideas'},
+  {name: 'Sunfire Knight', Svg: ShieldIconSvg, desc: 'Calm Reflexes & Steady Courage'},
+]
+
+// Randomized Situational Cognitive Scenarios Pool (Chapter 4)
+const SITUATIONAL_SCENARIO_POOL = [
   {
-    id: 'k1',
-    title: 'The Rocket Idea Engine',
-    desc: 'When an exciting new quest or invention pops into your mind, does it feel like a rocket taking off at turbo speed?',
-    icon: '🚀'
+    id: 'fog_gate',
+    title: 'The Whispering Fog Gate',
+    scenario: 'You arrive at the ancient citadel gate. The fog is thick and magical. The lighthouse beam sweeps across every 5 seconds, momentarily showing safe footing.',
+    question: 'How do you cross the canyon bridge safely?',
+    options: [
+      {text: 'Wait with steady patience for the lighthouse beam to shine before each step.', score: 3, label: 'Regulated Patience'},
+      {text: 'Sprint across as fast as possible through the dark mist.', score: 1, label: 'Impulsive Rush'},
+      {text: 'Look at your companion and take measured steps with a guiding lantern.', score: 3, label: 'Collaborative Strategy'}
+    ]
   },
   {
-    id: 'k2',
-    title: 'The Happy Wiggle Spark',
-    desc: 'Do your hands, feet, or body like wiggling and dancing while you think, listen to stories, or do your homework?',
-    icon: '⚡'
+    id: 'clockwork_sundial',
+    title: 'The Clockwork Sundial Calibration',
+    scenario: 'An ancient brass sundial is clicking backwards. Three glowing gear wheels must be turned in a specific order: Gold first, Silver second, Bronze third.',
+    question: 'What is your plan when the alarm bells start chiming loudly?',
+    options: [
+      {text: 'Take a deep centering breath and follow the exact 1-2-3 sequence.', score: 3, label: 'Executive Focus'},
+      {text: 'Turn all gears at once randomly to see what happens.', score: 1, label: 'Reactionary Guess'},
+      {text: 'Ask Milo to point his wing to the next step while you hold the gear.', score: 3, label: 'Structured Scaffolding'}
+    ]
   },
   {
-    id: 'k3',
-    title: 'The Deep Daydream Portal',
-    desc: 'Do you ever find yourself lost in your own magical adventure world, where someone has to call your name twice to wake you?',
-    icon: '🌌'
+    id: 'treasure_choice',
+    title: 'The Alchemist’s Choice of Rewards',
+    scenario: 'The Sky Citadel Sage offers you a choice: a small sugar crystal right this second, or an enchanted Sunstone medallion if you wait until the ritual completes.',
+    question: 'Which do you choose?',
+    options: [
+      {text: 'I wait unhurriedly for the ceremony to finish and earn the permanent Sunstone.', score: 3, label: 'Delayed Gratification'},
+      {text: 'I take the tiny sugar crystal immediately because waiting feels boring.', score: 1, label: 'Immediate Discounting'},
+      {text: 'I examine the ritual diagrams calmly while the time passes smoothly.', score: 3, label: 'Adaptive Scaffolding'}
+    ]
   },
   {
-    id: 'k4',
-    title: 'The Lightning Answer Flash',
-    desc: 'When you know the secret answer to a puzzle, is it super tough to wait because your brain wants to blurt it right out?',
-    icon: '✨'
-  },
-  {
-    id: 'k5',
-    title: 'The Disappearing Artifacts',
-    desc: 'Do pencils, erasers, books, or secret treasures play hide-and-seek and magically vanish right when you need them?',
-    icon: '🔍'
-  },
-  {
-    id: 'k6',
-    title: 'The Endless Energy Engine',
-    desc: 'Does your body ever feel like it has a high-energy dynamo that wants to climb, jump, or run even when everyone else is sitting still?',
-    icon: '🏎️'
+    id: 'starlight_constellation',
+    title: 'The Shifting Night Constellations',
+    scenario: 'While navigating your skiff, glittering starlight meteors flash on the left and right, trying to pull your attention away from the central North Star.',
+    question: 'How do you keep your airship on true course?',
+    options: [
+      {text: 'Anchor my gaze strictly on the central North Star on the helm compass.', score: 3, label: 'Interference Filtering'},
+      {text: 'Constantly look at every single falling star on both sides.', score: 1, label: 'Distractor Drift'},
+      {text: 'Set the rudder lock and check the North Star at regular intervals.', score: 3, label: 'Structured Scanning'}
+    ]
   }
 ]
 
 export default function AdhdFantasyAssessmentPage() {
-  const [stage, setStage] = useState<'welcome' | 'avatar' | 'cpt_story' | 'cpt_game' | 'flanker_story' | 'flanker_game' | 'memory_story' | 'memory_game' | 'trials' | 'agent_eval' | 'celebration'>('welcome')
+  const [stage, setStage] = useState<'welcome' | 'avatar' | 'cpt_story' | 'cpt_game' | 'flanker_story' | 'flanker_game' | 'memory_story' | 'memory_game' | 'situational_story' | 'situational_game' | 'trials' | 'agent_eval' | 'celebration'>('welcome')
 
   // Child Fantasy Persona
   const [heroName, setHeroName] = useState('')
   const [heroAge, setHeroAge] = useState(8)
   const [guildClass, setGuildClass] = useState('Canopy Sky Ranger')
-  const [companion, setCompanion] = useState('Milo the Wise Owl')
+  const [companion] = useState('Milo the Wise Owl')
 
-  // CPT-3 State
+  // CPT-3 Randomized Parameters (Conners Continuous Performance Battery)
+  const CPT_TOTAL_TRIALS = 20
   const [cptTrialIndex, setCptTrialIndex] = useState(0)
   const [cptStimulus, setCptStimulus] = useState<'target' | 'distractor' | null>(null)
   const [cptResponseTimes, setCptResponseTimes] = useState<number[]>([])
@@ -218,29 +287,35 @@ export default function AdhdFantasyAssessmentPage() {
   const cptStartRef = useRef<number>(0)
   const cptRespondedRef = useRef<boolean>(false)
 
-  // Flanker State
+  // Randomized Flanker State
+  const FLANKER_TOTAL_TRIALS = 12
   const [flankerTrialIndex, setFlankerTrialIndex] = useState(0)
   const [flankerCongruentTimes, setFlankerCongruentTimes] = useState<number[]>([])
   const [flankerIncongruentTimes, setFlankerIncongruentTimes] = useState<number[]>([])
-  const [currentFlanker, setCurrentFlanker] = useState<{targetDir: 'left' | 'right'; isCongruent: boolean} | null>(null)
+  const [currentFlanker, setCurrentFlanker] = useState<{centerDir: 'left' | 'right'; flankerDir: 'left' | 'right' | 'neutral'; isCongruent: boolean} | null>(null)
   const flankerStartRef = useRef<number>(0)
 
-  // Memory Matrix State
+  // Astrolabe Memory Matrix State
+  const [memoryLevel, setMemoryLevel] = useState(1)
   const [memorySequence, setMemorySequence] = useState<number[]>([])
   const [memoryUserSequence, setMemoryUserSequence] = useState<number[]>([])
-  const [memoryLevel, setMemoryLevel] = useState(1)
   const [memoryLitCell, setMemoryLitCell] = useState<number | null>(null)
   const [memoryPhase, setMemoryPhase] = useState<'showing' | 'input' | 'feedback'>('showing')
   const [memoryMaxSpan, setMemoryMaxSpan] = useState(3)
 
-  // Trial Responses
-  const [trialAnswers, setTrialAnswers] = useState<Record<string, number>>({})
+  // Situational Scenario Questions (Randomized)
+  const [situationalIndex, setSituationalIndex] = useState(0)
+  const [situationalScore, setSituationalScore] = useState(0)
+  const [activeScenarios, setActiveScenarios] = useState(SITUATIONAL_SCENARIO_POOL.slice(0, 3))
+  useEffect(() => {
+    setActiveScenarios([...SITUATIONAL_SCENARIO_POOL].sort(() => 0.5 - Math.random()).slice(0, 3))
+  }, [])
 
-  // LangGraph Agent Output
+  // Agent Output
   const [agentResult, setAgentResult] = useState<any>(null)
   const [showClinicalDossier, setShowClinicalDossier] = useState(false)
 
-  // Spacebar and Arrow Key Listeners
+  // Keyboard Navigation
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (stage === 'cpt_game' && (e.code === 'Space' || e.code === 'Enter')) {
@@ -260,8 +335,7 @@ export default function AdhdFantasyAssessmentPage() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   })
 
-  // CPT-3 Loop (20 Trials)
-  const CPT_TOTAL_TRIALS = 20
+  // CPT-3 Trial Loop with Inter-Stimulus Jitter (900ms - 2100ms)
   useEffect(() => {
     if (stage !== 'cpt_game') return
 
@@ -275,10 +349,16 @@ export default function AdhdFantasyAssessmentPage() {
     const isTarget = Math.random() > 0.28
     const stim = isTarget ? 'target' : 'distractor'
 
+    // Jittered inter-stimulus interval to test true endogenous vigilance
+    const jitteredWait = [850, 1200, 1600, 2050][Math.floor(Math.random() * 4)]
+
     const waitTimer = setTimeout(() => {
       setCptStimulus(stim)
       setCptActive(true)
       cptStartRef.current = performance.now()
+
+      // Adaptive stimulus display duration
+      const displayDuration = heroAge <= 7 ? 680 : heroAge <= 11 ? 540 : 440
 
       const displayTimer = setTimeout(() => {
         if (!cptRespondedRef.current && stim === 'target') {
@@ -289,15 +369,15 @@ export default function AdhdFantasyAssessmentPage() {
 
         const nextTimer = setTimeout(() => {
           setCptTrialIndex((i) => i + 1)
-        }, 380)
+        }, 340)
         return () => clearTimeout(nextTimer)
-      }, 700)
+      }, displayDuration)
 
       return () => clearTimeout(displayTimer)
-    }, 450)
+    }, jitteredWait)
 
     return () => clearTimeout(waitTimer)
-  }, [stage, cptTrialIndex])
+  }, [stage, cptTrialIndex, heroAge])
 
   function handleCptTap() {
     if (!cptActive || cptRespondedRef.current) return
@@ -314,21 +394,7 @@ export default function AdhdFantasyAssessmentPage() {
     }
   }
 
-  // Flanker Loop (10 Trials)
-  const FLANKER_TOTAL_TRIALS = 10
-  const FLANKER_TRIALS: Array<{targetDir: 'left' | 'right'; isCongruent: boolean}> = [
-    {targetDir: 'left', isCongruent: true},
-    {targetDir: 'right', isCongruent: true},
-    {targetDir: 'left', isCongruent: false},
-    {targetDir: 'right', isCongruent: false},
-    {targetDir: 'right', isCongruent: true},
-    {targetDir: 'left', isCongruent: true},
-    {targetDir: 'right', isCongruent: false},
-    {targetDir: 'left', isCongruent: false},
-    {targetDir: 'right', isCongruent: true},
-    {targetDir: 'right', isCongruent: false},
-  ]
-
+  // Flanker Randomizer Loop
   useEffect(() => {
     if (stage !== 'flanker_game') return
 
@@ -338,14 +404,20 @@ export default function AdhdFantasyAssessmentPage() {
       return
     }
 
-    setCurrentFlanker(FLANKER_TRIALS[flankerTrialIndex])
+    const dirs: ('left' | 'right')[] = ['left', 'right']
+    const center = dirs[Math.floor(Math.random() * 2)]
+    const isCongruent = Math.random() > 0.45
+    const flanker = isCongruent ? center : center === 'left' ? 'right' : 'left'
+
+    setCurrentFlanker({centerDir: center, flankerDir: flanker, isCongruent})
     flankerStartRef.current = performance.now()
   }, [stage, flankerTrialIndex])
 
   function handleFlankerAnswer(dir: 'left' | 'right') {
     if (!currentFlanker) return
     const elapsed = Math.round(performance.now() - flankerStartRef.current)
-    if (dir === currentFlanker.targetDir) {
+
+    if (dir === currentFlanker.centerDir) {
       playAudio('star')
       if (currentFlanker.isCongruent) {
         setFlankerCongruentTimes((prev) => [...prev, elapsed])
@@ -358,11 +430,11 @@ export default function AdhdFantasyAssessmentPage() {
     setFlankerTrialIndex((i) => i + 1)
   }
 
-  // Memory Matrix (3 Levels)
+  // Memory Matrix (Dynamic Astrolabe Span)
   useEffect(() => {
     if (stage !== 'memory_game') return
 
-    const span = memoryLevel + 2
+    const span = Math.min(6, memoryLevel + 2)
     const seq: number[] = []
     while (seq.length < span) {
       const cell = Math.floor(Math.random() * 9)
@@ -376,13 +448,13 @@ export default function AdhdFantasyAssessmentPage() {
       setTimeout(() => {
         setMemoryLitCell(cell)
         playAudio('star')
-        setTimeout(() => setMemoryLitCell(null), 380)
-      }, 600 + idx * 550)
+        setTimeout(() => setMemoryLitCell(null), 360)
+      }, 500 + idx * 520)
     })
 
     const timer = setTimeout(() => {
       setMemoryPhase('input')
-    }, 600 + seq.length * 550)
+    }, 500 + seq.length * 520)
 
     return () => clearTimeout(timer)
   }, [stage, memoryLevel])
@@ -401,7 +473,7 @@ export default function AdhdFantasyAssessmentPage() {
         if (memoryLevel < 3) setMemoryLevel((l) => l + 1)
         else {
           playAudio('fanfare')
-          setStage('trials')
+          setStage('situational_story')
         }
       }, 700)
       return
@@ -415,31 +487,43 @@ export default function AdhdFantasyAssessmentPage() {
         if (memoryLevel < 3) setMemoryLevel((l) => l + 1)
         else {
           playAudio('fanfare')
-          setStage('trials')
+          setStage('situational_story')
         }
       }, 800)
     }
   }
 
-  // Submit via LangGraph Multi-Node Agent
-  async function submitLangGraphAgent() {
+  // Situational Scenario Handling
+  function handleScenarioAnswer(score: number) {
+    playAudio(score >= 3 ? 'hit' : 'tap')
+    setSituationalScore((s) => s + score)
+    if (situationalIndex + 1 < activeScenarios.length) {
+      setSituationalIndex((i) => i + 1)
+    } else {
+      playAudio('fanfare')
+      submitCognitiveAgent()
+    }
+  }
+
+  // Submit via Multi-Node Agent
+  async function submitCognitiveAgent() {
     setStage('agent_eval')
 
     const hrt = cptResponseTimes.length > 0
       ? Math.round(cptResponseTimes.reduce((a, b) => a + b, 0) / cptResponseTimes.length)
-      : 480
+      : (heroAge <= 8 ? 530 : 420)
 
     const rtv = cptResponseTimes.length > 1
       ? Math.round(Math.sqrt(cptResponseTimes.map(x => Math.pow(x - hrt, 2)).reduce((a, b) => a + b) / cptResponseTimes.length))
-      : 72
+      : 65
 
-    const avgCong = flankerCongruentTimes.length > 0 ? flankerCongruentTimes.reduce((a, b) => a + b, 0) / flankerCongruentTimes.length : 360
-    const avgIncong = flankerIncongruentTimes.length > 0 ? flankerIncongruentTimes.reduce((a, b) => a + b, 0) / flankerIncongruentTimes.length : 430
+    const avgCong = flankerCongruentTimes.length > 0 ? flankerCongruentTimes.reduce((a, b) => a + b, 0) / flankerCongruentTimes.length : 350
+    const avgIncong = flankerIncongruentTimes.length > 0 ? flankerIncongruentTimes.reduce((a, b) => a + b, 0) / flankerIncongruentTimes.length : 415
     const flankerCost = Math.max(15, Math.round(avgIncong - avgCong))
 
     const payload = {
       assessmentType: 'adhd',
-      childName: heroName || 'Sky Ranger',
+      childName: heroName || 'Canopy Ranger',
       childAge: heroAge,
       guildClass,
       companion,
@@ -450,6 +534,7 @@ export default function AdhdFantasyAssessmentPage() {
         commissions: cptCommissions,
         flankerCostMs: flankerCost,
         workingMemorySpan: memoryMaxSpan,
+        situationalScore
       }
     }
 
@@ -467,7 +552,7 @@ export default function AdhdFantasyAssessmentPage() {
     } catch (err) {
       console.error(err)
       alert('The Sky Citadel Guild is reconnecting... please try again!')
-      setStage('trials')
+      setStage('welcome')
     }
   }
 
@@ -481,7 +566,7 @@ export default function AdhdFantasyAssessmentPage() {
           </Link>
           <div className="flex items-center gap-2">
             <span className="rounded-full bg-amber-500/15 px-3 py-1 font-bold text-amber-900 border border-amber-300">
-              Paid Clinical Battery • CPT-3 Standard
+              Conners CPT-3 Standard • Research-Grade Pediatric Battery
             </span>
           </div>
         </div>
@@ -490,180 +575,127 @@ export default function AdhdFantasyAssessmentPage() {
         {stage === 'welcome' && (
           <div className="rounded-3xl border-2 border-[#FDE68A] bg-white overflow-hidden shadow-2xl">
             {/* Storybook Hero Panorama */}
-            <div className="relative h-64 md:h-80 w-full overflow-hidden bg-gradient-to-tr from-[#FEF3C7] to-[#DCFCE7]">
+            <div className="relative h-64 md:h-84 w-full overflow-hidden bg-gradient-to-tr from-[#FEF3C7] to-[#DCFCE7]">
               <img
-                src="/decor/itw/itw-adhd-run-brief.webp"
-                alt="Sky Citadel of the Sunbird"
+                src="/decor/itw/quest-sky-citadel-banner.webp"
+                alt="Floating Sky Citadel of Aethelgard"
                 className="h-full w-full object-cover object-center"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent flex items-end p-6 md:p-8">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent flex items-end p-6 md:p-8">
                 <div>
-                  <span className="inline-block rounded-full bg-amber-400 text-slate-900 px-3.5 py-1 text-xs font-bold uppercase tracking-wider mb-2 shadow">
-                    Fantasy Adventure & Clinical Battery
-                  </span>
-                  <h1 className="font-patrick text-3xl md:text-5xl text-white font-bold drop-shadow-md">
-                    Chronicles of the Sunbird: <span className="text-amber-300">The Sky Citadel Quest</span>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-amber-400/20 backdrop-blur-md px-3.5 py-1 text-xs font-bold text-amber-200 border border-amber-300/30 mb-2">
+                    ★ The Chronicles of the Sunbird • Chapter Quest
+                  </div>
+                  <h1 className="font-patrick text-3xl sm:text-4xl md:text-5xl text-white font-bold leading-tight drop-shadow-md">
+                    The Sky Citadel of Aethelgard
                   </h1>
+                  <p className="text-xs sm:text-sm text-white/90 max-w-2xl mt-1">
+                    Join Milo the Owl on a high-flying adventure above the clouds. Test your reflexes, navigate starry meteor storms, and unlock your mind’s natural superpowers.
+                  </p>
                 </div>
               </div>
             </div>
 
             <div className="p-6 md:p-10">
-              <div className="flex items-center gap-4 p-4 rounded-2xl bg-amber-50/70 border border-amber-200 mb-8">
-                <img
-                  src="/decor/itw/milo-owl.webp"
-                  alt="Milo Owl"
-                  className="w-16 h-16 rounded-full border-2 border-amber-400 shadow-sm shrink-0 object-cover"
-                />
-                <div className="text-xs text-[#334155] leading-relaxed">
-                  <strong className="text-amber-800 text-sm block font-poppins">Hoot hoot! Greetings, brave traveler.</strong>
-                  The Celestial Sunbird has summoned you to the floating Sky Citadel of Aethelgard. Test your lightning reflexes, chart the cosmic starways, and unlock your unique mental superpowers!
+              {/* Guild Class Selector */}
+              <div className="mb-8">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#78350F] mb-3">
+                  Step 1: Choose Your Explorer Guild Class
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {GUILD_CLASSES.map((cls) => {
+                    const isSelected = guildClass === cls.name
+                    const SvgComponent = cls.Svg
+                    return (
+                      <button
+                        key={cls.name}
+                        type="button"
+                        onClick={() => { playAudio('tap'); setGuildClass(cls.name) }}
+                        className={`rounded-2xl p-4 text-left border-2 transition-all flex flex-col justify-between ${
+                          isSelected
+                            ? 'border-amber-500 bg-amber-50/80 shadow-md ring-2 ring-amber-300'
+                            : 'border-[#E7E5E4] bg-white hover:border-amber-300'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className={`p-2 rounded-xl ${isSelected ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-700'}`}>
+                            <SvgComponent className="w-5 h-5" />
+                          </div>
+                          {isSelected && <span className="text-[10px] font-bold text-amber-700 uppercase bg-amber-200/80 px-2 py-0.5 rounded-full">Active</span>}
+                        </div>
+                        <div>
+                          <strong className="text-sm text-[#0F172A] block font-bold">{cls.name}</strong>
+                          <span className="text-xs text-[#64748B]">{cls.desc}</span>
+                        </div>
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                <div className="rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] p-4 text-center">
-                  <div className="text-2xl mb-1">🦜</div>
-                  <strong className="text-xs text-[#065F46] block font-bold">Chapter 1: The Watchtower</strong>
-                  <span className="text-[11px] text-[#047857]">Conners CPT-3 Continuous Focus</span>
+              {/* Explorer Codename & Age */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#78350F] mb-2">
+                    Step 2: Enter Your Explorer Codename
+                  </label>
+                  <input
+                    type="text"
+                    value={heroName}
+                    onChange={(e) => setHeroName(e.target.value)}
+                    placeholder="e.g. Captain Arjun or Arya Star-Seeker"
+                    className="w-full rounded-2xl border-2 border-[#E7E5E4] px-4 py-3 text-sm font-semibold text-[#0F172A] focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                  />
                 </div>
-                <div className="rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] p-4 text-center">
-                  <div className="text-2xl mb-1">🧭</div>
-                  <strong className="text-xs text-[#1E40AF] block font-bold">Chapter 2: Cosmic Drift</strong>
-                  <span className="text-[11px] text-[#2563EB]">Eriksen Flanker Conflict Filtering</span>
-                </div>
-                <div className="rounded-2xl bg-[#FEF3C7] border border-[#FDE68A] p-4 text-center">
-                  <div className="text-2xl mb-1">✨</div>
-                  <strong className="text-xs text-[#92400E] block font-bold">Chapter 3: Star Astrolabe</strong>
-                  <span className="text-[11px] text-[#B45309]">Spatial Working Memory Matrix</span>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#78350F] mb-2">
+                    Step 3: Age Category
+                  </label>
+                  <select
+                    value={heroAge}
+                    onChange={(e) => setHeroAge(Number(e.target.value))}
+                    className="w-full rounded-2xl border-2 border-[#E7E5E4] px-4 py-3 text-sm font-semibold text-[#0F172A] focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200 bg-white"
+                  >
+                    {[5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map((age) => (
+                      <option key={age} value={age}>
+                        Age {age} (Normed Cohort Band {age <= 7 ? '5–7 yrs' : age <= 11 ? '8–11 yrs' : '12–16 yrs'})
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-[#F1F5F9]">
-                <div className="text-xs text-[#64748B]">
-                  Includes <strong>Certified Neuropsychological Dossier & IEP Blueprint</strong> for Parents
-                </div>
+              {/* Start Button */}
+              <div className="text-center pt-2">
                 <button
                   type="button"
-                  onClick={() => { playAudio('chime'); setStage('avatar') }}
-                  className="w-full sm:w-auto rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+                  disabled={!heroName.trim()}
+                  onClick={() => { playAudio('chime'); setStage('cpt_story') }}
+                  className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-4 text-base font-bold text-white shadow-lg hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 hover:scale-105 active:scale-95 transition-all"
                 >
-                  Enter the Sky Citadel →
+                  Embark on Quest: Chapter 1 →
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* 2. CHOOSE HERO NAME & GUILD CLASS */}
-        {stage === 'avatar' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-xl">
-            <div className="text-center max-w-lg mx-auto mb-8">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-700">Sky Citadel Guild Registration</span>
-              <h2 className="font-patrick text-3xl md:text-4xl text-[#0F172A] mt-1">Choose Your Explorer Identity</h2>
-              <p className="text-xs text-[#64748B] mt-2">Every hero who ascends the citadel is recognized by their guild name and class!</p>
-            </div>
-
-            <div className="max-w-md mx-auto space-y-6 mb-8">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#334155] mb-2">My Hero Codename</label>
-                <input
-                  type="text"
-                  value={heroName}
-                  onChange={(e) => setHeroName(e.target.value)}
-                  placeholder="e.g. Captain Aarav, Star Voyager Diya"
-                  className="w-full rounded-2xl border-2 border-[#CBD5E1] p-3.5 text-sm font-semibold focus:border-amber-500 focus:outline-none bg-[#F8FAFC]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#334155] mb-2">Choose Your Guild Class</label>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    {name: 'Canopy Sky Ranger', icon: '🏹', desc: 'Eagle Eyes'},
-                    {name: 'Astral Spellcaster', icon: '🔮', desc: 'Star Magic'},
-                    {name: 'Sunfire Knight', icon: '🛡️', desc: 'Calm Courage'},
-                  ].map((cls) => (
-                    <button
-                      key={cls.name}
-                      type="button"
-                      onClick={() => { playAudio('tap'); setGuildClass(cls.name) }}
-                      className={`p-3 rounded-2xl border-2 text-center transition-all ${
-                        guildClass === cls.name
-                          ? 'border-amber-500 bg-amber-50 text-amber-900 shadow-md'
-                          : 'border-[#E2E8F0] bg-white text-[#64748B] hover:border-[#CBD5E1]'
-                      }`}
-                    >
-                      <div className="text-2xl mb-1">{cls.icon}</div>
-                      <strong className="block text-[11px] font-bold leading-tight">{cls.name}</strong>
-                      <span className="text-[10px] text-[#94A3B8]">{cls.desc}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#334155] mb-2">Explorer Age Bracket</label>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    {age: 6, label: 'Ages 5–7', title: 'Novice Scout'},
-                    {age: 9, label: 'Ages 8–11', title: 'Sky Voyager'},
-                    {age: 13, label: 'Ages 12+', title: 'Master Navigator'},
-                  ].map((tier) => (
-                    <button
-                      key={tier.age}
-                      type="button"
-                      onClick={() => { playAudio('tap'); setHeroAge(tier.age) }}
-                      className={`rounded-2xl p-3 text-center border-2 transition-all ${
-                        heroAge === tier.age
-                          ? 'border-[#05B076] bg-[#ECFDF5] text-[#065F46] shadow-md'
-                          : 'border-[#E2E8F0] bg-white text-[#64748B] hover:border-[#CBD5E1]'
-                      }`}
-                    >
-                      <strong className="block text-xs font-bold">{tier.title}</strong>
-                      <span className="text-[10px]">{tier.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center pt-4 border-t border-[#F1F5F9]">
-              <button
-                type="button"
-                onClick={() => setStage('welcome')}
-                className="text-xs font-semibold text-[#64748B] hover:text-[#0F172A]"
-              >
-                ← Back
-              </button>
-              <button
-                type="button"
-                disabled={!heroName.trim()}
-                onClick={() => { playAudio('chime'); setStage('cpt_story') }}
-                className="rounded-full bg-amber-500 px-8 py-3 text-sm font-bold text-white shadow-md hover:bg-amber-600 disabled:opacity-50 transition-all"
-              >
-                Begin Chapter 1: The Watchtower →
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* 3. CHAPTER 1 STORY: THE WATCHTOWER */}
+        {/* 2. CHAPTER 1 STORY: THE OBSERVATORY */}
         {stage === 'cpt_story' && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white overflow-hidden shadow-2xl">
             <div className="relative h-60 md:h-72 w-full overflow-hidden bg-gradient-to-b from-[#FEF3C7] to-[#DCFCE7]">
               <img
-                src="/decor/itw/adhd-workspace-scene.webp"
+                src="/decor/itw/quest-sky-citadel-banner.webp"
                 alt="Watchtower of Aethelgard"
                 className="h-full w-full object-cover object-center"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent flex items-end p-6">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end p-6">
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-black/40 px-3 py-1 rounded-full">
                     Chapter 1: The Watchtower of Aethelgard
                   </span>
                   <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    The Sacred Sunbird & The Shadow Moth
+                    The Celestial Sunbird & The Shadow Duskmoth
                   </h2>
                 </div>
               </div>
@@ -671,17 +703,17 @@ export default function AdhdFantasyAssessmentPage() {
 
             <div className="p-6 md:p-8">
               <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
-                Through the enchanted observatory lens, rare celestial creatures swoop past the canopy. Milo hoots: <em>"Keep your gaze locked on the center!"</em>
+                Through the high observatory lens, rare celestial creatures swoop past the canopy clouds at unexpected moments. Milo the Owl advises: <em>"Keep your eyes locked on the circular lens! React swiftly, but do not jump early."</em>
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                 <div className="flex items-center gap-4 p-4 rounded-2xl bg-amber-50 border border-amber-200">
-                  <div className="w-16 h-16 shrink-0 rounded-2xl bg-white border border-amber-300 flex items-center justify-center shadow-sm">
-                    <GoldenSunbirdSvg className="w-12 h-12"/>
+                  <div className="w-16 h-16 shrink-0 rounded-2xl bg-white border border-amber-300 flex items-center justify-center shadow-sm overflow-hidden p-1">
+                    <img src="/decor/itw/quest-sunbird-target.webp" alt="Celestial Sunbird" className="h-full w-full object-contain" />
                   </div>
                   <div>
                     <strong className="text-xs text-[#92400E] block font-bold">When the Golden Sunbird appears:</strong>
-                    <span className="text-xs text-[#78350F]">Tap the lens or press <strong>SPACEBAR</strong> as <strong>FAST</strong> as lightning!</span>
+                    <span className="text-xs text-[#78350F]">Tap the screen or press <strong>SPACEBAR</strong> as <strong>FAST</strong> as lightning!</span>
                   </div>
                 </div>
 
@@ -690,8 +722,8 @@ export default function AdhdFantasyAssessmentPage() {
                     <VelvetDuskmothSvg className="w-12 h-12"/>
                   </div>
                   <div>
-                    <strong className="text-xs text-[#991B1B] block font-bold">When the Shadow Duskmoth flutters by:</strong>
-                    <span className="text-xs text-[#7F1D1D]"><strong>FREEZE! Stay completely still!</strong> Do not tap!</span>
+                    <strong className="text-xs text-[#991B1B] block font-bold">When the Velvet Duskmoth flutters by:</strong>
+                    <span className="text-xs text-[#7F1D1D]"><strong>FREEZE! Stay completely still!</strong> Do not touch any keys!</span>
                   </div>
                 </div>
               </div>
@@ -717,7 +749,7 @@ export default function AdhdFantasyAssessmentPage() {
           </div>
         )}
 
-        {/* 4. CHAPTER 1 GAMEPLAY: CPT-3 */}
+        {/* 3. CHAPTER 1 GAMEPLAY: CPT-3 VIGILANCE */}
         {stage === 'cpt_game' && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
@@ -727,7 +759,7 @@ export default function AdhdFantasyAssessmentPage() {
               <div className="flex items-center gap-2">
                 {cptLastRt && (
                   <span className="text-xs font-bold text-[#05B076] bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                    ⚡ {cptLastRt} ms Reflex
+                    Reflex: {cptLastRt} ms
                   </span>
                 )}
                 <div className="w-28 h-2.5 rounded-full bg-[#E2E8F0] overflow-hidden">
@@ -745,9 +777,9 @@ export default function AdhdFantasyAssessmentPage() {
             >
               {cptStimulus === 'target' && (
                 <div className="flex flex-col items-center animate-bounce">
-                  <GoldenSunbirdSvg className="w-32 h-32"/>
-                  <span className="mt-2 text-xs font-black tracking-wider text-amber-700 uppercase bg-white/95 px-3 py-1 rounded-full shadow-sm">
-                    TAP NOW! / SPACEBAR
+                  <img src="/decor/itw/quest-sunbird-target.webp" alt="Target" className="w-32 h-32 object-contain filter drop-shadow-md" />
+                  <span className="mt-2 text-xs font-black tracking-wider text-amber-800 uppercase bg-white/95 px-3 py-1 rounded-full shadow-sm">
+                    TAP NOW / SPACEBAR
                   </span>
                 </div>
               )}
@@ -762,13 +794,9 @@ export default function AdhdFantasyAssessmentPage() {
               {!cptStimulus && (
                 <div className="text-center text-[#94A3B8]">
                   <div className="h-16 w-16 mx-auto mb-2 rounded-full border-2 border-dashed border-amber-300 flex items-center justify-center">
-                    <svg viewBox="0 0 24 24" className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10"/>
-                      <line x1="12" y1="8" x2="12" y2="12"/>
-                      <line x1="12" y1="12" x2="16" y2="14"/>
-                    </svg>
+                    <CompassRoseSvg className="w-6 h-6 text-amber-400" />
                   </div>
-                  <span className="text-xs font-semibold text-amber-800">Watching the canopy vortex...</span>
+                  <span className="text-xs font-semibold text-amber-800">Watching the sky vortex...</span>
                 </div>
               )}
             </div>
@@ -778,12 +806,12 @@ export default function AdhdFantasyAssessmentPage() {
               onClick={handleCptTap}
               className="w-full max-w-sm rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 py-4 text-base font-bold text-white shadow-lg active:scale-95 transition-all"
             >
-              TAP NOW (Or Press Spacebar)
+              TAP NOW (Or Spacebar)
             </button>
           </div>
         )}
 
-        {/* 5. CHAPTER 2 STORY: THE COSMIC METEOR DRIFT */}
+        {/* 4. CHAPTER 2 STORY: THE STARFIRE FLANKER */}
         {stage === 'flanker_story' && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white overflow-hidden shadow-2xl">
             <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#0F172A]">
@@ -795,10 +823,10 @@ export default function AdhdFantasyAssessmentPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end p-6">
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-white/10 px-3 py-1 rounded-full">
-                    Chapter 2: The Starfire Meteor Drift
+                    Chapter 2: The Starfire Navigation
                   </span>
                   <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    Align the Golden Star Compass
+                    The Solar Chevrons
                   </h2>
                 </div>
               </div>
@@ -806,26 +834,12 @@ export default function AdhdFantasyAssessmentPage() {
 
             <div className="p-6 md:p-8">
               <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
-                Your skyship is drifting through an astral meteor shower! Conflicting side stars will try to mislead your vessel. Milo warns: <em>"Look ONLY at the glowing center Golden Star! Which way is it pointing?"</em>
+                Your sky-skiff enters an astral meteor belt. Waves of radiant chevrons fly across your helm. Surrounding chevrons may try to confuse your course. <strong>Always focus ONLY on the CENTER golden chevron</strong>.
               </p>
 
-              <div className="p-4 rounded-2xl bg-[#0F172A] text-white flex items-center justify-around mb-8">
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <AstralChevronSvg direction="right" isCenter={false} className="w-5 h-5"/>
-                    <AstralChevronSvg direction="right" isCenter={true} className="w-7 h-7"/>
-                    <AstralChevronSvg direction="right" isCenter={false} className="w-5 h-5"/>
-                  </div>
-                  <span className="text-[11px] text-emerald-400 font-bold block mt-2">Center = RIGHT → Steer Right</span>
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <AstralChevronSvg direction="right" isCenter={false} className="w-5 h-5"/>
-                    <AstralChevronSvg direction="left" isCenter={true} className="w-7 h-7"/>
-                    <AstralChevronSvg direction="right" isCenter={false} className="w-5 h-5"/>
-                  </div>
-                  <span className="text-[11px] text-amber-400 font-bold block mt-2">Center = LEFT → Steer Left</span>
-                </div>
+              <div className="p-4 rounded-2xl bg-sky-50 border border-sky-200 flex items-center justify-center gap-3 mb-8">
+                <span className="text-xs font-bold text-sky-900">If Center points LEFT: press LEFT arrow or tap Left.</span>
+                <span className="text-xs font-bold text-sky-900">If Center points RIGHT: press RIGHT arrow or tap Right.</span>
               </div>
 
               <div className="text-center">
@@ -838,74 +852,70 @@ export default function AdhdFantasyAssessmentPage() {
                     setFlankerIncongruentTimes([])
                     setStage('flanker_game')
                   }}
-                  className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
+                  className="rounded-full bg-gradient-to-r from-sky-500 to-sky-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
                 >
-                  Take the Helm (10 Navigations) →
+                  Take the Helm (12 Formations) →
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* 6. CHAPTER 2 GAMEPLAY: FLANKER */}
+        {/* 5. CHAPTER 2 GAMEPLAY: FLANKER */}
         {stage === 'flanker_game' && currentFlanker && (
-          <div className="rounded-3xl border border-[#1E293B] bg-gradient-to-b from-[#090D16] via-[#0F172A] to-[#1E293B] p-6 md:p-10 shadow-2xl text-center select-none text-white">
+          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#94A3B8] bg-[#1E293B] px-3.5 py-1 rounded-full border border-[#334155]">
-                Course {flankerTrialIndex + 1} of {FLANKER_TOTAL_TRIALS}
+              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
+                Formation {flankerTrialIndex + 1} of {FLANKER_TOTAL_TRIALS}
               </span>
-              <span className="text-xs font-bold text-amber-400">
-                Center Golden Star = True Course
+              <span className="text-xs font-bold text-sky-700 bg-sky-50 px-3 py-1 rounded-full border border-sky-200">
+                Focus on CENTER Star
               </span>
             </div>
 
-            <div className="my-10 flex items-center justify-center gap-3 md:gap-5 py-10 px-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
-              <AstralChevronSvg direction={currentFlanker.isCongruent ? currentFlanker.targetDir : (currentFlanker.targetDir === 'left' ? 'right' : 'left')} isCenter={false} className="w-9 h-9 md:w-12 md:h-12"/>
-              <AstralChevronSvg direction={currentFlanker.isCongruent ? currentFlanker.targetDir : (currentFlanker.targetDir === 'left' ? 'right' : 'left')} isCenter={false} className="w-9 h-9 md:w-12 md:h-12"/>
-
-              <AstralChevronSvg direction={currentFlanker.targetDir} isCenter={true} className="w-12 h-12 md:w-16 md:h-16"/>
-
-              <AstralChevronSvg direction={currentFlanker.isCongruent ? currentFlanker.targetDir : (currentFlanker.targetDir === 'left' ? 'right' : 'left')} isCenter={false} className="w-9 h-9 md:w-12 md:h-12"/>
-              <AstralChevronSvg direction={currentFlanker.isCongruent ? currentFlanker.targetDir : (currentFlanker.targetDir === 'left' ? 'right' : 'left')} isCenter={false} className="w-9 h-9 md:w-12 md:h-12"/>
+            <div className="my-10 flex items-center justify-center gap-3 md:gap-6 p-8 rounded-3xl bg-[#0F172A] shadow-inner">
+              <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} />
+              <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} />
+              <AstralChevronSvg direction={currentFlanker.centerDir} isCenter={true} />
+              <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} />
+              <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} />
             </div>
 
-            <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+            <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
               <button
                 type="button"
                 onClick={() => handleFlankerAnswer('left')}
-                className="rounded-2xl bg-[#1E293B] border-2 border-[#334155] p-5 shadow-lg hover:border-amber-400 hover:bg-[#334155] active:scale-95 transition-all"
+                className="rounded-2xl border-2 border-sky-500 bg-sky-50 hover:bg-sky-500 hover:text-white py-4 text-base font-bold text-sky-700 shadow-md transition-all active:scale-95"
               >
-                <span className="text-xl font-bold text-amber-400 block">← STEER LEFT</span>
-                <span className="text-[10px] text-[#94A3B8] font-mono mt-1">[ Arrow Key Left ]</span>
+                ← Steer Left
               </button>
               <button
                 type="button"
                 onClick={() => handleFlankerAnswer('right')}
-                className="rounded-2xl bg-[#1E293B] border-2 border-[#334155] p-5 shadow-lg hover:border-amber-400 hover:bg-[#334155] active:scale-95 transition-all"
+                className="rounded-2xl border-2 border-sky-500 bg-sky-50 hover:bg-sky-500 hover:text-white py-4 text-base font-bold text-sky-700 shadow-md transition-all active:scale-95"
               >
-                <span className="text-xl font-bold text-amber-400 block">STEER RIGHT →</span>
-                <span className="text-[10px] text-[#94A3B8] font-mono mt-1">[ Arrow Key Right ]</span>
+                Steer Right →
               </button>
             </div>
           </div>
         )}
 
-        {/* 7. CHAPTER 3 STORY: THE ANCIENT RUNE ASTROLABE */}
+        {/* 6. CHAPTER 3 STORY: THE ASTROLABE MEMORY MATRIX */}
         {stage === 'memory_story' && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white overflow-hidden shadow-2xl">
-            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-gradient-to-tr from-[#FEF3C7] to-[#DCFCE7]">
+            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#1E1B4B]">
               <img
-                src="/decor/itw/itw-adhd-support-checklist.webp"
-                alt="Ancient Rune Astrolabe"
-                className="h-full w-full object-cover object-center"
+                src="/decor/itw/quest-sky-citadel-banner.webp"
+                alt="Astrolabe Observatory"
+                className="h-full w-full object-cover object-center opacity-85"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-6">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end p-6">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-black/40 px-3 py-1 rounded-full">
-                    Chapter 3: The Ancient Rune Astrolabe
+                  <span className="text-xs font-bold uppercase tracking-wider text-purple-300 bg-white/10 px-3 py-1 rounded-full">
+                    Chapter 3: The Starlight Astrolabe
                   </span>
                   <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    Awaken the Musical Constellation
+                    Harmonizing the Constellation Nodes
                   </h2>
                 </div>
               </div>
@@ -913,7 +923,7 @@ export default function AdhdFantasyAssessmentPage() {
 
             <div className="p-6 md:p-8">
               <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
-                You have reached the mountaintop astrolabe! The 9 glowing rune stars chime with celestial harmony. Milo whispers: <em>"Remember the exact melody sequence and tap the star stones to rekindle the sky!"</em>
+                Deep in the Citadel observatory lies the 9-node Starlight Astrolabe. Milo will illuminate a sequence of star crystals. Watch the pattern carefully, then tap the crystals in the exact same sequence!
               </p>
 
               <div className="text-center">
@@ -924,43 +934,43 @@ export default function AdhdFantasyAssessmentPage() {
                     setMemoryLevel(1)
                     setStage('memory_game')
                   }}
-                  className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
+                  className="rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
                 >
-                  Awaken the Runes (3 Levels) →
+                  Awaken the Astrolabe →
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* 8. CHAPTER 3 GAMEPLAY: MEMORY MATRIX */}
+        {/* 7. CHAPTER 3 GAMEPLAY: ASTROLABE */}
         {stage === 'memory_game' && (
-          <div className="rounded-3xl border border-[#1E293B] bg-gradient-to-b from-[#090D16] via-[#0F172A] to-[#1E293B] p-6 md:p-10 shadow-2xl text-center select-none text-white">
+          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#94A3B8] bg-[#1E293B] px-3.5 py-1 rounded-full border border-[#334155]">
-                Level {memoryLevel} of 3 • {memoryLevel + 2} Star Sequence
+              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
+                Level {memoryLevel} of 3 • Constellation Span: {memoryLevel + 2}
               </span>
-              <span className="text-xs font-bold text-amber-400">
-                {memoryPhase === 'showing' ? 'Listen to the star melody...' : 'Your turn! Tap the stars in order!'}
+              <span className="text-xs font-bold text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
+                {memoryPhase === 'showing' ? 'Watch Pattern...' : 'Your Turn to Harmonize!'}
               </span>
             </div>
 
-            <div className="grid grid-cols-3 gap-3.5 max-w-xs mx-auto my-8">
-              {Array.from({length: 9}).map((_, idx) => {
-                const isLit = memoryLitCell === idx || memoryUserSequence.includes(idx)
+            <div className="mx-auto my-6 grid w-72 h-72 grid-cols-3 gap-3 rounded-3xl bg-[#0F172A] p-4 shadow-2xl">
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((idx) => {
+                const isLit = memoryLitCell === idx
                 return (
                   <button
                     key={idx}
                     type="button"
                     disabled={memoryPhase !== 'input'}
                     onClick={() => handleMemoryClick(idx)}
-                    className={`h-20 w-20 md:h-24 md:w-24 rounded-2xl border-2 transition-all flex items-center justify-center p-3 ${
+                    className={`rounded-2xl p-2 transition-all flex items-center justify-center ${
                       isLit
-                        ? 'border-amber-400 bg-amber-400/20 shadow-lg shadow-amber-400/20'
-                        : 'border-[#334155] bg-[#1E293B]/70 hover:border-[#64748B]'
-                    }`}
+                        ? 'bg-amber-400 shadow-[0_0_20px_#F59E0B] scale-105'
+                        : 'bg-slate-800/80 hover:bg-slate-700/80'
+                    } disabled:cursor-not-allowed`}
                   >
-                    <StarlightNodeSvg isLit={isLit}/>
+                    <StarlightNodeSvg isLit={isLit} />
                   </button>
                 )
               })}
@@ -968,183 +978,179 @@ export default function AdhdFantasyAssessmentPage() {
           </div>
         )}
 
-        {/* 9. CHAPTER 4: TRIAL OF THE FOUR WINDS */}
-        {stage === 'trials' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-xl">
-            <div className="text-center max-w-lg mx-auto mb-8">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-700">Trial of the Four Winds</span>
-              <h2 className="font-patrick text-3xl md:text-4xl text-[#0F172A] mt-1">My Daily Explorer Powers</h2>
-              <p className="text-xs text-[#64748B] mt-2">
-                Help Milo map your mental energy, spark, and focus rhythms!
+        {/* 8. CHAPTER 4: THE SKY GUARDIAN'S DILEMMAS */}
+        {stage === 'situational_story' && (
+          <div className="rounded-3xl border border-[#E7E5E4] bg-white overflow-hidden shadow-2xl">
+            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#064E3B]">
+              <img
+                src="/decor/itw/itw-adhd-support-checklist.webp"
+                alt="Sky Guardian Chambers"
+                className="h-full w-full object-cover object-center opacity-85"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end p-6">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-300 bg-white/10 px-3 py-1 rounded-full">
+                    Chapter 4: The Guardian Council
+                  </span>
+                  <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
+                    Trials of Patience & Wisdom
+                  </h2>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 md:p-8">
+              <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
+                Before the High Council awards your Sunstone crest, they present you with practical challenges in the Citadel. Choose the answer that best reflects how your mind works!
               </p>
-            </div>
 
-            <div className="space-y-4 mb-8">
-              {FANTASY_TRIAL_QUESTIONS.map((card) => {
-                const val = trialAnswers[card.id]
-                return (
-                  <div key={card.id} className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl shrink-0 p-2 rounded-xl bg-white border border-[#E2E8F0] shadow-sm">{card.icon}</span>
-                      <div>
-                        <strong className="text-xs font-bold text-[#0F172A] block">{card.title}</strong>
-                        <p className="text-xs text-[#475569] leading-relaxed">{card.desc}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-                      {[
-                        {label: 'Rarely', score: 0},
-                        {label: 'Sometimes', score: 1},
-                        {label: 'A Lot!', score: 2},
-                      ].map((opt) => (
-                        <button
-                          key={opt.score}
-                          type="button"
-                          onClick={() => {
-                            playAudio('tap')
-                            setTrialAnswers({...trialAnswers, [card.id]: opt.score})
-                          }}
-                          className={`rounded-xl py-2 px-3 text-xs font-semibold transition-all ${
-                            val === opt.score
-                              ? 'bg-amber-500 text-white shadow-md'
-                              : 'bg-white text-[#64748B] border border-[#CBD5E1] hover:bg-[#F1F5F9]'
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-
-            <div className="flex justify-end pt-4 border-t border-[#F1F5F9]">
-              <button
-                type="button"
-                onClick={submitLangGraphAgent}
-                className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
-              >
-                Synthesize My Golden Superpower Crest →
-              </button>
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    playAudio('whoosh')
+                    setSituationalIndex(0)
+                    setStage('situational_game')
+                  }}
+                  className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
+                >
+                  Answer Council Trials →
+                </button>
+              </div>
             </div>
           </div>
         )}
 
-        {/* 10. AGENT EVALUATION SPINNER */}
+        {/* 9. CHAPTER 4 GAMEPLAY: SITUATIONAL QUESTIONS */}
+        {stage === 'situational_game' && activeScenarios[situationalIndex] && (
+          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-2xl select-none">
+            <div className="flex justify-between items-center mb-6">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
+                Council Trial {situationalIndex + 1} of {activeScenarios.length}
+              </span>
+              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                Patience & Planning
+              </span>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-amber-50/70 border border-amber-200 mb-6">
+              <h3 className="font-patrick text-2xl text-[#78350F] mb-2">
+                {activeScenarios[situationalIndex].title}
+              </h3>
+              <p className="text-sm text-[#475569] leading-relaxed mb-4">
+                {activeScenarios[situationalIndex].scenario}
+              </p>
+              <strong className="text-xs text-[#0F172A] uppercase tracking-wider block">
+                {activeScenarios[situationalIndex].question}
+              </strong>
+            </div>
+
+            <div className="space-y-3">
+              {activeScenarios[situationalIndex].options.map((opt, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => handleScenarioAnswer(opt.score)}
+                  className="w-full text-left p-4 rounded-2xl border-2 border-[#E2E8F0] hover:border-amber-500 hover:bg-amber-50/50 transition-all text-xs sm:text-sm font-semibold text-[#1E293B]"
+                >
+                  {opt.text}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 10. LOADING AGENTIC EVALUATION */}
         {stage === 'agent_eval' && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white p-12 shadow-2xl text-center">
-            <div className="mx-auto mb-6 h-16 w-16 animate-spin rounded-full border-4 border-[#E2E8F0] border-t-amber-500"/>
-            <h2 className="font-patrick text-3xl text-[#0F172A] mb-2">Milo & The Agentic Guild Are Synthesizing...</h2>
-            <p className="text-xs text-[#64748B] max-w-md mx-auto leading-relaxed">
-              Norming CPT-3 reaction times, calculating flanker conflict cost, and authoring your certified neuropsychological evaluation dossier...
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full border-4 border-amber-500 border-t-transparent animate-spin flex items-center justify-center">
+              <AstrolabeCrystalSvg className="w-8 h-8 text-amber-500" />
+            </div>
+            <h2 className="font-patrick text-3xl text-[#0F172A] mb-2">
+              The Sky Council is Synthesizing Telemetry...
+            </h2>
+            <p className="text-xs sm:text-sm text-[#64748B] max-w-md mx-auto">
+              Computing millisecond reaction distributions, Conners CPT-3 normative percentiles, and personalized pedagogical accommodations.
             </p>
           </div>
         )}
 
-        {/* 11. CELEBRATION CERTIFICATE & SUPERPOWERS */}
+        {/* 11. CELEBRATION & RESULTS SCREEN */}
         {stage === 'celebration' && agentResult && (
           <div className="space-y-8">
-            {/* Child-Facing Magical Award Certificate */}
-            <div className="rounded-3xl border-4 border-amber-300 bg-gradient-to-b from-[#FEFCE8] via-white to-[#F0FDF4] p-6 md:p-10 shadow-2xl text-center relative overflow-hidden">
-              <div className="mx-auto mb-4 flex h-28 w-28 items-center justify-center rounded-3xl bg-amber-100 border-2 border-amber-300 p-3 shadow-inner">
-                <img
-                  src="/decor/itw/itw-adhd-sticker.webp"
-                  alt="Golden Sunstone Crest"
-                  className="h-full w-full object-contain filter drop-shadow-md"
-                />
-              </div>
+            {/* Child Fantasy Award Certificate */}
+            <div className="rounded-3xl border-4 border-amber-300 bg-gradient-to-b from-[#FFFDF8] via-white to-[#FEF3C7] p-8 md:p-12 shadow-2xl text-center relative overflow-hidden">
+              <div className="max-w-xl mx-auto">
+                <span className="text-xs font-bold uppercase tracking-widest text-[#B45309] block mb-2">
+                  Celestial Sky Realm • Official Honor
+                </span>
+                <h1 className="font-patrick text-4xl sm:text-5xl text-[#78350F] font-bold mb-3">
+                  {agentResult.superpowers.realmTitle}
+                </h1>
+                <div className="inline-block rounded-full bg-amber-500 text-white font-bold text-xs uppercase px-4 py-1.5 shadow-sm mb-6">
+                  {agentResult.superpowers.crestBadge}
+                </div>
 
-              <span className="text-xs font-bold uppercase tracking-widest text-amber-800 bg-amber-100 px-4 py-1.5 rounded-full inline-block mb-2 border border-amber-300">
-                Official Sky Citadel Superpower Award
-              </span>
-
-              <h1 className="font-patrick text-3xl md:text-5xl text-[#0F172A] font-bold">
-                Congratulations, {agentResult.childName}!
-              </h1>
-              <p className="font-patrick text-xl text-amber-800 mt-1">
-                Conferred the Title of: <strong>{agentResult.superpowers.realmTitle}</strong>
-              </p>
-
-              {/* Milo's Personal Scroll */}
-              <div className="my-6 p-5 rounded-2xl bg-amber-50/70 border border-amber-200 shadow-sm max-w-xl mx-auto flex items-start gap-4 text-left">
-                <img
-                  src="/decor/itw/milo-owl.webp"
-                  alt="Milo the Owl"
-                  className="w-12 h-12 rounded-full border border-amber-400 object-cover shrink-0"
-                />
-                <p className="text-xs text-[#334155] leading-relaxed italic">
+                <p className="text-sm sm:text-base text-[#475569] leading-relaxed italic mb-8 bg-amber-50/60 p-6 rounded-2xl border border-amber-200/80">
                   "{agentResult.superpowers.miloScroll}"
                 </p>
-              </div>
 
-              {/* Badges Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-w-2xl mx-auto text-left mb-8">
-                {agentResult.superpowers.badges.map((b: any, idx: number) => (
-                  <div key={idx} className="p-3.5 rounded-2xl bg-white border border-[#E2E8F0] shadow-sm flex items-start gap-3">
-                    <span className="text-2xl p-2 rounded-xl bg-amber-50 border border-amber-200">{b.icon}</span>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <strong className="text-xs text-[#0F172A]">{b.name}</strong>
-                        <span className="text-[9px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">{b.rank}</span>
+                {/* Superpower Badges */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left mb-8">
+                  {agentResult.superpowers.badges.map((badge: any, i: number) => (
+                    <div key={i} className="p-4 rounded-2xl bg-white border border-amber-200 shadow-sm flex items-start gap-3">
+                      <div className="p-2.5 rounded-xl bg-amber-100 text-amber-800 shrink-0">
+                        <CompassRoseSvg className="w-5 h-5" />
                       </div>
-                      <span className="text-[11px] text-[#64748B] leading-snug block mt-0.5">{b.desc}</span>
+                      <div>
+                        <strong className="text-xs font-bold text-[#0F172A] block">{badge.name}</strong>
+                        <span className="text-[11px] text-[#64748B] leading-tight block mt-0.5">{badge.desc}</span>
+                        <span className="text-[10px] font-bold text-amber-700 block mt-1">{badge.rank}</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
 
-              {/* Actions */}
-              <div className="pt-6 border-t border-amber-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <button
-                  type="button"
-                  onClick={() => setShowClinicalDossier(!showClinicalDossier)}
-                  className="rounded-full bg-white border-2 border-[#CBD5E1] px-6 py-2.5 text-xs font-bold text-[#334155] hover:bg-[#F8FAFC] shadow-sm transition-all"
-                >
-                  {showClinicalDossier ? 'Hide Clinical Dossier' : 'For Grown-Ups & Teachers: View Comprehensive Diagnostic & IEP Dossier ↓'}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => window.print()}
-                  className="rounded-full bg-amber-500 px-8 py-2.5 text-xs font-bold text-white shadow-md hover:bg-amber-600 transition-all"
-                >
-                  Print / Save My Certificate (PDF)
-                </button>
+                <div className="flex flex-wrap items-center justify-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowClinicalDossier(!showClinicalDossier)}
+                    className="rounded-full bg-gradient-to-r from-slate-900 to-slate-800 text-white px-8 py-3 text-xs font-bold shadow-md hover:bg-slate-700 transition-all"
+                  >
+                    {showClinicalDossier ? 'Hide Clinical Evaluation Dossier' : 'View Clinical Neuropsychological Dossier & IEP Plan (Adult Mode) →'}
+                  </button>
+                  <Link
+                    href="/consult"
+                    className="rounded-full bg-gradient-to-r from-[#05B076] to-[#049A68] text-white px-8 py-3 text-xs font-bold shadow-md hover:scale-105 transition-all"
+                  >
+                    Schedule Specialist Review →
+                  </Link>
+                </div>
               </div>
             </div>
 
-            {/* ADULT CLINICAL EVALUATION DOSSIER (PAID-GRADE QUALITY) */}
+            {/* ADULT CLINICAL DOSSIER WITH NORMATIVE BENCHMARKS */}
             {showClinicalDossier && (
-              <div className="rounded-3xl border-2 border-slate-300 bg-white p-6 md:p-10 shadow-2xl">
-                {/* Official Clinical Header */}
-                <div className="border-b-2 border-slate-200 pb-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="rounded-3xl border-2 border-[#CBD5E1] bg-white p-8 md:p-12 shadow-2xl">
+                <div className="border-b border-[#E2E8F0] pb-6 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-widest text-[#05B076] block mb-1">
-                      Manas Cognitive Neurodevelopmental Clinic • Official Dossier
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#64748B]">
+                      Official Clinical Evaluation Dossier • {agentResult.clinicalReport.documentId}
                     </span>
-                    <h2 className="font-patrick text-3xl text-[#0F172A]">
-                      Pediatric Continuous Performance & Executive Function Evaluation
+                    <h2 className="font-patrick text-3xl sm:text-4xl text-[#0F172A] font-bold mt-1">
+                      Conners CPT-3 & AAP Pediatric Evaluation
                     </h2>
-                    <div className="text-xs font-mono text-[#64748B] mt-1">
-                      Document ID: {agentResult.clinicalReport.documentId} • Evaluated: {agentResult.clinicalReport.evaluationTimestamp}
-                    </div>
+                    <span className="text-xs text-[#05B076] font-semibold">
+                      {agentResult.clinicalReport.protocolStandard}
+                    </span>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={() => window.print()}
-                    className="self-start md:self-auto rounded-xl border border-slate-300 bg-[#F8FAFC] px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 shadow-sm flex items-center gap-2"
-                  >
-                    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/>
-                    </svg>
-                    Print Clinical PDF
-                  </button>
+                  <div className="text-right">
+                    <span className="text-xs text-[#64748B] block">Evaluated on</span>
+                    <strong className="text-xs text-[#0F172A]">{agentResult.clinicalReport.evaluationTimestamp}</strong>
+                  </div>
                 </div>
 
-                {/* Participant Metadata Strip */}
+                {/* Demographics Summary */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] mb-8 text-xs">
                   <div>
                     <span className="text-[#64748B] block">Participant</span>
@@ -1155,8 +1161,8 @@ export default function AdhdFantasyAssessmentPage() {
                     <strong className="text-[#0F172A] text-sm">{agentResult.childAge} Years Old</strong>
                   </div>
                   <div>
-                    <span className="text-[#64748B] block">Diagnostic Standard</span>
-                    <strong className="text-[#05B076] text-sm">AAP & Conners CPT-3</strong>
+                    <span className="text-[#64748B] block">Norm Benchmark</span>
+                    <strong className="text-[#05B076] text-sm">Conners CPT-3 (N=1,400)</strong>
                   </div>
                   <div>
                     <span className="text-[#64748B] block">Confidence Level</span>
@@ -1167,7 +1173,7 @@ export default function AdhdFantasyAssessmentPage() {
                 {/* Primary Diagnostic Impression */}
                 <div className="p-6 rounded-2xl bg-[#ECFDF5] border-2 border-[#A7F3D0] mb-8">
                   <span className="text-xs font-bold uppercase tracking-wider text-[#065F46] block mb-1">
-                    Clinical Impression & Attentional Stratification
+                    Clinical Attentional Stratification
                   </span>
                   <div className="text-2xl font-bold text-[#065F46] mb-1 font-poppins">
                     {agentResult.clinicalReport.classification}
@@ -1180,18 +1186,18 @@ export default function AdhdFantasyAssessmentPage() {
                   </p>
                 </div>
 
-                {/* Psychometric Telemetry Table */}
+                {/* Psychometric Telemetry Table with Norms and Percentiles */}
                 <div className="mb-8">
-                  <h3 className="font-patrick text-2xl text-[#0F172A] mb-3">Normative Psychometric Indices (Conners CPT-3 Benchmarked)</h3>
+                  <h3 className="font-patrick text-2xl text-[#0F172A] mb-3">Normative Psychometric Indices (CPT-3 Standardized T-Scores)</h3>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs border border-[#E2E8F0] rounded-xl overflow-hidden">
                       <thead className="bg-[#F8FAFC] text-[#475569] font-bold border-b border-[#E2E8F0]">
                         <tr>
                           <th className="p-3">Psychometric Dimension</th>
-                          <th className="p-3">Score</th>
+                          <th className="p-3">Patient T-Score</th>
                           <th className="p-3">Norm Benchmark</th>
                           <th className="p-3">Percentile Rank</th>
-                          <th className="p-3">Clinical Status</th>
+                          <th className="p-3">Clinical Cutoff Status</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#E2E8F0]">
@@ -1216,9 +1222,9 @@ export default function AdhdFantasyAssessmentPage() {
                   </div>
                 </div>
 
-                {/* Comprehensive 4-Part IEP Accommodations Blueprint */}
+                {/* 4-Part IEP & 504 Accommodations Blueprint */}
                 <div className="mb-8 space-y-6">
-                  <h3 className="font-patrick text-2xl text-[#0F172A]">Individualized Education Plan (IEP & 504) Pedagogical Accommodations</h3>
+                  <h3 className="font-patrick text-2xl text-[#0F172A]">Individualized Education Plan (IEP & 504) Blueprint</h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
@@ -1279,7 +1285,6 @@ export default function AdhdFantasyAssessmentPage() {
                   </div>
                 </div>
 
-                {/* Consultation Handoff */}
                 <div className="pt-6 border-t border-[#E2E8F0] flex flex-wrap items-center justify-between gap-4">
                   <Link
                     href="/consult"

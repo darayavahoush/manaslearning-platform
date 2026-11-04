@@ -650,7 +650,7 @@ function auOnLang() {
 function auInit() {
   if (/^\/milo(\/|$)/.test(path) || document.getElementById('ml-au')) return;
   var sp = Number(store('ml_au_speed')); if (sp >= 0.5 && sp <= 2.5) AU.speed = sp;
-  AU.icons = store('ml_au_icons') !== '0';
+  AU.icons = store('ml_au_icons') === '1';
   try { AU.open = sessionStorage.getItem('ml_au_open') === '1'; AU.tap = sessionStorage.getItem('ml_au_tap') === '1'; } catch (e) {}
   auBuild(); auLoadLabels();
   var mo2 = new MutationObserver(function (muts) {

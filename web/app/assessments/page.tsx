@@ -178,28 +178,35 @@ const STANDARD_ASSESSMENTS: ScreenerItem[] = [
 
 export default function AssessmentsHubPage() {
   return (
-    <main data-no-listen="true" className="min-h-screen bg-[#FFFDF8] py-12 px-4 sm:px-6 lg:px-8 font-poppins text-[#1F2937]">
+    <main data-no-listen="true" className="relative min-h-screen bg-gradient-to-b from-[#FFFDF7] via-[#FDF8EC] to-[#F7F2E7] py-12 px-4 sm:px-6 lg:px-8 font-poppins text-[#1F2937] overflow-hidden">
+      {/* Ambient Fantasy Background Elements */}
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden opacity-40">
+        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-gradient-to-tr from-amber-300/30 to-emerald-300/20 blur-3xl" />
+        <div className="absolute top-1/3 -right-40 w-[30rem] h-[30rem] rounded-full bg-gradient-to-bl from-teal-300/30 to-sky-300/20 blur-3xl" />
+        <div className="absolute bottom-10 left-1/4 w-[36rem] h-[36rem] rounded-full bg-gradient-to-tr from-amber-200/20 to-rose-200/20 blur-3xl" />
+      </div>
+
       <div className="mx-auto max-w-6xl">
         {/* Header Hero */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 rounded-full bg-[#05B076]/15 px-4 py-1.5 text-xs font-bold text-[#065F46] uppercase tracking-wider mb-4 border border-[#05B076]/30">
-            ★ Research-Grade Pediatric Evaluations • Open Community Beta
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#05B076]/15 px-4 py-1.5 text-xs font-bold text-[#065F46] uppercase tracking-wider mb-4 border border-[#05B076]/30 shadow-sm backdrop-blur-sm">
+            Research-Grade Pediatric Evaluations • Open Community Access
           </div>
-          <h1 className="font-patrick text-4xl sm:text-5xl md:text-6xl text-[#0F172A] leading-tight mb-5">
+          <h1 className="font-patrick text-4xl sm:text-5xl md:text-6xl text-[#0F172A] leading-tight mb-5 drop-shadow-sm">
             Understand Your Child’s Mind With <span className="text-[#05B076]">Playful Precision</span>
           </h1>
           <p className="text-base sm:text-lg text-[#475569] leading-relaxed">
-            Standard paper questionnaires miss reaction time nuances, momentary lapses, and sensory thresholds. Our research-grounded assessments combine <strong>gamified cognitive tasks</strong> with <strong>validated clinical rating scales</strong> to deliver actionable IEP accommodations and developmental clarity.
+            Standard paper questionnaires miss reaction time nuances, momentary lapses, and sensory thresholds. Our research-grounded assessments combine <strong>gamified cognitive quests</strong> with <strong>validated clinical benchmarks</strong> to deliver actionable IEP accommodations and developmental clarity.
           </p>
         </div>
 
-        {/* 2 NEW FLAGSHIP GAMIFIED ASSESSMENTS (FEATURED CARDS) */}
+        {/* 2 FLAGSHIP GAMIFIED FANTASY ASSESSMENTS */}
         <div className="mb-20">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-3">
             <div>
               <div className="text-xs font-bold uppercase tracking-wider text-[#05B076]">Flagship Interactive Batteries</div>
               <h2 className="font-patrick text-3xl sm:text-4xl text-[#0F172A]">
-                Gamified Clinical Assessments <span className="text-[#05B076] text-xl font-poppins font-semibold">(Free Open Access Beta)</span>
+                Gamified Clinical Quests <span className="text-[#05B076] text-xl font-poppins font-semibold">(Free Open Access Beta)</span>
               </h2>
             </div>
             <span className="self-start sm:self-auto rounded-full bg-[#05B076]/10 border border-[#05B076]/30 px-3.5 py-1 text-xs font-bold text-[#065F46]">
@@ -209,147 +216,151 @@ export default function AssessmentsHubPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* 1. MANAS FOCUSTRACK ADHD BATTERY */}
-            <div className="relative rounded-3xl border-2 border-[#05B076]/40 bg-white p-7 sm:p-9 shadow-xl hover:shadow-2xl transition-all flex flex-col justify-between overflow-hidden group">
-              <div className="absolute top-0 right-0 rounded-bl-2xl bg-gradient-to-r from-[#05B076] to-[#049A68] px-4 py-1.5 text-xs font-bold text-white shadow-sm">
-                FREE OPEN ACCESS • CPT-3 NORMED
-              </div>
-
-              <div>
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#FEF3C7] to-[#DCFCE7] p-2 border border-[#A7F3D0] shadow-md group-hover:scale-105 transition-transform">
-                    <img
-                      src="/decor/itw/itw-adhd-sticker.webp"
-                      alt="Manas FocusTrack ADHD Battery"
-                      loading="lazy"
-                      className="h-full w-full object-contain filter drop-shadow-sm"
-                    />
-                  </div>
+            <div className="relative rounded-3xl border-2 border-amber-300 bg-white/95 backdrop-blur-md shadow-xl hover:shadow-2xl transition-all flex flex-col justify-between overflow-hidden group">
+              <div className="relative h-56 w-full overflow-hidden bg-gradient-to-tr from-[#FEF3C7] to-[#DCFCE7]">
+                <img
+                  src="/decor/itw/quest-sky-citadel-banner.webp"
+                  alt="Sky Citadel Quest"
+                  loading="lazy"
+                  className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent flex items-end p-6">
                   <div>
-                    <h3 className="font-patrick text-2xl sm:text-3xl text-[#0F172A]">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300 bg-black/40 px-3 py-1 rounded-full">
+                      CPT-3 Normed • Sustained Vigilance
+                    </span>
+                    <h3 className="font-patrick text-3xl text-white font-bold mt-1">
                       Manas FocusTrack™ ADHD Battery
                     </h3>
-                    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#05B076] mt-1">
-                      <span>Conners CPT-3</span>
-                      <span>•</span>
-                      <span>Vanderbilt DSM-5</span>
-                      <span>•</span>
-                      <span>Ages 5–16 & Adults</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-7 sm:p-9 flex-1 flex flex-col justify-between">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#05B076] mb-4">
+                    <span>Conners CPT-3 Standard</span>
+                    <span>•</span>
+                    <span>Vanderbilt DSM-5-TR</span>
+                    <span>•</span>
+                    <span>Ages 5–16 & Adults</span>
+                  </div>
+
+                  <p className="text-sm text-[#475569] leading-relaxed mb-6">
+                    An enchanting fantasy quest for kids (<em>Chronicles of the Sunbird: Sky Citadel Quest</em>) paired with an adult neuropsychological evaluation. Measures <strong>Canopy Continuous Vigilance (CPT-3)</strong>, <strong>Starfire Flanker Conflict Cost</strong>, and <strong>Rune Astrolabe Memory Matrix</strong>. Computes millisecond reaction time variability (RTV), impulsivity T-Scores, and a 4-part IEP blueprint.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-3 mb-6 text-xs">
+                    <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
+                      <span className="font-bold text-[#05B076] block mb-0.5">Hit RT & RTV</span>
+                      <span className="text-[#64748B]">Attention lapse & fatigue slope</span>
+                    </div>
+                    <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
+                      <span className="font-bold text-[#C2410C] block mb-0.5">Omission vs. Commission</span>
+                      <span className="text-[#64748B]">Inattention vs. Impulsivity T-Scores</span>
+                    </div>
+                    <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
+                      <span className="font-bold text-[#2563EB] block mb-0.5">Flanker Conflict Cost</span>
+                      <span className="text-[#64748B]">Interference control capacity</span>
+                    </div>
+                    <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
+                      <span className="font-bold text-[#7C3AED] block mb-0.5">IEP Accommodations</span>
+                      <span className="text-[#64748B]">Classroom & home sensory plan</span>
                     </div>
                   </div>
                 </div>
 
-                <p className="text-sm text-[#475569] leading-relaxed mb-6">
-                  An enchanting fantasy quest for kids (<em>Chronicles of the Sunbird: Sky Citadel Quest</em>) paired with an adult neuropsychological evaluation. Features <strong>Canopy Continuous Performance Vigilance (CPT-3)</strong>, the <strong>Starfire Flanker Task</strong>, and <strong>Rune Astrolabe Memory Matrix</strong>. Delivers reaction time variability (RTV), impulsivity T-Scores, and a 4-part IEP accommodations blueprint.
-                </p>
-
-                <div className="grid grid-cols-2 gap-3 mb-6 text-xs">
-                  <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
-                    <span className="font-bold text-[#05B076] block mb-0.5">Hit RT & RTV</span>
-                    <span className="text-[#64748B]">Attention lapse & fatigue slope</span>
+                <div className="pt-6 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <span className="text-2xl font-bold text-[#05B076]">FREE</span>
+                    <span className="text-xs font-semibold text-[#065F46] ml-2">Open Access (Full Battery & Report)</span>
                   </div>
-                  <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
-                    <span className="font-bold text-[#C2410C] block mb-0.5">Omission vs. Commission</span>
-                    <span className="text-[#64748B]">Inattention vs. Impulsivity T-Scores</span>
-                  </div>
-                  <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
-                    <span className="font-bold text-[#2563EB] block mb-0.5">Flanker Distractor Cost</span>
-                    <span className="text-[#64748B]">Interference control capacity</span>
-                  </div>
-                  <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
-                    <span className="font-bold text-[#7C3AED] block mb-0.5">IEP Accommodations</span>
-                    <span className="text-[#64748B]">Classroom & home sensory plan</span>
-                  </div>
+                  <Link
+                    href="/assessments/adhd"
+                    prefetch={false}
+                    className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-3 text-sm font-bold text-white shadow-md hover:shadow-lg hover:scale-105 transition-all"
+                  >
+                    Start Sky Citadel ADHD Quest →
+                  </Link>
                 </div>
-              </div>
-
-              <div className="pt-6 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <span className="text-2xl font-bold text-[#05B076]">FREE</span>
-                  <span className="text-xs font-semibold text-[#065F46] ml-2">Open Access (Full Battery & Diagnostic Report)</span>
-                </div>
-                <Link
-                  href="/assessments/adhd"
-                  prefetch={false}
-                  className="rounded-full bg-gradient-to-r from-[#05B076] to-[#049A68] px-6 py-3 text-sm font-bold text-white shadow-md hover:shadow-lg hover:scale-105 transition-all"
-                >
-                  Start Free FocusTrack ADHD Battery →
-                </Link>
               </div>
             </div>
 
             {/* 2. MANAS PRISM AUTISM PROFILE */}
-            <div className="relative rounded-3xl border-2 border-[#3B82F6]/40 bg-white p-7 sm:p-9 shadow-xl hover:shadow-2xl transition-all flex flex-col justify-between overflow-hidden group">
-              <div className="absolute top-0 right-0 rounded-bl-2xl bg-gradient-to-r from-[#3B82F6] to-[#2563EB] px-4 py-1.5 text-xs font-bold text-white shadow-sm">
-                FREE OPEN ACCESS • ADOS-2 MAPPED
-              </div>
-
-              <div>
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#DBEAFE] to-[#E0E7FF] p-2 border border-[#BFDBFE] shadow-md group-hover:scale-105 transition-transform">
-                    <img
-                      src="/decor/itw/itw-autism-sticker.webp"
-                      alt="Manas PRISM Autism Profile"
-                      loading="lazy"
-                      className="h-full w-full object-contain filter drop-shadow-sm"
-                    />
-                  </div>
+            <div className="relative rounded-3xl border-2 border-teal-300 bg-white/95 backdrop-blur-md shadow-xl hover:shadow-2xl transition-all flex flex-col justify-between overflow-hidden group">
+              <div className="relative h-56 w-full overflow-hidden bg-gradient-to-tr from-[#CCFBF1] to-[#DBEAFE]">
+                <img
+                  src="/decor/itw/quest-lumina-groves-banner.webp"
+                  alt="Whispering Groves Quest"
+                  loading="lazy"
+                  className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent flex items-end p-6">
                   <div>
-                    <h3 className="font-patrick text-2xl sm:text-3xl text-[#0F172A]">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-teal-300 bg-black/40 px-3 py-1 rounded-full">
+                      ADOS-2 & SPM-2 Mapped • Sensory Diet
+                    </span>
+                    <h3 className="font-patrick text-3xl text-white font-bold mt-1">
                       Manas PRISM™ Autism Profile
                     </h3>
-                    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#2563EB] mt-1">
-                      <span>ADOS-2 Observational</span>
-                      <span>•</span>
-                      <span>SPM-2 Sensory</span>
-                      <span>•</span>
-                      <span>SCQ Standard</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-7 sm:p-9 flex-1 flex flex-col justify-between">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#0D9488] mb-4">
+                    <span>ADOS-2 Observational</span>
+                    <span>•</span>
+                    <span>SPM-2 Sensory Profile</span>
+                    <span>•</span>
+                    <span>SCQ Standard</span>
+                  </div>
+
+                  <p className="text-sm text-[#475569] leading-relaxed mb-6">
+                    An enchanting fantasy quest for kids (<em>Whispering Groves of Lumina: Crystal Lantern Quest</em>) paired with an adult neurodevelopmental dossier. Evaluates <strong>Joint Attention Referencing (ADOS-2)</strong>, <strong>Contextual Theory of Mind</strong>, <strong>Sensory Sanctuary Calibration</strong>, and <strong>Alchemical Set-Shifting (DCCS)</strong>. Delivers an individualized sensory diet and accommodation blueprint.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-3 mb-6 text-xs">
+                    <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
+                      <span className="font-bold text-[#2563EB] block mb-0.5">Social Referencing</span>
+                      <span className="text-[#64748B]">Gaze & pointing latency tracking</span>
+                    </div>
+                    <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
+                      <span className="font-bold text-[#05B076] block mb-0.5">Sensory Modulation</span>
+                      <span className="text-[#64748B]">Flicker, acoustic & tactile map</span>
+                    </div>
+                    <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
+                      <span className="font-bold text-[#C2410C] block mb-0.5">Set-Shifting Cost</span>
+                      <span className="text-[#64748B]">Cognitive flexibility vs. routine</span>
+                    </div>
+                    <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
+                      <span className="font-bold text-[#7C3AED] block mb-0.5">Sensory Diet Blueprint</span>
+                      <span className="text-[#64748B]">De-escalation & classroom plan</span>
                     </div>
                   </div>
                 </div>
 
-                <p className="text-sm text-[#475569] leading-relaxed mb-6">
-                  An enchanting fantasy quest for kids (<em>Whispering Groves of Lumina: Crystal Lantern Quest</em>) paired with an adult neurodevelopmental dossier. Evaluates 4 core dimensions: <strong>Joint Attention Referencing (ADOS-2)</strong>, <strong>Contextual Theory of Mind</strong>, <strong>SPM-2 Sensory Sanctuary Calibration</strong>, and <strong>Alchemical Set-Shifting (DCCS)</strong>. Delivers a complete clinical sensory diet and IEP blueprint.
-                </p>
-
-                <div className="grid grid-cols-2 gap-3 mb-6 text-xs">
-                  <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
-                    <span className="font-bold text-[#2563EB] block mb-0.5">Social Referencing</span>
-                    <span className="text-[#64748B]">Gaze & pointing latency tracking</span>
+                <div className="pt-6 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <span className="text-2xl font-bold text-[#0D9488]">FREE</span>
+                    <span className="text-xs font-semibold text-[#065F46] ml-2">Open Access (Full Profile & Blueprint)</span>
                   </div>
-                  <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
-                    <span className="font-bold text-[#05B076] block mb-0.5">Sensory Modulation</span>
-                    <span className="text-[#64748B]">Flicker, acoustic & tactile map</span>
-                  </div>
-                  <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
-                    <span className="font-bold text-[#C2410C] block mb-0.5">Set-Shifting Cost</span>
-                    <span className="text-[#64748B]">Cognitive flexibility vs. routine</span>
-                  </div>
-                  <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3">
-                    <span className="font-bold text-[#7C3AED] block mb-0.5">Sensory Diet Blueprint</span>
-                    <span className="text-[#64748B]">De-escalation & classroom plan</span>
-                  </div>
+                  <Link
+                    href="/assessments/autism"
+                    prefetch={false}
+                    className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-md hover:shadow-lg hover:scale-105 transition-all"
+                  >
+                    Start Lumina Groves Autism Quest →
+                  </Link>
                 </div>
-              </div>
-
-              <div className="pt-6 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <span className="text-2xl font-bold text-[#2563EB]">FREE</span>
-                  <span className="text-xs font-semibold text-[#1D4ED8] ml-2">Open Access (Full Profile & Diagnostic Blueprint)</span>
-                </div>
-                <Link
-                  href="/assessments/autism"
-                  prefetch={false}
-                  className="rounded-full bg-gradient-to-r from-[#3B82F6] to-[#2563EB] px-6 py-3 text-sm font-bold text-white shadow-md hover:shadow-lg hover:scale-105 transition-all"
-                >
-                  Start Free PRISM Autism Profile →
-                </Link>
               </div>
             </div>
           </div>
         </div>
 
-        {/* COMPARISON: WHY GAMIFIED ASSESSMENTS? */}
-        <div className="mb-20 rounded-3xl bg-gradient-to-b from-[#FEF3C7]/50 to-[#FFFBEB]/70 border border-[#FDE68A] p-8 md:p-12 shadow-sm">
+        {/* COMPARISON: WHY GAMIFIED TESTING? */}
+        <div className="mb-20 rounded-3xl bg-gradient-to-b from-[#FEF3C7]/60 to-[#FFFBEB]/80 border-2 border-[#FDE68A] p-8 md:p-12 shadow-md">
           <div className="text-center max-w-2xl mx-auto mb-10">
             <h2 className="font-patrick text-3xl sm:text-4xl text-[#78350F] mb-3">
               Why Gamified Testing Outperforms Static Paper Questionnaires
@@ -362,7 +373,7 @@ export default function AssessmentsHubPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="rounded-2xl bg-white p-6 border border-[#E2E8F0] shadow-sm">
               <h3 className="font-bold text-base text-[#DC2626] flex items-center gap-2 mb-3">
-                <span>✕</span> Traditional Static Checklist Limitations
+                <span className="font-mono text-sm font-bold">✕</span> Traditional Static Checklist Limitations
               </h3>
               <ul className="space-y-2.5 text-xs text-[#64748B] list-disc list-inside leading-relaxed">
                 <li>Subjective recall bias from tired parents or overwhelmed teachers.</li>
@@ -374,7 +385,7 @@ export default function AssessmentsHubPage() {
 
             <div className="rounded-2xl bg-white p-6 border border-[#05B076]/40 shadow-sm">
               <h3 className="font-bold text-base text-[#05B076] flex items-center gap-2 mb-3">
-                <span>✓</span> Manas Gamified Clinical Battery Advantages
+                <span className="font-mono text-sm font-bold">✓</span> Manas Gamified Clinical Battery Advantages
               </h3>
               <ul className="space-y-2.5 text-xs text-[#1E293B] list-disc list-inside leading-relaxed">
                 <li>Millisecond-precision response recording via standardized CPT-3 paradigms.</li>
@@ -386,7 +397,7 @@ export default function AssessmentsHubPage() {
           </div>
         </div>
 
-        {/* DIRECTORY OF ALL STANDARD CLINICAL SCREENERS (VIBRANT & VISUAL) */}
+        {/* DIRECTORY OF TARGETED DEVELOPMENTAL SCREENERS */}
         <div className="mb-20">
           <div className="mb-10 text-center sm:text-left">
             <div className="text-xs font-bold uppercase tracking-wider text-[#05B076]">Comprehensive Assessment Directory</div>

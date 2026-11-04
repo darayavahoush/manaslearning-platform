@@ -196,25 +196,25 @@ function runSuperpowerNode(state: AssessmentAgentState): AssessmentAgentState {
         {
           name: 'Lightning Reflex Cast',
           desc: 'Spotted the Celestial Sunbird with lightning-quick reflexes, decoding rapid stimuli without hesitation.',
-          icon: '⚡',
+          icon: 'lightning',
           rank: 'Tier 1 Legendary'
         },
         {
           name: 'Cosmic Wayfinder',
           desc: 'Steered through conflicting meteor showers by locking true gaze onto the golden center star.',
-          icon: '🧭',
+          icon: 'compass',
           rank: 'Master Navigator'
         },
         {
           name: 'Constellation Harmonizer',
           desc: 'Awakened the ancient 9-node starlight astrolabe by replaying its sacred musical melody.',
-          icon: '✨',
+          icon: 'starlight',
           rank: 'Arch-Mage'
         },
         {
           name: 'Rocket Idea Sorcery',
           desc: 'Boundless creative energy that generates sparkling ideas and out-of-the-box inventions at turbo speed.',
-          icon: '🚀',
+          icon: 'rocket',
           rank: 'High Innovator'
         }
       ],
@@ -229,25 +229,25 @@ function runSuperpowerNode(state: AssessmentAgentState): AssessmentAgentState {
         {
           name: 'Eagle Eye Pattern Seer',
           desc: 'Followed Aria’s secret gaze and gesture clues to discover the hidden ceramic treasure urns.',
-          icon: '🔍',
+          icon: 'magnifier',
           rank: 'Tier 1 Seer'
         },
         {
           name: 'Heart Harmony Empath',
           desc: 'Understood what forest friends feel deep inside their hearts, looking beyond simple words into true feelings.',
-          icon: '💚',
+          icon: 'heart',
           rank: 'Master Empath'
         },
         {
           name: 'Master Sanctuary Architect',
           desc: 'Crafted the ultimate restorative dream sanctuary with soothing fairy lights and calming forest rain.',
-          icon: '🌿',
+          icon: 'leaf',
           rank: 'High Architect'
         },
         {
           name: 'Alchemical Transmutation Sorcery',
           desc: 'Sorted the ancient glowing crystal stars and moons with laser-sharp focus across shifting magical rules.',
-          icon: '💎',
+          icon: 'crystal',
           rank: 'Grand Alchemist'
         }
       ],

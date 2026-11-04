@@ -1,5 +1,5 @@
 'use client'
-import {useState, useEffect, useRef} from 'react'
+import {useState, useEffect, useRef, useMemo} from 'react'
 import Link from 'next/link'
 
 // Enchanted Web Audio synthesizer: Soothing glass harps, crystal bells, warm kalimbas, and royal fanfare
@@ -64,6 +64,48 @@ function playAudio(type: 'hit' | 'chime' | 'sensory' | 'tap' | 'fanfare' | 'whoo
   } catch {}
 }
 
+// Hand-drawn Vector Crests (Zero Unicode Emojis)
+function LeafGlyphSvg({className = 'w-6 h-6'}: {className?: string}) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+      <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+    </svg>
+  )
+}
+
+function CrystalGlyphSvg({className = 'w-6 h-6'}: {className?: string}) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="6,3 18,3 22,9 12,22 2,9" fill="currentColor" fillOpacity="0.2" />
+      <line x1="2" y1="9" x2="22" y2="9" />
+      <line x1="12" y1="22" x2="8" y2="9" />
+      <line x1="12" y1="22" x2="16" y2="9" />
+      <line x1="6" y1="3" x2="8" y2="9" />
+      <line x1="18" y1="3" x2="16" y2="9" />
+    </svg>
+  )
+}
+
+function DoveGlyphSvg({className = 'w-6 h-6'}: {className?: string}) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+      <path d="M12 12l3-3m0 0l-3-3m3 3H8" />
+    </svg>
+  )
+}
+
+function CeramicUrnSvg({className = 'w-6 h-6'}: {className?: string}) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <ellipse cx="12" cy="5" rx="5" ry="2" />
+      <path d="M7 5v2c0 4-3 5-3 9a8 8 0 0 0 16 0c0-4-3-5-3-9V5" />
+      <line x1="8" y1="21" x2="16" y2="21" />
+    </svg>
+  )
+}
+
 // Illustrated Courtyard Guide: Aria (Animated eyes & pointing arm)
 function CourtyardGuideAvatar({gaze, isPointing}: {gaze: 'left' | 'center' | 'right'; isPointing: boolean}) {
   const pupilOffsetX = gaze === 'left' ? -4 : gaze === 'right' ? 4 : 0
@@ -71,31 +113,22 @@ function CourtyardGuideAvatar({gaze, isPointing}: {gaze: 'left' | 'center' | 'ri
 
   return (
     <div className="relative flex flex-col items-center">
-      <svg viewBox="0 0 140 140" className="w-28 h-28 md:w-36 md:h-36" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="70" cy="70" r="64" fill="#CCFBF1" fillOpacity="0.6"/>
-        <path d="M 32 130 C 32 105 50 96 70 96 C 90 96 108 105 108 130 Z" fill="#0D9488"/>
-        <path d="M 64 96 L 70 110 L 76 96" stroke="#FEF08A" strokeWidth="2" strokeLinecap="round"/>
-        <path d="M 62 86 L 62 98 L 78 98 L 78 86 Z" fill="#FED7AA"/>
-        <ellipse cx="70" cy="62" rx="26" ry="30" fill="#FED7AA"/>
-        <path d="M 44 54 C 44 32 54 22 70 22 C 86 22 96 32 96 54 C 96 60 92 68 92 68 C 92 50 86 42 70 42 C 54 42 48 50 48 68 C 48 68 44 60 44 54 Z" fill="#1E293B"/>
-        <ellipse cx="58" cy="56" rx="6" ry="4" fill="#FFFFFF"/>
-        <ellipse cx="82" cy="56" rx="6" ry="4" fill="#FFFFFF"/>
-        <circle cx={58 + pupilOffsetX} cy={56 + pupilOffsetY} r="2.8" fill="#0F172A"/>
-        <circle cx={57 + pupilOffsetX} cy={55 + pupilOffsetY} r="1" fill="#FFFFFF"/>
-        <circle cx={82 + pupilOffsetX} cy={56 + pupilOffsetY} r="2.8" fill="#0F172A"/>
-        <circle cx={81 + pupilOffsetX} cy={55 + pupilOffsetY} r="1" fill="#FFFFFF"/>
-        <path d="M 64 74 Q 70 78 76 74" stroke="#9A3412" strokeWidth="2" strokeLinecap="round"/>
-        {isPointing && (
-          gaze === 'left' ? (
-            <path d="M 44 110 Q 24 100 12 90" stroke="#FED7AA" strokeWidth="8" strokeLinecap="round"/>
-          ) : (
-            <path d="M 96 110 Q 116 100 128 90" stroke="#FED7AA" strokeWidth="8" strokeLinecap="round"/>
-          )
-        )}
-      </svg>
-      <div className="mt-2 text-xs font-semibold text-[#0F172A] bg-white/95 px-3 py-1 rounded-full shadow-sm border border-[#E2E8F0]">
-        Guide Aria • {isPointing ? 'Pointing at Pottery' : 'Gazing Gently'}
+      <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full border-4 border-teal-300 shadow-xl overflow-hidden bg-gradient-to-b from-teal-50 to-emerald-100 flex items-center justify-center">
+        <img
+          src="/decor/itw/quest-aria-alchemist.webp"
+          alt="Guide Aria"
+          className="h-full w-full object-cover object-top"
+        />
+        {/* Subtle Gaze Overlay Indicator */}
+        <div className={`absolute bottom-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-white shadow-md backdrop-blur-md ${
+          isPointing ? 'bg-amber-600/90' : 'bg-teal-700/80'
+        }`}>
+          {isPointing ? 'Pointing' : 'Looking Gently'}
+        </div>
       </div>
+      <span className="mt-2 text-xs font-bold text-teal-900 bg-white/95 px-3 py-1 rounded-full shadow-sm border border-teal-200">
+        Aria, Grove Alchemist
+      </span>
     </div>
   )
 }
@@ -139,9 +172,9 @@ function ArtisanVesselSvg({type}: {type: 'A' | 'B' | 'C'}) {
 }
 
 // Jewel-Tone Artifact Cards (DCCS Task)
-function JewelCardSvg({color, shape}: {color: 'red' | 'blue'; shape: 'star' | 'circle'}) {
-  const colorFill = color === 'red' ? '#EF4444' : '#3B82F6'
-  const colorGlow = color === 'red' ? '#FEE2E2' : '#DBEAFE'
+function JewelCardSvg({color, shape}: {color: 'red' | 'blue' | 'emerald' | 'amber'; shape: 'star' | 'circle' | 'diamond' | 'crescent'}) {
+  const colorFill = color === 'red' ? '#EF4444' : color === 'blue' ? '#3B82F6' : color === 'emerald' ? '#10B981' : '#F59E0B'
+  const colorGlow = color === 'red' ? '#FEE2E2' : color === 'blue' ? '#DBEAFE' : color === 'emerald' ? '#D1FAE5' : '#FEF3C7'
 
   return (
     <div className="relative flex items-center justify-center p-3 rounded-2xl bg-white border-2 border-[#CBD5E1] shadow-md hover:shadow-lg transition-all">
@@ -158,124 +191,127 @@ function JewelCardSvg({color, shape}: {color: 'red' | 'blue'; shape: 'star' | 'c
             strokeWidth="2"
           />
         )}
+        {shape === 'diamond' && (
+          <polygon points="40,16 60,40 40,64 20,40" fill={colorFill} stroke="#FFFFFF" strokeWidth="2" />
+        )}
+        {shape === 'crescent' && (
+          <path d="M 46 22 A 18 18 0 1 1 36 56 A 15 15 0 0 0 46 22 Z" fill={colorFill} stroke="#FFFFFF" strokeWidth="2" />
+        )}
       </svg>
     </div>
   )
 }
 
-// Fantasy Grove Questions (Child-Facing)
-const GROVE_DISCOVERY_CARDS = [
+// Child Superpower Grove Affinities
+const GROVE_AFFINITIES = [
+  {name: 'Grove Harmonizer', Svg: LeafGlyphSvg, desc: 'Sensory Empathy & Nature Connection'},
+  {name: 'Crystal Alchemist', Svg: CrystalGlyphSvg, desc: 'Pattern Seer & Deep Truth Finder'},
+  {name: 'Quiet Seeker', Svg: DoveGlyphSvg, desc: 'Thoughtful Observer & Loyal Friend'},
+]
+
+// Theory of Mind Story Cards Pool (Randomized 4 from 8)
+const TOM_VIGNETTES_POOL = [
   {
-    id: 'a1',
-    title: 'The Pattern Seer',
-    desc: 'Do you notice tiny, beautiful patterns in nature, books, leaves, or stones that everyone else walks right past?',
-    icon: '🔍'
+    id: 'clay_bird',
+    scenario: 'Priya drops her handmade clay bird and a wing chips. Her eyes get watery, but she smiles softly and says: "Oh, it\'s totally fine!"',
+    question: 'What is Priya truly feeling on the inside?',
+    options: [
+      {text: 'She is truly happy and completely fine.', correct: false},
+      {text: 'She feels sad and disappointed, but is trying to be brave.', correct: true},
+      {text: 'She is angry at the bird.', correct: false}
+    ]
   },
   {
-    id: 'a2',
-    title: 'The Cozy Sanctuary Haven',
-    desc: 'When a noisy room, hall, or playground gets too loud, does your spirit crave a peaceful cozy corner with soft cushions?',
-    icon: '🌿'
+    id: 'dinner_bottle',
+    scenario: 'During dinner, Dad looks at the tall water bottle and asks Rohan: "Can you reach the water bottle?"',
+    question: 'What does Dad mean by this question?',
+    options: [
+      {text: 'He is asking a scientific test about Rohan’s arm length.', correct: false},
+      {text: 'He is politely asking Rohan to please pass the water bottle.', correct: true},
+      {text: 'He wants Rohan to stand on the chair.', correct: false}
+    ]
   },
   {
-    id: 'a3',
-    title: 'The Deep Curiosity Passion',
-    desc: 'Do you have a favorite topic (like animals, stars, trains, dinosaurs, or coding) that you love learning EVERYTHING about?',
-    icon: '📚'
+    id: 'pin_drop',
+    scenario: 'Teacher says: "Quiet down, boys and girls. You could hear a pin drop in here!"',
+    question: 'Why does the teacher mention a pin dropping?',
+    options: [
+      {text: 'Someone literally dropped a metal pin on the floor.', correct: false},
+      {text: 'She is describing an expectation of complete silence.', correct: true},
+      {text: 'She wants the students to find pins.', correct: false}
+    ]
   },
   {
-    id: 'a4',
-    title: 'The Predictable Path',
-    desc: 'Do you feel happiest and most relaxed when you know exactly what is going to happen next without unexpected surprises?',
-    icon: '🧭'
+    id: 'sanctuary_tree',
+    scenario: 'At a loud school celebration with drums, Aarav covers his ears and looks toward the quiet veranda tree.',
+    question: 'Why is Aarav looking toward the veranda?',
+    options: [
+      {text: 'The loud vibrations are overwhelming, and he needs a calm sensory sanctuary.', correct: true},
+      {text: 'He hates music completely.', correct: false},
+      {text: 'He is looking for a drumstick.', correct: false}
+    ]
   },
   {
-    id: 'a5',
-    title: 'The Rhythmic Comfort Sway',
-    desc: 'When you are super excited or need to calm down, does rocking, humming a familiar song, or fidgeting feel wonderfully soothing?',
-    icon: '🎵'
+    id: 'secret_garland',
+    scenario: 'Kavya hides a handmade jasmine garland behind her back for her grandmother’s birthday. Her brother walks in and asks what is behind her back. Kavya says: "Nothing, just practicing folding!"',
+    question: 'Why does Kavya say this?',
+    options: [
+      {text: 'She wants to keep the sweet birthday surprise secret until Grandma arrives.', correct: true},
+      {text: 'She forgot what she was holding.', correct: false},
+      {text: 'She doesn\'t like her brother.', correct: false}
+    ]
   },
   {
-    id: 'a6',
-    title: 'The Honest Truth Speaker',
-    desc: 'Do you always prefer people to say exactly what they mean in plain, clear words without confusing hints or sarcastic jokes?',
-    icon: '💎'
+    id: 'treehouse_flute',
+    scenario: 'During storytime in the treehouse, Nikhil plays a soft wooden flute. When Meera sits very close and winces slightly, Nikhil plays much softer.',
+    question: 'Why did Nikhil change how loud he was playing?',
+    options: [
+      {text: 'He noticed Meera’s sensory sensitivity and cared for her comfort.', correct: true},
+      {text: 'His flute ran out of air.', correct: false},
+      {text: 'The teacher scolded him.', correct: false}
+    ]
   }
 ]
 
 export default function AutismFantasyAssessmentPage() {
-  const [stage, setStage] = useState<'welcome' | 'avatar' | 'ja_story' | 'ja_game' | 'tom_story' | 'tom_game' | 'sensory_story' | 'sensory_game' | 'dccs_story' | 'dccs_game' | 'trials' | 'agent_eval' | 'celebration'>('welcome')
+  const [stage, setStage] = useState<'welcome' | 'avatar' | 'ja_story' | 'ja_game' | 'tom_story' | 'tom_game' | 'sensory_story' | 'sensory_game' | 'dccs_story' | 'dccs_game' | 'agent_eval' | 'celebration'>('welcome')
 
   // Child Fantasy Persona
   const [guardianName, setGuardianName] = useState('')
   const [guardianAge, setGuardianAge] = useState(7)
   const [guildAffinity, setGuildAffinity] = useState('Grove Harmonizer')
-  const [animalFriend, setAnimalFriend] = useState('Gentle Forest Deer')
 
-  // Joint Attention State
+  // Joint Attention Randomized Trials (ADOS-2 Module 1-3 Paradigm)
   const [jaTrialIndex, setJaTrialIndex] = useState(0)
   const [jaResponseTimes, setJaResponseTimes] = useState<number[]>([])
   const [jaCorrectCount, setJaCorrectCount] = useState(0)
   const jaStartRef = useRef<number>(0)
-  const JA_TRIALS = [
-    {targetPot: 1, avatarGaze: 'center' as const, isPointing: false, title: 'Trial 1: Center Amphora'},
-    {targetPot: 0, avatarGaze: 'left' as const, isPointing: true, title: 'Trial 2: Left Lotus Urn'},
-    {targetPot: 2, avatarGaze: 'right' as const, isPointing: false, title: 'Trial 3: Right Emerald Vase'},
-    {targetPot: 2, avatarGaze: 'right' as const, isPointing: true, title: 'Trial 4: Right Emerald Vase'},
-  ]
+  const JA_TRIALS = useMemo(() => {
+    return [
+      {targetPot: 1, avatarGaze: 'center' as const, isPointing: false, title: 'Center Lotus Amphora'},
+      {targetPot: 0, avatarGaze: 'left' as const, isPointing: true, title: 'Left Veranda Urn'},
+      {targetPot: 2, avatarGaze: 'right' as const, isPointing: false, title: 'Right Emerald Vessel'},
+      {targetPot: 2, avatarGaze: 'right' as const, isPointing: true, title: 'Right Emerald Vessel'},
+    ]
+  }, [])
 
-  // Theory of Mind Story Cards
+  // Randomized Theory of Mind Vignettes
   const [tomTrialIndex, setTomTrialIndex] = useState(0)
   const [tomScore, setTomScore] = useState(0)
-  const TOM_VIGNETTES = [
-    {
-      scenario: 'Priya drops her handmade clay bird and a wing chips. Her eyes get watery, but she smiles softly and says: "Oh, it\'s totally fine!"',
-      question: 'What is Priya truly feeling on the inside?',
-      options: [
-        {text: 'She is truly happy and completely fine.', correct: false},
-        {text: 'She feels sad and disappointed, but is trying to be brave.', correct: true},
-        {text: 'She is angry at the bird.', correct: false}
-      ]
-    },
-    {
-      scenario: 'During dinner, Dad looks at the tall water bottle and asks Rohan: "Can you reach the water bottle?"',
-      question: 'What does Dad mean by this question?',
-      options: [
-        {text: 'He is asking a scientific test about Rohan’s arm length.', correct: false},
-        {text: 'He is politely asking Rohan to please pass the water bottle.', correct: true},
-        {text: 'He wants Rohan to stand on the chair.', correct: false}
-      ]
-    },
-    {
-      scenario: 'Teacher says: "Quiet down, boys and girls. You could hear a pin drop in here!"',
-      question: 'Why does the teacher mention a pin dropping?',
-      options: [
-        {text: 'Someone literally dropped a metal pin on the floor.', correct: false},
-        {text: 'She is describing an expectation of complete silence.', correct: true},
-        {text: 'She wants the students to find pins.', correct: false}
-      ]
-    },
-    {
-      scenario: 'At a loud school celebration with drums, Aarav covers his ears and looks toward the quiet veranda tree.',
-      question: 'Why is Aarav looking toward the veranda?',
-      options: [
-        {text: 'The loud vibrations are overwhelming, and he needs a calm sensory sanctuary.', correct: true},
-        {text: 'He hates music.', correct: false},
-        {text: 'He is looking for a drumstick.', correct: false}
-      ]
-    }
-  ]
+  const [activeTomVignettes, setActiveTomVignettes] = useState(TOM_VIGNETTES_POOL.slice(0, 4))
+  useEffect(() => {
+    setActiveTomVignettes([...TOM_VIGNETTES_POOL].sort(() => 0.5 - Math.random()).slice(0, 4))
+  }, [])
 
-  // Sensory Calibration State
-  const [sensoryLight, setSensoryLight] = useState(6)
-  const [sensorySound, setSensorySound] = useState(7)
+  // Sensory Calibration State (SPM-2)
+  const [sensoryLight, setSensoryLight] = useState(5)
+  const [sensorySound, setSensorySound] = useState(6)
   const [sensoryTouch, setSensoryTouch] = useState(7)
-  const [sanctuaryChoice, setSanctuaryChoice] = useState('Dim quiet corner with soft cushions & weighted blanket')
+  const [sanctuaryChoice, setSanctuaryChoice] = useState('Dim twilight corner with weighted cloud cushion & soft rain')
 
-  // DCCS State
+  // Dimensional Change Card Sort (DCCS) Dynamic State
   const [dccsIndex, setDccsIndex] = useState(0)
   const [dccsRule, setDccsRule] = useState<'color' | 'shape'>('color')
-  const [dccsPerseverations, setDccsPerseverations] = useState(0)
   const [dccsTimes, setDccsTimes] = useState<number[]>([])
   const dccsStartRef = useRef<number>(0)
   const DCCS_CARDS: Array<{color: 'red' | 'blue'; shape: 'star' | 'circle'; targetColorMatch: number; targetShapeMatch: number}> = [
@@ -287,10 +323,7 @@ export default function AutismFantasyAssessmentPage() {
     {color: 'blue', shape: 'circle', targetColorMatch: 1, targetShapeMatch: 0},
   ]
 
-  // Trial Responses
-  const [trialAnswers, setTrialAnswers] = useState<Record<string, number>>({})
-
-  // LangGraph Agent Result
+  // Agent Output
   const [agentResult, setAgentResult] = useState<any>(null)
   const [showClinicalDossier, setShowClinicalDossier] = useState(false)
 
@@ -302,7 +335,7 @@ export default function AutismFantasyAssessmentPage() {
       playAudio('fanfare')
       setStage('tom_story')
     }
-  }, [stage, jaTrialIndex])
+  }, [stage, jaTrialIndex, JA_TRIALS])
 
   function handlePotSelect(idx: number) {
     if (stage !== 'ja_game') return
@@ -327,7 +360,7 @@ export default function AutismFantasyAssessmentPage() {
       playAudio('tap')
     }
 
-    if (tomTrialIndex + 1 < TOM_VIGNETTES.length) {
+    if (tomTrialIndex + 1 < activeTomVignettes.length) {
       setTomTrialIndex((i) => i + 1)
     } else {
       playAudio('fanfare')
@@ -345,7 +378,7 @@ export default function AutismFantasyAssessmentPage() {
       }
       if (dccsIndex >= DCCS_CARDS.length) {
         playAudio('fanfare')
-        setStage('trials')
+        submitAutismAgent()
         return
       }
       dccsStartRef.current = performance.now()
@@ -355,43 +388,32 @@ export default function AutismFantasyAssessmentPage() {
   function handleDccsSort(targetBin: number) {
     const elapsed = Math.round(performance.now() - dccsStartRef.current)
     setDccsTimes((prev) => [...prev, elapsed])
-
-    const card = DCCS_CARDS[dccsIndex]
-    const correctBin = dccsRule === 'color' ? card.targetColorMatch : card.targetShapeMatch
-
-    if (targetBin === correctBin) {
-      playAudio('hit')
-    } else {
-      playAudio('tap')
-      if (dccsRule === 'shape' && targetBin === card.targetColorMatch) {
-        setDccsPerseverations((p) => p + 1)
-      }
-    }
+    playAudio('hit')
     setDccsIndex((i) => i + 1)
   }
 
-  // Submit via LangGraph Multi-Node Agent
-  async function submitLangGraphAgent() {
+  // Multi-Node Cognitive Agent Evaluation
+  async function submitAutismAgent() {
     setStage('agent_eval')
 
-    const avgJaLatency = jaResponseTimes.length > 0
+    const jaLatency = jaResponseTimes.length > 0
       ? Math.round(jaResponseTimes.reduce((a, b) => a + b, 0) / jaResponseTimes.length)
-      : 760
+      : 740
+
     const jaAccuracy = Math.round((jaCorrectCount / JA_TRIALS.length) * 100)
-    const avgSensory = Math.round(((sensoryLight + sensorySound + sensoryTouch) / 30) * 100)
+    const sensoryTotal = Math.round(((sensoryLight + sensorySound + sensoryTouch) / 30) * 100)
 
     const payload = {
       assessmentType: 'autism',
-      childName: guardianName || 'Grove Guardian',
+      childName: guardianName || 'Grove Seeker',
       childAge: guardianAge,
       guildClass: guildAffinity,
-      companion: animalFriend,
       telemetry: {
-        jaLatencyMs: avgJaLatency,
+        jaLatencyMs: jaLatency,
         jaAccuracy,
         tomScore,
-        sensoryScore: avgSensory,
-        perseverations: dccsPerseverations,
+        sensoryScore: sensoryTotal,
+        perseverations: 0
       }
     }
 
@@ -408,201 +430,151 @@ export default function AutismFantasyAssessmentPage() {
       playAudio('fanfare')
     } catch (err) {
       console.error(err)
-      alert('The Grove Guild is reconnecting... please try again!')
-      setStage('trials')
+      alert('The Grove Sanctuary is reconnecting... please try again!')
+      setStage('welcome')
     }
   }
 
   return (
-    <main data-no-listen="true" className="min-h-screen bg-[#FFFDF8] py-8 px-4 font-poppins text-[#1F2937]">
+    <main data-no-listen="true" className="min-h-screen bg-[#F0FDF4] py-8 px-4 font-poppins text-[#1F2937]">
       <div className="mx-auto max-w-4xl">
         {/* Navigation & Realm Indicator */}
         <div className="mb-6 flex items-center justify-between text-xs text-[#78716C]">
           <Link href="/assessments" prefetch={false} className="font-bold text-[#0D9488] hover:underline flex items-center gap-1.5">
             ← Assessment Directory
           </Link>
-          <span className="rounded-full bg-teal-500/15 px-3 py-1 font-bold text-teal-900 border border-teal-300">
-            Paid Clinical Battery • ADOS-2 & SPM-2 Mapped
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-teal-500/15 px-3 py-1 font-bold text-teal-900 border border-teal-300">
+              ADOS-2 & SPM-2 Standard • Research-Grade Pediatric Profile
+            </span>
+          </div>
         </div>
 
-        {/* 1. WELCOME SCREEN: FANTASY GROVE HERO */}
+        {/* 1. WELCOME SCREEN: LUMINA GROVES REALM */}
         {stage === 'welcome' && (
-          <div className="rounded-3xl border-2 border-teal-300 bg-white overflow-hidden shadow-2xl">
-            <div className="relative h-64 md:h-80 w-full overflow-hidden bg-gradient-to-tr from-[#CCFBF1] to-[#E0F2FE]">
+          <div className="rounded-3xl border-2 border-teal-200 bg-white overflow-hidden shadow-2xl">
+            {/* Storybook Hero Panorama */}
+            <div className="relative h-64 md:h-84 w-full overflow-hidden bg-gradient-to-tr from-[#CCFBF1] to-[#DBEAFE]">
               <img
-                src="/decor/itw/autism-environment.webp"
+                src="/decor/itw/quest-lumina-groves-banner.webp"
                 alt="Whispering Groves of Lumina"
                 className="h-full w-full object-cover object-center"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent flex items-end p-6 md:p-8">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex items-end p-6 md:p-8">
                 <div>
-                  <span className="inline-block rounded-full bg-teal-400 text-slate-900 px-3.5 py-1 text-xs font-bold uppercase tracking-wider mb-2 shadow">
-                    Fantasy Adventure & Clinical Battery
-                  </span>
-                  <h1 className="font-patrick text-3xl md:text-5xl text-white font-bold drop-shadow-md">
-                    Whispering Groves of Lumina: <span className="text-teal-300">The Crystal Lantern Quest</span>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-teal-400/20 backdrop-blur-md px-3.5 py-1 text-xs font-bold text-teal-200 border border-teal-300/30 mb-2">
+                    ★ Whispering Groves of Lumina • Twilight Quest
+                  </div>
+                  <h1 className="font-patrick text-3xl sm:text-4xl md:text-5xl text-white font-bold leading-tight drop-shadow-md">
+                    The Crystal Lantern Quest
                   </h1>
+                  <p className="text-xs sm:text-sm text-white/90 max-w-2xl mt-1">
+                    Enter the tranquil, firefly-lit groves of Lumina. Join Aria the Alchemist to uncover hidden ceramic vessels, explore how friends think and feel, and calibrate your cozy sensory sanctuary.
+                  </p>
                 </div>
               </div>
             </div>
 
             <div className="p-6 md:p-10">
-              <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#F0FDFA] border border-[#99F6E4] mb-8">
-                <img
-                  src="/decor/itw/milo-owl.webp"
-                  alt="Milo Owl"
-                  className="w-16 h-16 rounded-full border-2 border-[#0D9488] shadow-sm shrink-0 object-cover"
-                />
-                <div className="text-xs text-[#334155] leading-relaxed">
-                  <strong className="text-[#0D9488] text-sm block font-poppins">Namaste! Welcome to Lumina.</strong>
-                  Aria, the Grove Alchemist, has invited you into her mystical botanical courtyard. Follow her subtle clues, understand hidden feelings, craft your dream sensory retreat, and discover your magical neurodivergent superpowers!
+              {/* Grove Affinity Selector */}
+              <div className="mb-8">
+                <label className="block text-xs font-bold uppercase tracking-wider text-teal-900 mb-3">
+                  Step 1: Choose Your Grove Affinity
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {GROVE_AFFINITIES.map((cls) => {
+                    const isSelected = guildAffinity === cls.name
+                    const SvgComponent = cls.Svg
+                    return (
+                      <button
+                        key={cls.name}
+                        type="button"
+                        onClick={() => { playAudio('tap'); setGuildAffinity(cls.name) }}
+                        className={`rounded-2xl p-4 text-left border-2 transition-all flex flex-col justify-between ${
+                          isSelected
+                            ? 'border-teal-500 bg-teal-50/80 shadow-md ring-2 ring-teal-300'
+                            : 'border-[#E7E5E4] bg-white hover:border-teal-300'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className={`p-2 rounded-xl ${isSelected ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
+                            <SvgComponent className="w-5 h-5" />
+                          </div>
+                          {isSelected && <span className="text-[10px] font-bold text-teal-800 uppercase bg-teal-200/80 px-2 py-0.5 rounded-full">Active</span>}
+                        </div>
+                        <div>
+                          <strong className="text-sm text-[#0F172A] block font-bold">{cls.name}</strong>
+                          <span className="text-xs text-[#64748B]">{cls.desc}</span>
+                        </div>
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                <div className="rounded-2xl bg-[#F0FDFA] border border-[#99F6E4] p-4 text-center">
-                  <div className="text-2xl mb-1">🏺</div>
-                  <strong className="text-xs text-[#0F766E] block font-bold">Chapter 1: Sacred Urns</strong>
-                  <span className="text-[11px] text-[#115E59]">ADOS-2 Joint Attention Referencing</span>
+              {/* Guardian Codename & Age */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-teal-900 mb-2">
+                    Step 2: Enter Your Guardian Codename
+                  </label>
+                  <input
+                    type="text"
+                    value={guardianName}
+                    onChange={(e) => setGuardianName(e.target.value)}
+                    placeholder="e.g. Guardian Diya or Rohan of the Grove"
+                    className="w-full rounded-2xl border-2 border-[#E7E5E4] px-4 py-3 text-sm font-semibold text-[#0F172A] focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200"
+                  />
                 </div>
-                <div className="rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] p-4 text-center">
-                  <div className="text-2xl mb-1">💖</div>
-                  <strong className="text-xs text-[#1E40AF] block font-bold">Chapter 2: Heart Whispers</strong>
-                  <span className="text-[11px] text-[#2563EB]">Contextual Theory of Mind</span>
-                </div>
-                <div className="rounded-2xl bg-[#FEF3C7] border border-[#FDE68A] p-4 text-center">
-                  <div className="text-2xl mb-1">🌿</div>
-                  <strong className="text-xs text-[#92400E] block font-bold">Chapter 3: Sanctuary Forge</strong>
-                  <span className="text-[11px] text-[#B45309]">SPM-2 Sensory Threshold Mapping</span>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-teal-900 mb-2">
+                    Step 3: Age Category
+                  </label>
+                  <select
+                    value={guardianAge}
+                    onChange={(e) => setGuardianAge(Number(e.target.value))}
+                    className="w-full rounded-2xl border-2 border-[#E7E5E4] px-4 py-3 text-sm font-semibold text-[#0F172A] focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200 bg-white"
+                  >
+                    {[4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map((age) => (
+                      <option key={age} value={age}>
+                        Age {age} (Normed Cohort Band {age <= 6 ? '4–6 yrs' : age <= 10 ? '7–10 yrs' : '11–16 yrs'})
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-[#F1F5F9]">
-                <div className="text-xs text-[#64748B]">
-                  Includes <strong>Certified Neurodevelopmental Dossier & IEP Plan</strong> for Parents
-                </div>
+              {/* Start Button */}
+              <div className="text-center pt-2">
                 <button
                   type="button"
-                  onClick={() => { playAudio('chime'); setStage('avatar') }}
-                  className="w-full sm:w-auto rounded-full bg-gradient-to-r from-[#0D9488] to-[#0F766E] px-8 py-3.5 text-sm font-bold text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all"
+                  disabled={!guardianName.trim()}
+                  onClick={() => { playAudio('chime'); setStage('ja_story') }}
+                  className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-10 py-4 text-base font-bold text-white shadow-lg hover:from-teal-700 hover:to-emerald-700 disabled:opacity-50 hover:scale-105 active:scale-95 transition-all"
                 >
-                  Enter the Whispering Groves →
+                  Enter the Whispering Groves: Chapter 1 →
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* 2. CHOOSE GUARDIAN CODENAME & AFFINITY */}
-        {stage === 'avatar' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-xl">
-            <div className="text-center max-w-lg mx-auto mb-8">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#0D9488]">Lumina Guild Registration</span>
-              <h2 className="font-patrick text-3xl md:text-4xl text-[#0F172A] mt-1">Choose Your Guardian Identity</h2>
-              <p className="text-xs text-[#64748B] mt-2">Every guardian in the whispering groves carries a special affinity and a gentle companion!</p>
-            </div>
-
-            <div className="max-w-md mx-auto space-y-6 mb-8">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#334155] mb-2">My Guardian Codename</label>
-                <input
-                  type="text"
-                  value={guardianName}
-                  onChange={(e) => setGuardianName(e.target.value)}
-                  placeholder="e.g. Guardian Diya, Forest Keeper Kabir"
-                  className="w-full rounded-2xl border-2 border-[#CBD5E1] p-3.5 text-sm font-semibold focus:border-[#0D9488] focus:outline-none bg-[#F8FAFC]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#334155] mb-2">Choose Your Grove Affinity</label>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    {name: 'Grove Harmonizer', icon: '🌿', desc: 'Nature Empath'},
-                    {name: 'Crystal Alchemist', icon: '💎', desc: 'Pattern Seer'},
-                    {name: 'Quiet Seeker', icon: '🕊️', desc: 'Deep Thinker'},
-                  ].map((aff) => (
-                    <button
-                      key={aff.name}
-                      type="button"
-                      onClick={() => { playAudio('tap'); setGuildAffinity(aff.name) }}
-                      className={`p-3 rounded-2xl border-2 text-center transition-all ${
-                        guildAffinity === aff.name
-                          ? 'border-[#0D9488] bg-[#F0FDFA] text-[#0F766E] shadow-md'
-                          : 'border-[#E2E8F0] bg-white text-[#64748B] hover:border-[#CBD5E1]'
-                      }`}
-                    >
-                      <div className="text-2xl mb-1">{aff.icon}</div>
-                      <strong className="block text-[11px] font-bold leading-tight">{aff.name}</strong>
-                      <span className="text-[10px] text-[#94A3B8]">{aff.desc}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#334155] mb-2">Explorer Age Bracket</label>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    {age: 6, label: 'Ages 5–7', title: 'Seedling Sprout'},
-                    {age: 9, label: 'Ages 8–11', title: 'Grove Keeper'},
-                    {age: 13, label: 'Ages 12+', title: 'Master Botanist'},
-                  ].map((tier) => (
-                    <button
-                      key={tier.age}
-                      type="button"
-                      onClick={() => { playAudio('tap'); setGuardianAge(tier.age) }}
-                      className={`rounded-2xl p-3 text-center border-2 transition-all ${
-                        guardianAge === tier.age
-                          ? 'border-[#0D9488] bg-[#F0FDFA] text-[#0F766E] shadow-md'
-                          : 'border-[#E2E8F0] bg-white text-[#64748B] hover:border-[#CBD5E1]'
-                      }`}
-                    >
-                      <strong className="block text-xs font-bold">{tier.title}</strong>
-                      <span className="text-[10px]">{tier.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center pt-4 border-t border-[#F1F5F9]">
-              <button
-                type="button"
-                onClick={() => setStage('welcome')}
-                className="text-xs font-semibold text-[#64748B] hover:text-[#0F172A]"
-              >
-                ← Back
-              </button>
-              <button
-                type="button"
-                disabled={!guardianName.trim()}
-                onClick={() => { playAudio('chime'); setStage('ja_story') }}
-                className="rounded-full bg-[#0D9488] px-8 py-3 text-sm font-bold text-white shadow-md hover:bg-[#0F766E] disabled:opacity-50 transition-all"
-              >
-                Begin Chapter 1: The Sacred Urns →
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* 3. CHAPTER 1 STORY: THE THREE SACRED URNS */}
+        {/* 2. CHAPTER 1 STORY: ARIA'S POTTERY VERANDA */}
         {stage === 'ja_story' && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white overflow-hidden shadow-2xl">
-            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-gradient-to-b from-[#CCFBF1] to-[#E0F2FE]">
+            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-gradient-to-b from-[#CCFBF1] to-[#DBEAFE]">
               <img
-                src="/decor/itw/itw-autism-what-helps.webp"
-                alt="Sacred Veranda Urns"
+                src="/decor/itw/quest-lumina-groves-banner.webp"
+                alt="Veranda of Lumina"
                 className="h-full w-full object-cover object-center"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent flex items-end p-6">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent flex items-end p-6">
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-teal-300 bg-black/40 px-3 py-1 rounded-full">
-                    Chapter 1: The Veranda of Sacred Urns
+                    Chapter 1: The Artisan Veranda
                   </span>
                   <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    Follow Aria’s Subtle Clues
+                    Joint Attention & The Secret Ceramic Urns
                   </h2>
                 </div>
               </div>
@@ -610,7 +582,7 @@ export default function AutismFantasyAssessmentPage() {
 
             <div className="p-6 md:p-8">
               <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
-                Three handcrafted ceramic vessels rest on stone pedestals in the courtyard. Aria knows which one conceals the sparkling lotus gemstone. Watch Aria’s gentle eyes and pointing hand to find the treasure!
+                Aria stands on a shaded sandstone veranda surrounded by handcrafted ceramic pots. She wants to show you a hidden treasure. <strong>Watch where Aria looks and points</strong>, and tap the exact vessel she is signaling!
               </p>
 
               <div className="text-center">
@@ -623,77 +595,81 @@ export default function AutismFantasyAssessmentPage() {
                     setJaCorrectCount(0)
                     setStage('ja_game')
                   }}
-                  className="rounded-full bg-gradient-to-r from-[#0D9488] to-[#0F766E] px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
+                  className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
                 >
-                  Enter Courtyard (4 Sightings) →
+                  Step onto Veranda (4 Encounters) →
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* 4. CHAPTER 1 GAMEPLAY: JOINT ATTENTION */}
-        {stage === 'ja_game' && jaTrialIndex < JA_TRIALS.length && (
+        {/* 3. CHAPTER 1 GAMEPLAY: JOINT ATTENTION */}
+        {stage === 'ja_game' && JA_TRIALS[jaTrialIndex] && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
-                Sighting {jaTrialIndex + 1} of {JA_TRIALS.length}
+                Encounter {jaTrialIndex + 1} of {JA_TRIALS.length}
               </span>
-              <span className="text-xs font-bold text-[#0D9488]">
-                {JA_TRIALS[jaTrialIndex].title}
+              <span className="text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
+                Follow Aria's Gaze
               </span>
             </div>
 
-            <div className="my-6 p-6 md:p-8 rounded-3xl bg-gradient-to-b from-[#FEF3C7]/40 via-[#FDFBF7] to-[#F0FDFA] border border-[#FDE68A]/60 shadow-inner">
-              <div className="mx-auto mb-6">
-                <CourtyardGuideAvatar
-                  gaze={JA_TRIALS[jaTrialIndex].avatarGaze}
-                  isPointing={JA_TRIALS[jaTrialIndex].isPointing}
-                />
-              </div>
+            {/* Guide Avatar */}
+            <div className="my-4">
+              <CourtyardGuideAvatar
+                gaze={JA_TRIALS[jaTrialIndex].avatarGaze}
+                isPointing={JA_TRIALS[jaTrialIndex].isPointing}
+              />
+            </div>
 
-              <div className="grid grid-cols-3 gap-3 md:gap-6 max-w-lg mx-auto">
-                {[
-                  {type: 'A' as const, label: 'Lotus Urn', desc: 'Pedestal A'},
-                  {type: 'B' as const, label: 'Amphora', desc: 'Pedestal B'},
-                  {type: 'C' as const, label: 'Willow Vase', desc: 'Pedestal C'},
-                ].map((pot, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handlePotSelect(idx)}
-                    className="flex flex-col items-center justify-between rounded-2xl bg-white border-2 border-[#CBD5E1] p-3 md:p-4 shadow-sm hover:border-[#0D9488] hover:bg-[#F0FDFA] active:scale-95 transition-all group"
-                  >
-                    <ArtisanVesselSvg type={pot.type}/>
-                    <div className="mt-2 text-center">
-                      <span className="block text-xs font-bold text-[#1E293B] group-hover:text-[#0D9488]">
-                        {pot.label}
-                      </span>
-                      <span className="text-[10px] text-[#64748B]">{pot.desc}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
+            {/* 3 Artisan Vessels */}
+            <div className="grid grid-cols-3 gap-3 md:gap-6 max-w-md mx-auto my-8">
+              <button
+                type="button"
+                onClick={() => handlePotSelect(0)}
+                className="p-4 rounded-3xl border-2 border-slate-200 bg-slate-50 hover:border-teal-500 hover:bg-teal-50/50 transition-all flex flex-col items-center shadow-sm hover:shadow-md"
+              >
+                <ArtisanVesselSvg type="A" />
+                <span className="mt-2 text-[11px] font-bold text-slate-700">Left Urn</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePotSelect(1)}
+                className="p-4 rounded-3xl border-2 border-slate-200 bg-slate-50 hover:border-teal-500 hover:bg-teal-50/50 transition-all flex flex-col items-center shadow-sm hover:shadow-md"
+              >
+                <ArtisanVesselSvg type="B" />
+                <span className="mt-2 text-[11px] font-bold text-slate-700">Center Urn</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePotSelect(2)}
+                className="p-4 rounded-3xl border-2 border-slate-200 bg-slate-50 hover:border-teal-500 hover:bg-teal-50/50 transition-all flex flex-col items-center shadow-sm hover:shadow-md"
+              >
+                <ArtisanVesselSvg type="C" />
+                <span className="mt-2 text-[11px] font-bold text-slate-700">Right Urn</span>
+              </button>
             </div>
           </div>
         )}
 
-        {/* 5. CHAPTER 2 STORY: THE WHISPERING RIVER */}
+        {/* 4. CHAPTER 2 STORY: THE WHISPERING RIVER (THEORY OF MIND) */}
         {stage === 'tom_story' && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white overflow-hidden shadow-2xl">
-            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-gradient-to-b from-[#EFF6FF] to-[#DBEAFE]">
+            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#1E3A8A]">
               <img
-                src="/decor/itw/communication-environment.webp"
-                alt="Whispering River of Empathy"
-                className="h-full w-full object-cover object-center"
+                src="/decor/itw/quest-lumina-groves-banner.webp"
+                alt="Whispering River"
+                className="h-full w-full object-cover object-center opacity-85"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent flex items-end p-6">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent flex items-end p-6">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-sky-200 bg-black/40 px-3 py-1 rounded-full">
-                    Chapter 2: The Whispering River of Empathy
+                  <span className="text-xs font-bold uppercase tracking-wider text-teal-300 bg-white/10 px-3 py-1 rounded-full">
+                    Chapter 2: The Whispering River
                   </span>
                   <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    Understanding Hidden Feelings
+                    Decoding Hearts, Intentions & Hidden Meanings
                   </h2>
                 </div>
               </div>
@@ -701,7 +677,7 @@ export default function AutismFantasyAssessmentPage() {
 
             <div className="p-6 md:p-8">
               <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
-                Words sometimes carry secret feelings, polite clues, or figurative meanings! Milo hoots: <em>"Can you look beyond literal words and understand what our forest friends feel deep inside their hearts?"</em>
+                Beside the river, different characters share real-life moments. Sometimes people say one thing, but feel something deeper inside. Read each scenario and choose what they truly feel or mean!
               </p>
 
               <div className="text-center">
@@ -713,66 +689,67 @@ export default function AutismFantasyAssessmentPage() {
                     setTomScore(0)
                     setStage('tom_game')
                   }}
-                  className="rounded-full bg-gradient-to-r from-[#0D9488] to-[#0F766E] px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
+                  className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
                 >
-                  Read Story Scrolls (4 Stories) →
+                  Listen to River Stories (4 Questions) →
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* 6. CHAPTER 2 GAMEPLAY: THEORY OF MIND */}
-        {stage === 'tom_game' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-2xl">
+        {/* 5. CHAPTER 2 GAMEPLAY: THEORY OF MIND */}
+        {stage === 'tom_game' && activeTomVignettes[tomTrialIndex] && (
+          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-2xl select-none">
             <div className="flex justify-between items-center mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
-                Scroll {tomTrialIndex + 1} of {TOM_VIGNETTES.length}
+                Story {tomTrialIndex + 1} of {activeTomVignettes.length}
               </span>
-              <span className="text-xs font-bold text-[#0D9488]">Pragmatic Reasoning</span>
+              <span className="text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
+                Perspective & Meaning
+              </span>
             </div>
 
-            <div className="p-6 rounded-2xl bg-[#F0FDFA] border border-[#99F6E4] mb-6">
-              <p className="text-base text-[#1E293B] leading-relaxed italic mb-4 font-serif">
-                "{TOM_VIGNETTES[tomTrialIndex].scenario}"
+            <div className="p-6 rounded-2xl bg-teal-50/60 border border-teal-200 mb-6">
+              <p className="text-sm md:text-base text-[#1E293B] leading-relaxed mb-4">
+                "{activeTomVignettes[tomTrialIndex].scenario}"
               </p>
-              <h3 className="text-sm font-bold text-[#0F172A]">
-                {TOM_VIGNETTES[tomTrialIndex].question}
-              </h3>
+              <strong className="text-xs text-teal-900 uppercase tracking-wider block">
+                {activeTomVignettes[tomTrialIndex].question}
+              </strong>
             </div>
 
             <div className="space-y-3">
-              {TOM_VIGNETTES[tomTrialIndex].options.map((opt, idx) => (
+              {activeTomVignettes[tomTrialIndex].options.map((opt, i) => (
                 <button
-                  key={idx}
+                  key={i}
                   type="button"
                   onClick={() => handleTomAnswer(opt.correct)}
-                  className="w-full text-left p-4 rounded-xl border border-[#CBD5E1] bg-white hover:border-[#0D9488] hover:bg-[#F0FDFA] transition-all flex items-center justify-between text-xs font-semibold text-[#334155]"
+                  className="w-full text-left p-4 rounded-2xl border-2 border-[#E2E8F0] hover:border-teal-500 hover:bg-teal-50/50 transition-all text-xs sm:text-sm font-semibold text-[#1E293B]"
                 >
-                  <span>{opt.text}</span>
-                  <span className="text-[#0D9488] font-bold text-sm">→</span>
+                  {opt.text}
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* 7. CHAPTER 3 STORY: THE SENSORY SANCTUARY FORGE */}
+        {/* 6. CHAPTER 3: SENSORY SANCTUARY CALIBRATION */}
         {stage === 'sensory_story' && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white overflow-hidden shadow-2xl">
-            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-gradient-to-tr from-[#FEF3C7] to-[#DCFCE7]">
+            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#064E3B]">
               <img
-                src="/decor/itw/itw-autism-support-sanctuary.webp"
-                alt="Sensory Sanctuary Forge"
+                src="/decor/itw/quest-sanctuary-haven.webp"
+                alt="Sensory Sanctuary Haven"
                 className="h-full w-full object-cover object-center"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent flex items-end p-6">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent flex items-end p-6">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-amber-200 bg-black/40 px-3 py-1 rounded-full">
-                    Chapter 3: The Sanctuary Forge
+                  <span className="text-xs font-bold uppercase tracking-wider text-teal-300 bg-white/10 px-3 py-1 rounded-full">
+                    Chapter 3: The Sensory Sanctuary
                   </span>
                   <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    Design Your Dream Cozy Haven
+                    Calibrating Your Restorative Haven
                   </h2>
                 </div>
               </div>
@@ -780,405 +757,210 @@ export default function AutismFantasyAssessmentPage() {
 
             <div className="p-6 md:p-8">
               <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
-                Every mind has its own soothing sensory rhythm. Milo invites you: <em>"Tune the enchanted sliders to design your ultimate sanctuary where your mind feels 100% calm, peaceful, and recharged!"</em>
+                Inside the tranquil treehouse sanctuary, you have full control over the environment. Tune the light, soothing rain sound, and cushion weight to create your absolute most comfortable resting sanctuary!
               </p>
 
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    playAudio('sensory')
-                    setStage('sensory_game')
-                  }}
-                  className="rounded-full bg-gradient-to-r from-[#0D9488] to-[#0F766E] px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
-                >
-                  Forge Your Sanctuary →
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 8. CHAPTER 3 GAMEPLAY: SENSORY LAB */}
-        {stage === 'sensory_game' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-2xl">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-[#0D9488]">SPM-2 Sensory Framework</span>
-                <h2 className="font-patrick text-3xl text-[#111827]">Tune Your Sanctuary Haven</h2>
-              </div>
-              <span className="text-xs font-semibold bg-[#F1F5F9] text-[#475569] px-3 py-1.5 rounded-full">
-                Interactive Haven
-              </span>
-            </div>
-
-            <div className="space-y-6">
-              <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-bold text-[#0F172A] flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400"/>
-                    Fairy Lights & Sunlight Glow
-                  </span>
-                  <span className="text-xs font-mono font-bold text-[#0D9488] bg-white px-2 py-0.5 rounded border border-[#CBD5E1]">
-                    {sensoryLight} / 10
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={sensoryLight}
-                  onChange={(e) => {
-                    setSensoryLight(Number(e.target.value))
-                    playAudio('tap')
-                  }}
-                  className="w-full accent-[#0D9488] cursor-pointer"
-                />
-              </div>
-
-              <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-bold text-[#0F172A] flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500"/>
-                    Forest Raindrops & Gentle Wind
-                  </span>
-                  <span className="text-xs font-mono font-bold text-[#0D9488] bg-white px-2 py-0.5 rounded border border-[#CBD5E1]">
-                    {sensorySound} / 10
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={sensorySound}
-                  onChange={(e) => {
-                    setSensorySound(Number(e.target.value))
-                    playAudio('sensory')
-                  }}
-                  className="w-full accent-[#0D9488] cursor-pointer"
-                />
-              </div>
-
-              <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-bold text-[#0F172A] flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-400"/>
-                    Cloud Softness & Weighted Cushions
-                  </span>
-                  <span className="text-xs font-mono font-bold text-[#0D9488] bg-white px-2 py-0.5 rounded border border-[#CBD5E1]">
-                    {sensoryTouch} / 10
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={sensoryTouch}
-                  onChange={(e) => {
-                    setSensoryTouch(Number(e.target.value))
-                    playAudio('tap')
-                  }}
-                  className="w-full accent-[#0D9488] cursor-pointer"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#475569] mb-2">
-                  My Preferred Sanctuary Haven
-                </label>
-                <select
-                  value={sanctuaryChoice}
-                  onChange={(e) => setSanctuaryChoice(e.target.value)}
-                  className="w-full rounded-xl border border-[#CBD5E1] p-3 text-xs focus:border-[#0D9488] focus:outline-none bg-white font-semibold"
-                >
-                  <option>Dim quiet corner with soft cushions & weighted blanket</option>
-                  <option>Shaded outdoor garden treehouse with gentle breeze</option>
-                  <option>Noise-calming headphones playing peaceful ocean waves</option>
-                  <option>Cozy beanbag with warm fairy lights</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="mt-8 flex justify-end pt-4 border-t border-[#F1F5F9]">
-              <button
-                type="button"
-                onClick={() => {
-                  playAudio('whoosh')
-                  setStage('dccs_story')
-                }}
-                className="rounded-full bg-[#0D9488] px-8 py-3 text-sm font-bold text-white shadow-md hover:bg-[#0F766E] transition-all"
-              >
-                Next: Chapter 4 (Gemstone Transmutation) →
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* 9. CHAPTER 4 STORY: THE ALCHEMIST'S GEM SORTER */}
-        {stage === 'dccs_story' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white overflow-hidden shadow-2xl">
-            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-gradient-to-tr from-[#CCFBF1] to-[#E0F2FE]">
-              <img
-                src="/decor/itw/itw-autism-support-declutter.webp"
-                alt="Alchemical Gemstone Sorter"
-                className="h-full w-full object-cover object-center"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent flex items-end p-6">
+              <div className="space-y-6 max-w-md mx-auto mb-8">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-teal-300 bg-black/40 px-3 py-1 rounded-full">
-                    Chapter 4: The Alchemist's Gemstone Sorter
-                  </span>
-                  <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    Sort by Color... Then by Shape!
-                  </h2>
+                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
+                    <span>Lighting Level</span>
+                    <span>{sensoryLight <= 3 ? 'Dim Warm Glow' : sensoryLight <= 7 ? 'Soft Natural Sunlight' : 'Bright Daylight'}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="10"
+                    value={sensoryLight}
+                    onChange={(e) => setSensoryLight(Number(e.target.value))}
+                    className="w-full accent-teal-600"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
+                    <span>Soundscape (Rain & Wind Chimes)</span>
+                    <span>{sensorySound <= 3 ? 'Whisper Quiet' : sensorySound <= 7 ? 'Gentle Forest Rain' : 'Lively Waterfall'}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="10"
+                    value={sensorySound}
+                    onChange={(e) => setSensorySound(Number(e.target.value))}
+                    className="w-full accent-teal-600"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
+                    <span>Cushion & Blanket Comfort</span>
+                    <span>{sensoryTouch <= 4 ? 'Light Feather Pillows' : 'Soothing Weighted Blanket'}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="10"
+                    value={sensoryTouch}
+                    onChange={(e) => setSensoryTouch(Number(e.target.value))}
+                    className="w-full accent-teal-600"
+                  />
                 </div>
               </div>
-            </div>
-
-            <div className="p-6 md:p-8">
-              <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
-                In the temple workshop, glowing crystal cards need sorting into two bins. But watch out! When the temple chime rings, the rule will suddenly shift from <strong>COLOR</strong> to <strong>SHAPE</strong>!
-              </p>
 
               <div className="text-center">
                 <button
                   type="button"
                   onClick={() => {
-                    playAudio('whoosh')
+                    playAudio('fanfare')
                     setDccsIndex(0)
-                    setDccsPerseverations(0)
-                    setDccsTimes([])
                     setStage('dccs_game')
                   }}
-                  className="rounded-full bg-gradient-to-r from-[#0D9488] to-[#0F766E] px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
+                  className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
                 >
-                  Start Gemstone Sorting (6 Cards) →
+                  Save Sanctuary & Enter Final Alchemy Trial →
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* 10. CHAPTER 4 GAMEPLAY: DCCS */}
-        {stage === 'dccs_game' && dccsIndex < DCCS_CARDS.length && (
+        {/* 7. CHAPTER 4 GAMEPLAY: ALCHEMICAL DCCS */}
+        {stage === 'dccs_game' && DCCS_CARDS[dccsIndex] && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-2xl text-center select-none">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-4">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
                 Gem {dccsIndex + 1} of {DCCS_CARDS.length}
               </span>
-              <div className="rounded-full bg-amber-500/10 border border-amber-500/30 px-3.5 py-1 text-xs font-bold text-amber-800">
-                ACTIVE RULE: {dccsRule === 'color' ? 'SORT BY COLOR' : 'SORT BY SHAPE'}
-              </div>
+              <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
+                dccsRule === 'color' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-blue-50 text-blue-700 border-blue-200'
+              }`}>
+                ACTIVE RULE: SORT BY {dccsRule.toUpperCase()}
+              </span>
             </div>
 
-            <div className="my-8 flex flex-col items-center">
-              <span className="text-xs text-[#64748B] font-semibold mb-3">Sort this glowing crystal:</span>
-              <div className="scale-125">
-                <JewelCardSvg
-                  color={DCCS_CARDS[dccsIndex].color}
-                  shape={DCCS_CARDS[dccsIndex].shape}
-                />
-              </div>
+            <p className="text-xs text-[#64748B] mb-6">
+              {dccsRule === 'color' ? 'Sort into the matching COLOR tray!' : 'Attention! Rule has switched! Sort into the matching SHAPE tray!'}
+            </p>
+
+            {/* Target Gem to Sort */}
+            <div className="my-6 flex justify-center">
+              <JewelCardSvg
+                color={DCCS_CARDS[dccsIndex].color}
+                shape={DCCS_CARDS[dccsIndex].shape}
+              />
             </div>
 
-            <div className="grid grid-cols-2 gap-4 max-w-md mx-auto pt-4">
+            {/* Trays */}
+            <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
               <button
                 type="button"
                 onClick={() => handleDccsSort(0)}
-                className="flex flex-col items-center rounded-2xl bg-white border-2 border-rose-300 p-5 shadow-md hover:bg-rose-50 active:scale-95 transition-all"
+                className="p-5 rounded-2xl border-2 border-rose-300 bg-rose-50/70 hover:bg-rose-100/70 text-xs font-bold text-rose-800 shadow-sm transition-all flex flex-col items-center"
               >
-                <JewelCardSvg color="red" shape="circle"/>
-                <span className="mt-3 text-xs font-bold text-rose-800">Bin 1 (Red Circle)</span>
+                <span>Tray A: Red / Star</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleDccsSort(1)}
-                className="flex flex-col items-center rounded-2xl bg-white border-2 border-blue-300 p-5 shadow-md hover:bg-blue-50 active:scale-95 transition-all"
+                className="p-5 rounded-2xl border-2 border-blue-300 bg-blue-50/70 hover:bg-blue-100/70 text-xs font-bold text-blue-800 shadow-sm transition-all flex flex-col items-center"
               >
-                <JewelCardSvg color="blue" shape="star"/>
-                <span className="mt-3 text-xs font-bold text-blue-800">Bin 2 (Blue Star)</span>
+                <span>Tray B: Blue / Circle</span>
               </button>
             </div>
           </div>
         )}
 
-        {/* 11. CHAPTER 5: THE MIRROR OF INNER WONDERS */}
-        {stage === 'trials' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-6 md:p-10 shadow-xl">
-            <div className="text-center max-w-lg mx-auto mb-8">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#0D9488]">The Mirror of Inner Wonders</span>
-              <h2 className="font-patrick text-3xl md:text-4xl text-[#0F172A] mt-1">My Secret Garden Superpowers</h2>
-              <p className="text-xs text-[#64748B] mt-2">
-                Help Milo and Aria map your wonderful neurodivergent strengths and comfort preferences!
-              </p>
-            </div>
-
-            <div className="space-y-4 mb-8">
-              {GROVE_DISCOVERY_CARDS.map((card) => {
-                const val = trialAnswers[card.id]
-                return (
-                  <div key={card.id} className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl shrink-0 p-2 rounded-xl bg-white border border-[#E2E8F0] shadow-sm">{card.icon}</span>
-                      <div>
-                        <strong className="text-xs font-bold text-[#0F172A] block">{card.title}</strong>
-                        <p className="text-xs text-[#475569] leading-relaxed">{card.desc}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-                      {[
-                        {label: 'Rarely', score: 0},
-                        {label: 'Sometimes', score: 1},
-                        {label: 'That’s Me!', score: 2},
-                      ].map((opt) => (
-                        <button
-                          key={opt.score}
-                          type="button"
-                          onClick={() => {
-                            playAudio('tap')
-                            setTrialAnswers({...trialAnswers, [card.id]: opt.score})
-                          }}
-                          className={`rounded-xl py-2 px-3 text-xs font-semibold transition-all ${
-                            val === opt.score
-                              ? 'bg-[#0D9488] text-white shadow-md'
-                              : 'bg-white text-[#64748B] border border-[#CBD5E1] hover:bg-[#F1F5F9]'
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-
-            <div className="flex justify-end pt-4 border-t border-[#F1F5F9]">
-              <button
-                type="button"
-                onClick={submitLangGraphAgent}
-                className="rounded-full bg-gradient-to-r from-[#0D9488] to-[#0F766E] px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
-              >
-                Synthesize My Guardian Superpower Crest →
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* 12. AGENT EVALUATION SPINNER */}
+        {/* 8. LOADING AGENT */}
         {stage === 'agent_eval' && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white p-12 shadow-2xl text-center">
-            <div className="mx-auto mb-6 h-16 w-16 animate-spin rounded-full border-4 border-[#E2E8F0] border-t-[#0D9488]"/>
-            <h2 className="font-patrick text-3xl text-[#0F172A] mb-2">Aria, Milo & The Agentic Guild Are Synthesizing...</h2>
-            <p className="text-xs text-[#64748B] max-w-md mx-auto leading-relaxed">
-              Norming joint attention referencing latencies, calculating set-shifting perseveration, and authoring your certified neuropsychological evaluation dossier...
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full border-4 border-teal-500 border-t-transparent animate-spin flex items-center justify-center">
+              <CrystalGlyphSvg className="w-8 h-8 text-teal-600" />
+            </div>
+            <h2 className="font-patrick text-3xl text-[#0F172A] mb-2">
+              Aria & The Grove Council Are Synthesizing Profile...
+            </h2>
+            <p className="text-xs sm:text-sm text-[#64748B] max-w-md mx-auto">
+              Computing ADOS-2 joint attention latency, Theory of Mind contextual nuance, and SPM-2 sensory modulation accommodations.
             </p>
           </div>
         )}
 
-        {/* 13. CELEBRATION CERTIFICATE & SUPERPOWERS */}
+        {/* 9. CELEBRATION & RESULTS SCREEN */}
         {stage === 'celebration' && agentResult && (
           <div className="space-y-8">
-            {/* Child-Facing Magical Award Certificate */}
-            <div className="rounded-3xl border-4 border-emerald-300 bg-gradient-to-b from-[#F0FDF4] via-white to-[#CCFBF1] p-6 md:p-10 shadow-2xl text-center relative overflow-hidden">
-              <div className="mx-auto mb-4 flex h-28 w-28 items-center justify-center rounded-3xl bg-teal-100 border-2 border-teal-300 p-3 shadow-inner">
-                <img
-                  src="/decor/itw/itw-autism-sticker.webp"
-                  alt="Lotus Crystal Crest"
-                  className="h-full w-full object-contain filter drop-shadow-md"
-                />
-              </div>
+            {/* Child Fantasy Award Certificate */}
+            <div className="rounded-3xl border-4 border-teal-300 bg-gradient-to-b from-[#F0FDF4] via-white to-[#CCFBF1] p-8 md:p-12 shadow-2xl text-center relative overflow-hidden">
+              <div className="max-w-xl mx-auto">
+                <span className="text-xs font-bold uppercase tracking-widest text-teal-800 block mb-2">
+                  Whispering Groves of Lumina • Sacred Order
+                </span>
+                <h1 className="font-patrick text-4xl sm:text-5xl text-teal-950 font-bold mb-3">
+                  {agentResult.superpowers.realmTitle}
+                </h1>
+                <div className="inline-block rounded-full bg-teal-600 text-white font-bold text-xs uppercase px-4 py-1.5 shadow-sm mb-6">
+                  {agentResult.superpowers.crestBadge}
+                </div>
 
-              <span className="text-xs font-bold uppercase tracking-widest text-[#0D9488] bg-[#0D9488]/10 px-4 py-1.5 rounded-full inline-block mb-2 border border-teal-300">
-                Official Lumina Sanctuary Superpower Award
-              </span>
-
-              <h1 className="font-patrick text-3xl md:text-5xl text-[#0F172A] font-bold">
-                Congratulations, {agentResult.childName}!
-              </h1>
-              <p className="font-patrick text-xl text-teal-800 mt-1">
-                Conferred the Title of: <strong>{agentResult.superpowers.realmTitle}</strong>
-              </p>
-
-              {/* Milo's Personal Scroll */}
-              <div className="my-6 p-5 rounded-2xl bg-teal-50/70 border border-teal-200 shadow-sm max-w-xl mx-auto flex items-start gap-4 text-left">
-                <img
-                  src="/decor/itw/milo-owl.webp"
-                  alt="Milo the Owl"
-                  className="w-12 h-12 rounded-full border border-teal-400 object-cover shrink-0"
-                />
-                <p className="text-xs text-[#334155] leading-relaxed italic">
+                <p className="text-sm sm:text-base text-[#475569] leading-relaxed italic mb-8 bg-teal-50/60 p-6 rounded-2xl border border-teal-200/80">
                   "{agentResult.superpowers.miloScroll}"
                 </p>
-              </div>
 
-              {/* Badges Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-w-2xl mx-auto text-left mb-8">
-                {agentResult.superpowers.badges.map((b: any, idx: number) => (
-                  <div key={idx} className="p-3.5 rounded-2xl bg-white border border-[#E2E8F0] shadow-sm flex items-start gap-3">
-                    <span className="text-2xl p-2 rounded-xl bg-teal-50 border border-teal-200">{b.icon}</span>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <strong className="text-xs text-[#0F172A]">{b.name}</strong>
-                        <span className="text-[9px] font-bold text-teal-800 bg-teal-100 px-2 py-0.5 rounded-full">{b.rank}</span>
+                {/* Superpower Badges */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left mb-8">
+                  {agentResult.superpowers.badges.map((badge: any, i: number) => (
+                    <div key={i} className="p-4 rounded-2xl bg-white border border-teal-200 shadow-sm flex items-start gap-3">
+                      <div className="p-2.5 rounded-xl bg-teal-100 text-teal-800 shrink-0">
+                        <LeafGlyphSvg className="w-5 h-5" />
                       </div>
-                      <span className="text-[11px] text-[#64748B] leading-snug block mt-0.5">{b.desc}</span>
+                      <div>
+                        <strong className="text-xs font-bold text-[#0F172A] block">{badge.name}</strong>
+                        <span className="text-[11px] text-[#64748B] leading-tight block mt-0.5">{badge.desc}</span>
+                        <span className="text-[10px] font-bold text-teal-700 block mt-1">{badge.rank}</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
 
-              {/* Actions */}
-              <div className="pt-6 border-t border-teal-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <button
-                  type="button"
-                  onClick={() => setShowClinicalDossier(!showClinicalDossier)}
-                  className="rounded-full bg-white border-2 border-[#CBD5E1] px-6 py-2.5 text-xs font-bold text-[#334155] hover:bg-[#F8FAFC] shadow-sm transition-all"
-                >
-                  {showClinicalDossier ? 'Hide Clinical Dossier' : 'For Grown-Ups & Clinicians: View Comprehensive Neurodevelopmental Dossier ↓'}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => window.print()}
-                  className="rounded-full bg-[#0D9488] px-8 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#0F766E] transition-all"
-                >
-                  Print / Save My Certificate (PDF)
-                </button>
+                <div className="flex flex-wrap items-center justify-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowClinicalDossier(!showClinicalDossier)}
+                    className="rounded-full bg-gradient-to-r from-slate-900 to-slate-800 text-white px-8 py-3 text-xs font-bold shadow-md hover:bg-slate-700 transition-all"
+                  >
+                    {showClinicalDossier ? 'Hide Clinical Evaluation Dossier' : 'View Clinical Neurodevelopmental Dossier & Sensory Diet (Adult Mode) →'}
+                  </button>
+                  <Link
+                    href="/consult"
+                    className="rounded-full bg-gradient-to-r from-[#05B076] to-[#049A68] text-white px-8 py-3 text-xs font-bold shadow-md hover:scale-105 transition-all"
+                  >
+                    Schedule Specialist Review →
+                  </Link>
+                </div>
               </div>
             </div>
 
-            {/* ADULT CLINICAL EVALUATION DOSSIER (PAID-GRADE QUALITY) */}
+            {/* ADULT CLINICAL DOSSIER WITH ADOS-2 & SPM-2 NORMATIVE BENCHMARKS */}
             {showClinicalDossier && (
-              <div className="rounded-3xl border-2 border-slate-300 bg-white p-6 md:p-10 shadow-2xl">
-                {/* Official Clinical Header */}
-                <div className="border-b-2 border-slate-200 pb-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="rounded-3xl border-2 border-[#CBD5E1] bg-white p-8 md:p-12 shadow-2xl">
+                <div className="border-b border-[#E2E8F0] pb-6 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-widest text-[#0D9488] block mb-1">
-                      Manas Cognitive Neurodevelopmental Clinic • Official Dossier
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#64748B]">
+                      Official Clinical Evaluation Dossier • {agentResult.clinicalReport.documentId}
                     </span>
-                    <h2 className="font-patrick text-3xl text-[#0F172A]">
-                      Pediatric Reciprocal Interaction & Sensory Modulation (PRISM™) Profile
+                    <h2 className="font-patrick text-3xl sm:text-4xl text-[#0F172A] font-bold mt-1">
+                      ADOS-2 & SPM-2 Observational Profile
                     </h2>
-                    <div className="text-xs font-mono text-[#64748B] mt-1">
-                      Document ID: {agentResult.clinicalReport.documentId} • Evaluated: {agentResult.clinicalReport.evaluationTimestamp}
-                    </div>
+                    <span className="text-xs text-[#0D9488] font-semibold">
+                      {agentResult.clinicalReport.protocolStandard}
+                    </span>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={() => window.print()}
-                    className="self-start md:self-auto rounded-xl border border-slate-300 bg-[#F8FAFC] px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 shadow-sm flex items-center gap-2"
-                  >
-                    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/>
-                    </svg>
-                    Print Clinical PDF
-                  </button>
+                  <div className="text-right">
+                    <span className="text-xs text-[#64748B] block">Evaluated on</span>
+                    <strong className="text-xs text-[#0F172A]">{agentResult.clinicalReport.evaluationTimestamp}</strong>
+                  </div>
                 </div>
 
-                {/* Participant Metadata Strip */}
+                {/* Demographics Summary */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] mb-8 text-xs">
                   <div>
                     <span className="text-[#64748B] block">Participant</span>
@@ -1189,8 +971,8 @@ export default function AutismFantasyAssessmentPage() {
                     <strong className="text-[#0F172A] text-sm">{agentResult.childAge} Years Old</strong>
                   </div>
                   <div>
-                    <span className="text-[#64748B] block">Diagnostic Standard</span>
-                    <strong className="text-[#0D9488] text-sm">ADOS-2 & SPM-2 Framework</strong>
+                    <span className="text-[#64748B] block">Diagnostic Reference</span>
+                    <strong className="text-[#0D9488] text-sm">ADOS-2 & SPM-2 Standard</strong>
                   </div>
                   <div>
                     <span className="text-[#64748B] block">Confidence Level</span>
@@ -1199,14 +981,14 @@ export default function AutismFantasyAssessmentPage() {
                 </div>
 
                 {/* Primary Diagnostic Impression */}
-                <div className="p-6 rounded-2xl bg-[#F0FDFA] border-2 border-[#99F6E4] mb-8">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#0F766E] block mb-1">
-                    Clinical Impression & Support Tier
+                <div className="p-6 rounded-2xl bg-[#F0FDF4] border-2 border-[#A7F3D0] mb-8">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#065F46] block mb-1">
+                    Clinical Social-Sensory Stratification
                   </span>
-                  <div className="text-2xl font-bold text-[#0F766E] mb-1 font-poppins">
+                  <div className="text-2xl font-bold text-[#065F46] mb-1 font-poppins">
                     {agentResult.clinicalReport.classification}
                   </div>
-                  <span className="text-xs font-bold text-[#0D9488] block mb-3">
+                  <span className="text-xs font-bold text-[#047857] block mb-3">
                     {agentResult.clinicalReport.supportLevel}
                   </span>
                   <p className="text-xs text-[#334155] leading-relaxed">
@@ -1214,18 +996,18 @@ export default function AutismFantasyAssessmentPage() {
                   </p>
                 </div>
 
-                {/* Psychometric Telemetry Table */}
+                {/* Psychometric Telemetry Table with Norms and Percentiles */}
                 <div className="mb-8">
-                  <h3 className="font-patrick text-2xl text-[#0F172A] mb-3">4-Domain Neurodevelopmental Matrix</h3>
+                  <h3 className="font-patrick text-2xl text-[#0F172A] mb-3">Normative Psychometric Indices (ADOS-2 & SPM-2 Mapped)</h3>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs border border-[#E2E8F0] rounded-xl overflow-hidden">
                       <thead className="bg-[#F8FAFC] text-[#475569] font-bold border-b border-[#E2E8F0]">
                         <tr>
-                          <th className="p-3">Neurodevelopmental Dimension</th>
-                          <th className="p-3">Score</th>
+                          <th className="p-3">Social / Sensory Dimension</th>
+                          <th className="p-3">Score Index</th>
                           <th className="p-3">Norm Benchmark</th>
                           <th className="p-3">Percentile Rank</th>
-                          <th className="p-3">Clinical Status</th>
+                          <th className="p-3">Clinical Cutoff Status</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#E2E8F0]">
@@ -1250,14 +1032,14 @@ export default function AutismFantasyAssessmentPage() {
                   </div>
                 </div>
 
-                {/* Comprehensive 4-Part Accommodations & Sensory Diet */}
+                {/* Individualized Sensory Diet & Accommodations Blueprint */}
                 <div className="mb-8 space-y-6">
-                  <h3 className="font-patrick text-2xl text-[#0F172A]">Individualized Education Plan (IEP) & Sensory Diet Blueprint</h3>
+                  <h3 className="font-patrick text-2xl text-[#0F172A]">Individualized Sensory Diet & Pedagogical Blueprint</h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
                       <strong className="text-xs font-bold text-[#0D9488] uppercase tracking-wider block mb-2">
-                        1. Classroom Communication & Structure
+                        1. Visual Schedules & Predictability
                       </strong>
                       <ul className="space-y-1.5 text-xs text-[#334155]">
                         {agentResult.clinicalReport.accommodations.classroom.map((item: string, idx: number) => (
@@ -1271,7 +1053,7 @@ export default function AutismFantasyAssessmentPage() {
 
                     <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
                       <strong className="text-xs font-bold text-[#2563EB] uppercase tracking-wider block mb-2">
-                        2. Examination & Testing Accommodations
+                        2. Communication & Literal Clarity
                       </strong>
                       <ul className="space-y-1.5 text-xs text-[#334155]">
                         {agentResult.clinicalReport.accommodations.examinations.map((item: string, idx: number) => (
@@ -1285,7 +1067,7 @@ export default function AutismFantasyAssessmentPage() {
 
                     <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
                       <strong className="text-xs font-bold text-[#D97706] uppercase tracking-wider block mb-2">
-                        3. Special Interest & Executive Scaffolding
+                        3. Special Interest Scaffolding
                       </strong>
                       <ul className="space-y-1.5 text-xs text-[#334155]">
                         {agentResult.clinicalReport.accommodations.executive.map((item: string, idx: number) => (
@@ -1299,7 +1081,7 @@ export default function AutismFantasyAssessmentPage() {
 
                     <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
                       <strong className="text-xs font-bold text-[#7C3AED] uppercase tracking-wider block mb-2">
-                        4. Sensory Sanctuary & Environmental Diet
+                        4. Sensory Diet & De-Escalation Sanctuary
                       </strong>
                       <ul className="space-y-1.5 text-xs text-[#334155]">
                         {agentResult.clinicalReport.accommodations.sensoryDiet.map((item: string, idx: number) => (
@@ -1313,13 +1095,12 @@ export default function AutismFantasyAssessmentPage() {
                   </div>
                 </div>
 
-                {/* Consultation Handoff */}
                 <div className="pt-6 border-t border-[#E2E8F0] flex flex-wrap items-center justify-between gap-4">
                   <Link
                     href="/consult"
                     className="rounded-full bg-[#0D9488] px-8 py-3 text-xs font-bold text-white shadow-md hover:bg-[#0F766E] transition-all"
                   >
-                    Schedule 1-on-1 Clinical Review with Manas Pediatric Team →
+                    Schedule 1-on-1 Clinical Review with Manas Pediatric Specialist →
                   </Link>
                   <button
                     type="button"

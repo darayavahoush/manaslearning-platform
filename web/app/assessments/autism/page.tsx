@@ -202,6 +202,61 @@ function JewelCardSvg({color, shape}: {color: 'red' | 'blue' | 'emerald' | 'ambe
   )
 }
 
+function ForestSpriteFaceSvg({emotion, className = 'w-24 h-24'}: {emotion: 'happy' | 'sad' | 'surprised' | 'calm'; className?: string}) {
+  if (emotion === 'happy') {
+    return (
+      <svg className={className} viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="44" fill="#FEF08A" stroke="#EAB308" strokeWidth="4" />
+        <ellipse cx="34" cy="42" rx="4" ry="6" fill="#713F12" />
+        <ellipse cx="66" cy="42" rx="4" ry="6" fill="#713F12" />
+        <circle cx="36" cy="40" r="2" fill="#FFFFFF" />
+        <circle cx="68" cy="40" r="2" fill="#FFFFFF" />
+        <path d="M 32 58 Q 50 78 68 58" stroke="#713F12" strokeWidth="5" strokeLinecap="round" fill="#F87171" />
+        <circle cx="24" cy="52" r="5" fill="#FCA5A5" opacity="0.6" />
+        <circle cx="76" cy="52" r="5" fill="#FCA5A5" opacity="0.6" />
+        <path d="M 28 32 Q 34 28 40 32" stroke="#713F12" strokeWidth="3" strokeLinecap="round" />
+        <path d="M 60 32 Q 66 28 72 32" stroke="#713F12" strokeWidth="3" strokeLinecap="round" />
+      </svg>
+    )
+  }
+  if (emotion === 'sad') {
+    return (
+      <svg className={className} viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="44" fill="#BFDBFE" stroke="#3B82F6" strokeWidth="4" />
+        <ellipse cx="35" cy="45" rx="4" ry="5" fill="#1E3A8A" />
+        <ellipse cx="65" cy="45" rx="4" ry="5" fill="#1E3A8A" />
+        <path d="M 30 36 Q 36 40 42 38" stroke="#1E3A8A" strokeWidth="3" strokeLinecap="round" />
+        <path d="M 58 38 Q 64 40 70 36" stroke="#1E3A8A" strokeWidth="3" strokeLinecap="round" />
+        <path d="M 36 66 Q 50 54 64 66" stroke="#1E3A8A" strokeWidth="5" strokeLinecap="round" fill="none" />
+        <path d="M 68 52 C 68 52 72 58 68 62 C 64 62 64 56 68 52 Z" fill="#60A5FA" />
+      </svg>
+    )
+  }
+  if (emotion === 'surprised') {
+    return (
+      <svg className={className} viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="44" fill="#E9D5FF" stroke="#A855F7" strokeWidth="4" />
+        <circle cx="34" cy="42" r="6" fill="#581C87" />
+        <circle cx="66" cy="42" r="6" fill="#581C87" />
+        <circle cx="36" cy="40" r="2" fill="#FFFFFF" />
+        <circle cx="68" cy="40" r="2" fill="#FFFFFF" />
+        <path d="M 28 30 Q 34 24 40 30" stroke="#581C87" strokeWidth="3.5" strokeLinecap="round" />
+        <path d="M 60 30 Q 66 24 72 30" stroke="#581C87" strokeWidth="3.5" strokeLinecap="round" />
+        <ellipse cx="50" cy="64" rx="8" ry="12" fill="#581C87" />
+      </svg>
+    )
+  }
+  return (
+    <svg className={className} viewBox="0 0 100 100" fill="none">
+      <circle cx="50" cy="50" r="44" fill="#BBF7D0" stroke="#22C55E" strokeWidth="4" />
+      <path d="M 28 44 Q 34 50 40 44" stroke="#14532D" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+      <path d="M 60 44 Q 66 50 72 44" stroke="#14532D" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+      <path d="M 38 62 Q 50 68 62 62" stroke="#14532D" strokeWidth="4" strokeLinecap="round" fill="none" />
+      <path d="M 50 20 Q 56 12 62 16" stroke="#15803D" strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 // Child Superpower Grove Affinities
 const GROVE_AFFINITIES = [
   {name: 'Grove Harmonizer', Svg: LeafGlyphSvg, desc: 'Sensory Empathy & Nature Connection'},
@@ -209,67 +264,31 @@ const GROVE_AFFINITIES = [
   {name: 'Quiet Seeker', Svg: DoveGlyphSvg, desc: 'Thoughtful Observer & Loyal Friend'},
 ]
 
-// Theory of Mind Story Cards Pool (Randomized 4 from 8)
-const TOM_VIGNETTES_POOL = [
+// Chapter 2: The Forest Sprite's Emotion Mirror Trials (100% Visual Social Resonance Game)
+const EMOTION_MIRROR_TRIALS = [
   {
-    id: 'clay_bird',
-    scenario: 'Priya drops her handmade clay bird and a wing chips. Her eyes get watery, but she smiles softly and says: "Oh, it\'s totally fine!"',
-    question: 'What is Priya truly feeling on the inside?',
-    options: [
-      {text: 'She is truly happy and completely fine.', correct: false},
-      {text: 'She feels sad and disappointed, but is trying to be brave.', correct: true},
-      {text: 'She is angry at the bird.', correct: false}
-    ]
+    target: 'happy' as const,
+    title: 'The Sunny Meadow Sprite',
+    hint: 'Look at the sparkling smile and joyful eyes!',
+    options: ['sad', 'happy', 'surprised'] as const
   },
   {
-    id: 'dinner_bottle',
-    scenario: 'During dinner, Dad looks at the tall water bottle and asks Rohan: "Can you reach the water bottle?"',
-    question: 'What does Dad mean by this question?',
-    options: [
-      {text: 'He is asking a scientific test about Rohan’s arm length.', correct: false},
-      {text: 'He is politely asking Rohan to please pass the water bottle.', correct: true},
-      {text: 'He wants Rohan to stand on the chair.', correct: false}
-    ]
+    target: 'sad' as const,
+    title: 'The Raincloud Sprite',
+    hint: 'Look at the soft drooping eyes and blue teardrop.',
+    options: ['happy', 'sad', 'calm'] as const
   },
   {
-    id: 'pin_drop',
-    scenario: 'Teacher says: "Quiet down, boys and girls. You could hear a pin drop in here!"',
-    question: 'Why does the teacher mention a pin dropping?',
-    options: [
-      {text: 'Someone literally dropped a metal pin on the floor.', correct: false},
-      {text: 'She is describing an expectation of complete silence.', correct: true},
-      {text: 'She wants the students to find pins.', correct: false}
-    ]
+    target: 'surprised' as const,
+    title: 'The Starfall Wonder Sprite',
+    hint: 'Look at the round starry eyes and amazed open mouth!',
+    options: ['calm', 'surprised', 'sad'] as const
   },
   {
-    id: 'sanctuary_tree',
-    scenario: 'At a loud school celebration with drums, Aarav covers his ears and looks toward the quiet veranda tree.',
-    question: 'Why is Aarav looking toward the veranda?',
-    options: [
-      {text: 'The loud vibrations are overwhelming, and he needs a calm sensory sanctuary.', correct: true},
-      {text: 'He hates music completely.', correct: false},
-      {text: 'He is looking for a drumstick.', correct: false}
-    ]
-  },
-  {
-    id: 'secret_garland',
-    scenario: 'Kavya hides a handmade jasmine garland behind her back for her grandmother’s birthday. Her brother walks in and asks what is behind her back. Kavya says: "Nothing, just practicing folding!"',
-    question: 'Why does Kavya say this?',
-    options: [
-      {text: 'She wants to keep the sweet birthday surprise secret until Grandma arrives.', correct: true},
-      {text: 'She forgot what she was holding.', correct: false},
-      {text: 'She doesn\'t like her brother.', correct: false}
-    ]
-  },
-  {
-    id: 'treehouse_flute',
-    scenario: 'During storytime in the treehouse, Nikhil plays a soft wooden flute. When Meera sits very close and winces slightly, Nikhil plays much softer.',
-    question: 'Why did Nikhil change how loud he was playing?',
-    options: [
-      {text: 'He noticed Meera’s sensory sensitivity and cared for her comfort.', correct: true},
-      {text: 'His flute ran out of air.', correct: false},
-      {text: 'The teacher scolded him.', correct: false}
-    ]
+    target: 'calm' as const,
+    title: 'The Whispering Breeze Sprite',
+    hint: 'Look at the peaceful closed eyes and gentle breath.',
+    options: ['surprised', 'happy', 'calm'] as const
   }
 ]
 
@@ -295,13 +314,9 @@ export default function AutismFantasyAssessmentPage() {
     ]
   }, [])
 
-  // Randomized Theory of Mind Vignettes
+  // Chapter 2: Emotion Mirror State (Visual Social Recognition Game)
   const [tomTrialIndex, setTomTrialIndex] = useState(0)
   const [tomScore, setTomScore] = useState(0)
-  const [activeTomVignettes, setActiveTomVignettes] = useState(TOM_VIGNETTES_POOL.slice(0, 4))
-  useEffect(() => {
-    setActiveTomVignettes([...TOM_VIGNETTES_POOL].sort(() => 0.5 - Math.random()).slice(0, 4))
-  }, [])
 
   // Sensory Calibration State (SPM-2)
   const [sensoryLight, setSensoryLight] = useState(5)
@@ -351,16 +366,17 @@ export default function AutismFantasyAssessmentPage() {
     setJaTrialIndex((i) => i + 1)
   }
 
-  // Theory of Mind Handling
-  function handleTomAnswer(isCorrect: boolean) {
+  // Chapter 2: Emotion Mirror Handling (Pure visual matching, zero reading questions)
+  function handleEmotionSelect(selectedEmotion: string) {
+    const isCorrect = selectedEmotion === EMOTION_MIRROR_TRIALS[tomTrialIndex].target
     if (isCorrect) {
-      playAudio('hit')
+      playAudio('chime')
       setTomScore((s) => s + 25)
     } else {
       playAudio('tap')
     }
 
-    if (tomTrialIndex + 1 < activeTomVignettes.length) {
+    if (tomTrialIndex + 1 < EMOTION_MIRROR_TRIALS.length) {
       setTomTrialIndex((i) => i + 1)
     } else {
       playAudio('fanfare')
@@ -671,31 +687,50 @@ export default function AutismFantasyAssessmentPage() {
           </div>
         )}
 
-        {/* 4. CHAPTER 2 STORY: THE WHISPERING RIVER (THEORY OF MIND) */}
+        {/* 4. CHAPTER 2 STORY: THE EMOTION MIRROR */}
         {stage === 'tom_story' && (
           <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
             <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#1E3A8A]">
               <img
                 src="/decor/itw/quest-lumina-groves-banner.webp"
-                alt="Whispering River"
+                alt="Emotion Mirror"
                 className="h-full w-full object-cover object-center opacity-85"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent flex items-end p-6">
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-teal-300 bg-white/10 px-3 py-1 rounded-full">
-                    Chapter 2: The Whispering River
+                    Chapter 2: The Crystal Emotion Mirror
                   </span>
                   <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    Decoding Hearts, Intentions & Hidden Meanings
+                    The Forest Sprite’s Feelings Game
                   </h2>
                 </div>
               </div>
             </div>
 
-            <div className="p-6 md:p-8">
-              <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
-                Beside the river, different characters share real-life moments. Sometimes people say one thing, but feel something deeper inside. Read each scenario and choose what they truly feel or mean!
+            <div className="p-6 md:p-8 text-center">
+              <p className="text-sm md:text-base text-[#1E293B] font-medium leading-relaxed mb-6 max-w-lg mx-auto">
+                Look into the magical forest mirror! The Forest Sprite will show different feelings. Tap the emotion crystal that matches the Sprite’s face!
               </p>
+
+              <div className="flex items-center justify-center gap-6 mb-8">
+                <div className="flex flex-col items-center">
+                  <ForestSpriteFaceSvg emotion="happy" className="w-16 h-16 drop-shadow-md" />
+                  <span className="text-xs font-bold text-amber-700 mt-1">Happy</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <ForestSpriteFaceSvg emotion="sad" className="w-16 h-16 drop-shadow-md" />
+                  <span className="text-xs font-bold text-blue-700 mt-1">Sad</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <ForestSpriteFaceSvg emotion="surprised" className="w-16 h-16 drop-shadow-md" />
+                  <span className="text-xs font-bold text-purple-700 mt-1">Surprised</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <ForestSpriteFaceSvg emotion="calm" className="w-16 h-16 drop-shadow-md" />
+                  <span className="text-xs font-bold text-emerald-700 mt-1">Calm</span>
+                </div>
+              </div>
 
               <div className="text-center">
                 <button
@@ -708,43 +743,52 @@ export default function AutismFantasyAssessmentPage() {
                   }}
                   className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
                 >
-                  Listen to River Stories (4 Questions) →
+                  Peer into the Emotion Mirror (4 Mini Rounds) →
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* 5. CHAPTER 2 GAMEPLAY: THEORY OF MIND */}
-        {stage === 'tom_game' && activeTomVignettes[tomTrialIndex] && (
-          <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl select-none">
+        {/* 5. CHAPTER 2 GAMEPLAY: EMOTION MIRROR */}
+        {stage === 'tom_game' && EMOTION_MIRROR_TRIALS[tomTrialIndex] && (
+          <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
-                Story {tomTrialIndex + 1} of {activeTomVignettes.length}
+                Round {tomTrialIndex + 1} of {EMOTION_MIRROR_TRIALS.length}
               </span>
               <span className="text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
-                Perspective & Meaning
+                Match the Sprite's Feeling
               </span>
             </div>
 
-            <div className="p-6 rounded-2xl bg-teal-50/60 border border-teal-200 mb-6">
-              <p className="text-sm md:text-base text-[#1E293B] leading-relaxed mb-4">
-                "{activeTomVignettes[tomTrialIndex].scenario}"
-              </p>
-              <strong className="text-xs text-teal-900 uppercase tracking-wider block">
-                {activeTomVignettes[tomTrialIndex].question}
-              </strong>
+            {/* The Enchanted Mirror Frame with Sprite Face */}
+            <div className="relative mx-auto my-6 flex h-48 w-48 sm:h-56 sm:w-56 items-center justify-center rounded-full border-8 border-teal-300/80 bg-gradient-to-b from-[#064E3B] via-[#022C22] to-[#01140E] shadow-[0_0_40px_rgba(20,184,166,0.35)] overflow-hidden">
+              <div className="animate-bounce">
+                <ForestSpriteFaceSvg
+                  emotion={EMOTION_MIRROR_TRIALS[tomTrialIndex].target}
+                  className="w-28 h-28 sm:w-32 sm:h-32 drop-shadow-[0_0_20px_rgba(52,211,153,0.5)]"
+                />
+              </div>
             </div>
 
-            <div className="space-y-3">
-              {activeTomVignettes[tomTrialIndex].options.map((opt, i) => (
+            <p className="font-patrick text-xl sm:text-2xl text-teal-900 font-bold mb-6">
+              Which emotion crystal feels like the Forest Sprite?
+            </p>
+
+            {/* 3 Emotion Crystal Choice Buttons */}
+            <div className="grid grid-cols-3 gap-3 sm:gap-6 max-w-lg mx-auto">
+              {EMOTION_MIRROR_TRIALS[tomTrialIndex].options.map((emotionOpt) => (
                 <button
-                  key={i}
+                  key={emotionOpt}
                   type="button"
-                  onClick={() => handleTomAnswer(opt.correct)}
-                  className="w-full text-left p-4 rounded-2xl border-2 border-[#E2E8F0] hover:border-teal-500 hover:bg-teal-50/50 transition-all text-xs sm:text-sm font-semibold text-[#1E293B]"
+                  onClick={() => handleEmotionSelect(emotionOpt)}
+                  className="p-4 sm:p-5 rounded-3xl border-2 border-[#E2E8F0] bg-white hover:border-teal-500 hover:bg-teal-50/70 hover:scale-105 active:scale-95 transition-all flex flex-col items-center shadow-md hover:shadow-xl"
                 >
-                  {opt.text}
+                  <ForestSpriteFaceSvg emotion={emotionOpt} className="w-14 h-14 sm:w-16 sm:h-16" />
+                  <span className="mt-2 text-xs sm:text-sm font-bold capitalize text-slate-800">
+                    {emotionOpt}
+                  </span>
                 </button>
               ))}
             </div>

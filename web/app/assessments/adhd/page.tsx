@@ -218,52 +218,11 @@ const GUILD_CLASSES = [
   {name: 'Sunfire Knight', Svg: ShieldIconSvg, desc: 'Calm Reflexes & Steady Courage'},
 ]
 
-// Randomized Situational Cognitive Scenarios Pool (Chapter 4)
-const SITUATIONAL_SCENARIO_POOL = [
-  {
-    id: 'fog_gate',
-    title: 'The Whispering Fog Gate',
-    scenario: 'You arrive at the ancient citadel gate. The fog is thick and magical. The lighthouse beam sweeps across every 5 seconds, momentarily showing safe footing.',
-    question: 'How do you cross the canyon bridge safely?',
-    options: [
-      {text: 'Wait with steady patience for the lighthouse beam to shine before each step.', score: 3, label: 'Regulated Patience'},
-      {text: 'Sprint across as fast as possible through the dark mist.', score: 1, label: 'Impulsive Rush'},
-      {text: 'Look at your companion and take measured steps with a guiding lantern.', score: 3, label: 'Collaborative Strategy'}
-    ]
-  },
-  {
-    id: 'clockwork_sundial',
-    title: 'The Clockwork Sundial Calibration',
-    scenario: 'An ancient brass sundial is clicking backwards. Three glowing gear wheels must be turned in a specific order: Gold first, Silver second, Bronze third.',
-    question: 'What is your plan when the alarm bells start chiming loudly?',
-    options: [
-      {text: 'Take a deep centering breath and follow the exact 1-2-3 sequence.', score: 3, label: 'Executive Focus'},
-      {text: 'Turn all gears at once randomly to see what happens.', score: 1, label: 'Reactionary Guess'},
-      {text: 'Ask Milo to point his wing to the next step while you hold the gear.', score: 3, label: 'Structured Scaffolding'}
-    ]
-  },
-  {
-    id: 'treasure_choice',
-    title: 'The Alchemist’s Choice of Rewards',
-    scenario: 'The Sky Citadel Sage offers you a choice: a small sugar crystal right this second, or an enchanted Sunstone medallion if you wait until the ritual completes.',
-    question: 'Which do you choose?',
-    options: [
-      {text: 'I wait unhurriedly for the ceremony to finish and earn the permanent Sunstone.', score: 3, label: 'Delayed Gratification'},
-      {text: 'I take the tiny sugar crystal immediately because waiting feels boring.', score: 1, label: 'Immediate Discounting'},
-      {text: 'I examine the ritual diagrams calmly while the time passes smoothly.', score: 3, label: 'Adaptive Scaffolding'}
-    ]
-  },
-  {
-    id: 'starlight_constellation',
-    title: 'The Shifting Night Constellations',
-    scenario: 'While navigating your skiff, glittering starlight meteors flash on the left and right, trying to pull your attention away from the central North Star.',
-    question: 'How do you keep your airship on true course?',
-    options: [
-      {text: 'Anchor my gaze strictly on the central North Star on the helm compass.', score: 3, label: 'Interference Filtering'},
-      {text: 'Constantly look at every single falling star on both sides.', score: 1, label: 'Distractor Drift'},
-      {text: 'Set the rudder lock and check the North Star at regular intervals.', score: 3, label: 'Structured Scanning'}
-    ]
-  }
+// Chapter 4: The Sunstone Power Charge (100% Visual Motor Inhibition & Delay of Gratification Trial)
+const CHARGE_TRIALS = [
+  {targetMs: 2500, title: 'Spark Charge', rewardText: 'Sunlight Spark Gathered!'},
+  {targetMs: 3200, title: 'Flame Charge', rewardText: 'Solar Flame Awakened!'},
+  {targetMs: 4000, title: 'Nova Charge', rewardText: 'Sunstone Crystal Fully Powered!'}
 ]
 
 export default function AdhdFantasyAssessmentPage() {
@@ -303,13 +262,14 @@ export default function AdhdFantasyAssessmentPage() {
   const [memoryPhase, setMemoryPhase] = useState<'showing' | 'input' | 'feedback'>('showing')
   const [memoryMaxSpan, setMemoryMaxSpan] = useState(3)
 
-  // Situational Scenario Questions (Randomized)
-  const [situationalIndex, setSituationalIndex] = useState(0)
-  const [situationalScore, setSituationalScore] = useState(0)
-  const [activeScenarios, setActiveScenarios] = useState(SITUATIONAL_SCENARIO_POOL.slice(0, 3))
-  useEffect(() => {
-    setActiveScenarios([...SITUATIONAL_SCENARIO_POOL].sort(() => 0.5 - Math.random()).slice(0, 3))
-  }, [])
+  // Chapter 4: Sunstone Charge State (100% Game, Zero Questions)
+  const [chargeTrialIndex, setChargeTrialIndex] = useState(0)
+  const [isCharging, setIsCharging] = useState(false)
+  const [chargeProgress, setChargeProgress] = useState(0)
+  const [chargeStatusText, setChargeStatusText] = useState<'idle' | 'charging' | 'early' | 'success'>('idle')
+  const [prematureReleases, setPrematureReleases] = useState(0)
+  const chargeStartRef = useRef<number>(0)
+  const chargeIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Agent Output
   const [agentResult, setAgentResult] = useState<any>(null)
@@ -493,17 +453,68 @@ export default function AdhdFantasyAssessmentPage() {
     }
   }
 
-  // Situational Scenario Handling
-  function handleScenarioAnswer(score: number) {
-    playAudio(score >= 3 ? 'hit' : 'tap')
-    setSituationalScore((s) => s + score)
-    if (situationalIndex + 1 < activeScenarios.length) {
-      setSituationalIndex((i) => i + 1)
-    } else {
-      playAudio('fanfare')
-      submitCognitiveAgent()
+  // Chapter 4: Sunstone Charge Handlers (100% Tactile Hold Game, Zero Questions)
+  function handleStartCharge() {
+    if (chargeTrialIndex >= CHARGE_TRIALS.length || isCharging) return
+    setIsCharging(true)
+    setChargeStatusText('charging')
+    setChargeProgress(0)
+    chargeStartRef.current = Date.now()
+    playAudio('whoosh')
+
+    const target = CHARGE_TRIALS[chargeTrialIndex].targetMs
+
+    chargeIntervalRef.current = setInterval(() => {
+      const elapsed = Date.now() - chargeStartRef.current
+      const pct = Math.min(100, Math.round((elapsed / target) * 100))
+      setChargeProgress(pct)
+
+      if (elapsed >= target) {
+        if (chargeIntervalRef.current) clearInterval(chargeIntervalRef.current)
+        chargeIntervalRef.current = null
+        setIsCharging(false)
+        setChargeProgress(100)
+        setChargeStatusText('success')
+        playAudio('star')
+        playAudio('fanfare')
+
+        setTimeout(() => {
+          if (chargeTrialIndex + 1 < CHARGE_TRIALS.length) {
+            setChargeTrialIndex((idx) => idx + 1)
+            setChargeProgress(0)
+            setChargeStatusText('idle')
+          } else {
+            submitCognitiveAgent()
+          }
+        }, 1400)
+      }
+    }, 30)
+  }
+
+  function handleEndCharge() {
+    if (!isCharging) return
+    if (chargeIntervalRef.current) {
+      clearInterval(chargeIntervalRef.current)
+      chargeIntervalRef.current = null
+    }
+
+    const elapsed = Date.now() - chargeStartRef.current
+    const target = CHARGE_TRIALS[chargeTrialIndex].targetMs
+
+    if (elapsed < target) {
+      setIsCharging(false)
+      setChargeProgress(0)
+      setChargeStatusText('early')
+      setPrematureReleases((p) => p + 1)
+      playAudio('miss')
     }
   }
+
+  useEffect(() => {
+    return () => {
+      if (chargeIntervalRef.current) clearInterval(chargeIntervalRef.current)
+    }
+  }, [])
 
   // Submit via Multi-Node Agent
   async function submitCognitiveAgent() {
@@ -520,6 +531,7 @@ export default function AdhdFantasyAssessmentPage() {
     const avgCong = flankerCongruentTimes.length > 0 ? flankerCongruentTimes.reduce((a, b) => a + b, 0) / flankerCongruentTimes.length : 350
     const avgIncong = flankerIncongruentTimes.length > 0 ? flankerIncongruentTimes.reduce((a, b) => a + b, 0) / flankerIncongruentTimes.length : 415
     const flankerCost = Math.max(15, Math.round(avgIncong - avgCong))
+    const situationalScore = Math.max(1, 10 - prematureReleases * 2)
 
     const payload = {
       assessmentType: 'adhd',
@@ -995,30 +1007,30 @@ export default function AdhdFantasyAssessmentPage() {
           </div>
         )}
 
-        {/* 8. CHAPTER 4: THE SKY GUARDIAN'S DILEMMAS */}
+        {/* 8. CHAPTER 4 STORY: THE SUNSTONE POWER CHARGE */}
         {stage === 'situational_story' && (
           <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
-            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#064E3B]">
+            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-gradient-to-tr from-[#FEF3C7] to-[#DCFCE7]">
               <img
-                src="/decor/itw/itw-adhd-support-checklist.webp"
-                alt="Sky Guardian Chambers"
-                className="h-full w-full object-cover object-center opacity-85"
+                src="/decor/itw/quest-sky-citadel-banner.webp"
+                alt="Sunstone Sanctuary"
+                className="h-full w-full object-cover object-center"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end p-6">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-300 bg-white/10 px-3 py-1 rounded-full">
-                    Chapter 4: The Guardian Council
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-white/10 px-3 py-1 rounded-full">
+                    Chapter 4: The Solar Sunstone Sanctuary
                   </span>
                   <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    Trials of Patience & Wisdom
+                    The Sacred Sun-Power Charging Game
                   </h2>
                 </div>
               </div>
             </div>
 
-            <div className="p-6 md:p-8">
-              <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
-                Before the High Council awards your Sunstone crest, they present you with practical challenges in the Citadel. Choose the answer that best reflects how your mind works!
+            <div className="p-6 md:p-8 text-center">
+              <p className="text-sm md:text-base text-[#1E293B] font-medium leading-relaxed mb-6 max-w-lg mx-auto">
+                Before Milo awards your golden Sunstone crest, you must charge the sacred crystal! <strong>Press and HOLD</strong> the glowing Sunstone. Keep holding steady — do not let go until the celestial star bell chimes!
               </p>
 
               <div className="text-center">
@@ -1026,53 +1038,104 @@ export default function AdhdFantasyAssessmentPage() {
                   type="button"
                   onClick={() => {
                     playAudio('whoosh')
-                    setSituationalIndex(0)
+                    setChargeTrialIndex(0)
+                    setChargeProgress(0)
+                    setChargeStatusText('idle')
                     setStage('situational_game')
                   }}
-                  className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
+                  className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
                 >
-                  Answer Council Trials →
+                  Enter Sunstone Chamber (3 Charges) →
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* 9. CHAPTER 4 GAMEPLAY: SITUATIONAL QUESTIONS */}
-        {stage === 'situational_game' && activeScenarios[situationalIndex] && (
-          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl select-none">
+        {/* 9. CHAPTER 4 GAMEPLAY: SUNSTONE POWER CHARGE */}
+        {stage === 'situational_game' && CHARGE_TRIALS[chargeTrialIndex] && (
+          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
-                Council Trial {situationalIndex + 1} of {activeScenarios.length}
+                Charge {chargeTrialIndex + 1} of {CHARGE_TRIALS.length} • {CHARGE_TRIALS[chargeTrialIndex].title}
               </span>
-              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                Patience & Planning
+              <span className="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                Patience & Steady Hold
               </span>
             </div>
 
-            <div className="p-6 rounded-2xl bg-amber-50/70 border border-amber-200 mb-6">
-              <h3 className="font-patrick text-2xl text-[#78350F] mb-2">
-                {activeScenarios[situationalIndex].title}
-              </h3>
-              <p className="text-sm text-[#475569] leading-relaxed mb-4">
-                {activeScenarios[situationalIndex].scenario}
-              </p>
-              <strong className="text-xs text-[#0F172A] uppercase tracking-wider block">
-                {activeScenarios[situationalIndex].question}
-              </strong>
+            {/* Glowing Interactive Sunstone Charging Orb */}
+            <div className="relative mx-auto my-8 flex h-60 w-60 sm:h-72 sm:w-72 items-center justify-center">
+              {/* Circular SVG Gauge */}
+              <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="44" stroke="#E2E8F0" strokeWidth="8" fill="none" />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="44"
+                  stroke="#F59E0B"
+                  strokeWidth="8"
+                  fill="none"
+                  strokeDasharray="276.46"
+                  strokeDashoffset={276.46 - (276.46 * chargeProgress) / 100}
+                  strokeLinecap="round"
+                  className="transition-all duration-75"
+                />
+              </svg>
+
+              {/* Touchable Core Orb */}
+              <button
+                type="button"
+                onPointerDown={handleStartCharge}
+                onPointerUp={handleEndCharge}
+                onPointerLeave={handleEndCharge}
+                onContextMenu={(e) => e.preventDefault()}
+                className={`relative z-10 w-44 h-44 sm:w-52 sm:h-52 rounded-full flex flex-col items-center justify-center shadow-2xl transition-all cursor-pointer active:scale-95 ${
+                  isCharging
+                    ? 'bg-gradient-to-tr from-amber-400 via-orange-500 to-yellow-300 scale-105 shadow-[0_0_50px_rgba(245,158,11,0.8)]'
+                    : chargeStatusText === 'success'
+                    ? 'bg-gradient-to-tr from-emerald-400 to-teal-500 shadow-[0_0_40px_rgba(16,185,129,0.8)]'
+                    : 'bg-gradient-to-b from-[#FFFBEB] via-[#FEF3C7] to-[#FDE68A] border-4 border-amber-300 hover:border-amber-400'
+                }`}
+              >
+                {chargeStatusText === 'success' ? (
+                  <div className="flex flex-col items-center animate-bounce text-white">
+                    <AstrolabeCrystalSvg className="w-16 h-16 drop-shadow-md" />
+                    <span className="font-patrick text-xl font-bold mt-1">Charged!</span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center pointer-events-none">
+                    <AstrolabeCrystalSvg className={`w-16 h-16 sm:w-20 sm:h-20 ${isCharging ? 'text-white animate-spin' : 'text-amber-500'}`} />
+                    <span className={`text-xs sm:text-sm font-black uppercase tracking-wider mt-2 ${isCharging ? 'text-white' : 'text-amber-900'}`}>
+                      {isCharging ? `${chargeProgress}% HOLD!` : 'PRESS & HOLD'}
+                    </span>
+                  </div>
+                )}
+              </button>
             </div>
 
-            <div className="space-y-3">
-              {activeScenarios[situationalIndex].options.map((opt, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => handleScenarioAnswer(opt.score)}
-                  className="w-full text-left p-4 rounded-2xl border-2 border-[#E2E8F0] hover:border-amber-500 hover:bg-amber-50/50 transition-all text-xs sm:text-sm font-semibold text-[#1E293B]"
-                >
-                  {opt.text}
-                </button>
-              ))}
+            {/* Instruction and Feedback Banner */}
+            <div className="max-w-md mx-auto">
+              {chargeStatusText === 'early' && (
+                <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-800 animate-shake">
+                  Oops! Released too early. Take a slow breath and hold steady until 100%!
+                </div>
+              )}
+              {chargeStatusText === 'charging' && (
+                <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs font-bold text-amber-900">
+                  Gathering solar energy... Keep holding! Wait for the chime!
+                </div>
+              )}
+              {chargeStatusText === 'success' && (
+                <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800">
+                  ★ Celestial Chime! {CHARGE_TRIALS[chargeTrialIndex].rewardText}
+                </div>
+              )}
+              {chargeStatusText === 'idle' && (
+                <p className="text-xs sm:text-sm font-semibold text-slate-600">
+                  Touch and hold your finger or mouse on the Sunstone. Do not release until the bell rings!
+                </p>
+              )}
             </div>
           </div>
         )}

@@ -15,7 +15,7 @@ const STANDARD_ASSESSMENTS: ScreenerItem[] = [
   {
     id: 'dyslexia',
     title: 'Dyslexia Reading & Phonological Screener',
-    price: 'Free Screener',
+    price: '₹299',
     duration: '20 mins',
     desc: 'Evaluates phonemic awareness, rapid letter-sound decoding, and reading fluency markers.',
     badge: 'Clinical Screener',
@@ -24,7 +24,7 @@ const STANDARD_ASSESSMENTS: ScreenerItem[] = [
   {
     id: 'dyscalculia',
     title: 'Dyscalculia Math & Number Sense Assessment',
-    price: 'Free Screener',
+    price: '₹299',
     duration: '20 mins',
     desc: 'Assesses subitizing, mental number line calibration, and mathematical reasoning.',
     badge: 'Cognitive Screener',
@@ -33,7 +33,7 @@ const STANDARD_ASSESSMENTS: ScreenerItem[] = [
   {
     id: 'dysgraphia',
     title: 'Dysgraphia & Fine Motor Assessment',
-    price: 'Free Screener',
+    price: '₹299',
     duration: '25 mins',
     desc: 'Measures fine-motor transcription drag, pencil grip posture, and writing fatigue.',
     badge: 'Motor Assessment',
@@ -42,7 +42,7 @@ const STANDARD_ASSESSMENTS: ScreenerItem[] = [
   {
     id: 'speech',
     title: 'Speech & Language Articulation Assessment',
-    price: 'Free Screener',
+    price: '₹600',
     duration: '30 mins',
     desc: 'Evaluates receptive vs. expressive speech, phonetic clarity, and vocabulary milestones.',
     badge: 'Speech Pathology',
@@ -51,7 +51,7 @@ const STANDARD_ASSESSMENTS: ScreenerItem[] = [
   {
     id: 'spd',
     title: 'Sensory Processing Disorder (SPD) Profile',
-    price: 'Free Profile',
+    price: '₹299',
     duration: '20 mins',
     desc: 'Screens for tactile, vestibular, and auditory over/under-responsiveness across daily routines.',
     badge: 'Sensory Profile',
@@ -60,7 +60,7 @@ const STANDARD_ASSESSMENTS: ScreenerItem[] = [
   {
     id: 'nvld',
     title: 'Non-Verbal Learning Disability (NVLD) Screener',
-    price: 'Free Screener',
+    price: '₹299',
     duration: '25 mins',
     desc: 'Identifies visual-spatial vs. verbal discrepancy and non-verbal social cue interpretation.',
     badge: 'Neuropsychological',
@@ -69,7 +69,7 @@ const STANDARD_ASSESSMENTS: ScreenerItem[] = [
   {
     id: 'dcd',
     title: 'Developmental Coordination Disorder (DCD / Dyspraxia)',
-    price: 'Free Screener',
+    price: '₹299',
     duration: '25 mins',
     desc: 'Assesses gross and fine motor planning, physical coordination, and spatial orientation.',
     badge: 'Motor Planning',
@@ -78,7 +78,7 @@ const STANDARD_ASSESSMENTS: ScreenerItem[] = [
   {
     id: 'executive',
     title: 'Executive Functioning & Working Memory Screener',
-    price: 'Free Screener',
+    price: '₹299',
     duration: '20 mins',
     desc: 'Screens for organization, cognitive task-initiation, and working memory barriers.',
     badge: 'Executive Function',
@@ -114,13 +114,13 @@ export default function AssessmentsHubPage() {
         <div className="mb-20">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-3">
             <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-[#05B076]">Flagship Interactive Batteries</div>
+              <div className="text-xs font-bold uppercase tracking-wider text-[#F47522]">Flagship Interactive Batteries</div>
               <h2 className="font-patrick text-3xl sm:text-4xl text-[#0F172A]">
-                Gamified Clinical Quests <span className="text-[#05B076] text-xl font-poppins font-semibold">(Free Open Access Beta)</span>
+                New Gamified Paid Assessments
               </h2>
             </div>
-            <span className="self-start sm:self-auto rounded-full bg-[#05B076]/10 border border-[#05B076]/30 px-3.5 py-1 text-xs font-bold text-[#065F46]">
-              100% Free • Open Access Clinical Batteries
+            <span className="self-start sm:self-auto rounded-full bg-[#F47522]/10 border border-[#F47522]/30 px-3.5 py-1 text-xs font-bold text-[#C2410C]">
+              Real-Time Millisecond Cognitive Tracking
             </span>
           </div>
 
@@ -134,6 +134,11 @@ export default function AssessmentsHubPage() {
                   loading="lazy"
                   className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                 />
+                <div className="absolute top-3 right-3 z-10">
+                  <span className="rounded-full bg-black/60 backdrop-blur-md px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-amber-300 border border-amber-400/40">
+                    RESEARCH GRADE • CPT-3 NORMED
+                  </span>
+                </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent flex items-end p-6">
                   <div>
                     <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300 bg-black/40 px-3 py-1 rounded-full">
@@ -182,8 +187,8 @@ export default function AssessmentsHubPage() {
 
                 <div className="pt-6 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-4">
                   <div>
-                    <span className="text-2xl font-bold text-[#05B076]">FREE</span>
-                    <span className="text-xs font-semibold text-[#065F46] ml-2">Open Access (Full Battery & Report)</span>
+                    <span className="text-2xl font-bold text-[#0F172A]">₹799</span>
+                    <span className="text-xs text-[#64748B] ml-2">/ $15 USD (Complete Battery & Diagnostic Report)</span>
                   </div>
                   <Link
                     href="/assessments/adhd"
@@ -205,6 +210,11 @@ export default function AssessmentsHubPage() {
                   loading="lazy"
                   className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                 />
+                <div className="absolute top-3 right-3 z-10">
+                  <span className="rounded-full bg-black/60 backdrop-blur-md px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-teal-300 border border-teal-400/40">
+                    RESEARCH GRADE • ADOS-2 MAPPED
+                  </span>
+                </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent flex items-end p-6">
                   <div>
                     <span className="text-[11px] font-bold uppercase tracking-wider text-teal-300 bg-black/40 px-3 py-1 rounded-full">
@@ -253,8 +263,8 @@ export default function AssessmentsHubPage() {
 
                 <div className="pt-6 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-4">
                   <div>
-                    <span className="text-2xl font-bold text-[#0D9488]">FREE</span>
-                    <span className="text-xs font-semibold text-[#065F46] ml-2">Open Access (Full Profile & Blueprint)</span>
+                    <span className="text-2xl font-bold text-[#0F172A]">₹799</span>
+                    <span className="text-xs text-[#64748B] ml-2">/ $15 USD (Complete Profile & Diagnostic Blueprint)</span>
                   </div>
                   <Link
                     href="/assessments/autism"

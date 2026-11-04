@@ -337,7 +337,7 @@ export default function MiloChat() {
       setSid(j.session_id)
 
       let raw = j.reply || ''
-      if (j.tier === 'none' && raw.includes("I don't have solid enough")) {
+      if (raw.includes("I don't have solid enough") || raw.includes("check with a human")) {
         raw = "I want to make sure you get the most accurate, thoughtful guidance on that. For specific clinical questions like this, it's best to consult directly with a pediatric specialist or therapist. You can always book a consultation with our team right here on the site!"
       }
 

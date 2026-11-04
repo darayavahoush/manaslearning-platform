@@ -57,7 +57,7 @@ export async function proxy(req: NextRequest) {
       if (type.includes('text/html')) {
         const FONT_PRELOAD = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">'
         if (b.includes('</head>')) b = b.replace('</head>', () => FONT_PRELOAD + '</head>')
-        const inj = SITE_PATCH + (MILO_SNIPPET || '') + '<script src="/decor/apps-patch.js?v=15" defer></script><script src="/api/i18n/client" defer></script>'
+        const inj = SITE_PATCH + (MILO_SNIPPET || '') + '<script src="/decor/apps-patch.js?v=16" defer></script><script src="/api/i18n/client" defer></script>'
         b = b.includes('</body>') ? b.replace('</body>', () => inj + '</body>') : b + inj
       }
       b = b.replace(BOOKING, '/consult')

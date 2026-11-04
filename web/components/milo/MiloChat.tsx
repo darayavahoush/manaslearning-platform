@@ -31,13 +31,21 @@ const NAV_SHORTCUTS: NavTarget[] = [
   {label: 'Auditory Processing', url: '/experience?module=auditory'},
   {label: 'Executive Functioning', url: '/experience?module=executive'},
   {label: 'Book Consultation', url: '/consult', badge: 'Free'},
-  {label: 'Assessments', url: '/assessments'},
+  {label: 'Assessments Hub', url: '/assessments'},
+  {label: 'Gamified ADHD Assessment', url: '/assessments/adhd', badge: 'New'},
+  {label: 'Gamified Autism Profile', url: '/assessments/autism', badge: 'New'},
 ]
 
 function findNavTargets(text: string): NavTarget[] {
   const lower = text.toLowerCase()
   const found: NavTarget[] = []
 
+  if (lower.includes('adhd test') || lower.includes('adhd assessment') || lower.includes('focustrack')) {
+    found.push({label: 'Take FocusTrack ADHD Assessment', url: '/assessments/adhd', badge: 'Gamified'})
+  }
+  if (lower.includes('autism test') || lower.includes('autism assessment') || lower.includes('prism')) {
+    found.push({label: 'Take PRISM Autism Assessment', url: '/assessments/autism', badge: 'Gamified'})
+  }
   if (lower.includes('adhd') || lower.includes('attention') || lower.includes('focus') || lower.includes('tabs')) {
     found.push({label: 'Try ADHD Experience', url: '/experience?module=adhd'})
   }
@@ -143,6 +151,21 @@ const FAST_ANSWERS = [
     match: /how do i book|book a consultation|appointment|pricing|cost/i,
     reply: "You can easily book a consultation through our Book a Consultation page (/consult)! We offer a Free Discovery Consultation to discuss your initial questions, and comprehensive 1-on-1 Expert Consultations directly with our founder Manasi Valluri and senior specialists.",
     sources: [{source: 'Manas Learning Consultations', section: '', snippet: 'Consultation booking options', doc_url: '/consult'}]
+  },
+  {
+    match: /adhd assessment|adhd test|focustrack/i,
+    reply: "Our new Manas FocusTrack™ Gamified ADHD Assessment combines a real-time continuous performance task (CPT-3 Safari Vigilance), Starlight Flanker distractor filtering, and spatial working memory with Vanderbilt DSM-5 dimensional scaling. In 15 playful minutes, it measures millisecond reaction times, attentional consistency (RTV), and impulse inhibition, generating an immediate research-grade clinical diagnostic report with classroom IEP accommodations at /assessments/adhd!",
+    sources: [{source: 'Manas Clinical Assessments', section: '', snippet: 'Manas FocusTrack ADHD Battery', doc_url: '/assessments/adhd'}]
+  },
+  {
+    match: /autism assessment|autism test|prism/i,
+    reply: "Our new Manas PRISM™ Gamified Autism Assessment is mapped to ADOS-2, CARS-2, and SPM-2 clinical frameworks. It evaluates joint attention referencing, contextual Theory of Mind nuance, sensory thresholds (visual flicker, acoustic noise, tactile tolerance), and cognitive set-shifting flexibility. It generates a comprehensive neurodevelopmental profile and sensory diet blueprint at /assessments/autism!",
+    sources: [{source: 'Manas Clinical Assessments', section: '', snippet: 'Manas PRISM Autism Profile', doc_url: '/assessments/autism'}]
+  },
+  {
+    match: /assessments?|tests?|screeners?/i,
+    reply: "We offer comprehensive, research-grade pediatric assessments at /assessments, including our two new flagship gamified evaluations: Manas FocusTrack™ for ADHD (CPT-3 & Flanker) and Manas PRISM™ for Autism & Sensory Processing (ADOS-2 & SPM-2). We also provide specialized screeners for Dyslexia, Dyscalculia, Dysgraphia, Speech, and SPD!",
+    sources: [{source: 'Manas Clinical Assessments', section: '', snippet: 'Assessments Hub', doc_url: '/assessments'}]
   }
 ]
 

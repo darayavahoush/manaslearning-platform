@@ -304,6 +304,7 @@ def chat(req: ChatRequest, request: Request):
                 "[Source: Manas Learning Core Knowledge & Clinical Guidance]\n"
                 "Manas Learning was founded by Manasi Valluri (Pediatric Developmental Specialist & Special Educator) in Chennai, India. "
                 "Services include Speech & Language Therapy, Remedial Education (Dyslexia, Dyscalculia, Dysgraphia), Sensory Integration (Autism, ADHD), and Parent Coaching. "
+                "New Gamified Paid Assessments: Manas FocusTrack™ (Research-grade ADHD CPT-3, Flanker & Working Memory Battery at /assessments/adhd, ₹799) and Manas PRISM™ (Autism ADOS-2, SPM-2 Sensory & Theory of Mind Profile at /assessments/autism, ₹799). All assessments generate instant clinical diagnostic summaries and school accommodations. "
                 "Assistive tools include Vaaksudhi (breathing and speech games at https://vaaksudhi.manaslearning.com), Vaakify (speech repetition and clarity practice at https://vaakify.manaslearning.com), and Phonics Jungle. "
                 "Consultations can be booked at /consult (Free Discovery or 1-on-1 Expert Consultation). "
                 "In Their World interactive simulations are available at /experience.\n"

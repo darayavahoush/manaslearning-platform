@@ -1024,7 +1024,7 @@ export default function AutismAssessmentPage() {
                 Card {dccsTrialIndex + 1} of {DCCS_CARDS.length}
               </span>
               <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/10 border border-amber-500/30 px-3.5 py-1 text-xs font-bold text-amber-800">
-                ACTIVE RULE: {dccsRule === 'color' ? '🎨 SORT BY COLOR' : '🔷 SORT BY SHAPE'}
+                ACTIVE RULE: {dccsRule === 'color' ? 'SORT BY COLOR' : 'SORT BY SHAPE'}
               </div>
             </div>
 

@@ -458,12 +458,9 @@ function __McInner() {
   useEffect(() => {
     if (stage !== 'memory_game') return
 
-    const span = Math.min(6, memoryLevel + 2)
-    const seq: number[] = []
-    while (seq.length < span) {
-      const cell = Math.floor(Math.random() * 9)
-      if (seq[seq.length - 1] !== cell) seq.push(cell)
-    }
+    // Fixed sequences (3, 4 and 5 stars, one try each) so every child sees the same items.
+    const MEMORY_SEQS = [[1, 5, 7], [3, 0, 6, 2], [8, 4, 1, 6, 3]]
+    const seq: number[] = MEMORY_SEQS[Math.min(memoryLevel, MEMORY_SEQS.length) - 1]
     setMemorySequence(seq)
     setMemoryUserSequence([])
     setMemoryPhase('showing')
@@ -523,13 +520,13 @@ function __McInner() {
     setIsCharging(true)
     setChargeStatusText('charging')
     setChargeProgress(0)
-    chargeStartRef.current = Date.now()
+    chargeStartRef.current = performance.now()
     playAudio('whoosh')
 
     const target = CHARGE_TRIALS[chargeTrialIndex].targetMs
 
     chargeIntervalRef.current = setInterval(() => {
-      const elapsed = Date.now() - chargeStartRef.current
+      const elapsed = performance.now() - chargeStartRef.current
       const pct = Math.min(100, Math.round((elapsed / target) * 100))
       setChargeProgress(pct)
 
@@ -562,7 +559,7 @@ function __McInner() {
       chargeIntervalRef.current = null
     }
 
-    const elapsed = Date.now() - chargeStartRef.current
+    const elapsed = performance.now() - chargeStartRef.current
     const target = CHARGE_TRIALS[chargeTrialIndex].targetMs
 
     if (elapsed < target) {

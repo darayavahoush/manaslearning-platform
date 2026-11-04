@@ -10,6 +10,7 @@ type Out = {
   clinicianQuestions: string[];
   homeGames: { title: string; how: string }[];
   source: "llm" | "template";
+  rows?: { name: string; value: string; detail?: string; note?: string }[];
 };
 
 const BANNED = /diagnos|dyslexi|disorder|percentile|t-score|norm|typical|age-appropriate|elevated|at risk|deficit|severe|\bADHD\b|\bautis/i;
@@ -82,6 +83,51 @@ function template(quest: string, nick: string, obs: Obs): Out {
   };
 }
 
+type Row = { name: string; value: string; detail?: string; note?: string };
+
+// Counts come straight from the play data, not from the AI wording, so the printed table is exact.
+function dyslexiaRows(obs: Obs): Row[] {
+  const rows: Row[] = [];
+  const num = (v: any) => typeof v === "number" && isFinite(v);
+  const choice = (name: string, o: Obs | undefined) => {
+    if (!o || !num(o.trials) || o.trials <= 0) { rows.push({ name, value: "Not completed" }); return; }
+    const t = secs(o.medianMs);
+    const bits: string[] = [];
+    if (t) bits.push(`median response ${t} s from when the choices were available`);
+    if (num(o.replays) && o.replays > 0) bits.push(`sounds replayed ${o.replays} ${o.replays === 1 ? "time" : "times"}`);
+    rows.push({ name, value: `${o.correct} of ${o.trials} matching answers chosen`, detail: bits.join("; ") || undefined });
+  };
+  choice("Rhyme game", obs.rhyme);
+  choice("First-sound game", obs.firstSound);
+  const l = obs.letters;
+  if (l && num(l.rounds) && l.rounds > 0) {
+    const possible = num(l.possibleHits) ? l.possibleHits : (l.hits ?? 0) + (l.missed ?? 0);
+    const conf = (l.confusions || {}) as Record<string, number>;
+    const mirror = ["b>d", "d>b", "p>q", "q>p"].reduce((n, k) => n + (conf[k] || 0), 0);
+    const top = Object.entries(conf).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k, n]) => { const [want, got] = k.split(">"); return `${got} tapped for ${want} (${n})`; });
+    rows.push({
+      name: "Letter game",
+      value: `${l.hits} of ${possible} matching letters found`,
+      detail: [
+        `${l.falseTaps} look-alike taps${num(l.possibleDistractors) ? ` out of ${l.possibleDistractors} look-alike tiles` : ""}`,
+        l.falseTaps > 0 ? `mirror pairs (b/d, p/q): ${mirror}` : "",
+        top.length ? `most frequent: ${top.join(", ")}` : "",
+      ].filter(Boolean).join("; "),
+    });
+  } else rows.push({ name: "Letter game", value: "Not completed" });
+  const s = obs.soundSpan;
+  if (s && num(s.attempts) && s.attempts > 0) {
+    rows.push({
+      name: "Sound-order game",
+      value: s.longest > 0 ? `Repeated up to ${s.longest} sounds in order` : "No scored sequence repeated correctly",
+      detail: num(s.passed) ? `${s.passed} of ${s.attempts} sequences repeated correctly` : `${s.attempts} sequences tried`,
+    });
+  } else rows.push({ name: "Sound-order game", value: "Not completed" });
+  if (obs.spelling?.trials) choice("Spelling game (optional)", obs.spelling);
+  rows.push({ name: "Chapters finished", value: `${Array.isArray(obs.completed) ? obs.completed.length : 0} of 5`, detail: "The spelling chapter is optional." });
+  return rows;
+}
+
 function valid(out: any, allowed: Set<string>): out is Out {
   if (!out || typeof out.legend !== "string" || !Array.isArray(out.noticed) || !Array.isArray(out.clinicianQuestions) || !Array.isArray(out.homeGames)) return false;
   const text = [out.legend, ...out.noticed, ...out.clinicianQuestions, ...out.homeGames.flatMap((g: any) => [g?.title, g?.how])].join(" ");
@@ -106,8 +152,10 @@ export async function POST(req: Request) {
   const nick = String(body?.nickname || "Explorer").replace(/[^\p{L}\p{N} ]/gu, "").slice(0, 20) || "Explorer";
   const obs: Obs = body?.observations && typeof body.observations === "object" ? body.observations : {};
   const fallback = template(quest, nick, obs);
+  const rows = quest === "dyslexia" ? dyslexiaRows(obs) : undefined;
+  const send = (o: Out) => NextResponse.json(rows ? { ...o, rows } : o);
   const key = process.env.ANTHROPIC_API_KEY;
-  if (!key || JSON.stringify(obs).length > 6000) return NextResponse.json(fallback);
+  if (!key || JSON.stringify(obs).length > 6000) return send(fallback);
 
   const allowed = new Set<string>();
   leaves(obs).forEach((n) => { allowed.add(String(n)); allowed.add(String(Math.round(n * 10) / 10)); });
@@ -124,12 +172,12 @@ export async function POST(req: Request) {
       }),
       signal: AbortSignal.timeout(20000),
     });
-    if (!r.ok) return NextResponse.json(fallback);
+    if (!r.ok) return send(fallback);
     const data = await r.json();
     const text: string = (data.content || []).map((c: any) => c.text || "").join("");
     const parsed = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
-    return NextResponse.json(valid(parsed, allowed) ? { ...parsed, source: "llm" } : fallback);
+    return send(valid(parsed, allowed) ? { ...parsed, source: "llm" } : fallback);
   } catch {
-    return NextResponse.json(fallback);
+    return send(fallback);
   }
 }

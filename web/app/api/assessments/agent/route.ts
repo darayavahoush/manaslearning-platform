@@ -1,4 +1,5 @@
 import {NextResponse} from 'next/server'
+import {INSTRUMENT_VERSION} from '../../../../components/assessments/version'
 
 /**
  * Play-session summary for the Manas quests.
@@ -35,6 +36,7 @@ export interface AssessmentAgentState {
   }
   clinicalReport: {
     generatedOn: string
+    instrument: {name: string; version: string}
     summary: string
     indices: Observation[]
     questions: string[]
@@ -52,6 +54,9 @@ const TELEMETRY_KEYS = [
   'cptTrials', 'cptResponses', 'omissions', 'commissions', 'hrtMs', 'rtvMs',
   'flankerCostMs', 'flankerCongruentN', 'flankerIncongruentN', 'workingMemorySpan',
   'prematureReleases', 'chargeTrials',
+  // Optional extras the ADHD page can send: denominators, tapping outside the window, first vs second half
+  'cptTargets', 'cptNonTargets', 'cptAnticipatory', 'rtFirstHalfMs', 'rtSecondHalfMs',
+  'flankerCongruentTotal', 'flankerIncongruentTotal',
   // Autism quest
   'jaTrials', 'jaCorrect', 'jaMedianMs', 'feelingsTrials', 'feelingsCorrect',
   'lightLevel', 'soundLevel', 'touchLevel', 'sortCount', 'sortMedianMs',
@@ -92,8 +97,12 @@ function adhdObservations(t: Record<string, number | null>): Observation[] {
   if (trials !== null && t.omissions !== null && t.commissions !== null) {
     obs.push({
       name: 'Spotting the sunbird',
-      value: `Missed the sunbird ${times(t.omissions)}`,
-      detail: `Tapped on the shadow moth ${times(t.commissions)} · ${trials} sightings in total`,
+      value: t.cptTargets !== null && t.cptTargets > 0 ? `Missed the sunbird ${t.omissions} of ${t.cptTargets} times` : `Missed the sunbird ${times(t.omissions)}`,
+      detail: [
+        t.cptNonTargets !== null && t.cptNonTargets > 0 ? `Tapped on the shadow moth ${t.commissions} of ${t.cptNonTargets} times` : `Tapped on the shadow moth ${times(t.commissions)}`,
+        `${trials} sightings in total`,
+        t.cptAnticipatory !== null && t.cptAnticipatory > 0 ? `${times(t.cptAnticipatory)} tapped when nothing was on screen, or faster than a reaction is possible` : null,
+      ].filter(Boolean).join(' · '),
       note: `A few sightings is a short sample, so small differences mean very little. ${ONE_SESSION}`,
     })
   } else {
@@ -105,7 +114,8 @@ function adhdObservations(t: Record<string, number | null>): Observation[] {
     obs.push({
       name: 'Tap speed',
       value: `About ${Math.round(t.hrtMs)} ms on average`,
-      detail: `Speed varied by about ${Math.round(t.rtvMs)} ms from tap to tap · ${t.cptResponses} taps recorded`,
+      detail: `Speed varied by about ${Math.round(t.rtvMs)} ms from tap to tap · ${t.cptResponses} taps recorded` +
+        (t.rtFirstHalfMs !== null && t.rtSecondHalfMs !== null ? ` · about ${Math.round(t.rtFirstHalfMs)} ms in the first half of the game and ${Math.round(t.rtSecondHalfMs)} ms in the second half` : ''),
       note: `There is no "right" speed here, and speed is not compared with other children. ${ONE_SESSION}`,
     })
   } else {
@@ -118,7 +128,9 @@ function adhdObservations(t: Record<string, number | null>): Observation[] {
     obs.push({
       name: 'Steering through distractions',
       value: cost > 0 ? `About ${cost} ms slower when the arrows disagreed` : 'No slowdown when the arrows disagreed',
-      detail: `${t.flankerCongruentN} matching rounds and ${t.flankerIncongruentN} conflicting rounds`,
+      detail: t.flankerCongruentTotal !== null && t.flankerIncongruentTotal !== null
+        ? `${t.flankerCongruentN} of ${t.flankerCongruentTotal} matching rounds and ${t.flankerIncongruentN} of ${t.flankerIncongruentTotal} conflicting rounds were answered correctly (speed uses correct answers only)`
+        : `${t.flankerCongruentN} matching rounds and ${t.flankerIncongruentN} conflicting rounds`,
       note: `Most people are a little slower when arrows disagree. With so few rounds the number can jump around. ${ONE_SESSION}`,
     })
   } else {
@@ -309,7 +321,8 @@ export async function POST(req: Request) {
       telemetry,
       superpowers: buildSuperpowers(assessmentType, childName, guildClass),
       clinicalReport: {
-        generatedOn: new Date().toLocaleDateString('en-IN', {year: 'numeric', month: 'long', day: 'numeric'}),
+        generatedOn: new Date().toLocaleDateString('en-IN', {year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Kolkata'}),
+        instrument: {name: assessmentType === 'adhd' ? 'Manas attention play screener' : 'Manas social and sensory play screener', version: INSTRUMENT_VERSION},
         summary:
           withData === 0
             ? `${childName} did not finish enough of the games to show anything useful. You are welcome to try again.`

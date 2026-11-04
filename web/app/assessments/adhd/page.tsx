@@ -1,6 +1,8 @@
 'use client'
 import {useState, useEffect, useRef, useMemo} from 'react'
 import Link from 'next/link'
+import KeeperFeedback from '../../../components/assessments/KeeperFeedback'
+import {QuestStyles, Fireflies, AmbientToggle} from '../../../components/assessments/QuestFX'
 
 // Enchanted Web Audio synthesizer: Harmonic marimba, crystal bells, celestial glass, and royal fanfare
 function playAudio(type: 'hit' | 'chime' | 'miss' | 'tap' | 'fanfare' | 'star' | 'whoosh') {
@@ -274,6 +276,9 @@ export default function AdhdFantasyAssessmentPage() {
   // Agent Output
   const [agentResult, setAgentResult] = useState<any>(null)
   const [showClinicalDossier, setShowClinicalDossier] = useState(false)
+  const [keeperObs, setKeeperObs] = useState<any>(null)
+  const [parentOk, setParentOk] = useState(false)
+  const [notice, setNotice] = useState('')
 
   // Keyboard Navigation
   useEffect(() => {
@@ -560,11 +565,12 @@ export default function AdhdFantasyAssessmentPage() {
       if (!res.ok) throw new Error('Agent evaluation failed')
       const json = await res.json()
       setAgentResult(json.data)
+      setKeeperObs(payload.telemetry)
       setStage('celebration')
       playAudio('fanfare')
     } catch (err) {
       console.error(err)
-      alert('The Sky Citadel Guild is reconnecting... please try again!')
+      setNotice('Something went wrong while writing the summary. Please try again.')
       setStage('welcome')
     }
   }
@@ -573,6 +579,8 @@ export default function AdhdFantasyAssessmentPage() {
     <main data-no-listen="true" className="relative min-h-screen bg-[#0B132B] py-8 px-4 font-poppins text-[#1F2937] overflow-x-hidden selection:bg-amber-400 selection:text-amber-950">
       {/* Immersive Fantasy Sky Citadel Celestial Backdrop */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+        <QuestStyles />
+        <Fireflies color="#FDE68A" />
         {/* Full-bleed citadel illustration with ambient atmospheric blur */}
         <img
           src="/decor/itw/quest-sky-citadel-banner.webp"
@@ -588,7 +596,9 @@ export default function AdhdFantasyAssessmentPage() {
         <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#FDE68A_1px,transparent_1px)] [background-size:32px_32px]" />
       </div>
 
-      <div className="mx-auto max-w-4xl relative z-10">
+      {notice && <div role="alert" className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-white px-5 py-3 text-sm font-bold text-slate-900 shadow-xl">{notice} <button type="button" className="ml-3 underline" onClick={() => setNotice('')}>Dismiss</button></div>}
+      <AmbientToggle mood="citadel" />
+      <div key={stage} className="mx-auto max-w-4xl relative z-10 qd-stage">
         {/* Navigation & Realm Indicator */}
         <div className="mb-6 flex items-center justify-between text-xs">
           <Link href="/assessments" prefetch={false} className="font-bold text-amber-300 hover:text-amber-200 hover:underline flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-amber-300/30 shadow-sm">
@@ -695,11 +705,15 @@ export default function AdhdFantasyAssessmentPage() {
                 </div>
               </div>
 
+              <label className="mb-5 flex items-start gap-3 text-left text-xs leading-relaxed text-slate-700">
+                <input type="checkbox" checked={parentOk} onChange={(e) => setParentOk(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0" />
+                <span>I am this child&apos;s parent or guardian. This is a play activity, not a diagnosis. We do not save anything from this session. At the end, the codename and play counts are sent to write the summary, and an AI model may help word it.</span>
+              </label>
               {/* Start Button */}
               <div className="text-center pt-2">
                 <button
                   type="button"
-                  disabled={!heroName.trim()}
+                  disabled={!heroName.trim() || !parentOk}
                   onClick={() => { playAudio('chime'); setStage('cpt_story') }}
                   className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-4 text-base font-bold text-white shadow-lg hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 hover:scale-105 active:scale-95 transition-all"
                 >
@@ -1209,6 +1223,12 @@ export default function AdhdFantasyAssessmentPage() {
                 </div>
               </div>
             </div>
+
+            {keeperObs && (
+              <div className="rounded-3xl border border-white/20 bg-black/40 p-6 backdrop-blur-md md:p-8">
+                <KeeperFeedback quest="adhd" nickname={heroName || 'Explorer'} observations={keeperObs} />
+              </div>
+            )}
 
             {/* GROWN-UP SUMMARY */}
             {showClinicalDossier && (

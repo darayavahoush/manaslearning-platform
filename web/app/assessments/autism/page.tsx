@@ -1,6 +1,8 @@
 'use client'
 import {useState, useEffect, useRef, useMemo} from 'react'
 import Link from 'next/link'
+import KeeperFeedback from '../../../components/assessments/KeeperFeedback'
+import {QuestStyles, Fireflies, AmbientToggle, GazeGuide} from '../../../components/assessments/QuestFX'
 
 // Enchanted Web Audio synthesizer: Soothing glass harps, crystal bells, warm kalimbas, and royal fanfare
 function playAudio(type: 'hit' | 'chime' | 'sensory' | 'tap' | 'fanfare' | 'whoosh') {
@@ -103,33 +105,6 @@ function CeramicUrnSvg({className = 'w-6 h-6'}: {className?: string}) {
       <path d="M7 5v2c0 4-3 5-3 9a8 8 0 0 0 16 0c0-4-3-5-3-9V5" />
       <line x1="8" y1="21" x2="16" y2="21" />
     </svg>
-  )
-}
-
-// Illustrated Courtyard Guide: Aria (Animated eyes & pointing arm)
-function CourtyardGuideAvatar({gaze, isPointing}: {gaze: 'left' | 'center' | 'right'; isPointing: boolean}) {
-  const pupilOffsetX = gaze === 'left' ? -4 : gaze === 'right' ? 4 : 0
-  const pupilOffsetY = gaze === 'center' ? 3 : 0
-
-  return (
-    <div className="relative flex flex-col items-center">
-      <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full border-4 border-teal-300 shadow-xl overflow-hidden bg-gradient-to-b from-teal-50 to-emerald-100 flex items-center justify-center">
-        <img
-          src="/decor/itw/quest-aria-alchemist.webp"
-          alt="Guide Aria"
-          className="h-full w-full object-cover object-top"
-        />
-        {/* Subtle Gaze Overlay Indicator */}
-        <div className={`absolute bottom-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-white shadow-md backdrop-blur-md ${
-          isPointing ? 'bg-amber-600/90' : 'bg-teal-700/80'
-        }`}>
-          {isPointing ? 'Pointing' : 'Looking Gently'}
-        </div>
-      </div>
-      <span className="mt-2 text-xs font-bold text-teal-900 bg-white/95 px-3 py-1 rounded-full shadow-sm border border-teal-200">
-        Aria, Grove Alchemist
-      </span>
-    </div>
   )
 }
 
@@ -305,13 +280,16 @@ export default function AutismFantasyAssessmentPage() {
   const [jaResponseTimes, setJaResponseTimes] = useState<number[]>([])
   const [jaCorrectCount, setJaCorrectCount] = useState(0)
   const jaStartRef = useRef<number>(0)
+  const [jaReady, setJaReady] = useState(false)
   const JA_TRIALS = useMemo(() => {
-    return [
-      {targetPot: 1, avatarGaze: 'center' as const, isPointing: false, title: 'Center Lotus Amphora'},
-      {targetPot: 0, avatarGaze: 'left' as const, isPointing: true, title: 'Left Veranda Urn'},
-      {targetPot: 2, avatarGaze: 'right' as const, isPointing: false, title: 'Right Emerald Vessel'},
-      {targetPot: 2, avatarGaze: 'right' as const, isPointing: true, title: 'Right Emerald Vessel'},
-    ]
+    const names = ['Left Veranda Urn', 'Center Lotus Amphora', 'Right Emerald Vessel']
+    const gz = ['left', 'center', 'right'] as const
+    const list = [0, 1, 2].flatMap((p) => [false, true].map((pt) => ({targetPot: p, avatarGaze: gz[p] as 'left' | 'center' | 'right', isPointing: pt, title: names[p]})))
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      const tmp = list[i]; list[i] = list[j]; list[j] = tmp
+    }
+    return list
   }, [])
 
   // Chapter 2: Emotion Mirror State (Visual Social Recognition Game)
@@ -341,6 +319,9 @@ export default function AutismFantasyAssessmentPage() {
   // Agent Output
   const [agentResult, setAgentResult] = useState<any>(null)
   const [showClinicalDossier, setShowClinicalDossier] = useState(false)
+  const [keeperObs, setKeeperObs] = useState<any>(null)
+  const [parentOk, setParentOk] = useState(false)
+  const [notice, setNotice] = useState('')
 
   // Joint Attention Loop
   useEffect(() => {
@@ -353,7 +334,8 @@ export default function AutismFantasyAssessmentPage() {
   }, [stage, jaTrialIndex, JA_TRIALS])
 
   function handlePotSelect(idx: number) {
-    if (stage !== 'ja_game') return
+    if (stage !== 'ja_game' || !jaReady) return
+    setJaReady(false)
     const elapsed = Math.round(performance.now() - jaStartRef.current)
     setJaResponseTimes((prev) => [...prev, elapsed])
 
@@ -447,11 +429,12 @@ export default function AutismFantasyAssessmentPage() {
       if (!res.ok) throw new Error('Agent evaluation failed')
       const json = await res.json()
       setAgentResult(json.data)
+      setKeeperObs(payload.telemetry)
       setStage('celebration')
       playAudio('fanfare')
     } catch (err) {
       console.error(err)
-      alert('The Grove Sanctuary is reconnecting... please try again!')
+      setNotice('Something went wrong while writing the summary. Please try again.')
       setStage('welcome')
     }
   }
@@ -460,6 +443,8 @@ export default function AutismFantasyAssessmentPage() {
     <main data-no-listen="true" className="relative min-h-screen bg-[#041D15] py-8 px-4 font-poppins text-[#1F2937] overflow-x-hidden selection:bg-teal-400 selection:text-teal-950">
       {/* Immersive Fantasy Whispering Groves Twilight Backdrop */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+        <QuestStyles />
+        <Fireflies color="#6EE7B7" />
         {/* Full-bleed groves illustration with soft ambient atmospheric glow */}
         <img
           src="/decor/itw/quest-lumina-groves-banner.webp"
@@ -475,7 +460,9 @@ export default function AutismFantasyAssessmentPage() {
         <div className="absolute inset-0 opacity-30 bg-[radial-gradient(#34D399_1px,transparent_1px)] [background-size:28px_28px]" />
       </div>
 
-      <div className="mx-auto max-w-4xl relative z-10">
+      {notice && <div role="alert" className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-white px-5 py-3 text-sm font-bold text-slate-900 shadow-xl">{notice} <button type="button" className="ml-3 underline" onClick={() => setNotice('')}>Dismiss</button></div>}
+      <AmbientToggle mood="groves" />
+      <div key={stage} className="mx-auto max-w-4xl relative z-10 qd-stage">
         {/* Navigation & Realm Indicator */}
         <div className="mb-6 flex items-center justify-between text-xs">
           <Link href="/assessments" prefetch={false} className="font-bold text-teal-300 hover:text-teal-200 hover:underline flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-teal-300/30 shadow-sm">
@@ -582,11 +569,15 @@ export default function AutismFantasyAssessmentPage() {
                 </div>
               </div>
 
+              <label className="mb-5 flex items-start gap-3 text-left text-xs leading-relaxed text-slate-700">
+                <input type="checkbox" checked={parentOk} onChange={(e) => setParentOk(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0" />
+                <span>I am this child&apos;s parent or guardian. This is a play activity, not a diagnosis. We do not save anything from this session. At the end, the codename and play counts are sent to write the summary, and an AI model may help word it.</span>
+              </label>
               {/* Start Button */}
               <div className="text-center pt-2">
                 <button
                   type="button"
-                  disabled={!guardianName.trim()}
+                  disabled={!guardianName.trim() || !parentOk}
                   onClick={() => { playAudio('chime'); setStage('ja_story') }}
                   className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-10 py-4 text-base font-bold text-white shadow-lg hover:from-teal-700 hover:to-emerald-700 disabled:opacity-50 hover:scale-105 active:scale-95 transition-all"
                 >
@@ -635,7 +626,7 @@ export default function AutismFantasyAssessmentPage() {
                   }}
                   className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
                 >
-                  Step onto Veranda (4 Encounters) →
+                  Step onto Veranda ({JA_TRIALS.length} Encounters) →
                 </button>
               </div>
             </div>
@@ -656,14 +647,16 @@ export default function AutismFantasyAssessmentPage() {
 
             {/* Guide Avatar */}
             <div className="my-4">
-              <CourtyardGuideAvatar
+              <GazeGuide
+                key={jaTrialIndex}
                 gaze={JA_TRIALS[jaTrialIndex].avatarGaze}
                 isPointing={JA_TRIALS[jaTrialIndex].isPointing}
+                onCue={() => { jaStartRef.current = performance.now(); setJaReady(true) }}
               />
             </div>
 
             {/* 3 Artisan Vessels */}
-            <div className="grid grid-cols-3 gap-3 md:gap-6 max-w-md mx-auto my-8">
+            <div className={`grid grid-cols-3 gap-3 md:gap-6 max-w-md mx-auto my-8 transition-opacity ${jaReady ? '' : 'opacity-50'}`}>
               <button
                 type="button"
                 onClick={() => handlePotSelect(0)}
@@ -1004,6 +997,12 @@ export default function AutismFantasyAssessmentPage() {
                 </div>
               </div>
             </div>
+
+            {keeperObs && (
+              <div className="rounded-3xl border border-white/20 bg-black/40 p-6 backdrop-blur-md md:p-8">
+                <KeeperFeedback quest="autism" nickname={guardianName || 'Explorer'} observations={keeperObs} />
+              </div>
+            )}
 
             {/* GROWN-UP SUMMARY */}
             {showClinicalDossier && (

@@ -188,6 +188,7 @@ function __McInner() {
   const [stage, setStage] = useState<"welcome" | "sound" | "intro" | "play" | "end">("welcome");
   const [ch, setCh] = useState(0);
   const [nick, setNick] = useState("");
+  const [age, setAge] = useState("");
   const [parent, setParent] = useState(false);
   const [vol, setVol] = useState(0.8);
   const [ink, setInk] = useState(0);
@@ -222,10 +223,11 @@ function __McInner() {
           <Owl line={line} />
           <p>Pick a nickname for your explorer. Use headphones in a quiet room. This is a listening game, so sound needs to be on.</p>
           <label>Nickname<br /><input className="dq-input" maxLength={16} value={nick} onChange={(e) => setNick(e.target.value)} /></label>
+          <label>Age in years (4 to 16)<br /><input className="dq-input" inputMode="numeric" maxLength={2} value={age} onChange={(e) => setAge(e.target.value.replace(/\D/g, ""))} /></label>
           <label>Volume<br /><input type="range" min="0.2" max="1" step="0.1" value={vol} onChange={(e) => setVol(Number(e.target.value))} /></label>
           <label className="dq-check"><input type="checkbox" checked={parent} onChange={(e) => setParent(e.target.checked)} /> I am this child's parent or guardian and I agree to the notes below.</label>
-          <p className="dq-small">This is a play activity, not a diagnosis. We do not save anything from this session. At the end, only the nickname and play counts are sent to write the summary, and an AI model may help word it.</p>
-          <button className="dq-btn" disabled={!parent || !nick.trim()} onClick={() => setStage("sound")}>Next</button>
+          <p className="dq-small">This is a play activity, not a diagnosis. We do not save anything from this session. At the end, only the nickname, age and play counts are sent to write the summary, and an AI model may help word it.</p>
+          <button className="dq-btn" disabled={!parent || !nick.trim() || !(Number(age) >= 4 && Number(age) <= 16)} onClick={() => setStage("sound")}>Next</button>
         </section>
       )}
 
@@ -270,7 +272,7 @@ function __McInner() {
 
       {stage === "end" && (
         <section>
-          <KeeperFeedback quest="dyslexia" nickname={nick.trim() || "Explorer"} observations={obs} />
+          <KeeperFeedback quest="dyslexia" nickname={nick.trim() || "Explorer"} age={Number(age) || null} observations={obs} />
         </section>
       )}
     </main>

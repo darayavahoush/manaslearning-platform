@@ -286,11 +286,9 @@ function __McInner() {
     const names = ['Left Veranda Urn', 'Center Lotus Amphora', 'Right Emerald Vessel']
     const gz = ['left', 'center', 'right'] as const
     const list = [0, 1, 2].flatMap((p) => [false, true].map((pt) => ({targetPot: p, avatarGaze: gz[p] as 'left' | 'center' | 'right', isPointing: pt, title: names[p]})))
-    for (let i = list.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      const tmp = list[i]; list[i] = list[j]; list[j] = tmp
-    }
-    return list
+    // Fixed order so every child sees the same six trials: each pot once with and once without
+    // pointing, no pot twice in a row, pointing alternates.
+    return [0, 5, 2, 1, 4, 3].map((i) => list[i])
   }, [])
 
   // Chapter 2: Emotion Mirror State (Visual Social Recognition Game)

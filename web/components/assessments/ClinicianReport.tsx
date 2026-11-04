@@ -12,6 +12,8 @@ export type ClinicianReportProps = {
   rows: ReportRow[]
   clinicianQuestions?: string[]
   wording?: 'ai' | 'template'
+  variant?: 'play' | 'questions'
+  ageLabel?: string
 }
 
 /** Turns sentences like "Rhyme game: 3 of 5 ..." into table rows. */
@@ -50,6 +52,12 @@ const QUEST = {
       'A multi-professional evaluation if concerns continue across settings.',
     ],
   },
+} as const
+
+const QSAMPLED = {
+  dyslexia: 'choosing real words and correct spellings, finishing sentences, spelling by ear and answering questions about a short story.',
+  adhd: 'the child’s own ratings of eight statements about attention and activity. These are not scored.',
+  autism: 'the child’s own ratings of eight statements about sensory and social experiences. These are not scored.',
 } as const
 
 const LIMITS = [
@@ -91,11 +99,11 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
           </div>
           <article className="cr-paper">
             <header className="cr-sec">
-              <p className="cr-kicker">Play-based screening summary · Not a diagnostic report</p>
-              <h1>{q.title}</h1>
+              <p className="cr-kicker">{p.variant === 'questions' ? 'Question-based screening summary' : 'Play-based screening summary'} · Not a diagnostic report</p>
+              <h1>{p.variant === 'questions' ? q.title.replace('play screener', 'question screener') : q.title}</h1>
               <table className="cr-meta"><tbody>
                 <tr><th>Play name</th><td>{p.nickname || 'Not given'}</td><th>Date</th><td>{date}</td></tr>
-                <tr><th>Age</th><td>{p.age ? `${p.age} years (as entered)` : 'Not given'}</td><th>Measures with data</th><td>{withData} of {p.rows.length}</td></tr>
+                <tr><th>Age</th><td>{p.ageLabel ? p.ageLabel : p.age ? `${p.age} years (as entered)` : 'Not given'}</td><th>Measures with data</th><td>{withData} of {p.rows.length}</td></tr>
                 <tr><th>Child’s full name</th><td className="cr-line" /><th>Date of birth</th><td className="cr-line" /></tr>
               </tbody></table>
               <p className="cr-small">Full name and date of birth are left blank on purpose so they stay on paper and are never entered into the website.</p>
@@ -104,7 +112,7 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
             <section className="cr-sec cr-box">
               <h2>Please read first</h2>
               <ul>{LIMITS.map((l, i) => <li key={i}>{l}</li>)}</ul>
-              <p className="cr-small">The activities sampled: {q.sampled}</p>
+              <p className="cr-small">The activities sampled: {p.variant === 'questions' ? QSAMPLED[p.quest] : q.sampled}</p>
             </section>
 
             <section className="cr-sec">

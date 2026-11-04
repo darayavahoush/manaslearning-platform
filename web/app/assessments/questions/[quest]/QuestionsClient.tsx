@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import QuizRunner, { type ItemResult, type QuizItem } from '../../../../components/assessments/QuizRunner'
 import { CONFIG, SCALE, bankFor, prepare, type Level, type QuestId } from '../../../../components/assessments/questionBanks'
+import ClinicianReportButton, { type ReportRow } from '../../../../components/assessments/ClinicianReport'
 
 const median = (xs: number[]) => {
   if (!xs.length) return null
@@ -32,6 +33,55 @@ function summarise(items: QuizItem[], results: ItemResult[]): string[] {
   if (fast) out.push(`${fast} answers came in under a second, which can mean tapping quickly without reading. Treat this session with extra care.`)
   out.push('Times include time spent reading the question, so they are not a measure of thinking speed.')
   return out
+}
+
+const CLIN_Q = [
+  'Which of these answers, if any, would you want to look at more closely in a full evaluation?',
+  'Is there anything about how my child answered that you would want to see again over several sessions?',
+  'What would you suggest I watch for at home and at school?',
+]
+
+function reportRows(items: QuizItem[], results: ItemResult[], self: boolean): ReportRow[] {
+  if (self) {
+    return items.map((it, k) => {
+      const r = results.find((x) => x.id === it.id)
+      const label = r && !r.skipped ? SCALE.find((s) => s.id === r.chosenId)?.text : undefined
+      return {
+        name: it.prompt,
+        value: label ?? 'Not enough data (skipped)',
+        note: k === 0 ? 'Not scored. Young children’s self-reports are limited, so these are best used as conversation starters alongside what parents and teachers see.' : undefined,
+      }
+    })
+  }
+  const rows: ReportRow[] = []
+  const autoIds = new Set(items.filter((i) => i.autoPlay).map((i) => i.id))
+  const by = new Map<string, ItemResult[]>()
+  results.forEach((r) => by.set(r.section, [...(by.get(r.section) || []), r]))
+  by.forEach((rs, section) => {
+    const answered = rs.filter((r) => !r.skipped)
+    const skipped = rs.length - answered.length
+    if (!answered.length) { rows.push({ name: section, value: 'Not enough data', detail: `${skipped} skipped` }); return }
+    const ok = answered.filter((r) => r.correct).length
+    const t = secs(median(answered.map((r) => r.ms).filter((x): x is number => x !== null)))
+    rows.push({
+      name: section,
+      value: `${ok} of ${answered.length} answers matched the expected answer`,
+      detail: [skipped ? `${skipped} skipped` : '', t ? `usually after about ${t} seconds (includes reading time)` : ''].filter(Boolean).join(' · ') || undefined,
+    })
+  })
+  const reading = results.filter((r) => !autoIds.has(r.id) && !r.skipped)
+  const heard = reading.filter((r) => r.audio > 0)
+  const unheard = reading.filter((r) => r.audio === 0)
+  if (heard.length) {
+    rows.push({
+      name: 'Listening compared with reading',
+      value: `With "Read to me": ${heard.filter((r) => r.correct).length} of ${heard.length} matched · Without: ${unheard.filter((r) => r.correct).length} of ${unheard.length} matched`,
+      note: 'Children often press "Read to me" on questions they find harder, and the groups are small, so this is a prompt for the clinician’s own testing, not a finding.',
+    })
+  }
+  const fast = results.filter((r) => r.ms !== null && r.ms < 700).length
+  if (fast) rows.push({ name: 'Very quick answers', value: `${fast} answers came in under a second`, note: 'This can mean tapping without reading. Read this session with extra care.' })
+  return rows
 }
 
 export default function QuestionsClient({ quest: questParam }: { quest: string }) {
@@ -136,6 +186,7 @@ export default function QuestionsClient({ quest: questParam }: { quest: string }
                 <li>Is there anything about how my child answered that you would want to see again over several sessions?</li>
                 <li>What would you suggest I watch for at home and at school?</li>
               </ul>
+              <div className="no-print mt-6"><ClinicianReportButton quest={quest as 'dyslexia' | 'adhd' | 'autism'} nickname={name} variant="questions" ageLabel={cfg.levels ? (level === 'young' ? '6 to 8 years (age group chosen)' : '9 to 12 years (age group chosen)') : undefined} rows={reportRows(items, results, self)} clinicianQuestions={CLIN_Q} /></div>
               <button type="button" onClick={() => window.print()} className="no-print mt-6 rounded-full border border-[#D9CDB4] bg-white px-6 py-2 text-sm font-bold" style={{ minHeight: 44 }}>Print or save as PDF</button>
             </div>
           )}

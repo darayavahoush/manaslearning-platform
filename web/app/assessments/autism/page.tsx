@@ -267,7 +267,7 @@ const EMOTION_MIRROR_TRIALS = [
   }
 ]
 
-export default function AutismFantasyAssessmentPage() {
+function __McInner() {
   const [stage, setStage] = useState<'welcome' | 'avatar' | 'ja_story' | 'ja_game' | 'tom_story' | 'tom_game' | 'sensory_story' | 'sensory_game' | 'dccs_story' | 'dccs_game' | 'agent_eval' | 'celebration'>('welcome')
 
   // Child Fantasy Persona
@@ -1131,4 +1131,12 @@ export default function AutismFantasyAssessmentPage() {
       </div>
     </main>
   )
+}
+
+// --- mount gate: this quest uses random/time values, so it renders in the browser only ---
+import { useState as __mcUseState, useEffect as __mcUseEffect } from "react";
+export default function __McGate(props: any) {
+  const [mounted, setMounted] = __mcUseState(false);
+  __mcUseEffect(() => { setMounted(true); }, []);
+  return mounted ? <__McInner {...props} /> : null;
 }

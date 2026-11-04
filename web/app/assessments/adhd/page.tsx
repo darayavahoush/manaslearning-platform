@@ -227,7 +227,7 @@ const CHARGE_TRIALS = [
   {targetMs: 4000, title: 'Nova Charge', rewardText: 'Sunstone Crystal Fully Powered!'}
 ]
 
-export default function AdhdFantasyAssessmentPage() {
+function __McInner() {
   const [stage, setStage] = useState<'welcome' | 'avatar' | 'cpt_story' | 'cpt_game' | 'flanker_story' | 'flanker_game' | 'memory_story' | 'memory_game' | 'situational_story' | 'situational_game' | 'trials' | 'agent_eval' | 'celebration'>('welcome')
 
   // Child Fantasy Persona
@@ -1357,4 +1357,12 @@ export default function AdhdFantasyAssessmentPage() {
       </div>
     </main>
   )
+}
+
+// --- mount gate: this quest uses random/time values, so it renders in the browser only ---
+import { useState as __mcUseState, useEffect as __mcUseEffect } from "react";
+export default function __McGate(props: any) {
+  const [mounted, setMounted] = __mcUseState(false);
+  __mcUseEffect(() => { setMounted(true); }, []);
+  return mounted ? <__McInner {...props} /> : null;
 }

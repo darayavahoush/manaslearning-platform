@@ -171,7 +171,7 @@ function Span({ vol, onInk, onDone }: { vol: number; onInk: () => void; onDone: 
   );
 }
 
-export default function DyslexiaQuest() {
+function __McInner() {
   const [stage, setStage] = useState<"welcome" | "sound" | "intro" | "play" | "end">("welcome");
   const [ch, setCh] = useState(0);
   const [nick, setNick] = useState("");
@@ -297,3 +297,11 @@ const CSS = `
 .dq-owl svg{animation:dq-float 3s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){.dq *{animation:none!important;transition:none!important}}
 `;
+
+// --- mount gate: this quest uses random/time values, so it renders in the browser only ---
+import { useState as __mcUseState, useEffect as __mcUseEffect } from "react";
+export default function __McGate(props: any) {
+  const [mounted, setMounted] = __mcUseState(false);
+  __mcUseEffect(() => { setMounted(true); }, []);
+  return mounted ? <__McInner {...props} /> : null;
+}

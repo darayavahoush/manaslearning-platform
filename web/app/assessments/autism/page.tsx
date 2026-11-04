@@ -11,6 +11,7 @@ interface Profile {
   primarySensitivities: string
 }
 
+// Gentle Web Audio Synthesizer: Organic kalimba, chime, marimba, and celestial glass tones
 function playSound(type: 'hit' | 'chime' | 'tap' | 'complete' | 'sensory') {
   if (typeof window === 'undefined') return
   try {
@@ -21,31 +22,34 @@ function playSound(type: 'hit' | 'chime' | 'tap' | 'complete' | 'sensory') {
     const now = ctx.currentTime
 
     if (type === 'hit') {
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.type = 'sine'
-      osc.frequency.setValueAtTime(523.25, now)
-      osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.12)
-      gain.gain.setValueAtTime(0.07, now)
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15)
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.start(now)
-      osc.stop(now + 0.16)
-    } else if (type === 'sensory') {
+      // Soft resonant bell (E5 -> B5)
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
       osc.type = 'triangle'
-      osc.frequency.setValueAtTime(320, now)
-      osc.frequency.linearRampToValueAtTime(440, now + 0.25)
-      gain.gain.setValueAtTime(0.05, now)
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3)
+      osc.frequency.setValueAtTime(659.25, now)
+      osc.frequency.exponentialRampToValueAtTime(987.77, now + 0.1)
+      gain.gain.setValueAtTime(0.08, now)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18)
       osc.connect(gain)
       gain.connect(ctx.destination)
       osc.start(now)
-      osc.stop(now + 0.32)
+      osc.stop(now + 0.2)
+    } else if (type === 'sensory') {
+      // Calming binaural hum (warm soothing tone)
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(261.63, now) // Middle C
+      osc.frequency.linearRampToValueAtTime(329.63, now + 0.3) // E4
+      gain.gain.setValueAtTime(0.05, now)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35)
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.start(now)
+      osc.stop(now + 0.38)
     } else if (type === 'complete' || type === 'chime') {
-      [440, 554.37, 659.25, 880].forEach((freq, idx) => {
+      // Gentle harp chord (C-E-G-C)
+      [523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
         const osc = ctx.createOscillator()
         const gain = ctx.createGain()
         osc.type = 'sine'
@@ -58,11 +62,12 @@ function playSound(type: 'hit' | 'chime' | 'tap' | 'complete' | 'sensory') {
         osc.stop(now + idx * 0.08 + 0.4)
       })
     } else {
+      // Organic water droplet tap
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
       osc.type = 'sine'
-      osc.frequency.setValueAtTime(380, now)
-      gain.gain.setValueAtTime(0.04, now)
+      osc.frequency.setValueAtTime(440, now)
+      gain.gain.setValueAtTime(0.03, now)
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04)
       osc.connect(gain)
       gain.connect(ctx.destination)
@@ -72,6 +77,203 @@ function playSound(type: 'hit' | 'chime' | 'tap' | 'complete' | 'sensory') {
   } catch {}
 }
 
+// -------------------------------------------------------------
+// BESPOKE VECTOR ILLUSTRATIONS (NO CHEAP EMOJIS)
+// -------------------------------------------------------------
+
+// Courtyard Guide Avatar (Aria): Expressive eyes and directional gesture
+function CourtyardGuideAvatar({gaze, isPointing}: {gaze: 'left' | 'center' | 'right'; isPointing: boolean}) {
+  // Eye pupil offset based on gaze direction
+  const pupilOffsetX = gaze === 'left' ? -4 : gaze === 'right' ? 4 : 0
+  const pupilOffsetY = gaze === 'center' ? 3 : 0
+
+  return (
+    <div className="relative flex flex-col items-center">
+      <svg viewBox="0 0 140 140" className="w-32 h-32 md:w-36 md:h-36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="guideGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#E0F2FE" stopOpacity="0.8"/>
+            <stop offset="100%" stopColor="#E0F2FE" stopOpacity="0"/>
+          </radialGradient>
+          <linearGradient id="skinTone" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FED7AA"/>
+            <stop offset="100%" stopColor="#FDBA74"/>
+          </linearGradient>
+          <linearGradient id="hairGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#1E293B"/>
+            <stop offset="100%" stopColor="#0F172A"/>
+          </linearGradient>
+          <linearGradient id="kurtaTeal" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#0D9488"/>
+            <stop offset="100%" stopColor="#0F766E"/>
+          </linearGradient>
+        </defs>
+
+        {/* Halo Aura */}
+        <circle cx="70" cy="70" r="64" fill="url(#guideGlow)"/>
+
+        {/* Shoulders & Kurta */}
+        <path d="M 32 130 C 32 105 50 96 70 96 C 90 96 108 105 108 130 Z" fill="url(#kurtaTeal)"/>
+        {/* Kurta Collar Embroidery */}
+        <path d="M 64 96 L 70 110 L 76 96" stroke="#FEF08A" strokeWidth="2" strokeLinecap="round"/>
+
+        {/* Head & Neck */}
+        <path d="M 62 86 L 62 98 L 78 98 L 78 86 Z" fill="url(#skinTone)"/>
+        <ellipse cx="70" cy="62" rx="26" ry="30" fill="url(#skinTone)"/>
+
+        {/* Lush Black Hair */}
+        <path d="M 44 54 C 44 32 54 22 70 22 C 86 22 96 32 96 54 C 96 60 92 68 92 68 C 92 50 86 42 70 42 C 54 42 48 50 48 68 C 48 68 44 60 44 54 Z" fill="url(#hairGrad)"/>
+        {/* Soft Ear Piercings / Small Stud */}
+        <circle cx="43" cy="64" r="1.5" fill="#F59E0B"/>
+        <circle cx="97" cy="64" r="1.5" fill="#F59E0B"/>
+
+        {/* Eyebrows */}
+        <path d="M 52 48 Q 58 45 64 48" stroke="#1E293B" strokeWidth="2" strokeLinecap="round"/>
+        <path d="M 76 48 Q 82 45 88 48" stroke="#1E293B" strokeWidth="2" strokeLinecap="round"/>
+
+        {/* Almond Eyes */}
+        <ellipse cx="58" cy="56" rx="6" ry="4" fill="#FFFFFF"/>
+        <ellipse cx="82" cy="56" rx="6" ry="4" fill="#FFFFFF"/>
+
+        {/* Animated Pupils (Follows Gaze) */}
+        <circle cx={58 + pupilOffsetX} cy={56 + pupilOffsetY} r="2.8" fill="#0F172A"/>
+        <circle cx={57 + pupilOffsetX} cy={55 + pupilOffsetY} r="1" fill="#FFFFFF"/>
+        <circle cx={82 + pupilOffsetX} cy={56 + pupilOffsetY} r="2.8" fill="#0F172A"/>
+        <circle cx={81 + pupilOffsetX} cy={55 + pupilOffsetY} r="1" fill="#FFFFFF"/>
+
+        {/* Gentle Nose & Warm Smile */}
+        <path d="M 70 58 L 68 66 L 72 66" stroke="#EA580C" strokeWidth="1.2" strokeLinecap="round" opacity="0.6"/>
+        <path d="M 64 74 Q 70 78 76 74" stroke="#9A3412" strokeWidth="2" strokeLinecap="round"/>
+
+        {/* Pointing Arm / Hand (When cueType === 'point') */}
+        {isPointing && (
+          gaze === 'left' ? (
+            <path d="M 44 110 Q 24 100 12 90" stroke="url(#skinTone)" strokeWidth="8" strokeLinecap="round"/>
+          ) : (
+            <path d="M 96 110 Q 116 100 128 90" stroke="url(#skinTone)" strokeWidth="8" strokeLinecap="round"/>
+          )
+        )}
+      </svg>
+      <div className="mt-2 text-xs font-semibold text-[#0F172A] bg-white/95 px-3 py-1 rounded-full shadow-sm border border-[#E2E8F0]">
+        Guide Aria • {isPointing ? 'Pointing & Looking' : 'Looking with Eye Gaze'}
+      </div>
+    </div>
+  )
+}
+
+// Handcrafted Artisanal Courtyard Vessels
+function ArtisanVesselSvg({type, isSelected}: {type: 'A' | 'B' | 'C'; isSelected?: boolean}) {
+  if (type === 'A') {
+    // Left: Royal Indigo Lotus Urn
+    return (
+      <svg viewBox="0 0 100 120" className="w-20 h-24 md:w-24 md:h-28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="urnIndigo" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#3B82F6"/>
+            <stop offset="50%" stopColor="#1D4ED8"/>
+            <stop offset="100%" stopColor="#1E3A8A"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="50" cy="110" rx="26" ry="6" fill="#CBD5E1"/>
+        <path d="M 38 108 L 38 98 L 62 98 L 62 108 Z" fill="#64748B"/>
+        <path d="M 32 98 C 20 80 18 52 34 38 C 42 30 58 30 66 38 C 82 52 80 80 68 98 Z" fill="url(#urnIndigo)"/>
+        <ellipse cx="50" cy="38" rx="14" ry="4" fill="#93C5FD"/>
+        <path d="M 44 38 L 44 24 L 56 24 L 56 38 Z" fill="url(#urnIndigo)"/>
+        <ellipse cx="50" cy="24" rx="10" ry="3" fill="#FBBF24"/>
+        {/* Lotus Petal Etching */}
+        <path d="M 50 50 Q 42 66 50 82 Q 58 66 50 50 Z" stroke="#93C5FD" strokeWidth="1.5" fill="none"/>
+        <path d="M 42 58 Q 36 70 44 80" stroke="#93C5FD" strokeWidth="1.2" fill="none"/>
+        <path d="M 58 58 Q 64 70 56 80" stroke="#93C5FD" strokeWidth="1.2" fill="none"/>
+      </svg>
+    )
+  }
+
+  if (type === 'B') {
+    // Center: Terracotta Sunburst Amphora
+    return (
+      <svg viewBox="0 0 100 120" className="w-20 h-24 md:w-24 md:h-28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="amphoraTerra" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FB923C"/>
+            <stop offset="60%" stopColor="#EA580C"/>
+            <stop offset="100%" stopColor="#C2410C"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="50" cy="110" rx="24" ry="6" fill="#CBD5E1"/>
+        <path d="M 40 108 L 40 100 L 60 100 L 60 108 Z" fill="#9A3412"/>
+        <path d="M 30 100 C 16 82 18 50 36 38 C 42 34 58 34 64 38 C 82 50 84 82 70 100 Z" fill="url(#amphoraTerra)"/>
+        {/* Side Handles */}
+        <path d="M 28 48 C 14 54 14 74 26 80" stroke="#9A3412" strokeWidth="4" fill="none" strokeLinecap="round"/>
+        <path d="M 72 48 C 86 54 86 74 74 80" stroke="#9A3412" strokeWidth="4" fill="none" strokeLinecap="round"/>
+        {/* Neck & Lip */}
+        <path d="M 42 38 L 42 22 L 58 22 L 58 38 Z" fill="url(#amphoraTerra)"/>
+        <ellipse cx="50" cy="22" rx="11" ry="3" fill="#FED7AA"/>
+        {/* Sunburst Motif */}
+        <circle cx="50" cy="68" r="6" fill="#FEF08A"/>
+        <circle cx="50" cy="68" r="10" stroke="#FEF08A" strokeWidth="1" strokeDasharray="3 3"/>
+      </svg>
+    )
+  }
+
+  // Right: Emerald Filigree Vase
+  return (
+    <svg viewBox="0 0 100 120" className="w-20 h-24 md:w-24 md:h-28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="vaseEmerald" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#34D399"/>
+          <stop offset="50%" stopColor="#059669"/>
+          <stop offset="100%" stopColor="#065F46"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="50" cy="110" rx="22" ry="5" fill="#CBD5E1"/>
+      <path d="M 40 108 L 40 98 L 60 98 L 60 108 Z" fill="#064E3B"/>
+      <path d="M 34 98 C 22 84 24 64 36 50 C 42 42 58 42 64 50 C 76 64 78 84 66 98 Z" fill="url(#vaseEmerald)"/>
+      {/* Tall Slender Neck */}
+      <path d="M 44 50 L 44 26 L 56 26 L 56 50 Z" fill="url(#vaseEmerald)"/>
+      <ellipse cx="50" cy="26" rx="9" ry="3" fill="#A7F3D0"/>
+      <ellipse cx="50" cy="22" rx="12" ry="3" fill="#FBBF24"/>
+      {/* Gold Ring Band */}
+      <rect x="42" y="38" width="16" height="3" fill="#FBBF24" rx="1.5"/>
+    </svg>
+  )
+}
+
+// Jewel-Tone Artifacts for Cognitive Set-Shifting (DCCS Task)
+function JewelCardSvg({color, shape}: {color: 'red' | 'blue' | 'green'; shape: 'star' | 'circle' | 'moon'}) {
+  const colorFill = color === 'red' ? '#EF4444' : color === 'blue' ? '#3B82F6' : '#10B981'
+  const colorGlow = color === 'red' ? '#FEE2E2' : color === 'blue' ? '#DBEAFE' : '#D1FAE5'
+
+  return (
+    <div className="relative flex items-center justify-center p-3 rounded-2xl bg-white border-2 border-[#CBD5E1] shadow-md hover:shadow-lg transition-all">
+      <svg viewBox="0 0 80 80" className="w-16 h-16 md:w-20 md:h-20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="36" fill={colorGlow}/>
+        {shape === 'circle' && (
+          <circle cx="40" cy="40" r="22" fill={colorFill} stroke="#FFFFFF" strokeWidth="2.5"/>
+        )}
+        {shape === 'star' && (
+          <path
+            d="M 40 16 L 46 32 L 63 32 L 49 42 L 54 58 L 40 48 L 26 58 L 31 42 L 17 32 L 34 32 Z"
+            fill={colorFill}
+            stroke="#FFFFFF"
+            strokeWidth="2"
+          />
+        )}
+        {shape === 'moon' && (
+          <path
+            d="M 48 18 C 30 18 22 34 22 42 C 22 56 34 62 48 62 C 54 62 58 60 62 58 C 48 54 42 42 46 26 C 47 22 48 20 48 18 Z"
+            fill={colorFill}
+            stroke="#FFFFFF"
+            strokeWidth="2"
+          />
+        )}
+      </svg>
+    </div>
+  )
+}
+
+// -------------------------------------------------------------
+// SOCIAL COMMUNICATION QUESTIONNAIRE (SCQ - 12 ITEMS)
+// -------------------------------------------------------------
 const SCQ_QUESTIONS = [
   {id: 'scq_1', text: 'Does your child look directly at you when communicating or needing something from you?'},
   {id: 'scq_2', text: 'Does your child use pointing or spontaneous gestures to show you something interesting (just to share delight, not merely asking for an item)?'},
@@ -105,10 +307,10 @@ export default function AutismAssessmentPage() {
   const [jaCorrectCount, setJaCorrectCount] = useState(0)
   const jaStartRef = useRef<number>(0)
   const JA_TRIALS = [
-    {cueType: 'gaze' as const, targetPot: 1, avatarEyeDir: '👉 Looking Right at Pot C'},
-    {cueType: 'point' as const, targetPot: 0, avatarEyeDir: '👈 Pointing Left at Pot A'},
-    {cueType: 'gaze' as const, targetPot: 2, avatarEyeDir: '👇 Looking Down at Pot B'},
-    {cueType: 'point' as const, targetPot: 1, avatarEyeDir: '👉 Pointing Right at Pot C'},
+    {cueType: 'gaze' as const, targetPot: 1, avatarGaze: 'center' as const, isPointing: false, title: 'Trial 1: Eye Gaze to Center Amphora'},
+    {cueType: 'point' as const, targetPot: 0, avatarGaze: 'left' as const, isPointing: true, title: 'Trial 2: Point & Gaze to Left Lotus Urn'},
+    {cueType: 'gaze' as const, targetPot: 2, avatarGaze: 'right' as const, isPointing: false, title: 'Trial 3: Subtle Eye Shift to Right Emerald Vase'},
+    {cueType: 'point' as const, targetPot: 2, avatarGaze: 'right' as const, isPointing: true, title: 'Trial 4: Direct Point to Right Emerald Vase'},
   ]
 
   // Task 2: Theory of Mind / Social Nuance State (4 trials)
@@ -157,7 +359,7 @@ export default function AutismAssessmentPage() {
   const [sensoryVisual, setSensoryVisual] = useState(6)
   const [sensoryAuditory, setSensoryAuditory] = useState(8)
   const [sensoryTactile, setSensoryTactile] = useState(7)
-  const [sensorySanctuaryPref, setSensorySanctuaryPref] = useState('Dim quiet corner with soft cushions')
+  const [sensorySanctuaryPref, setSensorySanctuaryPref] = useState('Dim quiet corner with soft cushions & weighted blanket')
 
   // Task 4: DCCS Set-Shifting (6 trials)
   const [dccsTrialIndex, setDccsTrialIndex] = useState(0)
@@ -165,7 +367,7 @@ export default function AutismAssessmentPage() {
   const [dccsPerseverations, setDccsPerseverations] = useState(0)
   const [dccsResponseTimes, setDccsResponseTimes] = useState<number[]>([])
   const dccsStartRef = useRef<number>(0)
-  const DCCS_CARDS = [
+  const DCCS_CARDS: Array<{color: 'red' | 'blue'; shape: 'star' | 'circle'; targetColorMatch: number; targetShapeMatch: number}> = [
     {color: 'red', shape: 'star', targetColorMatch: 0, targetShapeMatch: 1},
     {color: 'blue', shape: 'circle', targetColorMatch: 1, targetShapeMatch: 0},
     {color: 'red', shape: 'circle', targetColorMatch: 0, targetShapeMatch: 0},
@@ -249,7 +451,6 @@ export default function AutismAssessmentPage() {
       playSound('hit')
     } else {
       playSound('tap')
-      // If user sorted by color when rule switched to shape
       if (dccsRule === 'shape' && targetBin === card.targetColorMatch) {
         setDccsPerseverations((p) => p + 1)
       }
@@ -308,30 +509,30 @@ export default function AutismAssessmentPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#FFFDF8] py-10 px-4 font-poppins text-[#1F2937]">
+    <main data-no-listen="true" className="min-h-screen bg-[#FDFBF7] py-10 px-4 font-poppins text-[#1F2937]">
       <div className="mx-auto max-w-4xl">
-        {/* Breadcrumb */}
-        <div className="mb-6 flex items-center justify-between text-sm text-[#78716C]">
+        {/* Navigation & Clinical Standard Header */}
+        <div className="mb-6 flex flex-wrap items-center justify-between text-sm text-[#78716C] gap-2">
           <div className="flex items-center gap-2">
-            <Link href="/assessments" prefetch={false} className="hover:text-[#05B076] transition-colors">← All Assessments</Link>
+            <Link href="/assessments" prefetch={false} className="hover:text-[#0D9488] transition-colors font-semibold">← All Assessments</Link>
             <span>/</span>
             <span className="font-semibold text-[#111827]">Manas PRISM™ Autism Profile</span>
           </div>
-          <span className="rounded-full bg-[#3B82F6]/10 px-3 py-1 font-semibold text-[#1D4ED8] text-xs">
-            Gold Standard ADOS-2 & SPM-2 Mapped
+          <span className="rounded-full bg-[#0D9488]/10 border border-[#0D9488]/30 px-3.5 py-1 font-semibold text-[#0F766E] text-xs">
+            Gold Standard ADOS-2, SPM-2 & SCQ Mapped
           </span>
         </div>
 
-        {/* 1. INTRO / PRICING & CLINICAL FRAMEWORK */}
+        {/* 1. INTRO / OVERVIEW & CLINICAL METHODOLOGY */}
         {stage === 'intro' && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-xl">
             <div className="flex flex-col md:flex-row gap-8 items-center">
               <div className="flex-1">
-                <div className="inline-flex items-center gap-2 rounded-full bg-[#3B82F6]/15 px-3.5 py-1 text-xs font-bold text-[#1D4ED8] uppercase tracking-wider mb-4">
-                  ★ Research-Grade Neurodevelopmental Battery • Free Open Access Beta
+                <div className="inline-flex items-center gap-2 rounded-full bg-[#0D9488]/15 px-3.5 py-1 text-xs font-bold text-[#0F766E] uppercase tracking-wider mb-4 border border-[#0D9488]/30">
+                  Pediatric Neurodevelopmental Battery • Free Open Access Beta
                 </div>
                 <h1 className="font-patrick text-4xl md:text-5xl text-[#0F172A] leading-tight mb-4">
-                  Manas PRISM™ <span className="text-[#3B82F6]">Autism Social & Sensory Profile</span>
+                  Manas PRISM™ <span className="text-[#0D9488]">Autism Social & Sensory Profile</span>
                 </h1>
                 <p className="text-base text-[#475569] leading-relaxed mb-6">
                   <strong>Manas PRISM™</strong> evaluates the multidimensional landscape of autism, social communication, and sensory processing. Grounded in ADOS-2 observational dimensions, SPM-2 sensory modulation, and SCQ developmental markers, it assesses joint attention referencing, contextual Theory of Mind, sensory thresholds, and cognitive set-shifting through respectful, gamified scenarios.
@@ -339,15 +540,15 @@ export default function AutismAssessmentPage() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
                   <div className="rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-3 text-center">
-                    <div className="font-bold text-lg text-[#3B82F6]">Joint Attention</div>
+                    <div className="font-bold text-lg text-[#0D9488]">Joint Attention</div>
                     <div className="text-xs text-[#64748B]">Social Referencing Probes</div>
                   </div>
                   <div className="rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-3 text-center">
-                    <div className="font-bold text-lg text-[#05B076]">Sensory Map</div>
+                    <div className="font-bold text-lg text-[#F59E0B]">Sensory Map</div>
                     <div className="text-xs text-[#64748B]">Audiovisual Thresholds</div>
                   </div>
                   <div className="rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-3 text-center col-span-2 sm:col-span-1">
-                    <div className="font-bold text-lg text-[#F47522]">Clinical Report</div>
+                    <div className="font-bold text-lg text-[#3B82F6]">Clinical Report</div>
                     <div className="text-xs text-[#64748B]">Sensory Diet & IEP Plan</div>
                   </div>
                 </div>
@@ -356,9 +557,9 @@ export default function AutismAssessmentPage() {
                   <button
                     type="button"
                     onClick={() => { playSound('tap'); setStage('profile') }}
-                    className="rounded-full bg-gradient-to-r from-[#3B82F6] to-[#2563EB] px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-[#3B82F6]/25 hover:shadow-xl hover:scale-[1.02] transition-all"
+                    className="rounded-full bg-gradient-to-r from-[#0D9488] to-[#0F766E] px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-[#0D9488]/25 hover:shadow-xl hover:scale-[1.02] transition-all"
                   >
-                    Start Free Assessment (Open Access) →
+                    Start Assessment →
                   </button>
                   <span className="text-xs text-[#64748B]">
                     100% Free during Open Access • Full 4-domain gamified battery + downloadable clinical profile and sensory accommodations.
@@ -367,7 +568,7 @@ export default function AutismAssessmentPage() {
               </div>
 
               <div className="w-full md:w-80 shrink-0 text-center">
-                <div className="relative mx-auto w-64 h-64 rounded-3xl bg-gradient-to-tr from-[#DBEAFE] to-[#E0E7FF] p-4 flex items-center justify-center shadow-inner">
+                <div className="relative mx-auto w-64 h-64 rounded-3xl bg-gradient-to-tr from-[#CCFBF1] to-[#E0F2FE] p-4 flex items-center justify-center shadow-inner border border-[#99F6E4]">
                   <img
                     src="/decor/itw/itw-autism-sticker.webp"
                     alt="PRISM Autism Profile"
@@ -375,7 +576,7 @@ export default function AutismAssessmentPage() {
                     className="max-h-full max-w-full object-contain filter drop-shadow-md"
                   />
                 </div>
-                <p className="mt-3 text-xs text-[#78716C] italic">
+                <p className="mt-3 text-xs text-[#78716C] italic font-medium">
                   Aligned with ADOS-2, CARS-2 & SPM-2 Dimensions
                 </p>
               </div>
@@ -383,75 +584,76 @@ export default function AutismAssessmentPage() {
           </div>
         )}
 
-        {/* 2. PROFILE INTAKE */}
+        {/* 2. PARTICIPANT DEMOGRAPHICS */}
         {stage === 'profile' && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-xl">
-            <h2 className="font-patrick text-3xl text-[#111827] mb-2">Participant & Communication Baseline</h2>
+            <h2 className="font-patrick text-3xl text-[#111827] mb-2">Participant Social & Sensory Baseline</h2>
             <p className="text-sm text-[#64748B] mb-6">
-              Capturing communication modalities and sensory triggers allows personalized profile calibration.
+              Captures communication preferences and environmental triggers before initiating interactive modules.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#475569] mb-1.5">Child or Participant Name *</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#475569] mb-1.5">Child / Participant Name *</label>
                 <input
                   type="text"
                   value={profile.childName}
                   onChange={(e) => setProfile({...profile, childName: e.target.value})}
-                  placeholder="e.g. Diya S."
-                  className="w-full rounded-xl border border-[#CBD5E1] p-3 text-sm focus:border-[#3B82F6] focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/20"
+                  placeholder="e.g. Diya Sengupta"
+                  className="w-full rounded-xl border border-[#CBD5E1] p-3 text-sm focus:border-[#0D9488] focus:outline-none"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#475569] mb-1.5">Chronological Age *</label>
-                <select
+                <input
+                  type="number"
+                  min="3"
+                  max="18"
                   value={profile.childAge}
                   onChange={(e) => setProfile({...profile, childAge: Number(e.target.value)})}
-                  className="w-full rounded-xl border border-[#CBD5E1] p-3 text-sm focus:border-[#3B82F6] focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/20 bg-white"
-                >
-                  {[3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18].map((age) => (
-                    <option key={age} value={age}>{age} years old</option>
-                  ))}
-                </select>
+                  className="w-full rounded-xl border border-[#CBD5E1] p-3 text-sm focus:border-[#0D9488] focus:outline-none"
+                />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#475569] mb-1.5">Primary Communication Modality</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#475569] mb-1.5">Expressive Communication Style</label>
                 <select
                   value={profile.communicationStyle}
                   onChange={(e) => setProfile({...profile, communicationStyle: e.target.value})}
-                  className="w-full rounded-xl border border-[#CBD5E1] p-3 text-sm focus:border-[#3B82F6] focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/20 bg-white"
+                  className="w-full rounded-xl border border-[#CBD5E1] p-3 text-sm focus:border-[#0D9488] focus:outline-none bg-white"
                 >
-                  <option>Fluent Verbal Communication</option>
-                  <option>Emerging Phrases / Single Words</option>
-                  <option>Gestalt Language Processor (Echolalia)</option>
-                  <option>AAC Tablet / Picture Exchange</option>
-                  <option>Non-Verbal / Gestural Communication</option>
+                  <option>Fluent verbal speech</option>
+                  <option>Phrase speech (2–4 word utterances)</option>
+                  <option>Single words with gestures</option>
+                  <option>AAC device / Picture Communication Symbols (PECS)</option>
+                  <option>Non-speaking / Gestural communication</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#475569] mb-1.5">Informant Relationship</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#475569] mb-1.5">Informant Role</label>
                 <select
                   value={profile.informantRole}
                   onChange={(e) => setProfile({...profile, informantRole: e.target.value})}
-                  className="w-full rounded-xl border border-[#CBD5E1] p-3 text-sm focus:border-[#3B82F6] focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/20 bg-white"
+                  className="w-full rounded-xl border border-[#CBD5E1] p-3 text-sm focus:border-[#0D9488] focus:outline-none bg-white"
                 >
                   <option>Parent / Primary Caregiver</option>
-                  <option>Special Educator / Therapist</option>
-                  <option>Self-Evaluation</option>
+                  <option>Speech-Language Pathologist (SLP)</option>
+                  <option>Occupational Therapist (OT)</option>
+                  <option>Special Educator / Teacher</option>
+                  <option>Self-Advocate / Adult</option>
                 </select>
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#475569] mb-1.5">Main Sensory Triggers & Preferences</label>
-                <input
-                  type="text"
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#475569] mb-1.5">Primary Sensory Sensitivities & Calming Strategies</label>
+                <textarea
+                  rows={2}
                   value={profile.primarySensitivities}
                   onChange={(e) => setProfile({...profile, primarySensitivities: e.target.value})}
-                  placeholder="e.g. Overwhelmed by sudden noises, avoids eye contact when stressed, seeks deep pressure"
-                  className="w-full rounded-xl border border-[#CBD5E1] p-3 text-sm focus:border-[#3B82F6] focus:outline-none focus:ring-2 focus:ring-[#3B82F6]/20"
+                  placeholder="e.g. Sensitive to fluorescent flicker and blender sounds; calmed by deep pressure or quiet swing."
+                  className="w-full rounded-xl border border-[#CBD5E1] p-3 text-sm focus:border-[#0D9488] focus:outline-none"
                 />
               </div>
             </div>
@@ -462,15 +664,15 @@ export default function AutismAssessmentPage() {
                 onClick={() => setStage('intro')}
                 className="text-sm font-semibold text-[#64748B] hover:text-[#111827]"
               >
-                Back
+                ← Back
               </button>
               <button
                 type="button"
                 disabled={!profile.childName.trim()}
                 onClick={() => { playSound('chime'); setStage('ja_intro') }}
-                className="rounded-full bg-[#3B82F6] px-8 py-3 text-sm font-bold text-white shadow-md hover:bg-[#2563EB] disabled:opacity-50 transition-all"
+                className="rounded-full bg-[#0D9488] px-8 py-3 text-sm font-bold text-white shadow-md hover:bg-[#0F766E] disabled:opacity-50 transition-all"
               >
-                Begin Task 1: Joint Attention Safari →
+                Begin Task 1: Courtyard Social Referencing →
               </button>
             </div>
           </div>
@@ -479,17 +681,17 @@ export default function AutismAssessmentPage() {
         {/* 3. JOINT ATTENTION INTRO */}
         {stage === 'ja_intro' && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-xl text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#DBEAFE] text-3xl">
-              👀
+            <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#CCFBF1] to-[#E0F2FE] p-2 border border-[#99F6E4] shadow-md">
+              <CourtyardGuideAvatar gaze="center" isPointing={false}/>
             </div>
-            <h2 className="font-patrick text-3xl text-[#111827] mb-3">Task 1: Joint Attention & Social Referencing</h2>
+            <h2 className="font-patrick text-3xl text-[#111827] mb-3">Task 1: Courtyard Social Referencing (Joint Attention)</h2>
             <p className="mx-auto max-w-lg text-sm text-[#475569] leading-relaxed mb-6">
-              Joint attention—the natural human reflex to follow another person’s eye gaze and pointing gesture—is a cornerstone of early social reciprocity.
+              Joint attention—the natural human reflex to follow another person’s eye gaze and pointing gesture—is a cornerstone of early social reciprocity (ADOS-2 Module 1–3).
             </p>
 
             <div className="mx-auto max-w-md rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-6 text-left space-y-3 mb-8">
-              <p className="text-xs text-[#334155] leading-normal">
-                Watch the friendly guide in the courtyard. When they <strong>look or point toward a jar</strong>, tap the jar they are showing you!
+              <p className="text-xs text-[#334155] leading-normal font-semibold">
+                Meet <strong className="text-[#0D9488]">Aria</strong> in the courtyard veranda. When Aria looks or points toward an artisanal vessel, tap the vessel she is showing you!
               </p>
             </div>
 
@@ -502,9 +704,9 @@ export default function AutismAssessmentPage() {
                 setJaCorrectCount(0)
                 setStage('ja_run')
               }}
-              className="rounded-full bg-[#3B82F6] px-10 py-3.5 font-bold text-white shadow-lg hover:bg-[#2563EB] hover:scale-105 transition-all text-base"
+              className="rounded-full bg-[#0D9488] px-10 py-3.5 font-bold text-white shadow-lg hover:bg-[#0F766E] hover:scale-105 transition-all text-base"
             >
-              Start Joint Attention Probes (4 Trials) →
+              Start Courtyard Probes (4 Trials) →
             </button>
           </div>
         )}
@@ -513,38 +715,44 @@ export default function AutismAssessmentPage() {
         {stage === 'ja_run' && jaTrialIndex < JA_TRIALS.length && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B]">
-                Probe {jaTrialIndex + 1} of {JA_TRIALS.length}
+              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3 py-1 rounded-full">
+                Observation {jaTrialIndex + 1} of {JA_TRIALS.length}
               </span>
-              <span className="text-xs font-semibold text-[#3B82F6]">Follow the guide's gaze & gesture</span>
+              <span className="text-xs font-semibold text-[#0D9488]">
+                {JA_TRIALS[jaTrialIndex].title}
+              </span>
             </div>
 
-            <div className="my-8 p-6 rounded-3xl bg-gradient-to-b from-[#FEF3C7] to-[#FDF8EE] border border-[#FDE68A]">
-              {/* Character Avatar */}
-              <div className="mx-auto mb-6 flex flex-col items-center">
-                <div className="h-24 w-24 rounded-full bg-white border-4 border-[#05B076] shadow-md flex items-center justify-center text-5xl">
-                  {JA_TRIALS[jaTrialIndex].cueType === 'point' ? '🙋‍♀️' : '👀'}
-                </div>
-                <div className="mt-2 text-xs font-bold text-[#1E293B] bg-white/90 px-3 py-1 rounded-full shadow-sm">
-                  {JA_TRIALS[jaTrialIndex].avatarEyeDir}
-                </div>
+            {/* Courtyard Veranda Scene */}
+            <div className="my-8 p-6 md:p-10 rounded-3xl bg-gradient-to-b from-[#FEF3C7]/40 via-[#FDFBF7] to-[#F1F5F9] border border-[#FDE68A]/60 shadow-inner">
+              {/* Illustrated Guide Character */}
+              <div className="mx-auto mb-8">
+                <CourtyardGuideAvatar
+                  gaze={JA_TRIALS[jaTrialIndex].avatarGaze}
+                  isPointing={JA_TRIALS[jaTrialIndex].isPointing}
+                />
               </div>
 
-              {/* 3 Terracotta Jars */}
-              <div className="flex justify-center gap-6">
+              {/* 3 Artisanal Vessels on Pedestals */}
+              <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto">
                 {[
-                  {label: 'Jar A (Left)', emoji: '🏺'},
-                  {label: 'Jar B (Center)', emoji: '🍯'},
-                  {label: 'Jar C (Right)', emoji: '🏺'},
+                  {type: 'A' as const, label: 'Lotus Urn', desc: 'Pedestal A'},
+                  {type: 'B' as const, label: 'Amphora', desc: 'Pedestal B'},
+                  {type: 'C' as const, label: 'Willow Vase', desc: 'Pedestal C'},
                 ].map((pot, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => handlePotSelect(idx)}
-                    className="flex flex-col items-center rounded-2xl bg-white border-2 border-[#CBD5E1] p-5 shadow-sm hover:border-[#3B82F6] hover:bg-[#EFF6FF] active:scale-95 transition-all"
+                    className="flex flex-col items-center justify-between rounded-2xl bg-white border-2 border-[#CBD5E1] p-4 shadow-sm hover:border-[#0D9488] hover:bg-[#F0FDFA] active:scale-95 transition-all group"
                   >
-                    <span className="text-5xl">{pot.emoji}</span>
-                    <span className="mt-2 text-xs font-semibold text-[#475569]">{pot.label}</span>
+                    <ArtisanVesselSvg type={pot.type}/>
+                    <div className="mt-3 text-center">
+                      <span className="block text-xs font-bold text-[#1E293B] group-hover:text-[#0D9488]">
+                        {pot.label}
+                      </span>
+                      <span className="text-[10px] text-[#64748B]">{pot.desc}</span>
+                    </div>
                   </button>
                 ))}
               </div>
@@ -555,12 +763,14 @@ export default function AutismAssessmentPage() {
         {/* 5. THEORY OF MIND INTRO */}
         {stage === 'tom_intro' && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-xl text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#EDE9FE] text-3xl">
-              🧩
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-[#EDE9FE] border border-[#DDD6FE] shadow-md">
+              <svg viewBox="0 0 24 24" className="w-10 h-10 text-[#7C3AED]" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
+              </svg>
             </div>
-            <h2 className="font-patrick text-3xl text-[#111827] mb-3">Task 2: Contextual Nuance & Pragmatic Language</h2>
+            <h2 className="font-patrick text-3xl text-[#111827] mb-3">Task 2: Social Pragmatics & Contextual Nuance</h2>
             <p className="mx-auto max-w-lg text-sm text-[#475569] leading-relaxed mb-6">
-              Assesses the ability to decode social context, implied emotional meaning, and pragmatic intent versus strictly literal word interpretation.
+              Assesses Theory of Mind (ToM)—distinguishing between what is said literally and what is meant socially, such as indirect requests, emotional masking, and idioms.
             </p>
 
             <button
@@ -571,9 +781,9 @@ export default function AutismAssessmentPage() {
                 setTomScore(0)
                 setStage('tom_run')
               }}
-              className="rounded-full bg-[#3B82F6] px-10 py-3.5 font-bold text-white shadow-lg hover:bg-[#2563EB] hover:scale-105 transition-all text-base"
+              className="rounded-full bg-[#0D9488] px-10 py-3.5 font-bold text-white shadow-lg hover:bg-[#0F766E] hover:scale-105 transition-all text-base"
             >
-              Start Nuance Decoding (4 Scenarios) →
+              Start Story Vignettes (4 Scenarios) →
             </button>
           </div>
         )}
@@ -582,157 +792,211 @@ export default function AutismAssessmentPage() {
         {stage === 'tom_run' && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-2xl">
             <div className="flex justify-between items-center mb-6">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B]">
-                Scenario {tomTrialIndex + 1} of {TOM_VIGNETTES.length}
+              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3 py-1 rounded-full">
+                Vignette {tomTrialIndex + 1} of {TOM_VIGNETTES.length}
               </span>
-              <span className="text-xs text-[#3B82F6] font-semibold">Social Context vs. Literal Words</span>
+              <span className="text-xs font-semibold text-[#0D9488]">Pragmatic Language Reasoning</span>
             </div>
 
-            <div className="rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-6 mb-6">
-              <p className="text-base text-[#1E293B] leading-relaxed italic mb-4">
+            <div className="p-6 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] mb-8">
+              <div className="flex items-center gap-2 mb-2 text-xs font-bold text-[#0D9488] uppercase tracking-wider">
+                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                </svg>
+                Story Context
+              </div>
+              <p className="text-base text-[#1E293B] leading-relaxed italic mb-4 font-serif">
                 "{TOM_VIGNETTES[tomTrialIndex].scenario}"
               </p>
-              <p className="text-sm font-bold text-[#0F172A]">
+              <h3 className="text-sm font-bold text-[#0F172A]">
                 {TOM_VIGNETTES[tomTrialIndex].question}
-              </p>
+              </h3>
             </div>
 
             <div className="space-y-3">
-              {TOM_VIGNETTES[tomTrialIndex].options.map((opt, i) => (
+              {TOM_VIGNETTES[tomTrialIndex].options.map((opt, idx) => (
                 <button
-                  key={i}
+                  key={idx}
                   type="button"
                   onClick={() => handleTomAnswer(opt.correct)}
-                  className="w-full text-left rounded-xl border border-[#CBD5E1] bg-white p-4 text-sm font-medium text-[#334155] shadow-sm hover:border-[#3B82F6] hover:bg-[#EFF6FF] transition-all"
+                  className="w-full text-left p-4 rounded-xl border border-[#CBD5E1] bg-white hover:border-[#0D9488] hover:bg-[#F0FDFA] transition-all flex items-center justify-between text-xs font-semibold text-[#334155]"
                 >
-                  {opt.text}
+                  <span>{opt.text}</span>
+                  <span className="text-[#0D9488] font-bold text-sm">→</span>
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* 7. SENSORY THRESHOLD CALIBRATOR */}
+        {/* 7. SENSORY CALIBRATION INTRO */}
         {stage === 'sensory_intro' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-xl">
-            <div className="inline-flex items-center gap-2 rounded-full bg-[#05B076]/10 px-3 py-1 text-xs font-bold text-[#065F46] uppercase tracking-wider mb-2">
-              Sensory Processing Measure (SPM-2 Mapped)
+          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-xl text-center">
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-[#FEF3C7] border border-[#FDE68A] shadow-md">
+              <svg viewBox="0 0 24 24" className="w-10 h-10 text-[#D97706]" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+              </svg>
             </div>
-            <h2 className="font-patrick text-3xl text-[#111827] mb-2">Task 3: Sensory Reactivity Landscape</h2>
-            <p className="text-sm text-[#64748B] mb-8">
-              Autistic brains experience environmental sensory input with profound qualitative intensity. Please calibrate the participant’s sensitivity thresholds below:
+            <h2 className="font-patrick text-3xl text-[#111827] mb-3">Task 3: Sensory Modulation & Reactivity Map (SPM-2)</h2>
+            <p className="mx-auto max-w-lg text-sm text-[#475569] leading-relaxed mb-6">
+              Captures sensory thresholds across Visual, Auditory, and Tactile channels, identifying specific overload triggers and restorative sanctuary needs.
             </p>
 
-            <div className="space-y-8 mb-10">
-              <div className="rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-5">
+            <button
+              type="button"
+              onClick={() => {
+                playSound('sensory')
+                setStage('sensory_run')
+              }}
+              className="rounded-full bg-[#0D9488] px-10 py-3.5 font-bold text-white shadow-lg hover:bg-[#0F766E] hover:scale-105 transition-all text-base"
+            >
+              Open Sensory Calibration Lab →
+            </button>
+          </div>
+        )}
+
+        {/* 8. SENSORY CALIBRATION RUN */}
+        {stage === 'sensory_run' && (
+          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#0D9488]">SPM-2 Sensory Profile</span>
+                <h2 className="font-patrick text-3xl text-[#111827]">Tactile & Environmental Calibration</h2>
+              </div>
+              <span className="text-xs font-semibold bg-[#F1F5F9] text-[#475569] px-3 py-1.5 rounded-full">
+                Interactive Sliders
+              </span>
+            </div>
+
+            <div className="space-y-8">
+              {/* Visual Sensitivity Slider */}
+              <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-bold text-[#1E293B]">💡 Visual Sensitivity (Flicker & Glare)</label>
-                  <span className="text-xs font-bold px-2 py-0.5 rounded bg-[#FEF3C7] text-[#92400E]">{sensoryVisual}/10</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#0F172A] flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400"/>
+                    Visual & Luminance Reactivity
+                  </span>
+                  <span className="text-xs font-mono font-bold text-[#0D9488] bg-white px-2 py-0.5 rounded border border-[#CBD5E1]">
+                    {sensoryVisual} / 10
+                  </span>
                 </div>
+                <p className="text-xs text-[#64748B] mb-3">
+                  1 = Enjoys bright dynamic light • 10 = Severe discomfort / headaches from fluorescent tubes and glare
+                </p>
                 <input
                   type="range"
                   min="1"
                   max="10"
                   value={sensoryVisual}
-                  onChange={(e) => setSensoryVisual(Number(e.target.value))}
-                  className="w-full accent-[#05B076]"
+                  onChange={(e) => {
+                    setSensoryVisual(Number(e.target.value))
+                    playSound('tap')
+                  }}
+                  className="w-full accent-[#0D9488] cursor-pointer"
                 />
-                <div className="flex justify-between text-[11px] text-[#64748B] mt-1">
-                  <span>Comfortable with bright fluorescent light</span>
-                  <span>Distressed by glare, flickers, crowded visuals</span>
-                </div>
               </div>
 
-              <div className="rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-5">
+              {/* Auditory Sensitivity Slider */}
+              <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-bold text-[#1E293B]">🔊 Auditory Sensitivity (Multi-Source Noise)</label>
-                  <span className="text-xs font-bold px-2 py-0.5 rounded bg-[#FEE2E2] text-[#B91C1C]">{sensoryAuditory}/10</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#0F172A] flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500"/>
+                    Auditory & Acoustic Resonance Reactivity
+                  </span>
+                  <span className="text-xs font-mono font-bold text-[#0D9488] bg-white px-2 py-0.5 rounded border border-[#CBD5E1]">
+                    {sensoryAuditory} / 10
+                  </span>
                 </div>
+                <p className="text-xs text-[#64748B] mb-3">
+                  1 = Comfortable in busy multi-talker rooms • 10 = Covers ears at sudden sounds (blender, hand dryer, school bell)
+                </p>
                 <input
                   type="range"
                   min="1"
                   max="10"
                   value={sensoryAuditory}
-                  onChange={(e) => setSensoryAuditory(Number(e.target.value))}
-                  className="w-full accent-[#EF4444]"
+                  onChange={(e) => {
+                    setSensoryAuditory(Number(e.target.value))
+                    playSound('sensory')
+                  }}
+                  className="w-full accent-[#0D9488] cursor-pointer"
                 />
-                <div className="flex justify-between text-[11px] text-[#64748B] mt-1">
-                  <span>Easily ignores background murmurs</span>
-                  <span>Physical discomfort at loud, sudden, echoing sounds</span>
-                </div>
               </div>
 
-              <div className="rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-5">
+              {/* Tactile Sensitivity Slider */}
+              <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-bold text-[#1E293B]">👕 Tactile Sensitivity (Fabrics & Seams)</label>
-                  <span className="text-xs font-bold px-2 py-0.5 rounded bg-[#EDE9FE] text-[#6D28D9]">{sensoryTactile}/10</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#0F172A] flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-400"/>
+                    Tactile & Clothing Seam Sensitivity
+                  </span>
+                  <span className="text-xs font-mono font-bold text-[#0D9488] bg-white px-2 py-0.5 rounded border border-[#CBD5E1]">
+                    {sensoryTactile} / 10
+                  </span>
                 </div>
+                <p className="text-xs text-[#64748B] mb-3">
+                  1 = Tolerates any fabric or tag • 10 = Rejects socks with seams, tight waistbands, or sticky textures
+                </p>
                 <input
                   type="range"
                   min="1"
                   max="10"
                   value={sensoryTactile}
-                  onChange={(e) => setSensoryTactile(Number(e.target.value))}
-                  className="w-full accent-[#8B5CF6]"
+                  onChange={(e) => {
+                    setSensoryTactile(Number(e.target.value))
+                    playSound('tap')
+                  }}
+                  className="w-full accent-[#0D9488] cursor-pointer"
                 />
-                <div className="flex justify-between text-[11px] text-[#64748B] mt-1">
-                  <span>Wears any clothing without noticing</span>
-                  <span>Severe reaction to tags, socks, or unexpected touches</span>
-                </div>
               </div>
 
+              {/* Sensory Sanctuary Comfort Environment */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#475569] mb-2">Most Restorative Sensory Sanctuary</label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {[
-                    'Dim quiet corner with soft cushions',
-                    'Deep pressure (weighted blanket / firm hug)',
-                    'Rhythmic movement (rocking, swinging, pacing)',
-                    'Auditory isolation (noise-cancelling headphones)',
-                  ].map((sanctuary) => (
-                    <button
-                      key={sanctuary}
-                      type="button"
-                      onClick={() => setSensorySanctuaryPref(sanctuary)}
-                      className={`p-3 rounded-xl text-xs font-semibold text-left border transition-all ${
-                        sensorySanctuaryPref === sanctuary
-                          ? 'border-[#05B076] bg-[#ECFDF5] text-[#065F46] shadow-sm'
-                          : 'border-[#CBD5E1] bg-white text-[#475569] hover:bg-[#F8FAFC]'
-                      }`}
-                    >
-                      ✓ {sanctuary}
-                    </button>
-                  ))}
-                </div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#475569] mb-2">
+                  Restorative Sensory Sanctuary Preference
+                </label>
+                <select
+                  value={sensorySanctuaryPref}
+                  onChange={(e) => setSensorySanctuaryPref(e.target.value)}
+                  className="w-full rounded-xl border border-[#CBD5E1] p-3 text-xs focus:border-[#0D9488] focus:outline-none bg-white font-semibold"
+                >
+                  <option>Dim quiet corner with soft cushions & weighted blanket</option>
+                  <option>Outdoor garden space with gentle breeze and tree shade</option>
+                  <option>Noise-cancelling headphones playing rhythmic brown noise</option>
+                  <option>Low-sensory hammock or rhythmic rocking chair</option>
+                </select>
               </div>
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-[#F1F5F9]">
+            <div className="mt-8 flex justify-end pt-6 border-t border-[#F1F5F9]">
               <button
                 type="button"
-                onClick={() => { playSound('chime'); setStage('dccs_intro') }}
-                className="rounded-full bg-[#05B076] px-8 py-3.5 text-sm font-bold text-white shadow-md hover:bg-[#049A68] transition-all"
+                onClick={() => {
+                  playSound('complete')
+                  setStage('dccs_intro')
+                }}
+                className="rounded-full bg-[#0D9488] px-8 py-3 text-sm font-bold text-white shadow-md hover:bg-[#0F766E] transition-all"
               >
-                Proceed to Task 4: Set-Shifting Flexibility →
+                Next: Task 4 (Cognitive Set-Shifting) →
               </button>
             </div>
           </div>
         )}
 
-        {/* 8. DCCS INTRO */}
+        {/* 9. DCCS SET-SHIFTING INTRO */}
         {stage === 'dccs_intro' && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-xl text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#DCFCE7] text-3xl">
-              🔄
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-[#CCFBF1] border border-[#99F6E4] shadow-md">
+              <JewelCardSvg color="blue" shape="star"/>
             </div>
-            <h2 className="font-patrick text-3xl text-[#111827] mb-3">Task 4: Dimensional Change Card Sort (Set-Shifting)</h2>
+            <h2 className="font-patrick text-3xl text-[#111827] mb-3">Task 4: Dimensional Card Sort (Cognitive Set-Shifting)</h2>
             <p className="mx-auto max-w-lg text-sm text-[#475569] leading-relaxed mb-6">
-              Assesses cognitive flexibility, rule switching, and the need for predictability vs. fluid adaptation.
+              The Dimensional Change Card Sort (DCCS) evaluates mental flexibility, rule shifting, and perseverative cognitive inertia.
             </p>
 
             <div className="mx-auto max-w-md rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-6 text-left space-y-3 mb-8">
-              <p className="text-xs text-[#334155] leading-normal">
-                You will sort cards into matching boxes. The rule will start by matching <strong>COLOR</strong>, but pay close attention—the rule will switch to matching <strong>SHAPE</strong>!
+              <p className="text-xs text-[#334155] leading-normal font-semibold">
+                You will sort cards into two bins. Watch out! The sorting rule will <strong>suddenly shift from COLOR to SHAPE</strong>!
               </p>
             </div>
 
@@ -742,244 +1006,281 @@ export default function AutismAssessmentPage() {
                 playSound('tap')
                 setDccsTrialIndex(0)
                 setDccsPerseverations(0)
+                setDccsResponseTimes([])
                 setStage('dccs_run')
               }}
-              className="rounded-full bg-[#05B076] px-10 py-3.5 font-bold text-white shadow-lg hover:bg-[#049A68] hover:scale-105 transition-all text-base"
+              className="rounded-full bg-[#0D9488] px-10 py-3.5 font-bold text-white shadow-lg hover:bg-[#0F766E] hover:scale-105 transition-all text-base"
             >
-              Start Set-Shifting Trials (6 Trials) →
+              Start Sorting Puzzle (6 Trials) →
             </button>
           </div>
         )}
 
-        {/* 9. DCCS RUN */}
+        {/* 10. DCCS SET-SHIFTING RUN */}
         {stage === 'dccs_run' && dccsTrialIndex < DCCS_CARDS.length && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B]">
-                Trial {dccsTrialIndex + 1} of {DCCS_CARDS.length}
+              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3 py-1 rounded-full">
+                Card {dccsTrialIndex + 1} of {DCCS_CARDS.length}
               </span>
-              <span className="text-sm font-bold px-3 py-1 rounded-full bg-[#DCFCE7] text-[#15803D] uppercase">
-                Active Rule: Match by {dccsRule.toUpperCase()}
-              </span>
+              <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/10 border border-amber-500/30 px-3.5 py-1 text-xs font-bold text-amber-800">
+                ACTIVE RULE: {dccsRule === 'color' ? '🎨 SORT BY COLOR' : '🔷 SORT BY SHAPE'}
+              </div>
             </div>
 
             {/* Stimulus Card */}
-            <div className="my-8 mx-auto w-48 h-48 rounded-3xl bg-[#F8FAFC] border-4 border-[#CBD5E1] shadow-lg flex flex-col items-center justify-center">
-              <span className={`text-6xl ${DCCS_CARDS[dccsTrialIndex].color === 'red' ? 'text-[#DC2626]' : 'text-[#2563EB]'}`}>
-                {DCCS_CARDS[dccsTrialIndex].shape === 'star' ? '★' : '●'}
-              </span>
-              <span className="mt-2 text-xs font-bold uppercase tracking-wider text-[#64748B]">
-                {DCCS_CARDS[dccsTrialIndex].color} {DCCS_CARDS[dccsTrialIndex].shape}
-              </span>
+            <div className="my-8 flex flex-col items-center">
+              <span className="text-xs text-[#64748B] font-semibold mb-3">Sort this artifact:</span>
+              <div className="scale-125">
+                <JewelCardSvg
+                  color={DCCS_CARDS[dccsTrialIndex].color}
+                  shape={DCCS_CARDS[dccsTrialIndex].shape}
+                />
+              </div>
             </div>
 
-            {/* Target Bins */}
-            <div className="flex justify-center gap-6 max-w-md mx-auto">
+            {/* Sorting Bins */}
+            <div className="grid grid-cols-2 gap-4 max-w-md mx-auto pt-4">
               <button
                 type="button"
                 onClick={() => handleDccsSort(0)}
-                className="flex-1 rounded-2xl border-2 border-[#CBD5E1] bg-white p-5 shadow-md hover:border-[#05B076] active:scale-95 transition-all text-center"
+                className="flex flex-col items-center rounded-2xl bg-white border-2 border-rose-300 p-5 shadow-md hover:bg-rose-50 active:scale-95 transition-all"
               >
-                <div className="text-4xl text-[#DC2626]">●</div>
-                <div className="text-xs font-bold text-[#475569] mt-1">Red Circle Bin</div>
+                <JewelCardSvg color="red" shape="circle"/>
+                <span className="mt-3 text-xs font-bold text-rose-800">Bin 1 (Red Circle)</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleDccsSort(1)}
-                className="flex-1 rounded-2xl border-2 border-[#CBD5E1] bg-white p-5 shadow-md hover:border-[#05B076] active:scale-95 transition-all text-center"
+                className="flex flex-col items-center rounded-2xl bg-white border-2 border-blue-300 p-5 shadow-md hover:bg-blue-50 active:scale-95 transition-all"
               >
-                <div className="text-4xl text-[#2563EB]">★</div>
-                <div className="text-xs font-bold text-[#475569] mt-1">Blue Star Bin</div>
+                <JewelCardSvg color="blue" shape="star"/>
+                <span className="mt-3 text-xs font-bold text-blue-800">Bin 2 (Blue Star)</span>
               </button>
             </div>
           </div>
         )}
 
-        {/* 10. SCQ DIMENSIONAL QUESTIONNAIRE (12 ITEMS) */}
+        {/* 11. SCQ QUESTIONNAIRE */}
         {stage === 'scq' && (
           <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-xl">
-            <div className="inline-flex items-center gap-2 rounded-full bg-[#3B82F6]/10 px-3 py-1 text-xs font-bold text-[#1D4ED8] uppercase tracking-wider mb-2">
-              Social Communication Questionnaire (SCQ Standard)
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#0D9488]">Clinical Developmental Screener</span>
+                <h2 className="font-patrick text-3xl text-[#111827]">Social Communication Questionnaire (SCQ)</h2>
+              </div>
+              <span className="text-xs font-semibold bg-[#F1F5F9] text-[#475569] px-3 py-1.5 rounded-full">
+                Answered: {Object.keys(scqAnswers).length} / 12
+              </span>
             </div>
-            <h2 className="font-patrick text-3xl text-[#111827] mb-2">Developmental Social & Behavioral History</h2>
-            <p className="text-sm text-[#64748B] mb-8">
-              Please answer whether these behaviors describe the participant across everyday settings:
+            <p className="text-xs text-[#64748B] mb-8 leading-relaxed">
+              Based on validated SCQ lifetime developmental markers across reciprocal social interaction, communication, and repetitive routines.
             </p>
 
             <div className="space-y-4">
-              {SCQ_QUESTIONS.map((q, idx) => (
-                <div key={q.id} className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <p className="text-sm font-medium text-[#1E293B]">
-                    {idx + 1}. {q.text}
-                  </p>
-                  <div className="flex gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        playSound('tap')
-                        setScqAnswers((prev) => ({...prev, [q.id]: 0}))
-                      }}
-                      className={`py-2 px-4 rounded-xl text-xs font-bold border transition-all ${
-                        scqAnswers[q.id] === 0
-                          ? 'bg-[#64748B] text-white border-[#64748B]'
-                          : 'bg-white text-[#475569] border-[#CBD5E1] hover:bg-[#F1F5F9]'
-                      }`}
-                    >
-                      No
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        playSound('tap')
-                        setScqAnswers((prev) => ({...prev, [q.id]: 1}))
-                      }}
-                      className={`py-2 px-4 rounded-xl text-xs font-bold border transition-all ${
-                        scqAnswers[q.id] === 1
-                          ? 'bg-[#3B82F6] text-white border-[#3B82F6] shadow-sm'
-                          : 'bg-white text-[#475569] border-[#CBD5E1] hover:bg-[#F1F5F9]'
-                      }`}
-                    >
-                      Yes
-                    </button>
+              {SCQ_QUESTIONS.map((q, idx) => {
+                const currentVal = scqAnswers[q.id]
+                return (
+                  <div key={q.id} className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#CBD5E1] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0D9488]/10 text-[#0D9488] font-bold text-xs">
+                        {idx + 1}
+                      </span>
+                      <p className="text-xs font-semibold text-[#1E293B] leading-relaxed">{q.text}</p>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playSound('tap')
+                          setScqAnswers({...scqAnswers, [q.id]: 0})
+                        }}
+                        className={`rounded-xl py-2 px-4 text-xs font-semibold transition-all ${
+                          currentVal === 0
+                            ? 'bg-[#0D9488] text-white shadow-md'
+                            : 'bg-white text-[#64748B] border border-[#CBD5E1] hover:bg-[#F1F5F9]'
+                        }`}
+                      >
+                        No
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playSound('tap')
+                          setScqAnswers({...scqAnswers, [q.id]: 1})
+                        }}
+                        className={`rounded-xl py-2 px-4 text-xs font-semibold transition-all ${
+                          currentVal === 1
+                            ? 'bg-amber-600 text-white shadow-md'
+                            : 'bg-white text-[#64748B] border border-[#CBD5E1] hover:bg-[#F1F5F9]'
+                        }`}
+                      >
+                        Yes
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
-            <div className="mt-10 flex justify-between items-center pt-6 border-t border-[#F1F5F9]">
-              <div className="text-xs text-[#64748B]">
-                {Object.keys(scqAnswers).length} of {SCQ_QUESTIONS.length} items completed
-              </div>
+            <div className="mt-8 flex justify-end pt-6 border-t border-[#F1F5F9]">
               <button
                 type="button"
                 onClick={submitAssessment}
-                className="rounded-full bg-gradient-to-r from-[#3B82F6] to-[#2563EB] px-8 py-3.5 text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all"
+                className="rounded-full bg-gradient-to-r from-[#0D9488] to-[#0F766E] px-10 py-3.5 text-base font-bold text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all"
               >
-                Synthesize PRISM Clinical Report →
+                Generate Diagnostic Assessment Report →
               </button>
             </div>
           </div>
         )}
 
-        {/* 11. ANALYZING LOADER */}
+        {/* 12. ANALYZING SPINNER */}
         {stage === 'analyzing' && (
-          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-16 shadow-xl text-center">
-            <div className="mx-auto mb-6 h-14 w-14 animate-spin rounded-full border-4 border-[#3B82F6]/20 border-t-[#3B82F6]" />
-            <h2 className="font-patrick text-3xl text-[#111827] mb-2">Synthesizing PRISM Profile…</h2>
-            <p className="text-sm text-[#64748B] max-w-md mx-auto">
-              Mapping joint attention latency, pragmatic Theory of Mind nuance, sensory thresholds, and cognitive set-shifting flexibility against ADOS-2 and SPM-2 clinical standards…
+          <div className="rounded-3xl border border-[#E7E5E4] bg-white p-12 shadow-2xl text-center">
+            <div className="mx-auto mb-6 h-16 w-16 animate-spin rounded-full border-4 border-[#E2E8F0] border-t-[#0D9488]"/>
+            <h2 className="font-patrick text-3xl text-[#111827] mb-2">Analyzing Social-Communication & Sensory Vectors...</h2>
+            <p className="text-sm text-[#64748B] max-w-md mx-auto leading-relaxed">
+              Synthesizing Joint Attention referencing latency, contextual Theory of Mind, SPM-2 sensory thresholds, and DCCS set-shifting resilience...
             </p>
           </div>
         )}
 
-        {/* 12. CLINICAL REPORT */}
+        {/* 13. FULL CLINICAL DIAGNOSTIC REPORT */}
         {stage === 'report' && reportData && (
-          <div className="space-y-8">
-            <div className="rounded-3xl border border-[#E7E5E4] bg-white p-8 md:p-12 shadow-2xl print:border-none print:shadow-none">
-              {/* Header */}
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 border-b border-[#E2E8F0] gap-4">
-                <div>
-                  <div className="text-xs font-bold uppercase tracking-wider text-[#3B82F6]">Official Clinical Assessment</div>
-                  <h1 className="font-patrick text-3xl md:text-4xl text-[#0F172A]">{reportData.assessmentTitle}</h1>
-                  <p className="text-xs text-[#64748B] mt-1">
-                    Report ID: <span className="font-mono text-[#0F172A]">{reportData.reportId}</span> • Date: {new Date(reportData.evaluatedAt).toLocaleDateString()}
-                  </p>
+          <div className="rounded-3xl border border-[#E2E8F0] bg-white p-8 md:p-12 shadow-2xl">
+            {/* Clinic Document Header */}
+            <div className="border-b border-[#E2E8F0] pb-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#0D9488]">Clinical Assessment Document</span>
+                <h1 className="font-patrick text-3xl md:text-4xl text-[#0F172A] mt-1">
+                  {reportData.assessmentTitle}
+                </h1>
+                <div className="text-xs text-[#64748B] mt-1 font-mono">
+                  Document ID: {reportData.reportId} • Date: {new Date(reportData.evaluatedAt).toLocaleDateString()}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => window.print()}
-                  className="rounded-full border border-[#CBD5E1] bg-[#F8FAFC] px-5 py-2 text-xs font-bold text-[#1E293B] hover:bg-[#E2E8F0] transition print:hidden"
-                >
-                  🖨️ Print / Save PDF
-                </button>
               </div>
 
-              {/* Profile Banner */}
-              <div className="my-6 grid grid-cols-2 sm:grid-cols-4 gap-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-4 text-xs">
-                <div><span className="text-[#64748B] block">Participant:</span><strong>{reportData.profile.childName}</strong></div>
-                <div><span className="text-[#64748B] block">Age / Communication:</span><strong>{reportData.profile.childAge} yrs • {reportData.profile.communicationStyle}</strong></div>
-                <div><span className="text-[#64748B] block">Evaluated By:</span><strong>{reportData.profile.informantRole}</strong></div>
-                <div><span className="text-[#64748B] block">Norming Framework:</span><strong>ADOS-2 & SPM-2</strong></div>
-              </div>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="self-start md:self-auto rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] px-4 py-2 text-xs font-bold text-[#334155] hover:bg-[#F1F5F9] shadow-sm flex items-center gap-1.5"
+              >
+                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/>
+                </svg>
+                Print / Save Clinical PDF
+              </button>
+            </div>
 
-              {/* Classification Banner */}
-              <div className="rounded-2xl bg-gradient-to-r from-[#DBEAFE] to-[#DCFCE7] border border-[#BFDBFE] p-5 mb-8">
-                <div className="text-xs font-bold uppercase tracking-wider text-[#1E40AF]">Diagnostic Classification & Support Tier</div>
-                <div className="text-xl md:text-2xl font-bold text-[#0F172A] mt-1">{reportData.stats.classification}</div>
-                <div className="text-xs font-semibold text-[#1D4ED8] mt-1">{reportData.stats.supportLevel}</div>
-                <p className="text-xs text-[#475569] mt-2 leading-relaxed">{reportData.clinicalSummary}</p>
+            {/* Demographics Strip */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] mb-8 text-xs">
+              <div>
+                <span className="text-[#64748B] block">Participant</span>
+                <strong className="text-[#0F172A] text-sm">{reportData.profile.childName}</strong>
               </div>
+              <div>
+                <span className="text-[#64748B] block">Age & Communication</span>
+                <strong className="text-[#0F172A] text-sm">{reportData.profile.childAge} Years • {reportData.profile.communicationStyle}</strong>
+              </div>
+              <div>
+                <span className="text-[#64748B] block">Informant</span>
+                <strong className="text-[#0F172A] text-sm">{reportData.profile.informantRole}</strong>
+              </div>
+              <div>
+                <span className="text-[#64748B] block">Clinical Framework</span>
+                <strong className="text-[#0D9488] text-sm">ADOS-2 & SPM-2 Mapped</strong>
+              </div>
+            </div>
 
-              {/* PRISM Multi-Axial Indices */}
-              <h3 className="font-patrick text-2xl text-[#0F172A] mb-4">PRISM Multi-Axial Profile</h3>
-              <div className="space-y-4 mb-8">
-                {reportData.indices.map((idx: any) => (
-                  <div key={idx.name} className="rounded-xl border border-[#E2E8F0] p-4 bg-white">
-                    <div className="flex justify-between items-center mb-1.5">
-                      <span className="text-sm font-semibold text-[#1E293B]">{idx.name}</span>
-                      <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#EFF6FF] text-[#1D4ED8]">
-                        Score: {idx.score}/100 ({idx.status})
-                      </span>
+            {/* Primary Clinical Classification */}
+            <div className="p-6 rounded-2xl bg-gradient-to-r from-[#F0FDFA] to-[#CCFBF1] border-2 border-[#99F6E4] mb-8">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#0F766E] block mb-1">
+                Diagnostic Impression & Support Level
+              </span>
+              <div className="text-2xl font-bold text-[#0F766E] mb-2 font-poppins">
+                {reportData.stats.classification}
+              </div>
+              <div className="text-xs font-bold text-[#0D9488] bg-white/80 px-3 py-1 rounded-full inline-block mb-3 border border-[#99F6E4]">
+                {reportData.stats.supportLevel}
+              </div>
+              <p className="text-xs text-[#334155] leading-relaxed">
+                {reportData.clinicalSummary}
+              </p>
+            </div>
+
+            {/* 4-Domain Clinical Spider / Breakdown Table */}
+            <div className="mb-8">
+              <h3 className="font-patrick text-2xl text-[#0F172A] mb-4">4-Domain Neurodevelopmental Matrix</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {reportData.indices.map((idx: any, i: number) => (
+                  <div key={i} className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs font-bold text-[#0F172A]">{idx.name}</span>
+                      <span className="font-mono text-sm font-bold text-[#0D9488]">{idx.score} / 100</span>
                     </div>
-                    <div className="w-full h-2 rounded-full bg-[#F1F5F9] overflow-hidden">
+                    <div className="w-full h-2 rounded-full bg-[#E2E8F0] overflow-hidden mb-2">
                       <div
-                        className="h-full bg-[#3B82F6] transition-all"
-                        style={{width: `${idx.score}%`}}
+                        className="h-full bg-gradient-to-r from-[#0D9488] to-[#14B8A6] rounded-full"
+                        style={{width: `${Math.min(100, Math.max(10, idx.score))}%`}}
                       />
                     </div>
+                    <span className="text-[11px] font-semibold text-[#64748B] block">
+                      Status: <strong className="text-[#334155]">{idx.status}</strong>
+                    </span>
                   </div>
                 ))}
               </div>
+            </div>
 
-              {/* Strengths */}
-              <div className="my-8 rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] p-6">
-                <h4 className="font-patrick text-xl text-[#065F46] mb-3">★ Neurodivergent Strengths & Passions</h4>
-                <ul className="space-y-2 text-xs text-[#064E3B] list-disc list-inside">
-                  {reportData.strengths.map((str: string, i: number) => (
-                    <li key={i}>{str}</li>
-                  ))}
-                </ul>
+            {/* Neurodivergent Strengths Inventory */}
+            <div className="mb-8 p-6 rounded-2xl bg-amber-50/70 border border-amber-200">
+              <h3 className="font-patrick text-2xl text-amber-900 mb-3 flex items-center gap-2">
+                <svg viewBox="0 0 24 24" className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                Unique Neurodivergent Strengths Inventory
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-amber-950">
+                {reportData.strengths.map((st: string, idx: number) => (
+                  <div key={idx} className="flex items-start gap-2 bg-white/80 p-3 rounded-xl border border-amber-200/60">
+                    <span className="text-amber-600 font-bold">★</span>
+                    <span>{st}</span>
+                  </div>
+                ))}
               </div>
+            </div>
 
-              {/* Sensory Diet Blueprint */}
-              <div className="my-8 rounded-2xl bg-[#FEF3C7] border border-[#FDE68A] p-6">
-                <h4 className="font-patrick text-xl text-[#92400E] mb-3">🌿 Individualized Sensory Diet Blueprint</h4>
-                <p className="text-xs text-[#78350F] leading-relaxed mb-3">
-                  Optimal regulation sanctuary: <strong>{sensorySanctuaryPref}</strong>. Visual sensitivity calibrated at {sensoryVisual}/10; Auditory sensitivity calibrated at {sensoryAuditory}/10.
-                </p>
-                <ul className="space-y-2 text-xs text-[#92400E] list-disc list-inside">
-                  <li>Incorporate 5 minutes of deep proprioceptive input (wall push-ups, weighted lap pad) prior to seated cognitive tasks.</li>
-                  <li>Provide noise-cancelling headphones during acoustic transitions (hallways, school cafeteria, bus rides).</li>
-                  <li>Avoid sudden multi-sensory demands; allow processing pauses when communicating in bright or loud spaces.</li>
-                </ul>
+            {/* Sensory Diet & Environmental Accommodations */}
+            <div className="mb-8">
+              <h3 className="font-patrick text-2xl text-[#0F172A] mb-4">Sensory Diet & IEP Environmental Blueprint</h3>
+              <div className="space-y-3">
+                {reportData.accommodations.map((acc: string, idx: number) => (
+                  <div key={idx} className="flex items-start gap-3 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0D9488] text-white text-[11px] font-bold mt-0.5">
+                      ✓
+                    </span>
+                    <p className="text-xs text-[#334155] leading-relaxed">{acc}</p>
+                  </div>
+                ))}
               </div>
+            </div>
 
-              {/* School Accommodations */}
-              <div className="my-8 rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] p-6">
-                <h4 className="font-patrick text-xl text-[#1E40AF] mb-3">📋 School & Environmental Accommodations</h4>
-                <ul className="space-y-2 text-xs text-[#1E3A8A] list-disc list-inside">
-                  {reportData.accommodations.map((acc: string, i: number) => (
-                    <li key={i}>{acc}</li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Sign-off */}
-              <div className="mt-8 pt-6 border-t border-[#E2E8F0] flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs text-[#64748B] gap-4">
-                <div>
-                  <strong>Manasi Valluri, M.Sc.</strong>
-                  <div className="text-[11px]">Senior Pediatric Developmental Specialist & Director</div>
-                  <div className="text-[11px]">Manas Learning Centre, Chennai</div>
-                </div>
-                <div className="print:hidden">
-                  <a
-                    href="/consult"
-                    className="rounded-full bg-[#F47522] px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-[#EA580C] transition inline-block"
-                  >
-                    Discuss With Specialist • Book Consultation →
-                  </a>
-                </div>
-              </div>
+            {/* Next Steps CTA */}
+            <div className="pt-6 border-t border-[#E2E8F0] flex flex-wrap items-center justify-between gap-4">
+              <Link
+                href="/consult"
+                className="rounded-full bg-[#0D9488] px-8 py-3 text-sm font-bold text-white shadow-md hover:bg-[#0F766E] transition-all"
+              >
+                Schedule Specialist Review with Manas Developmental Team →
+              </Link>
+              <Link
+                href="/assessments"
+                className="text-xs font-semibold text-[#64748B] hover:text-[#0F172A]"
+              >
+                ← Return to Assessment Hub
+              </Link>
             </div>
           </div>
         )}

@@ -34,7 +34,7 @@ var AUL = {};
 var AU = {
   state: 'idle',            // idle | loading | playing | paused
   token: 0, queue: [], qi: -1, chunks: [], ci: 0, single: false, target: null,
-  speed: 1, icons: true, tap: false, open: false, primed: false, resume: null, note: '', url: '',
+  speed: 1, icons: false, tap: false, open: false, primed: false, resume: null, note: '', url: '',
   reg: new Map(), root: null, ui: {}, timer: null, placeTimer: null
 };
 var auEl = null, auMem = {}, auHl = null;
@@ -424,24 +424,8 @@ function auMakeIcon() {
 function auClearIcons() { AU.reg.forEach(function (rec) { rec.btn.remove(); }); AU.reg.clear(); }
 function auDecorate() {
   AU.timer = null;
-  if (!AU.root) return;
-  if (!AU.icons || !auVoiceOk()) { auClearIcons(); return; }
-  var want = auWanted(auSections());
-  AU.reg.forEach(function (rec, host) { if (!want.has(host) || !host.isConnected) { rec.btn.remove(); AU.reg.delete(host); } });
-  want.forEach(function (w, host) {
-    var rec = AU.reg.get(host);
-    if (!rec || !rec.btn.isConnected || rec.btn.previousElementSibling !== host) {
-      if (rec) rec.btn.remove();
-      rec = {btn: auMakeIcon()};
-      AU.reg.set(host, rec);
-      host.insertAdjacentElement('afterend', rec.btn);
-      (function (r) { r.btn.addEventListener('click', function () { auSingle(r.el, r.kind === 'card' ? r.text : auOwnText(r.el) || r.text); }); })(rec);
-    }
-    rec.kind = w.kind; rec.el = w.el; rec.text = w.text; rec.host = host;
-    rec.btn.setAttribute('aria-label', auT('hear') + ': ' + auShort(w.text));
-    rec.btn.classList.toggle('ml-au-card', w.kind === 'card');
-  });
-  auPlace(); auUi();
+  auClearIcons();
+  return;
 }
 function auPlace() {
   AU.placeTimer = null;
@@ -483,17 +467,18 @@ function auOurs(n) { var e = n.nodeType === 1 ? n : n.parentElement; return !!(e
 var AUCSS = [
   '#ml-au{position:fixed;left:12px;bottom:12px;z-index:2147482000;font-family:system-ui,sans-serif;font-size:16px;line-height:1.3;color:#111;max-width:calc(100vw - 24px)}',
   '#ml-au *{box-sizing:border-box}',
-  '#ml-au button,.ml-au-icon,.ml-au-skip{font-family:inherit;cursor:pointer}',
-  '#ml-au-pill{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:8px 16px;border:2px solid #fff;border-radius:999px;background:#1d4ed8;color:#fff;font-size:16px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.28)}',
-  '#ml-au-pill:hover{background:#1e40af}',
-  '#ml-au-pill svg,#ml-au-bar svg{width:22px;height:22px;flex:none}',
-  '#ml-au-bar{display:none;width:min(760px,calc(100vw - 108px));min-width:min(320px,calc(100vw - 24px));padding:10px 12px;background:#fff;color:#111;border:2px solid #1d4ed8;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.3)}',
+  '#ml-au button,.ml-au-skip{font-family:inherit;cursor:pointer}',
+  '#ml-au-pill{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:6px 14px;border:1px solid rgba(0,0,0,.12);border-radius:999px;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);color:#1f2937;font-size:13px;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.08);transition:all .2s ease}',
+  '#ml-au-pill:hover{background:#fff;border-color:rgba(5,176,118,.4);box-shadow:0 4px 16px rgba(0,0,0,.12);transform:translateY(-1px)}',
+  '#ml-au-pill svg{width:16px;height:16px;color:#05b076;flex:none}',
+  '#ml-au-bar svg{width:20px;height:20px;flex:none}',
+  '#ml-au-bar{display:none;width:min(760px,calc(100vw - 108px));min-width:min(320px,calc(100vw - 24px));padding:10px 12px;background:#fff;color:#111;border:2px solid #05b076;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.2)}',
   '#ml-au[data-open="1"] #ml-au-bar{display:block}#ml-au[data-open="1"] #ml-au-pill{display:none}',
   '#ml-au .ml-au-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}',
   '#ml-au .ml-au-b{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;padding:6px 12px;border:1px solid #9ca3af;border-radius:12px;background:#fff;color:#111;font-size:15px;font-weight:600}',
-  '#ml-au .ml-au-b:hover{background:#eef2ff}#ml-au .ml-au-b[aria-pressed="true"]{background:#1d4ed8;border-color:#1d4ed8;color:#fff}',
+  '#ml-au .ml-au-b:hover{background:#eef2ff}#ml-au .ml-au-b[aria-pressed="true"]{background:#05b076;border-color:#05b076;color:#fff}',
   '#ml-au .ml-au-b:disabled{opacity:.45;cursor:not-allowed}',
-  '#ml-au .ml-au-main{background:#1d4ed8;border-color:#1d4ed8;color:#fff}#ml-au .ml-au-main:hover{background:#1e40af}',
+  '#ml-au .ml-au-main{background:#05b076;border-color:#05b076;color:#fff}#ml-au .ml-au-main:hover{background:#049a68}',
   '#ml-au select{min-height:44px;padding:6px 10px;border:1px solid #9ca3af;border-radius:12px;background:#fff;color:#111;font-size:15px;font-family:inherit}',
   '#ml-au .ml-au-sp{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600}',
   '#ml-au .ml-au-sp span{white-space:nowrap}',
@@ -502,13 +487,10 @@ var AUCSS = [
   '#ml-au .ml-au-status b{color:#111}#ml-au .ml-au-status bdi{unicode-bidi:isolate}',
   '#ml-au .ml-au-tapnote{margin-top:6px;padding:8px 10px;border-radius:10px;background:#fef3c7;color:#451a03;font-size:14px}',
   'html[dir="rtl"] #ml-au .ml-au-flip svg{transform:scaleX(-1)}',
-  '#ml-au button:focus-visible,#ml-au select:focus-visible,.ml-au-icon:focus-visible,.ml-au-skip:focus-visible{outline:3px solid #f59e0b;outline-offset:2px}',
-  '.ml-au-skip{position:absolute;left:8px;top:-100px;z-index:2147482100;padding:10px 16px;border:2px solid #1d4ed8;border-radius:10px;background:#fff;color:#1d4ed8;font-size:16px;font-weight:700}.ml-au-skip:focus{top:8px}',
-  '.ml-au-icon{position:absolute;z-index:30;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;margin:0;border:1.5px solid #1d4ed8;border-radius:50%;background:#fff;color:#1d4ed8;box-shadow:0 1px 4px rgba(0,0,0,.2);font-size:0;line-height:0}',
-  '.ml-au-icon svg{width:18px;height:18px;pointer-events:none}.ml-au-icon:hover{background:#eef2ff}',
-  '.ml-au-icon[aria-pressed="true"]{background:#1d4ed8;color:#fff}',
-  '@media (pointer:coarse){.ml-au-icon{width:40px;height:40px}.ml-au-icon svg{width:22px;height:22px}}',
-  '.ml-au-hl{outline:3px solid #1d4ed8!important;outline-offset:3px!important;box-shadow:0 0 0 7px rgba(250,204,21,.55)!important;border-radius:6px}',
+  '#ml-au button:focus-visible,#ml-au select:focus-visible,.ml-au-skip:focus-visible{outline:3px solid #f59e0b;outline-offset:2px}',
+  '.ml-au-skip{position:absolute;left:8px;top:-100px;z-index:2147482100;padding:10px 16px;border:2px solid #05b076;border-radius:10px;background:#fff;color:#05b076;font-size:16px;font-weight:700}.ml-au-skip:focus{top:8px}',
+  '.ml-au-icon{display:none!important;visibility:hidden!important;pointer-events:none!important}',
+  '.ml-au-hl{outline:3px solid #05b076!important;outline-offset:3px!important;box-shadow:0 0 0 7px rgba(5,176,118,.35)!important;border-radius:6px}',
   'html.ml-au-open body{margin-bottom:150px!important}html.ml-au-open #ml-toast{bottom:150px!important}',
   'html.ml-au-tap h1:hover,html.ml-au-tap h2:hover,html.ml-au-tap h3:hover,html.ml-au-tap h4:hover,html.ml-au-tap p:hover,html.ml-au-tap li:hover,html.ml-au-tap label:hover,html.ml-au-tap blockquote:hover,html.ml-au-tap td:hover,html.ml-au-tap a:hover,html.ml-au-tap button:hover{outline:2px dashed #1d4ed8;outline-offset:2px}',
   '@media (max-width:640px){#ml-au-bar{width:calc(100vw - 108px)}#ml-au .ml-au-b .ml-au-lab{display:none}}',
@@ -533,6 +515,7 @@ function auBtn(act, cls, icon) {
 }
 function auBuild() {
   if (document.getElementById('ml-au')) return;
+  if (location.pathname.indexOf('/assessments') === 0 || location.pathname.indexOf('/experience') === 0 || location.pathname.indexOf('/consult') === 0) return;
   var st = document.createElement('style'); st.id = 'ml-au-css'; st.textContent = AUCSS; document.head.appendChild(st);
   var root = document.createElement('div'); root.id = 'ml-au'; root.setAttribute('translate', 'no'); root.setAttribute('role', 'region');
   var pill = document.createElement('button'); pill.id = 'ml-au-pill'; pill.type = 'button'; pill.setAttribute('aria-expanded', 'false'); pill.setAttribute('aria-controls', 'ml-au-bar');

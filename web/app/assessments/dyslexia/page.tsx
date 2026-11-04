@@ -26,7 +26,12 @@ function speak(text: string, vol: number): Promise<void> {
 }
 
 type Item = { say: string; a: string; b: string; ok: 0 | 1; practice?: boolean };
-const mk = (say: string, good: string, bad: string, practice = false): Item => (Math.random() < 0.5 ? { say, a: good, b: bad, ok: 0, practice } : { say, a: bad, b: good, ok: 1, practice });
+// Items are written with the correct answer first, then placed by a fixed A/B pattern below.
+// Fixed positions keep every session comparable. Each pattern has no more than two
+// correct answers in a row on the same side.
+const mk = (say: string, good: string, bad: string, practice = false): Item => ({ say, a: good, b: bad, ok: 0, practice });
+const place = (items: Item[], pat: string): Item[] => items.map((it, i) => (pat[i] === "B" ? { ...it, a: it.b, b: it.a, ok: 1 as const } : it));
+const POS = { rhyme: "ABABBAABA", first: "BABAABBAB", spell: "AABABA" };
 const RHYME = () => [mk("cat", "hat", "cap", true), mk("moon", "spoon", "mop"), mk("bell", "shell", "bed"), mk("light", "kite", "lamp"), mk("frog", "log", "fish"), mk("rain", "train", "rail"), mk("sock", "clock", "sack"), mk("bee", "tree", "bed"), mk("star", "car", "stone")];
 const FIRST = () => [mk("sun", "sock", "ball", true), mk("dog", "door", "fish"), mk("map", "milk", "pen"), mk("fish", "fan", "cup"), mk("pig", "pan", "bus"), mk("tree", "train", "sheep"), mk("moon", "mouse", "spoon"), mk("cow", "cup", "duck"), mk("hat", "hand", "sock")];
 const SPELL = () => [mk("rain", "rain", "rane", true), mk("night", "night", "nite"), mk("boat", "boat", "bote"), mk("cake", "cake", "caik"), mk("sheep", "sheep", "sheap"), mk("light", "light", "lite")];
@@ -110,15 +115,22 @@ function AudioChoice({ items, mode, vol, onInk, onDone }: { items: Item[]; mode:
 }
 
 const LET = ["b", "d", "p", "q"];
+// Fixed boards: 4 matching tiles and 8 look-alikes each (4 mirror, 2 + 2 other).
+const LAYOUT: Record<string, string[]> = {
+  b: ["d", "b", "p", "b", "d", "q", "d", "b", "p", "d", "q", "b"],
+  d: ["b", "d", "q", "d", "b", "p", "b", "d", "q", "b", "p", "d"],
+  p: ["q", "p", "d", "p", "q", "b", "q", "p", "d", "q", "b", "p"],
+  q: ["p", "q", "b", "q", "p", "d", "p", "q", "b", "p", "d", "q"],
+};
 function Letters({ vol, onInk, onDone }: { vol: number; onInk: () => void; onDone: (s: any) => void }) {
   const [r, setR] = useState(0);
   const [sel, setSel] = useState<number[]>([]);
-  const st = useRef({ rounds: 0, hits: 0, falseTaps: 0, missed: 0, confusions: {} as Record<string, number> });
+  const st = useRef({ rounds: 0, hits: 0, falseTaps: 0, missed: 0, possibleHits: 0, possibleDistractors: 0, confusions: {} as Record<string, number> });
   const target = LET[r];
-  const tiles = useMemo(() => { const o = LET.filter((x) => x !== target); return shuffle([...Array(4).fill(target), ...Array.from({ length: 8 }, () => o[Math.floor(Math.random() * 3)])]); }, [target]);
+  const tiles = useMemo(() => LAYOUT[target], [target]);
   useEffect(() => { setSel([]); const id = setTimeout(() => speak("Find every letter that looks exactly like this one.", vol), 400); return () => { clearTimeout(id); if (hasTTS()) window.speechSynthesis.cancel(); }; }, [r, vol]);
   const done = () => {
-    const s = st.current; s.rounds++;
+    const s = st.current; s.rounds++; s.possibleHits += tiles.filter((t) => t === target).length; s.possibleDistractors += tiles.filter((t) => t !== target).length;
     tiles.forEach((t, k) => { const on = sel.includes(k); if (t === target) on ? s.hits++ : s.missed++; else if (on) { s.falseTaps++; const key = `${target}>${t}`; s.confusions[key] = (s.confusions[key] || 0) + 1; } });
     onInk();
     if (r + 1 < LET.length) setR(r + 1); else onDone(s);
@@ -137,28 +149,29 @@ function Letters({ vol, onInk, onDone }: { vol: number; onInk: () => void; onDon
 }
 
 const SYL = ["bah", "dee", "moe", "koo"], COL = ["#f2a36b", "#7fd1c7", "#c9a7ee", "#f3d27a"];
-const TRIALS = [{ len: 1, practice: true }, ...[2, 3, 4, 5].flatMap((len) => [{ len }, { len }])] as { len: number; practice?: boolean }[];
+const SEQS: Record<number, number[][]> = { 2: [[0, 2], [3, 1]], 3: [[1, 3, 0], [2, 0, 3]], 4: [[3, 0, 2, 1], [1, 2, 0, 3]], 5: [[2, 0, 3, 1, 2], [1, 3, 2, 0, 3]] };
+const TRIALS = [{ len: 1, seq: [2], practice: true }, ...[2, 3, 4, 5].flatMap((len) => SEQS[len].map((seq) => ({ len, seq })))] as { len: number; seq: number[]; practice?: boolean }[];
 function Span({ vol, onInk, onDone }: { vol: number; onInk: () => void; onDone: (s: any) => void }) {
   const [t, setT] = useState(0);
   const [seq, setSeq] = useState<number[]>([]);
   const [inp, setInp] = useState<number[]>([]);
   const [lit, setLit] = useState(-1);
   const [ready, setReady] = useState(false);
-  const tok = useRef(0), longest = useRef(0), attempts = useRef(0), failsAtLen = useRef(0);
+  const tok = useRef(0), longest = useRef(0), attempts = useRef(0), passed = useRef(0), failsAtLen = useRef(0);
   useEffect(() => {
-    const me = ++tok.current; const s = Array.from({ length: TRIALS[t].len }, () => Math.floor(Math.random() * 4));
+    const me = ++tok.current; const s = TRIALS[t].seq;
     setSeq(s); setInp([]); setReady(false);
     (async () => { await sleep(700); for (const n of s) { if (me !== tok.current) return; setLit(n); await speak(SYL[n], vol); setLit(-1); await sleep(250); } if (me === tok.current) setReady(true); })();
     return () => { tok.current++; if (hasTTS()) window.speechSynthesis.cancel(); };
   }, [t, vol]);
-  const finish = () => onDone({ attempts: attempts.current, longest: longest.current });
+  const finish = () => onDone({ attempts: attempts.current, passed: passed.current, longest: longest.current });
   const tap = (n: number) => {
     if (!ready) return; speak(SYL[n], vol);
     const next = [...inp, n]; setInp(next);
     if (next.length < seq.length) return;
     setReady(false); onInk();
     const ok = next.every((x, k) => x === seq[k]); const tr = TRIALS[t];
-    if (!tr.practice) { attempts.current++; if (ok) { longest.current = Math.max(longest.current, tr.len); failsAtLen.current = 0; } else failsAtLen.current++; }
+    if (!tr.practice) { attempts.current++; if (ok) { longest.current = Math.max(longest.current, tr.len); passed.current++; failsAtLen.current = 0; } else failsAtLen.current++; }
     const nextT = t + 1; const lastOfLen = !TRIALS[nextT] || TRIALS[nextT].len !== tr.len;
     setTimeout(() => { if (!TRIALS[nextT] || (failsAtLen.current >= 2 && lastOfLen)) finish(); else { if (lastOfLen) failsAtLen.current = 0; setT(nextT); } }, 900);
   };
@@ -181,7 +194,7 @@ function __McInner() {
   const [line, setLine] = useState("Hello! I am Pip, the Story-Keeper.");
   const [heard, setHeard] = useState<boolean | null>(null);
   const [obs, setObs] = useState<Record<string, any>>({ completed: [] });
-  const [sets] = useState(() => ({ rhyme: RHYME(), first: FIRST(), spell: SPELL() }));
+  const [sets] = useState(() => ({ rhyme: place(RHYME(), POS.rhyme), first: place(FIRST(), POS.first), spell: place(SPELL(), POS.spell) }));
   const [tested, setTested] = useState(false);
   const tts = typeof window !== "undefined" && hasTTS();
 

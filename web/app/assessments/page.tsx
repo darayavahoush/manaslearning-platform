@@ -1,5 +1,5 @@
+/* hub-plain-links */ /* eslint-disable @next/next/no-html-link-for-pages */
 'use client'
-import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
 interface Screener {
@@ -123,7 +123,7 @@ export default function AssessmentsHubPage() {
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <a href="#quests" className="min-h-[44px] inline-flex items-center rounded-full border border-[#D9B877] bg-[#EFD7A0] px-7 py-3 text-sm font-bold text-[#3B2D12] shadow-sm hover:scale-105 transition-transform">Choose a quest</a>
-            <Link href="/assessments/dyslexia" prefetch={false} className="min-h-[44px] inline-flex items-center rounded-full border-2 border-[#8A7F6E]/50 bg-[#FFFCF5]/60 px-6 py-3 text-sm font-bold text-[#3A342B] backdrop-blur hover:bg-[#FFFCF5]/90 transition-colors">New: The Whispering Library (reading quest)</Link>
+            <a href="/assessments/dyslexia" className="min-h-[44px] inline-flex items-center rounded-full border-2 border-[#8A7F6E]/50 bg-[#FFFCF5]/60 px-6 py-3 text-sm font-bold text-[#3A342B] backdrop-blur hover:bg-[#FFFCF5]/90 transition-colors">New: The Whispering Library (reading quest)</a>
           </div>
         </div>
         <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="hb-owl absolute bottom-14 right-[6%] hidden h-24 w-24 sm:block" />
@@ -162,7 +162,7 @@ export default function AssessmentsHubPage() {
                     </div>
                     <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#EFE7D6] pt-5">
                       <div><span className="text-2xl font-bold text-[#2F2A24]">₹799</span><span className="ml-2 text-xs text-[#6F665A]">/ $15 USD (Play activity & parent summary)</span></div>
-                      <div className="flex flex-wrap items-center gap-3"><Link href={q.href} prefetch={false} className="min-h-[44px] inline-flex items-center rounded-full px-6 py-3 text-sm font-bold text-[#33302B] shadow-sm transition-transform hover:scale-105" style={{ background: q.btn, border: `1px solid ${q.glow}88` }}>{q.cta}</Link><Link href={q.quiz} prefetch={false} className="inline-flex min-h-[44px] items-center text-sm font-semibold text-[#4A4238] underline decoration-[#8A7F6E]/50 underline-offset-4 hover:text-[#2F2A24]">Question version</Link></div>
+                      <div className="flex flex-wrap items-center gap-3"><a href={q.href} className="min-h-[44px] inline-flex items-center rounded-full px-6 py-3 text-sm font-bold text-[#33302B] shadow-sm transition-transform hover:scale-105" style={{ background: q.btn, border: `1px solid ${q.glow}88` }}>{q.cta}</a><a href={q.quiz} className="inline-flex min-h-[44px] items-center text-sm font-semibold text-[#4A4238] underline decoration-[#8A7F6E]/50 underline-offset-4 hover:text-[#2F2A24]">Question version</a></div>
                     </div>
                   </div>
                 </Tilt>
@@ -237,10 +237,10 @@ export default function AssessmentsHubPage() {
                   <h3 className="font-patrick mb-2 text-xl leading-snug text-[#2F2A24]">{s.title}</h3>
                   <p className="mb-4 text-xs leading-relaxed text-[#6F665A]">{s.desc}</p>
                   <div className="mb-4 flex flex-wrap gap-1.5">{s.chips.map((c) => <span key={c} className="rounded-md bg-[#EFE7D6] px-2 py-0.5 text-[10px] font-semibold text-[#5A5247]">{c}</span>)}</div>
-                  {s.extra && <Link href={s.extra.href} prefetch={false} className="mb-4 inline-flex min-h-[32px] items-center self-start text-xs font-semibold text-[#3F6F5C] underline decoration-[#3F6F5C]/40 underline-offset-4 hover:text-[#2F2A24]">{s.extra.label} →</Link>}
+                  {s.extra && <a href={s.extra.href} className="mb-4 inline-flex min-h-[32px] items-center self-start text-xs font-semibold text-[#3F6F5C] underline decoration-[#3F6F5C]/40 underline-offset-4 hover:text-[#2F2A24]">{s.extra.label} →</a>}
                   <div className="mt-auto flex items-center justify-between gap-2 border-t border-[#EFE7D6] pt-3">
                     <span className="text-[11px] font-medium text-[#6F665A]">⏳ {s.duration}</span>
-                    <Link href={s.link} prefetch={false} className="inline-flex min-h-[40px] items-center rounded-full px-4 py-2 text-xs font-bold text-[#33302B] transition-transform hover:scale-105" style={{ background: s.color }}>{s.cta}</Link>
+                    <a href={s.link} className="inline-flex min-h-[40px] items-center rounded-full px-4 py-2 text-xs font-bold text-[#33302B] transition-transform hover:scale-105" style={{ background: s.color }}>{s.cta}</a>
                   </div>
                 </div>
               </Tilt>
@@ -254,7 +254,7 @@ export default function AssessmentsHubPage() {
             <h3 className="font-patrick mb-2 text-3xl sm:text-4xl">Talk Through What You Noticed With Our Specialists</h3>
             <p className="text-sm leading-relaxed text-[#46544A]">Every completed quest gives you a plain-language summary. Book a 1-on-1 consultation with Manasi Valluri and our clinical team to talk through what you noticed and what to try next.</p>
           </div>
-          <Link href="/consult" prefetch={false} className="min-h-[44px] inline-flex shrink-0 items-center rounded-full border border-[#B9CFBB] bg-[#FFFCF5] px-8 py-3.5 text-sm font-bold text-[#3F6F5C] shadow-sm transition-transform hover:scale-105">Book Free Discovery Consultation →</Link>
+          <a href="/consult" className="min-h-[44px] inline-flex shrink-0 items-center rounded-full border border-[#B9CFBB] bg-[#FFFCF5] px-8 py-3.5 text-sm font-bold text-[#3F6F5C] shadow-sm transition-transform hover:scale-105">Book Free Discovery Consultation →</a>
         </section>
       </div>
     </main>

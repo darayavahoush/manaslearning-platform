@@ -103,6 +103,10 @@ function sorting(r: Rec, who: string): string[] {
 
 function sunbird(r: Rec): string[] {
   const out: string[] = []
+  const he = prop(r, 'holdEarly')
+  if (he) out.push(`In the hold-still waits, the child tapped before the chime in ${he.k} of ${he.n}.`)
+  const hr = val(r, 'holdRtMs')
+  if (hr) out.push(`After the chime, the child tapped about ${Math.round(hr.value)} ms later on average.`)
   const om = find(r, 'omissions')
   if (om?.kind === 'proportion') out.push(`${om.k} of ${om.n} sunbirds were missed.`)
   else if (om?.kind === 'value') out.push(`${om.value} ${plural(om.value, 'sunbird was', 'sunbirds were')} missed.`)

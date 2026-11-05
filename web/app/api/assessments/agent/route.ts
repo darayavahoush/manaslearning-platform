@@ -88,6 +88,8 @@ const TELEMETRY_KEYS = [
   'showPick1', 'showPick2', 'showMs1', 'showMs2', 'showBids', 'showMatches',
   // quick check straight after the first shape card: 1 shape, 0 colour; time in ms
   'ruleCheck', 'ruleCheckMs',
+  // hold-still waits before the sunbird practice: waits, waits with an early tap, average time to tap after the chime
+  'holdTries', 'holdEarly', 'holdRtMs',
 ] as const
 
 function cleanTelemetry(input: unknown): Record<string, number | null> {

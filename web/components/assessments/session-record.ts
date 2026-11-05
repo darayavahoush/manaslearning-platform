@@ -9,7 +9,7 @@ import {wilson} from './profile-stats'
  * this code; the record is built in the response and handed back to the caller.
  */
 
-export const RECORD_SCHEMA_VERSION = '1.10'
+export const RECORD_SCHEMA_VERSION = '1.11'
 
 export type Quest = 'adhd' | 'autism'
 export type AgeBand = '4-5' | '6-8' | '9-12' | '13-16'
@@ -206,7 +206,7 @@ function countOrProportion(key: string, label: string, k: number | null, n: numb
 
 /** Which game a measure belongs to. Keys that start with a prefix below, or match exactly, are grouped together in the report. */
 export function gameOf(key: string): string {
-  if (/^(omissions|commissions|anticipatory|hrtMs|rtvMs|rtFirstHalfMs|rtSecondHalfMs|cptDisplayMs|rtRound|omissionsRound)/.test(key)) return 'Sunbird game'
+  if (/^(omissions|commissions|anticipatory|hrtMs|rtvMs|rtFirstHalfMs|rtSecondHalfMs|cptDisplayMs|rtRound|omissionsRound|holdEarly|holdRtMs)/.test(key)) return 'Sunbird game'
   if (/^flanker/.test(key)) return 'Steering game'
   if (/^workingMemory/.test(key)) return 'Star-sequence game'
   if (/^prematureReleases/.test(key)) return 'Patience game'
@@ -238,6 +238,9 @@ function adhdMeasures(t: Tele): Array<Measure | null> {
     proportion('anticipatory', 'Taps before a reaction was possible, or with nothing on screen', get(t, 'cptAnticipatory'), get(t, 'cptTrials')),
     value('hrtMs', 'Average tap speed', get(t, 'hrtMs'), 'ms', get(t, 'cptResponses')),
     value('rtvMs', 'Variation in tap speed', get(t, 'rtvMs'), 'ms', get(t, 'cptResponses')),
+    proportion('holdEarly', 'Hold-still waits where the child tapped before the chime', get(t, 'holdEarly'), get(t, 'holdTries'),
+      'Three short waits. A tap before the chime is an early response, not a miss.'),
+    value('holdRtMs', 'Average time to tap after the chime', get(t, 'holdRtMs'), 'ms', null),
     value('rtFirstHalfMs', 'Average tap speed, first half', get(t, 'rtFirstHalfMs'), 'ms', null),
     value('rtSecondHalfMs', 'Average tap speed, second half', get(t, 'rtSecondHalfMs'), 'ms', null),
     proportion('flankerCongruent', 'Matching-arrow rounds answered correctly', get(t, 'flankerCongruentN'), get(t, 'flankerCongruentTotal')),

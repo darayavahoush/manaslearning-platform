@@ -428,7 +428,7 @@ function bandFor(age: number): AgeBand {
 }
 
 function __McInner() {
-  const [stage, setStage] = useState<'welcome' | 'avatar' | 'cpt_story' | 'cpt_game' | 'flanker_story' | 'flanker_game' | 'memory_story' | 'memory_game' | 'situational_story' | 'situational_game' | 'trials' | 'parent_card' | 'agent_eval' | 'celebration'>('welcome')
+  const [stage, setStage] = useState<'welcome' | 'avatar' | 'cpt_story' | 'cpt_hold' | 'cpt_game' | 'flanker_story' | 'flanker_game' | 'memory_story' | 'memory_game' | 'situational_story' | 'situational_game' | 'trials' | 'parent_card' | 'agent_eval' | 'celebration'>('welcome')
 
   // Child Fantasy Persona
   const [heroName, setHeroName] = useState('')
@@ -478,6 +478,13 @@ function __McInner() {
   // practice rounds for the other games (never recorded)
   const events = usePlayEvents()
   const [cptPrac, setCptPrac] = useState<'off' | 'bird' | 'bird_ok' | 'moth' | 'moth_oops' | 'moth_ok' | 'ready'>('off')
+  // hold-still waits before the sunbird practice: three fixed waits; taps during a wait are early responses
+  const HOLD_WAITS_MS = [3500, 5000, 4200] as const
+  const [holdIdx, setHoldIdx] = useState(0)
+  const [holdPhase, setHoldPhase] = useState<'wait' | 'go'>('wait')
+  const [holdTaps, setHoldTaps] = useState<number[]>([])
+  const [holdRts, setHoldRts] = useState<Array<number | null>>([])
+  const holdGoAtRef = useRef<number>(0)
   const [memRetry, setMemRetry] = useState(0)
   const [memMsg, setMemMsg] = useState<'' | 'ok' | 'again'>('')
   const [memPracReady, setMemPracReady] = useState(false)
@@ -517,6 +524,37 @@ function __McInner() {
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get('mode') === 'tone') starToneRef.current = true
   }, [])
+
+  // hold-still waits: the chime sounds after a fixed wait, then the child taps; a tap during the wait is an early response
+  useEffect(() => {
+    if (stage !== 'cpt_hold' || holdPhase !== 'wait') return
+    const t = setTimeout(() => {
+      holdGoAtRef.current = performance.now()
+      setHoldPhase('go')
+      playAudio('chime')
+    }, HOLD_WAITS_MS[holdIdx])
+    return () => clearTimeout(t)
+    // HOLD_WAITS_MS is a fixed list defined in render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage, holdPhase, holdIdx])
+
+  useEffect(() => {
+    if (stage !== 'cpt_hold' || holdPhase !== 'go') return
+    const t = setTimeout(() => finishHold(null), 5000)
+    return () => clearTimeout(t)
+    // finishHold is rebuilt from the same state on every render, so this timer always sees current values
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage, holdPhase, holdIdx])
+
+  function finishHold(rt: number | null) {
+    setHoldRts((r) => [...r, rt])
+    if (holdIdx + 1 < HOLD_WAITS_MS.length) {
+      setHoldIdx((i) => i + 1)
+      setHoldPhase('wait')
+    } else {
+      setStage('cpt_game')
+    }
+  }
 
   // steering skin: ?skin=rocket on the page address selects the rocket version (chosen by the clinician, not the child)
   const [steerSkin, setSteerSkin] = useState<'arrows' | 'rocket'>('arrows')
@@ -927,6 +965,12 @@ function __McInner() {
         steerRocket: steerSkin === 'rocket' ? 1 : 0,
         // 1 when the star sequence used tones instead of lights
         starTone: starToneRef.current ? 1 : 0,
+        // hold-still waits: how many had an early tap (of 3), and the average time to tap after the chime
+        holdTries: HOLD_WAITS_MS.length,
+        holdEarly: holdTaps.filter((n) => n > 0).length,
+        holdRtMs: holdRts.filter((x): x is number => x !== null).length
+          ? Math.round(holdRts.filter((x): x is number => x !== null).reduce((a, b) => a + b, 0) / holdRts.filter((x): x is number => x !== null).length)
+          : null,
         pauseCount: ev.pauseCount,
         pausedSec: ev.pausedSec
       }
@@ -1085,7 +1129,11 @@ function __McInner() {
                   cptRtLogRef.current = []
                   flankerTotalsRef.current = {congruent: 0, incongruent: 0}
                   setCptPrac('bird')
-                  setStage('cpt_game')
+                  setHoldIdx(0)
+                  setHoldPhase('wait')
+                  setHoldTaps([])
+                  setHoldRts([])
+                  setStage('cpt_hold')
                 }}
                 className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-4 text-lg font-bold text-white shadow-lg hover:scale-105 transition-all"
               >
@@ -1096,6 +1144,41 @@ function __McInner() {
         )}
 
         {/* 2b. SUNBIRD PRACTICE (not recorded) */}
+        {stage === 'cpt_hold' && (
+          <div className="rounded-3xl border-2 border-amber-300/40 bg-[#0F172A]/90 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none text-amber-50">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-200 bg-white/10 px-3.5 py-1 rounded-full">
+                Wait {holdIdx + 1} of {HOLD_WAITS_MS.length}
+              </span>
+              <span className="text-xs font-bold text-amber-200">Hold still</span>
+            </div>
+            <p className="font-patrick text-2xl md:text-3xl font-bold mb-4" aria-live="polite">
+              {holdPhase === 'wait' ? 'Hold still and wait for the chime. Do not tap yet.' : 'Chime! Tap the sunbird now!'}
+            </p>
+            <div
+              onPointerDown={() => {
+                if (holdPhase === 'wait') {
+                  setHoldTaps((t) => { const n = [...t]; n[holdIdx] = (n[holdIdx] ?? 0) + 1; return n })
+                  playAudio('miss')
+                  return
+                }
+                playAudio('hit')
+                const rt = Math.round(performance.now() - holdGoAtRef.current)
+                finishHold(rt)
+              }}
+              className="relative mx-auto my-4 flex h-64 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 border-amber-300/80 bg-[#1E293B]"
+            >
+              <VortexBg round />
+              <div className="relative z-10">
+                <SunbirdTarget className={holdPhase === 'go' ? 'w-32 h-32' : 'w-28 h-28 opacity-60'} />
+              </div>
+            </div>
+            <p className="text-xs text-amber-200/80 min-h-[1.5em]">
+              {holdPhase === 'wait' && holdTaps[holdIdx] ? 'Not yet. Wait for the chime.' : ''}
+            </p>
+          </div>
+        )}
+
         {stage === 'cpt_game' && cptPrac !== 'off' && (
           <div className="relative rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <style>{CV_CSS}</style>

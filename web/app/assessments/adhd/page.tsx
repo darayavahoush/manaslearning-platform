@@ -307,6 +307,22 @@ function StarTrail({done, total}: {done: number; total: number}) {
   )
 }
 
+const VX_CSS = `@keyframes cv-spin{to{transform:rotate(360deg)}}@keyframes cv-spin-rev{to{transform:rotate(-360deg)}}.cv-spin{animation:cv-spin 38s linear infinite}.cv-spin-rev{animation:cv-spin-rev 26s linear infinite}@media (prefers-reduced-motion:reduce){.cv-spin,.cv-spin-rev{animation:none!important}}`
+
+// Decorative swirl behind the sunbird and moth. The centre stays dark and the same for every sighting,
+// so the sunbird and moth are always seen against the same background.
+function VortexBg({round = false}: {round?: boolean}) {
+  return (
+    <div aria-hidden="true" className={`pointer-events-none absolute inset-0 overflow-hidden ${round ? 'rounded-full' : ''}`}>
+      <style>{VX_CSS}</style>
+      <div className="cv-spin absolute" style={{inset: '-35%', background: 'conic-gradient(from 0deg, #0F172A, #3B1A78, #0F172A, #0E5C57, #0F172A, #7C3A0A, #0F172A)'}} />
+      <div className="cv-spin-rev absolute rounded-full border-4 border-dashed border-amber-200/25" style={{inset: '-8%'}} />
+      <div className="cv-spin absolute rounded-full border-2 border-dotted border-sky-200/30" style={{inset: '10%'}} />
+      <div className="absolute inset-0" style={{background: 'radial-gradient(circle at center, #0F172A 0%, rgba(15,23,42,.92) 38%, rgba(15,23,42,0) 78%)'}} />
+    </div>
+  )
+}
+
 function StarlightNodeSvg({isLit}: {isLit: boolean}) {
   return (
     <svg viewBox="0 0 60 60" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -402,6 +418,13 @@ function __McInner() {
   const [flankerPhase, setFlankerPhase] = useState<'demo1' | 'demo2' | 'ready' | 'real'>('real')
   const [flankerFx, setFlankerFx] = useState<{k: number; ok: boolean}>({k: 0, ok: true})
   const flankerLockRef = useRef(false)
+  // practice rounds for the other games (never recorded)
+  const [cptPrac, setCptPrac] = useState<'off' | 'bird' | 'bird_ok' | 'moth' | 'moth_oops' | 'moth_ok' | 'ready'>('off')
+  const [memRetry, setMemRetry] = useState(0)
+  const [memMsg, setMemMsg] = useState<'' | 'ok' | 'again'>('')
+  const [memPracReady, setMemPracReady] = useState(false)
+  const [chargePrac, setChargePrac] = useState(false)
+  const [chargePracDone, setChargePracDone] = useState(false)
 
   // Astrolabe Memory Matrix State
   const [memoryLevel, setMemoryLevel] = useState(1)
@@ -452,6 +475,7 @@ function __McInner() {
   // CPT_WINDOW_MS later, even if the shape has gone. Every timer is cleared when the trial or stage changes.
   useEffect(() => {
     if (stage !== 'cpt_game') return
+    if (cptPrac !== 'off') return
 
     if (cptTrialIndex >= CPT_TOTAL_TRIALS) {
       playAudio('fanfare')
@@ -498,9 +522,26 @@ function __McInner() {
     }, wait)
 
     return () => timers.forEach(clearTimeout)
-  }, [stage, cptTrialIndex, heroAge, cptResting])
+  }, [stage, cptTrialIndex, heroAge, cptResting, cptPrac])
+
+  function handleCptPracTap() {
+    if (cptPrac === 'bird') { playAudio('hit'); setCptPrac('bird_ok') }
+    else if (cptPrac === 'moth') { playAudio('miss'); setCptPrac('moth_oops') }
+  }
+
+  // practice steps move on by themselves; the real game only starts when the child presses the ready button
+  useEffect(() => {
+    if (stage !== 'cpt_game') return
+    let t: ReturnType<typeof setTimeout> | undefined
+    if (cptPrac === 'bird_ok') t = setTimeout(() => setCptPrac('moth'), 1200)
+    else if (cptPrac === 'moth') t = setTimeout(() => { playAudio('star'); setCptPrac('moth_ok') }, 3200)
+    else if (cptPrac === 'moth_oops') t = setTimeout(() => setCptPrac('moth'), 1600)
+    else if (cptPrac === 'moth_ok') t = setTimeout(() => setCptPrac('ready'), 1500)
+    return () => { if (t) clearTimeout(t) }
+  }, [stage, cptPrac])
 
   function handleCptTap() {
+    if (cptPrac !== 'off') { handleCptPracTap(); return }
     if (cptRestingRef.current) return
     // nothing is on screen: not a hit and not a miss, but worth recording
     if (!cptWindowOpenRef.current) {
@@ -590,7 +631,8 @@ function __McInner() {
 
     // Fixed sequences (3, 4 and 5 stars, one try each) so every child sees the same items.
     const MEMORY_SEQS = band.seqs
-    const seq: number[] = MEMORY_SEQS[Math.min(memoryLevel, MEMORY_SEQS.length) - 1]
+    // levels -1 and 0 are practice (one star, then two); real levels start at 1
+    const seq: number[] = memoryLevel === -1 ? [4] : memoryLevel === 0 ? [1, 7] : MEMORY_SEQS[Math.min(memoryLevel, MEMORY_SEQS.length) - 1]
     setMemorySequence(seq)
     setMemoryUserSequence([])
     setMemoryPhase('showing')
@@ -608,10 +650,31 @@ function __McInner() {
     }, 500 + seq.length * band.stepMs)
 
     return () => clearTimeout(timer)
-  }, [stage, memoryLevel, band.id])
+  }, [stage, memoryLevel, band.id, memRetry])
+
+  function handleMemoryPracClick(cellIdx: number) {
+    playAudio('star')
+    const updated = [...memoryUserSequence, cellIdx]
+    setMemoryUserSequence(updated)
+    const step = updated.length - 1
+    if (updated[step] !== memorySequence[step]) {
+      playAudio('miss')
+      setMemoryPhase('feedback')
+      setMemMsg('again')
+      setTimeout(() => { setMemMsg(''); setMemRetry((n) => n + 1) }, 1400)
+      return
+    }
+    if (updated.length === memorySequence.length) {
+      playAudio('hit')
+      setMemoryPhase('feedback')
+      setMemMsg('ok')
+      setTimeout(() => { setMemMsg(''); if (memoryLevel === -1) setMemoryLevel(0); else setMemPracReady(true) }, 1200)
+    }
+  }
 
   function handleMemoryClick(cellIdx: number) {
     if (memoryPhase !== 'input') return
+    if (memoryLevel < 1) { handleMemoryPracClick(cellIdx); return }
     playAudio('star')
     const updated = [...memoryUserSequence, cellIdx]
     setMemoryUserSequence(updated)
@@ -653,7 +716,7 @@ function __McInner() {
     chargeStartRef.current = performance.now()
     playAudio('whoosh')
 
-    const target = CHARGE_TRIALS[chargeTrialIndex].targetMs
+    const target = chargePrac ? 1500 : CHARGE_TRIALS[chargeTrialIndex].targetMs
 
     chargeIntervalRef.current = setInterval(() => {
       const elapsed = performance.now() - chargeStartRef.current
@@ -670,6 +733,13 @@ function __McInner() {
         playAudio('fanfare')
 
         setTimeout(() => {
+          if (chargePrac) {
+            setChargePrac(false)
+            setChargePracDone(true)
+            setChargeProgress(0)
+            setChargeStatusText('idle')
+            return
+          }
           if (chargeTrialIndex + 1 < CHARGE_TRIALS.length) {
             setChargeTrialIndex((idx) => idx + 1)
             setChargeProgress(0)
@@ -690,13 +760,13 @@ function __McInner() {
     }
 
     const elapsed = performance.now() - chargeStartRef.current
-    const target = CHARGE_TRIALS[chargeTrialIndex].targetMs
+    const target = chargePrac ? 1500 : CHARGE_TRIALS[chargeTrialIndex].targetMs
 
     if (elapsed < target) {
       setIsCharging(false)
       setChargeProgress(0)
       setChargeStatusText('early')
-      setPrematureReleases((p) => p + 1)
+      if (!chargePrac) setPrematureReleases((p) => p + 1)
       playAudio('miss')
     }
   }
@@ -873,85 +943,118 @@ function __McInner() {
           </div>
         )}
 
-        {/* 2. CHAPTER 1 STORY: THE OBSERVATORY */}
+        {/* 2. CHAPTER 1 STORY: THE SUNBIRD AND THE MOTH (picture first) */}
         {stage === 'cpt_story' && (
           <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
-            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-gradient-to-b from-[#FEF3C7] to-[#DCFCE7]">
-              <img
-                src="/decor/itw/quest-sky-citadel-banner.webp"
-                alt="Watchtower of Aethelgard"
-                className="h-full w-full object-cover object-center"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end p-6">
-                <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-black/40 px-3 py-1 rounded-full">
-                    Chapter 1: The Watchtower of Aethelgard
-                  </span>
-                  <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    The Sunbird and the Moth
-                  </h2>
-                </div>
+            <style>{CV_CSS}</style>
+            <div className="relative h-56 md:h-64 w-full overflow-hidden bg-[#0F172A]">
+              <VortexBg />
+              <div className="relative z-10 flex h-full items-center justify-center gap-6 sm:gap-10">
+                <SunbirdTarget className="h-28 w-28 sm:h-36 sm:w-36" />
+                <MothDistractor className="h-24 w-24 sm:h-32 sm:w-32" />
+              </div>
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-5">
+                <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold">The Sunbird and the Moth</h2>
               </div>
             </div>
 
-            <div className="p-6 md:p-8">
-              <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
-                Watch the circle. Sometimes the sunbird appears and sometimes the moth does. Tap for the sunbird and wait for the moth. Milo the Owl says: <em>“Be quick, but wait until you see which one it is.”</em>
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                <div className="flex items-center gap-4 p-4 rounded-2xl bg-amber-50 border border-amber-200">
-                  <div className="w-16 h-16 shrink-0 rounded-2xl bg-white border border-amber-300 flex items-center justify-center shadow-sm overflow-hidden p-1">
-                    <SunbirdTarget className="h-full w-full" />
-                  </div>
-                  <div>
-                    <strong className="text-xs text-[#92400E] block font-bold">When the sunbird appears:</strong>
-                    <span className="text-xs text-[#78350F]">Tap the screen or press <strong>SPACEBAR</strong> as fast as you can.</span>
-                  </div>
+            <div className="p-6 md:p-8 text-center">
+              <div className="grid grid-cols-2 gap-4 mb-5 max-w-md mx-auto">
+                <div className="rounded-2xl bg-amber-50 border-2 border-amber-300 p-4">
+                  <div className="mx-auto h-16 w-16"><SunbirdTarget className="h-full w-full" /></div>
+                  <p className="mt-1 text-2xl font-bold text-amber-800">TAP!</p>
                 </div>
-
-                <div className="flex items-center gap-4 p-4 rounded-2xl bg-rose-50 border border-rose-200">
-                  <div className="w-16 h-16 shrink-0 rounded-2xl bg-white border border-rose-300 flex items-center justify-center shadow-sm">
-                    <MothDistractor className="w-12 h-12" />
-                  </div>
-                  <div>
-                    <strong className="text-xs text-[#991B1B] block font-bold">When the moth appears:</strong>
-                    <span className="text-xs text-[#7F1D1D]"><strong>Wait.</strong> Do not tap.</span>
-                  </div>
+                <div className="rounded-2xl bg-rose-50 border-2 border-rose-300 p-4">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center"><MothDistractor className="h-full w-full" /></div>
+                  <p className="mt-1 text-2xl font-bold text-rose-800">WAIT</p>
                 </div>
               </div>
-
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    playAudio('whoosh')
-                    setCptTrialIndex(0)
-                    setCptResponseTimes([])
-                    setCptOmissions(0)
-                    setCptCommissions(0)
-                    setCptLastRt(null)
-                    setCptAnticipatory(0)
-                    setCptResting(false)
-                    cptRestingRef.current = false
-                    cptRestedAtRef.current = -1
-                    cptBlockMissRef.current = []
-                    cptBlockFaRef.current = []
-                    cptRtLogRef.current = []
-                    flankerTotalsRef.current = {congruent: 0, incongruent: 0}
-                    setStage('cpt_game')
-                  }}
-                  className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
-                >
-                  Start ({CPT_TOTAL_TRIALS} sightings in {cptPlan.blocks} rounds) →
-                </button>
-              </div>
+              <p className="text-base md:text-lg font-bold text-[#1F2937] mb-1">Tap fast for the sunbird. Wait for the moth.</p>
+              <p className="text-xs text-slate-500 mb-5">After a short practice: {CPT_TOTAL_TRIALS} sightings in {cptPlan.blocks} rounds, with rests.</p>
+              <button
+                type="button"
+                onClick={() => {
+                  playAudio('whoosh')
+                  setCptTrialIndex(0)
+                  setCptResponseTimes([])
+                  setCptOmissions(0)
+                  setCptCommissions(0)
+                  setCptLastRt(null)
+                  setCptAnticipatory(0)
+                  setCptResting(false)
+                  cptRestingRef.current = false
+                  cptRestedAtRef.current = -1
+                  cptBlockMissRef.current = []
+                  cptBlockFaRef.current = []
+                  cptRtLogRef.current = []
+                  flankerTotalsRef.current = {congruent: 0, incongruent: 0}
+                  setCptPrac('bird')
+                  setStage('cpt_game')
+                }}
+                className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-4 text-lg font-bold text-white shadow-lg hover:scale-105 transition-all"
+              >
+                Let’s practice →
+              </button>
             </div>
           </div>
         )}
 
+        {/* 2b. SUNBIRD PRACTICE (not recorded) */}
+        {stage === 'cpt_game' && cptPrac !== 'off' && (
+          <div className="relative rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
+            <style>{CV_CSS}</style>
+            {cptPrac === 'ready' ? (
+              <div className="flex flex-col items-center gap-3 py-2">
+                <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float h-20 w-20" />
+                <p className="font-patrick text-3xl text-amber-800 font-bold">Great job!</p>
+                <div className="my-2 flex items-center justify-center gap-6">
+                  <div className="text-center">
+                    <div className="mx-auto h-20 w-20 rounded-2xl bg-[#1E293B] p-1"><SunbirdTarget className="h-full w-full" /></div>
+                    <p className="mt-1 text-xl font-bold text-amber-800">TAP!</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-[#1E293B] p-1"><MothDistractor className="h-14 w-14" /></div>
+                    <p className="mt-1 text-xl font-bold text-rose-800">WAIT</p>
+                  </div>
+                </div>
+                <button type="button" onClick={() => { playAudio('chime'); setCptPrac('off') }} className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-12 py-4 text-xl font-bold text-white shadow-lg hover:scale-105 transition-all">I’m ready →</button>
+                <button type="button" onClick={() => setCptPrac('bird')} className="text-sm font-bold text-sky-700 underline">Practice again</button>
+              </div>
+            ) : (
+              <>
+                <span className="inline-block rounded-full bg-amber-100 px-4 py-1 text-sm font-bold text-amber-800">Practice</span>
+                <div className="mt-3 flex items-center justify-center gap-3">
+                  <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float h-14 w-14" />
+                  <p className="text-left text-base md:text-lg font-bold text-[#1F2937] max-w-xs" aria-live="polite">
+                    {cptPrac === 'bird' ? 'Here comes the sunbird! Tap it!' : cptPrac === 'bird_ok' ? 'Yes! Great tap!' : cptPrac === 'moth' ? 'A moth! Do not tap. Just wait…' : cptPrac === 'moth_oops' ? 'Oops, that was the moth! Just wait.' : 'Perfect waiting!'}
+                  </p>
+                </div>
+                <div
+                  onPointerDown={handleCptPracTap}
+                  className="relative mx-auto my-4 flex h-72 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 border-amber-300/80 bg-[#1E293B] active:scale-95 overflow-hidden"
+                >
+                  <VortexBg round />
+                  <div className="relative z-10 flex items-center justify-center">
+                    {cptPrac === 'bird' && <SunbirdTarget className={band.bird} />}
+                    {(cptPrac === 'moth' || cptPrac === 'moth_oops') && <MothDistractor className="w-32 h-32" />}
+                    {(cptPrac === 'bird_ok' || cptPrac === 'moth_ok') && <span aria-hidden="true" className="cv-float text-7xl">⭐</span>}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onPointerDown={handleCptPracTap}
+                  onClick={(e) => { if (e.detail === 0) handleCptPracTap() }}
+                  className={`w-full max-w-sm rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 py-7 text-2xl font-bold text-white shadow-lg active:scale-95 transition-all ${cptPrac === 'bird' ? 'cv-ring' : ''}`}
+                >
+                  TAP!
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
         {/* 3. CHAPTER 1 GAMEPLAY: CPT-3 VIGILANCE */}
-        {stage === 'cpt_game' && (
+        {stage === 'cpt_game' && cptPrac === 'off' && (
           <div className="relative rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             {cptResting && (
               <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 overflow-hidden rounded-3xl bg-gradient-to-b from-[#FFF4D6] via-[#FFFDF6] to-[#E4F2EA] p-5 text-center sm:gap-4 sm:p-6">
@@ -1001,22 +1104,23 @@ function __McInner() {
               onPointerDown={handleCptTap}
               className="relative mx-auto my-6 flex h-72 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 border-amber-300/80 bg-[#1E293B] transition-all hover:border-amber-400 active:scale-95 overflow-hidden"
             >
+              <VortexBg round />
               {cptStimulus === 'target' && (
-                <div className="flex flex-col items-center">
+                <div className="relative z-10 flex flex-col items-center">
                   <SunbirdTarget className={band.bird} />
                 </div>
               )}
               {cptStimulus === 'distractor' && (
-                <div className="flex flex-col items-center">
+                <div className="relative z-10 flex flex-col items-center">
                   <MothDistractor className="w-32 h-32" />
                 </div>
               )}
               {!cptStimulus && (
-                <div className="text-center text-amber-200/80">
+                <div className="relative z-10 text-center text-amber-200/80">
                   <div className="h-16 w-16 mx-auto mb-2 rounded-full border-2 border-dashed border-amber-400/50 flex items-center justify-center bg-white/5">
                     <CompassRoseSvg className="w-6 h-6 text-amber-300" />
                   </div>
-                  <span className="text-xs font-semibold text-amber-200">Watching the sky vortex...</span>
+                  <span className="text-xs font-semibold text-amber-200">Watch…</span>
                 </div>
               )}
             </div>
@@ -1027,7 +1131,7 @@ function __McInner() {
               onClick={(e) => { if (e.detail === 0) handleCptTap() }}
               className="w-full max-w-sm rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 py-7 text-xl font-bold text-white shadow-lg active:scale-95 transition-all"
             >
-              TAP NOW (Or Spacebar)
+              TAP!
             </button>
           </div>
         )}
@@ -1175,7 +1279,7 @@ function __McInner() {
 
             <div className="p-6 md:p-8">
               <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
-                Deep in the Citadel observatory lies the 9-node Starlight Astrolabe. Milo will illuminate a sequence of star crystals. Watch the pattern carefully, then tap the crystals in the exact same sequence!
+                Watch the stars light up. Then tap them in the same order!
               </p>
 
               <div className="text-center">
@@ -1183,12 +1287,15 @@ function __McInner() {
                   type="button"
                   onClick={() => {
                     playAudio('whoosh')
-                    setMemoryLevel(1)
+                    setMemoryLevel(-1)
+                    setMemPracReady(false)
+                    setMemMsg('')
+                    setMemoryUserSequence([])
                     setStage('memory_game')
                   }}
                   className="rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
                 >
-                  Awaken the Astrolabe →
+                  Let’s practice →
                 </button>
               </div>
             </div>
@@ -1196,17 +1303,38 @@ function __McInner() {
         )}
 
         {/* 7. CHAPTER 3 GAMEPLAY: ASTROLABE */}
-        {stage === 'memory_game' && (
+        {stage === 'memory_game' && memPracReady && (
+          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-8 md:p-10 shadow-2xl text-center select-none">
+            <style>{CV_CSS}</style>
+            <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float mx-auto h-24 w-24" />
+            <p className="font-patrick text-3xl text-amber-800 font-bold mt-3">Great job!</p>
+            <p className="text-base md:text-lg font-bold text-[#1F2937] mt-2">Now the real stars. Watch, then tap the same ones!</p>
+            <div className="mt-6 flex flex-col items-center gap-3">
+              <button type="button" onClick={() => { playAudio('whoosh'); setMemPracReady(false); setMemoryLevel(1) }} className="rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 px-12 py-4 text-xl font-bold text-white shadow-lg hover:scale-105 transition-all">I’m ready →</button>
+              <button type="button" onClick={() => { setMemPracReady(false); setMemoryLevel(-1); setMemRetry((n) => n + 1) }} className="text-sm font-bold text-sky-700 underline">Practice again</button>
+            </div>
+          </div>
+        )}
+
+        {stage === 'memory_game' && !memPracReady && (
           <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
-                Level {memoryLevel} of 3 • Constellation Span: {memorySequence.length || memoryLevel + 2}
+                {memoryLevel < 1 ? 'Practice' : `Level ${memoryLevel} of 3 • Constellation Span: ${memorySequence.length || memoryLevel + 2}`}
               </span>
               <span className="text-xs font-bold text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
-                {memoryPhase === 'showing' ? 'Watch Pattern...' : 'Your Turn to Harmonize!'}
+                {memoryPhase === 'showing' ? 'Watch the stars!' : 'Your turn!'}
               </span>
             </div>
 
+            {memoryLevel < 1 && (
+              <div className="mb-2 flex items-center justify-center gap-3">
+                <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float h-14 w-14" />
+                <p className="text-left text-base md:text-lg font-bold text-[#1F2937] max-w-xs" aria-live="polite">
+                  {memMsg === 'ok' ? 'Yes! Great!' : memMsg === 'again' ? 'Try again! Watch the stars.' : memoryLevel === -1 ? 'Watch the star light up. Then tap it!' : 'Now two stars. Watch, then tap them in order!'}
+                </p>
+              </div>
+            )}
             <div className="mx-auto my-6 grid aspect-square grid-cols-3 gap-3 rounded-3xl bg-[#0F172A] p-4 shadow-2xl" style={{ width: '100%', maxWidth: band.grid }}>
               {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((idx) => {
                 const isLit = memoryLitCell === idx || memoryTapCell === idx
@@ -1254,7 +1382,7 @@ function __McInner() {
 
             <div className="p-6 md:p-8 text-center">
               <p className="text-sm md:text-base text-[#1E293B] font-medium leading-relaxed mb-6 max-w-lg mx-auto">
-                Before Milo awards your golden Sunstone crest, you must charge the sacred crystal! <strong>Press and HOLD</strong> the glowing Sunstone. Keep holding steady — do not let go until the celestial star bell chimes!
+                Press and <strong>HOLD</strong> the glowing stone. Do not let go until it chimes!
               </p>
 
               <div className="text-center">
@@ -1265,11 +1393,13 @@ function __McInner() {
                     setChargeTrialIndex(0)
                     setChargeProgress(0)
                     setChargeStatusText('idle')
+                    setChargePrac(true)
+                    setChargePracDone(false)
                     setStage('situational_game')
                   }}
                   className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
                 >
-                  Enter Sunstone Chamber (3 Charges) →
+                  Let’s practice →
                 </button>
               </div>
             </div>
@@ -1281,12 +1411,20 @@ function __McInner() {
           <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
-                Charge {chargeTrialIndex + 1} of {CHARGE_TRIALS.length} • {CHARGE_TRIALS[chargeTrialIndex].title}
+                {chargePrac ? 'Practice' : `Charge ${chargeTrialIndex + 1} of ${CHARGE_TRIALS.length} • ${CHARGE_TRIALS[chargeTrialIndex].title}`}
               </span>
               <span className="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
                 Patience & Steady Hold
               </span>
             </div>
+
+            {chargePrac && (
+              <div className="mb-2 flex items-center justify-center gap-3">
+                <style>{CV_CSS}</style>
+                <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float h-14 w-14" />
+                <p className="text-left text-base md:text-lg font-bold text-[#1F2937] max-w-xs">Press and HOLD the glowing stone. Do not let go until it chimes!</p>
+              </div>
+            )}
 
             {/* Glowing Interactive Sunstone Charging Orb */}
             <div className="relative mx-auto my-8 flex h-60 w-60 sm:h-72 sm:w-72 items-center justify-center">
@@ -1352,12 +1490,12 @@ function __McInner() {
               )}
               {chargeStatusText === 'success' && (
                 <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800">
-                  ★ Celestial Chime! {CHARGE_TRIALS[chargeTrialIndex].rewardText}
+                  ★ Celestial Chime! {chargePrac ? 'Great holding!' : CHARGE_TRIALS[chargeTrialIndex].rewardText}
                 </div>
               )}
               {chargeStatusText === 'idle' && (
                 <p className="text-xs sm:text-sm font-semibold text-slate-600">
-                  Touch and hold your finger or mouse on the Sunstone. Do not release until the bell rings!
+                  {chargePrac ? 'Practice: press and HOLD the stone until the ring is full!' : chargePracDone && chargeTrialIndex === 0 ? 'Great! Now it counts. Press and HOLD until the bell!' : 'Press and HOLD the stone. Do not let go until the bell rings!'}
                 </p>
               )}
             </div>

@@ -120,22 +120,6 @@ export default function GamifiedAssessmentsPage() {
     <main ref={root} data-no-listen="true" className="relative min-h-screen hb-paper isolate bg-gradient-to-b from-[#F8F1E2] via-[#FBF6EA] to-[#F3EBDA] font-poppins text-[#2F2A24] overflow-hidden">
       <style>{CSS}</style>
 
-      {/* TOP NAVIGATION CALLOUT: Cross-link to the full original clinical assessments directory */}
-      <nav aria-label="Clinical Directory Link" className="relative z-20 border-b border-[#E8DDCA] bg-[#FFFBF3]/90 backdrop-blur px-4 py-2.5">
-        <div className="mx-auto flex max-w-6xl items-center justify-between text-xs sm:text-sm">
-          <div className="flex items-center gap-2">
-            <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-semibold text-[#5A5247]">Pediatric Gamified Quests (Ages 4–12)</span>
-          </div>
-          <a
-            href="/assessments"
-            className="inline-flex items-center gap-1.5 font-bold text-[#8A5526] hover:text-[#5B3413] underline decoration-[#D9A66B]/50 underline-offset-4 transition-colors"
-          >
-            ← View Full Clinical & Paid Assessments Directory (20+ Tests)
-          </a>
-        </div>
-      </nav>
-
       {/* HERO: two quest worlds meeting at dusk, lit by lanterns */}
       <section className="hb-hero relative isolate overflow-hidden text-[#FFF8EA]" style={{ minHeight: 600 }}>
         <div className="absolute inset-0 -z-10 bg-[#121C28]" />
@@ -175,12 +159,12 @@ export default function GamifiedAssessmentsPage() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <a href="#quests" className="hb-btn-gold">Choose a quest</a>
             <a href="/assessments/dyslexia" className="hb-btn-glass">The Whispering Library (reading quest)</a>
-            <a href="/assessments" className="hb-btn-ghost">OG Clinical Directory →</a>
+            <a href="/assessments" className="hb-btn-ghost">All clinical assessments (20+ tests) →</a>
           </div>
-        </div>
-        <div className="absolute bottom-14 right-[5%] hidden items-end gap-3 sm:flex">
-          <p className="hb-bubble mb-12 hidden lg:block">Hoot! Pick a quest and I will guide you.</p>
-          <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="hb-owl h-28 w-28" />
+          <div className="mt-8 flex items-center justify-center gap-3">
+            <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="hb-owl h-16 w-16" />
+            <p className="hb-bubble hb-bubble-l">Hoot! Pick a quest and I will guide you.</p>
+          </div>
         </div>
         <svg className="absolute bottom-0 left-0 w-full" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 50 C240 100 480 0 720 40 C960 80 1200 10 1440 50 L1440 90 L0 90Z" fill="#F8F1E2" /></svg>
       </section>
@@ -371,7 +355,7 @@ a:focus-visible,button:focus-visible{outline:3px solid #2F2A24;outline-offset:3p
 .hb-hero .hb-fly:nth-child(3n+1){background:#C9F0DC;box-shadow:0 0 18px 8px rgba(190,240,215,.4)}
 @keyframes hb-float{0%,100%{transform:translate(0,0);opacity:.15}50%{transform:translate(20px,-34px);opacity:1}}
 .hb-pill{border:1px solid rgba(255,226,160,.5);background:rgba(255,255,255,.09);color:#FBE7B4;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 0 24px -6px rgba(255,214,130,.5)}
-.hb-shimmer{background:linear-gradient(100deg,#FFE9B0 0%,#CDEBD9 50%,#FFE9B0 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;filter:drop-shadow(0 0 16px rgba(255,214,130,.4));animation:hb-shine 9s linear infinite}
+.hb-shimmer{background:linear-gradient(100deg,#FFE9B0 0%,#CDEBD9 50%,#FFE9B0 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;text-shadow:none;filter:drop-shadow(0 0 16px rgba(255,214,130,.4));animation:hb-shine 9s linear infinite}
 @keyframes hb-shine{to{background-position:200% 0}}
 .hb-btn-gold,.hb-btn-glass,.hb-btn-ghost{display:inline-flex;min-height:44px;align-items:center;border-radius:999px;font-size:14px;transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
 .hb-btn-gold{padding:12px 28px;font-weight:700;color:#3B2D12;background:linear-gradient(135deg,#FFE6A8,#EDB85A);border:1px solid rgba(255,236,190,.8);box-shadow:0 0 0 4px rgba(255,214,130,.14),0 12px 32px -10px rgba(240,184,90,.75)}
@@ -382,6 +366,7 @@ a:focus-visible,button:focus-visible{outline:3px solid #2F2A24;outline-offset:3p
 .hb-btn-ghost:hover{background:rgba(255,255,255,.14);transform:translateY(-2px)}
 .hb-hero .hb-owl{filter:saturate(1) drop-shadow(0 0 18px rgba(255,214,130,.6))}
 .hb-bubble{max-width:190px;padding:8px 14px;border-radius:16px 16px 4px 16px;font-size:13px;font-weight:600;color:#FFF8EA;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.hb-bubble-l{border-radius:16px 16px 16px 4px;max-width:260px;text-align:left}
 @media (prefers-reduced-motion:reduce){.hb-glow,.hb-rays,.hb-lantern,.hb-star,.hb-shimmer,.hb-hero .hb-fly{animation:none!important}.hb-star{opacity:.7}.hb-rays{transform:translateX(-50%)}.hb-btn-gold:hover,.hb-btn-glass:hover,.hb-btn-ghost:hover{transform:none}}
 @media (prefers-reduced-motion:reduce){.hb-pop{animation:none!important}.hb-par,.hb-fly,.hb-owl,.hb-sticker,.hb-trail span{animation:none!important;transform:none!important}.hb-rv,.hb-tilt{transition:none!important}.hb-js .hb-rv:not(.hb-in){opacity:1;transform:none}}
 `

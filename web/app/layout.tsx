@@ -85,14 +85,14 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
             <a href="/" className="relative h-[50px] w-[70px] shrink-0">
               <img src="/logo.png" alt="Manas Learning logo" className="absolute inset-0 h-full w-full object-contain object-left lg:scale-150" />
             </a>
-            <nav aria-label="Main" className="hidden flex-1 items-center justify-center gap-7 xl:gap-9 lg:flex">
+            <nav aria-label="Main" className="hidden flex-1 items-center justify-center gap-4 2xl:gap-7 min-[1400px]:flex">
               {NAV.map(([label, href], i) => (
-                <a key={label} href={href} className={`text-xl transition-colors duration-200 hover:text-primary ${i === 0 ? 'font-bold text-primary' : 'text-black'}`}>{label}</a>
+                <a key={label} href={href} className={`whitespace-nowrap text-base 2xl:text-lg transition-colors duration-200 hover:text-primary ${i === 0 ? 'font-bold text-primary' : 'text-black'}`}>{label}</a>
               ))}
             </nav>
-            <div className="flex items-center"><div id="ml-lang-slot" suppressHydrationWarning /><a href={LIVE + '/login'} className="rounded-lg border border-primary/40 bg-primary/10 px-5 py-1.5 text-xl text-primary transition hover:bg-primary/20">Login</a></div>
+            <div className="flex items-center"><div id="ml-lang-slot" suppressHydrationWarning /><a href={LIVE + '/login'} className="rounded-lg border border-primary/40 bg-primary/10 px-5 py-1.5 text-base text-primary transition hover:bg-primary/20">Login</a></div>
           </div>
-          <nav aria-label="Main mobile" className="container mx-auto mt-2 flex gap-5 overflow-x-auto pb-1 text-lg lg:hidden">
+          <nav aria-label="Main mobile" className="container mx-auto mt-2 flex gap-5 overflow-x-auto whitespace-nowrap pb-1 text-base min-[1400px]:hidden">
             {NAV.map(([label, href]) => <a key={label} href={href} className="shrink-0 text-black hover:text-primary">{label}</a>)}
           </nav>
         </header>

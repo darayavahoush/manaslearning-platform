@@ -9,7 +9,7 @@ import {wilson} from './profile-stats'
  * this code; the record is built in the response and handed back to the caller.
  */
 
-export const RECORD_SCHEMA_VERSION = '1.5'
+export const RECORD_SCHEMA_VERSION = '1.6'
 
 export type Quest = 'adhd' | 'autism'
 export type AgeBand = '4-5' | '6-8' | '9-12' | '13-16'
@@ -82,7 +82,16 @@ export interface SessionRecord {
   starLevels?: StarLevel[]
   /** both quests: the parent's answers after the play, in words (record format 1.5 and later) */
   parentCard?: ParentCardRecord
+  /** autism quest only: what the child picked to help the sad sprite (record format 1.6 and later) */
+  helpRound?: HelpRound
   limits: string[]
+}
+
+export interface HelpRound {
+  /** the feeling the sprite showed (always sad: the step follows the sad round) */
+  shown: 'sad'
+  chosen: string
+  ms: number | null
 }
 
 export interface ParentCardRecord {
@@ -427,6 +436,15 @@ export function parentCard(t: Tele): ParentCardRecord | null {
   return out.tired || out.likeHome || out.enjoyed ? out : null
 }
 
+const HELP_OPTIONS = ['a hug', 'a quiet corner', 'a story'] as const
+
+/** The "what helps" step after the sad sprite round. Kept only when the choice is one of the three options. */
+export function helpRound(t: Tele): HelpRound | null {
+  const p = get(t, 'helpPick')
+  if (p === null || !Number.isInteger(p) || p < 0 || p >= HELP_OPTIONS.length) return null
+  return {shown: 'sad', chosen: HELP_OPTIONS[p], ms: cleanMs(get(t, 'helpMs'))}
+}
+
 export function buildSessionRecord(args: {
   quest: Quest
   ageYears: number | null
@@ -449,6 +467,7 @@ export function buildSessionRecord(args: {
     ...(args.quest === 'autism' && gazeRounds(args.telemetry) ? {gazeRounds: gazeRounds(args.telemetry)!} : {}),
     ...(args.quest === 'autism' && feelingsRounds(args.telemetry) ? {feelingsRounds: feelingsRounds(args.telemetry)!} : {}),
     ...(parentCard(args.telemetry) ? {parentCard: parentCard(args.telemetry)!} : {}),
+    ...(args.quest === 'autism' && helpRound(args.telemetry) ? {helpRound: helpRound(args.telemetry)!} : {}),
     limits: LIMITS,
   }
 }

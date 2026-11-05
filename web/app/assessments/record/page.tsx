@@ -2,7 +2,7 @@
 
 import {useState} from 'react'
 import {FeelingsTable, GazeTable, StarTable, SteeringTable} from '../../../components/assessments/report/RoundTables'
-import type {FeelingsRound, GazeRound, ParentCardRecord, StarLevel, SteeringTrial} from '../../../components/assessments/session-record'
+import type {FeelingsRound, GazeRound, HelpRound, ParentCardRecord, StarLevel, SteeringTrial} from '../../../components/assessments/session-record'
 
 /**
  * Clinician record viewer. Runs entirely in the browser: the session record is pasted or opened
@@ -25,6 +25,7 @@ type Rec = {
   steeringTrials?: SteeringTrial[]
   starLevels?: StarLevel[]
   parentCard?: ParentCardRecord
+  helpRound?: HelpRound
   sortingCards?: Array<{card: number; rule: string; color: string; shape: string; box: string; right: boolean; ms: number | null}>
   limits: string[]
 }
@@ -130,6 +131,9 @@ export default function RecordViewer() {
               </table>
             </div>
 
+            {!!rec.helpRound && (
+              <p className="mt-4 text-sm text-slate-700">What would help the sad sprite: <strong>{rec.helpRound.chosen}</strong>{rec.helpRound.ms !== null ? ` (${(Math.round(rec.helpRound.ms / 100) / 10).toFixed(1)} s)` : ''}. No right answer.</p>
+            )}
             {!!rec.parentCard && (
               <>
                 <h3 className="mt-6 text-sm font-bold uppercase tracking-wide text-slate-500">Parent&apos;s answers after the play</h3>

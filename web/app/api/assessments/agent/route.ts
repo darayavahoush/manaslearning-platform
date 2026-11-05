@@ -78,6 +78,8 @@ const TELEMETRY_KEYS = [
   'retrySunbird', 'retrySteering', 'retryStars', 'retryGaze', 'retryFeelings', 'retrySorting', 'pauseCount', 'pausedSec',
   // the parent card, after the play: option index (0 to 2) for each question
   'parentTired', 'parentLikeHome', 'parentEnjoyed',
+  // what helps the sad sprite: 0 a hug, 1 a quiet corner, 2 a story; time in ms
+  'helpPick', 'helpMs',
 ] as const
 
 function cleanTelemetry(input: unknown): Record<string, number | null> {

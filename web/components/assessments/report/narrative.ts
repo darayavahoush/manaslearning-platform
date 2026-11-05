@@ -13,7 +13,7 @@ export interface GameStory {
   fewTrials: boolean
 }
 
-type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'starLevels'> & Partial<Pick<SessionRecord, 'parentCard'>>
+type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'starLevels'> & Partial<Pick<SessionRecord, 'parentCard' | 'helpRound'>>
 
 const find = (r: Rec, key: string): Measure | undefined => r.measures.find((x) => x.key === key)
 const prop = (r: Rec, key: string): ProportionMeasure | null => {
@@ -44,12 +44,13 @@ function gaze(r: Rec, who: string): string[] {
   return out
 }
 
-function feelings(r: Rec): string[] {
+function feelings(r: Rec, who: string): string[] {
   const f = prop(r, 'feelingsMatches')
   if (!f) return []
   const out = [`${f.k} of ${f.n} cartoon faces were matched to the feeling shown.`]
   const missed = r.feelingsRounds?.filter((x) => !x.matched) ?? []
   if (missed.length) out.push(`${missed.map((x) => `For the ${x.shown} face, the ${x.chosen} face was chosen`).join('; ')}.`)
+  if (r.helpRound) out.push(`When the sprite looked sad, ${who} chose ${r.helpRound.chosen} as what would help. There is no right answer to this step.`)
   return out
 }
 
@@ -171,7 +172,7 @@ export function buildGameStories(record: Rec, name?: string): {stories: GameStor
     'Star-sequence game': stars,
     'Patience game': patience,
     'Gaze game': (r) => gaze(r, who),
-    'Feelings match': feelings,
+    'Feelings match': (r) => feelings(r, who),
     'Comfort choices': (r) => comfort(r, who),
     'Sorting game': (r) => sorting(r, who),
   }

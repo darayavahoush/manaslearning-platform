@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { INSTRUMENT_VERSION } from './version'
-import type { FeelingsRound, GazeRound, Measure, ParentCardRecord, SortingCard, StarLevel, SteeringTrial } from './session-record'
+import type { FeelingsRound, GazeRound, HelpRound, Measure, ParentCardRecord, SortingCard, StarLevel, SteeringTrial } from './session-record'
 
 export type ReportRow = { name: string; value: string; detail?: string; note?: string }
 export type Quest = 'dyslexia' | 'adhd' | 'autism'
@@ -34,6 +34,8 @@ export type ClinicianReportProps = {
   starLevels?: StarLevel[]
   /** both quests: the parent's answers after the play */
   parentCard?: ParentCardRecord
+  /** autism quest: what the child chose to help the sad sprite */
+  helpRound?: HelpRound
 }
 
 /** Turns sentences like "Rhyme game: 3 of 5 ..." into table rows. */
@@ -247,6 +249,9 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
                           ))}
                         </tbody>
                       </table>
+                    )}
+                    {game === 'Feelings match' && !!p.helpRound && (
+                      <p className="cr-small">What would help the sad sprite: {p.helpRound.chosen}{p.helpRound.ms !== null ? `, after about ${(Math.round(p.helpRound.ms / 100) / 10).toFixed(1)} s` : ''}. There is no right answer to this step.</p>
                     )}
                     {game === 'Steering game' && !!p.steeringTrials?.length && (
                       <table className="cr-mini">

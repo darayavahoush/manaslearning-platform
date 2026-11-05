@@ -385,6 +385,11 @@ function __McInner() {
   // face chosen on each round (index into that round's options) and time to choose in ms
   const [tomPicks, setTomPicks] = useState<number[]>([])
   const [tomTimes, setTomTimes] = useState<number[]>([])
+  // "what helps" step, shown after the sad sprite round (any answer): 0 a hug, 1 a quiet corner, 2 a story
+  const [helpPending, setHelpPending] = useState(false)
+  const [helpPick, setHelpPick] = useState<number | null>(null)
+  const [helpMs, setHelpMs] = useState<number | null>(null)
+  const helpStartRef = useRef<number>(0)
   const tomStartRef = useRef<number>(0)
 
   // Sensory Calibration State (SPM-2)
@@ -478,12 +483,29 @@ function __McInner() {
       playAudio('tap')
     }
 
+    if (EMOTION_MIRROR_TRIALS[tomTrialIndex].target === 'sad') {
+      helpStartRef.current = performance.now()
+      setHelpPending(true)
+      return
+    }
+    advanceTom()
+  }
+
+  function advanceTom() {
     if (tomTrialIndex + 1 < EMOTION_MIRROR_TRIALS.length) {
       setTomTrialIndex((i) => i + 1)
     } else {
       playAudio('fanfare')
       setStage('sensory_story')
     }
+  }
+
+  function handleHelpSelect(i: number) {
+    setHelpPick(i)
+    setHelpMs(Math.round(performance.now() - helpStartRef.current))
+    setHelpPending(false)
+    playAudio('chime')
+    advanceTom()
   }
 
   // DCCS Handling
@@ -565,6 +587,9 @@ function __McInner() {
         // encounter by encounter in the gaze game: vessel chosen (0 left, 1 centre, 2 right) and time in ms
         ...Object.fromEntries(Array.from({length: JA_TRIALS.length}, (_, i) => [`gazePick${i + 1}`, jaPicks[i] ?? null])),
         ...Object.fromEntries(Array.from({length: JA_TRIALS.length}, (_, i) => [`gazeMs${i + 1}`, jaResponseTimes[i] ?? null])),
+        // what helps the sad sprite: 0 a hug, 1 a quiet corner, 2 a story, and the time in ms
+        helpPick: helpPick,
+        helpMs: helpMs,
         // round by round in the feelings match: face chosen (position in that round's options) and time in ms
         ...Object.fromEntries(Array.from({length: EMOTION_MIRROR_TRIALS.length}, (_, i) => [`feelingsPick${i + 1}`, tomPicks[i] ?? null])),
         ...Object.fromEntries(Array.from({length: EMOTION_MIRROR_TRIALS.length}, (_, i) => [`feelingsMs${i + 1}`, tomTimes[i] ?? null])),
@@ -666,7 +691,7 @@ function __McInner() {
     setRoomShields((n) => n + 1)
   }
 
-  function startTom() { playAudio('whoosh'); setPrac(null); setTomTrialIndex(0); setTomScore(0); setTomPicks([]); setTomTimes([]); setStage('tom_game') }
+  function startTom() { playAudio('whoosh'); setPrac(null); setTomTrialIndex(0); setTomScore(0); setTomPicks([]); setTomTimes([]); setHelpPending(false); setHelpPick(null); setHelpMs(null); setStage('tom_game') }
   function startDccs() { playAudio('fanfare'); setPrac(null); setDccsIndex(0); setDccsTimes([]); setDccsCorrect([]); setDccsBins([]); setDccsSwitchSeen(false); setStage('dccs_game') }
   function beginPractice(g: Prac['g'], line: string) {
     playAudio('whoosh')
@@ -1021,7 +1046,33 @@ function __McInner() {
         )}
 
         {/* 5. CHAPTER 2 GAMEPLAY: EMOTION MIRROR */}
-        {stage === 'tom_game' && EMOTION_MIRROR_TRIALS[tomTrialIndex] && (
+        {stage === 'tom_game' && helpPending && (
+          <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
+              Before we go on
+            </span>
+            <div className="relative mx-auto my-6 flex h-40 w-40 items-center justify-center rounded-full border-8 border-teal-300/80 bg-gradient-to-b from-[#064E3B] via-[#022C22] to-[#01140E]">
+              <ForestSpriteFaceSvg emotion="sad" className="w-24 h-24" />
+            </div>
+            <p className="font-patrick text-xl sm:text-2xl text-teal-900 font-bold mb-6">
+              The sprite looks sad. What would help?
+            </p>
+            <div className="grid grid-cols-3 gap-3 sm:gap-6 max-w-lg mx-auto">
+              {['A hug', 'A quiet corner', 'A story'].map((label, i) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => handleHelpSelect(i)}
+                  className="rounded-2xl border-4 border-teal-400 bg-teal-50 py-5 px-2 text-base sm:text-lg font-bold text-teal-900 shadow-md transition-all hover:scale-105 active:scale-95"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {stage === 'tom_game' && !helpPending && EMOTION_MIRROR_TRIALS[tomTrialIndex] && (
           <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">

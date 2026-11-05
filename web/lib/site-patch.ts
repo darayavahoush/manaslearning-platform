@@ -70,7 +70,16 @@ export const SITE_PATCH = '<script>' + String.raw`
         }
       }
     }
-    if (!ul.querySelector('[data-gq]')) {
+    // The live site's own Assessments dropdown may already offer Gamified Quests. If so, do not add a second menu item,
+    // and remove one we added earlier.
+    var ownGq = false;
+    ul.querySelectorAll('a').forEach(function (x) {
+      if (!x.closest('[data-gq]') && /gamified quests/i.test(x.textContent || '')) ownGq = true;
+    });
+    if (ownGq) {
+      var oldGq = ul.querySelector('[data-gq]');
+      if (oldGq && oldGq.parentNode) oldGq.parentNode.removeChild(oldGq);
+    } else if (!ul.querySelector('[data-gq]')) {
       var items2 = ul.querySelectorAll(':scope > li');
       var assessLi = null;
       for (var j = 0; j < items2.length; j++) if (/assessments/i.test(items2[j].textContent)) assessLi = items2[j];

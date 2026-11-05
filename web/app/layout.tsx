@@ -6,6 +6,7 @@ import './globals.css'
 import {Year} from './Year'
 import MiloWidget from '../components/milo/MiloWidget'
 import {FallingLeaves} from './FallingLeaves'
+import NavFeedback from './NavFeedback'
 import {FaLinkedinIn, FaFacebookF, FaInstagram, FaYoutube} from 'react-icons/fa6'
 
 const poppins = Poppins({subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-poppins', display: 'swap'})
@@ -78,6 +79,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
     <html lang="en">
       <body className={`${poppins.variable} ${patrick.variable} antialiased`}>
         <FallingLeaves />
+        <NavFeedback />
         <header className="sticky top-0 z-50 w-full bg-white px-[10px] py-3 shadow-[0_1px_0_rgba(0,0,0,0.04)] md:py-4">
           <div className="container mx-auto flex items-center justify-between gap-4">
             <a href="/" className="relative h-[50px] w-[70px] shrink-0">

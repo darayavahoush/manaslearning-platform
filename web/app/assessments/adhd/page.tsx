@@ -206,17 +206,17 @@ function VelvetDuskmothSvg({className = 'w-28 h-28'}: {className?: string}) {
   )
 }
 
-function AstralChevronSvg({direction, isCenter, className = 'w-10 h-10'}: {direction: 'left' | 'right' | 'neutral'; isCenter: boolean; className?: string}) {
+function AstralChevronSvg({direction, isCenter, className = 'w-11 h-11 sm:w-16 sm:h-16'}: {direction: 'left' | 'right' | 'neutral'; isCenter: boolean; className?: string}) {
   if (direction === 'neutral') {
     return (
-      <div className="w-10 h-10 flex items-center justify-center text-slate-400 font-bold text-xl select-none">
+      <div className="w-12 h-12 flex items-center justify-center text-slate-500 font-bold text-3xl select-none">
         •
       </div>
     )
   }
   const isLeft = direction === 'left'
   return (
-    <div className={`relative flex items-center justify-center ${isCenter ? 'scale-125' : 'opacity-70'}`}>
+    <div className={`relative flex items-center justify-center ${isCenter ? 'scale-125' : 'opacity-90'}`}>
       {isCenter && <span className="absolute -inset-2 rounded-xl bg-amber-400/20 blur-md animate-pulse"/>}
       <svg
         viewBox="0 0 48 48"
@@ -226,7 +226,7 @@ function AstralChevronSvg({direction, isCenter, className = 'w-10 h-10'}: {direc
       >
         <path
           d="M 32 8 L 16 24 L 32 40"
-          stroke={isCenter ? '#F59E0B' : '#60A5FA'}
+          stroke={isCenter ? '#C2410C' : '#1D4ED8'}
           strokeWidth={isCenter ? '5' : '3.5'}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -248,11 +248,11 @@ function StarlightNodeSvg({isLit}: {isLit: boolean}) {
       )}
       <path
         d="M 30 10 L 35 25 L 50 30 L 35 35 L 30 50 L 25 35 L 10 30 L 25 25 Z"
-        fill={isLit ? '#F59E0B' : '#CBD5E1'}
-        stroke={isLit ? '#D97706' : '#94A3B8'}
+        fill={isLit ? '#F59E0B' : '#8FA7BF'}
+        stroke={isLit ? '#D97706' : '#6B87A3'}
         strokeWidth="1.5"
       />
-      <circle cx="30" cy="30" r="4" fill={isLit ? '#FFFFFF' : '#64748B'}/>
+      <circle cx="30" cy="30" r="4" fill={isLit ? '#FFFFFF' : '#4B6783'}/>
     </svg>
   )
 }
@@ -271,6 +271,21 @@ const CHARGE_TRIALS = [
   {targetMs: 4000, title: 'Nova Charge', rewardText: 'Sunstone Crystal Fully Powered!'}
 ]
 
+// Age bands. Text and tap targets grow as the child gets younger (young children react more slowly and tap
+// less precisely, so larger targets and more time help); the star sequences and their pace rise with age
+// (spatial span keeps growing through childhood). These are sizing and pacing choices informed by published
+// child-interface and span research. They are not clinical norms.
+type AgeBand = { id: string; xs: number; sm: number; base: number; chev: string; bird: string; grid: number; seqs: number[][]; stepMs: number; litMs: number }
+const AGE_BANDS: AgeBand[] = [
+  { id: '4-5', xs: 1.15, sm: 1.25, base: 1.4, chev: 'w-12 h-12 sm:w-24 sm:h-24', bird: 'w-40 h-40 sm:w-48 sm:h-48', grid: 420, seqs: [[1, 5], [3, 0, 6], [8, 4, 1, 6]], stepMs: 1000, litMs: 700 },
+  { id: '6-8', xs: 1.05, sm: 1.15, base: 1.3, chev: 'w-12 h-12 sm:w-20 sm:h-20', bird: 'w-36 h-36 sm:w-44 sm:h-44', grid: 400, seqs: [[1, 5, 7], [3, 0, 6, 2], [8, 4, 1, 6, 3]], stepMs: 900, litMs: 600 },
+  { id: '9-12', xs: 0.95, sm: 1.05, base: 1.15, chev: 'w-11 h-11 sm:w-16 sm:h-16', bird: 'w-32 h-32 sm:w-40 sm:h-40', grid: 380, seqs: [[4, 0, 7, 2], [1, 6, 3, 8, 5], [7, 2, 5, 0, 8, 3]], stepMs: 800, litMs: 520 },
+  { id: '13-16', xs: 0.9, sm: 1, base: 1.1, chev: 'w-11 h-11 sm:w-16 sm:h-16', bird: 'w-32 h-32 sm:w-36 sm:h-36', grid: 360, seqs: [[2, 6, 1, 8, 4], [5, 0, 7, 3, 6, 1], [8, 3, 0, 5, 2, 7, 4]], stepMs: 700, litMs: 450 },
+]
+function bandFor(age: number): AgeBand {
+  return age <= 5 ? AGE_BANDS[0] : age <= 8 ? AGE_BANDS[1] : age <= 12 ? AGE_BANDS[2] : AGE_BANDS[3]
+}
+
 function __McInner() {
   const [stage, setStage] = useState<'welcome' | 'avatar' | 'cpt_story' | 'cpt_game' | 'flanker_story' | 'flanker_game' | 'memory_story' | 'memory_game' | 'situational_story' | 'situational_game' | 'trials' | 'agent_eval' | 'celebration'>('welcome')
 
@@ -279,6 +294,7 @@ function __McInner() {
   const [heroAge, setHeroAge] = useState(8)
   const [guildClass, setGuildClass] = useState('Canopy Sky Ranger')
   const [companion] = useState('Milo the Wise Owl')
+  const band = bandFor(heroAge)
 
   // CPT-3 Randomized Parameters (Conners Continuous Performance Battery)
   const CPT_TOTAL_TRIALS = 20
@@ -310,6 +326,7 @@ function __McInner() {
   const [memorySequence, setMemorySequence] = useState<number[]>([])
   const [memoryUserSequence, setMemoryUserSequence] = useState<number[]>([])
   const [memoryLitCell, setMemoryLitCell] = useState<number | null>(null)
+  const [memoryTapCell, setMemoryTapCell] = useState<number | null>(null)
   const [memoryPhase, setMemoryPhase] = useState<'showing' | 'input' | 'feedback'>('showing')
   const [memoryMaxSpan, setMemoryMaxSpan] = useState(0)
 
@@ -459,7 +476,7 @@ function __McInner() {
     if (stage !== 'memory_game') return
 
     // Fixed sequences (3, 4 and 5 stars, one try each) so every child sees the same items.
-    const MEMORY_SEQS = [[1, 5, 7], [3, 0, 6, 2], [8, 4, 1, 6, 3]]
+    const MEMORY_SEQS = band.seqs
     const seq: number[] = MEMORY_SEQS[Math.min(memoryLevel, MEMORY_SEQS.length) - 1]
     setMemorySequence(seq)
     setMemoryUserSequence([])
@@ -469,16 +486,16 @@ function __McInner() {
       setTimeout(() => {
         setMemoryLitCell(cell)
         playAudio('star')
-        setTimeout(() => setMemoryLitCell(null), 360)
-      }, 500 + idx * 520)
+        setTimeout(() => setMemoryLitCell(null), band.litMs)
+      }, 500 + idx * band.stepMs)
     })
 
     const timer = setTimeout(() => {
       setMemoryPhase('input')
-    }, 500 + seq.length * 520)
+    }, 500 + seq.length * band.stepMs)
 
     return () => clearTimeout(timer)
-  }, [stage, memoryLevel])
+  }, [stage, memoryLevel, band.id])
 
   function handleMemoryClick(cellIdx: number) {
     if (memoryPhase !== 'input') return
@@ -646,11 +663,12 @@ function __McInner() {
   }
 
   return (
-    <main data-no-listen="true" className="relative min-h-screen bg-[#0B132B] py-8 px-4 font-poppins text-[#1F2937] overflow-x-hidden selection:bg-amber-400 selection:text-amber-950">
+    <main data-no-listen="true" className="relative min-h-screen bg-[#EAF3F8] q-age py-8 px-4 font-poppins text-[#1F2937] overflow-x-hidden selection:bg-amber-400 selection:text-amber-950">
+      <style>{`.q-age .text-xs{font-size:${band.xs}rem!important;line-height:1.55!important}.q-age .text-sm{font-size:${band.sm}rem!important;line-height:1.55!important}.q-age .text-base{font-size:${band.base}rem!important;line-height:1.6!important}`}</style>
       {/* Immersive Fantasy Sky Citadel Celestial Backdrop */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
         <QuestStyles />
-        <Fireflies color="#FDE68A" />
+        <Fireflies color="#D97706" />
         {/* Full-bleed citadel illustration with ambient atmospheric blur */}
         <img
           src="/decor/itw/quest-sky-citadel-banner.webp"
@@ -658,19 +676,19 @@ function __McInner() {
           className="w-full h-full object-cover object-center opacity-30 filter blur-[2px] scale-105"
         />
         {/* Enchanted celestial overlays & radial starlight glows */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0B132B]/75 via-[#1C2541]/70 to-[#0B132B]/90" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#F4F9FC]/80 via-[#E4EFF6]/75 to-[#EAF3F8]/90" />
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[55rem] h-[30rem] rounded-full bg-gradient-to-b from-amber-400/20 via-orange-500/10 to-transparent blur-3xl pointer-events-none" />
         <div className="absolute top-1/3 -left-32 w-96 h-96 rounded-full bg-cyan-400/15 blur-3xl pointer-events-none" />
         <div className="absolute bottom-10 -right-32 w-96 h-96 rounded-full bg-amber-300/15 blur-3xl pointer-events-none" />
         {/* Floating starlight constellation specks */}
-        <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#FDE68A_1px,transparent_1px)] [background-size:32px_32px]" />
+        <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#9DB9D1_1px,transparent_1px)] [background-size:32px_32px]" />
       </div>
 
       {notice && <div role="alert" className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-white px-5 py-3 text-sm font-bold text-slate-900 shadow-xl">{notice} <button type="button" className="ml-3 underline" onClick={() => setNotice('')}>Dismiss</button></div>}
       <AmbientToggle mood="citadel" />
       <div key={stage} className="mx-auto max-w-4xl relative z-10 qd-stage">
         {/* Navigation & Realm Indicator */}
-        <div className="mb-6 flex items-center justify-between text-xs">
+        <div className="mb-6 flex items-center justify-between text-xs [&_*]:text-[#1F2937]">
           <Link href="/assessments" prefetch={false} className="font-bold text-amber-300 hover:text-amber-200 hover:underline flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-amber-300/30 shadow-sm">
             ← Assessment Directory
           </Link>
@@ -894,7 +912,7 @@ function __McInner() {
             >
               {cptStimulus === 'target' && (
                 <div className="flex flex-col items-center">
-                  <SunbirdTarget className="w-32 h-32" />
+                  <SunbirdTarget className={band.bird} />
                 </div>
               )}
               {cptStimulus === 'distractor' && (
@@ -916,7 +934,7 @@ function __McInner() {
               type="button"
               onPointerDown={handleCptTap}
               onClick={(e) => { if (e.detail === 0) handleCptTap() }}
-              className="w-full max-w-sm rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 py-4 text-base font-bold text-white shadow-lg active:scale-95 transition-all"
+              className="w-full max-w-sm rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 py-7 text-xl font-bold text-white shadow-lg active:scale-95 transition-all"
             >
               TAP NOW (Or Spacebar)
             </button>
@@ -985,26 +1003,26 @@ function __McInner() {
               </span>
             </div>
 
-            <div className="my-10 flex items-center justify-center gap-3 md:gap-6 p-8 rounded-3xl bg-[#0F172A] shadow-inner">
-              <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} />
-              <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} />
-              <AstralChevronSvg direction={currentFlanker.centerDir} isCenter={true} />
-              <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} />
-              <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} />
+            <div className="my-10 flex items-center justify-center gap-3 md:gap-6 p-4 sm:p-8 rounded-3xl bg-[#D6E6F2] shadow-inner">
+              <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
+              <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
+              <AstralChevronSvg direction={currentFlanker.centerDir} isCenter={true} className={band.chev} />
+              <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
+              <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
             </div>
 
             <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
               <button
                 type="button"
                 onClick={() => handleFlankerAnswer('left')}
-                className="rounded-2xl border-2 border-sky-500 bg-sky-50 hover:bg-sky-500 hover:text-white py-4 text-base font-bold text-sky-700 shadow-md transition-all active:scale-95"
+                className="rounded-2xl border-2 border-sky-500 bg-sky-50 hover:bg-sky-500 hover:text-white py-8 text-2xl font-bold text-sky-700 shadow-md transition-all active:scale-95"
               >
                 ← Steer Left
               </button>
               <button
                 type="button"
                 onClick={() => handleFlankerAnswer('right')}
-                className="rounded-2xl border-2 border-sky-500 bg-sky-50 hover:bg-sky-500 hover:text-white py-4 text-base font-bold text-sky-700 shadow-md transition-all active:scale-95"
+                className="rounded-2xl border-2 border-sky-500 bg-sky-50 hover:bg-sky-500 hover:text-white py-8 text-2xl font-bold text-sky-700 shadow-md transition-all active:scale-95"
               >
                 Steer Right →
               </button>
@@ -1060,26 +1078,27 @@ function __McInner() {
           <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
-                Level {memoryLevel} of 3 • Constellation Span: {memoryLevel + 2}
+                Level {memoryLevel} of 3 • Constellation Span: {memorySequence.length || memoryLevel + 2}
               </span>
               <span className="text-xs font-bold text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
                 {memoryPhase === 'showing' ? 'Watch Pattern...' : 'Your Turn to Harmonize!'}
               </span>
             </div>
 
-            <div className="mx-auto my-6 grid w-72 h-72 grid-cols-3 gap-3 rounded-3xl bg-[#0F172A] p-4 shadow-2xl">
+            <div className="mx-auto my-6 grid aspect-square grid-cols-3 gap-3 rounded-3xl bg-[#D6E6F2] p-4 shadow-2xl" style={{ width: '100%', maxWidth: band.grid }}>
               {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((idx) => {
-                const isLit = memoryLitCell === idx
+                const isLit = memoryLitCell === idx || memoryTapCell === idx
                 return (
                   <button
                     key={idx}
                     type="button"
                     disabled={memoryPhase !== 'input'}
+                    onPointerDown={() => { if (memoryPhase === 'input') { setMemoryTapCell(idx); setTimeout(() => setMemoryTapCell((c) => (c === idx ? null : c)), 320) } }}
                     onClick={() => handleMemoryClick(idx)}
                     className={`rounded-2xl p-2 transition-all flex items-center justify-center ${
                       isLit
                         ? 'bg-amber-400 shadow-[0_0_20px_#F59E0B] scale-105'
-                        : 'bg-slate-800/80 hover:bg-slate-700/80'
+                        : 'bg-[#F4F9FC] hover:bg-white'
                     } disabled:cursor-not-allowed`}
                   >
                     <StarlightNodeSvg isLit={isLit} />

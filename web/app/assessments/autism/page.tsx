@@ -185,11 +185,23 @@ function JewelCardSvg({color, shape}: {color: 'red' | 'blue' | 'emerald' | 'ambe
   )
 }
 
+/** The sprite's body: a glowing spirit with a leaf crown. Its colour is set by the emotion; the face drawn on top is unchanged. */
+function SpiritBody({fill, stroke}: {fill: string; stroke: string}) {
+  return (
+    <g>
+      <circle cx="50" cy="56" r="46" fill={fill} opacity="0.25" />
+      <path d="M50 14 C72 14 88 32 88 56 C88 80 72 96 50 96 C28 96 12 80 12 56 C12 32 28 14 50 14 Z" fill={fill} stroke={stroke} strokeWidth="4" />
+      <path d="M34 22 C22 6 10 10 8 22 C18 28 28 28 34 22 Z" fill="#86EFAC" stroke={stroke} strokeWidth="2" />
+      <path d="M66 22 C78 6 90 10 92 22 C82 28 72 28 66 22 Z" fill="#86EFAC" stroke={stroke} strokeWidth="2" />
+    </g>
+  )
+}
+
 function ForestSpriteFaceSvg({emotion, className = 'w-24 h-24'}: {emotion: 'happy' | 'sad' | 'surprised' | 'calm'; className?: string}) {
   if (emotion === 'happy') {
     return (
       <svg className={className} viewBox="0 0 100 100" fill="none">
-        <circle cx="50" cy="50" r="44" fill="#FEF08A" stroke="#EAB308" strokeWidth="4" />
+        <SpiritBody fill="#FEF08A" stroke="#EAB308" />
         <ellipse cx="34" cy="42" rx="4" ry="6" fill="#713F12" />
         <ellipse cx="66" cy="42" rx="4" ry="6" fill="#713F12" />
         <circle cx="36" cy="40" r="2" fill="#FFFFFF" />
@@ -205,7 +217,7 @@ function ForestSpriteFaceSvg({emotion, className = 'w-24 h-24'}: {emotion: 'happ
   if (emotion === 'sad') {
     return (
       <svg className={className} viewBox="0 0 100 100" fill="none">
-        <circle cx="50" cy="50" r="44" fill="#BFDBFE" stroke="#3B82F6" strokeWidth="4" />
+        <SpiritBody fill="#BFDBFE" stroke="#3B82F6" />
         <ellipse cx="35" cy="45" rx="4" ry="5" fill="#1E3A8A" />
         <ellipse cx="65" cy="45" rx="4" ry="5" fill="#1E3A8A" />
         <path d="M 30 36 Q 36 40 42 38" stroke="#1E3A8A" strokeWidth="3" strokeLinecap="round" />
@@ -218,7 +230,7 @@ function ForestSpriteFaceSvg({emotion, className = 'w-24 h-24'}: {emotion: 'happ
   if (emotion === 'surprised') {
     return (
       <svg className={className} viewBox="0 0 100 100" fill="none">
-        <circle cx="50" cy="50" r="44" fill="#E9D5FF" stroke="#A855F7" strokeWidth="4" />
+        <SpiritBody fill="#E9D5FF" stroke="#A855F7" />
         <circle cx="34" cy="42" r="6" fill="#581C87" />
         <circle cx="66" cy="42" r="6" fill="#581C87" />
         <circle cx="36" cy="40" r="2" fill="#FFFFFF" />
@@ -231,7 +243,7 @@ function ForestSpriteFaceSvg({emotion, className = 'w-24 h-24'}: {emotion: 'happ
   }
   return (
     <svg className={className} viewBox="0 0 100 100" fill="none">
-      <circle cx="50" cy="50" r="44" fill="#BBF7D0" stroke="#22C55E" strokeWidth="4" />
+      <SpiritBody fill="#BBF7D0" stroke="#22C55E" />
       <path d="M 28 44 Q 34 50 40 44" stroke="#14532D" strokeWidth="3.5" strokeLinecap="round" fill="none" />
       <path d="M 60 44 Q 66 50 72 44" stroke="#14532D" strokeWidth="3.5" strokeLinecap="round" fill="none" />
       <path d="M 38 62 Q 50 68 62 62" stroke="#14532D" strokeWidth="4" strokeLinecap="round" fill="none" />
@@ -280,6 +292,8 @@ const EMOTION_MIRROR_TRIALS = [
 const ROOM_DIM_NAMES = ['light', 'rain sound', 'cushion weight'] as const
 const ROOM_STEP_MS = 1200
 const ROOM_TOP = 10
+// the room's ambience between steps and before the child has chosen: a soft light and a quiet rain
+const ROOM_AMBIENT = {light: 5, sound: 2} as const
 // telemetry: a stop of 0 means the child never said it was too much; undefined means that sense was never reached
 const stopOf = (v: number | null | undefined) => (v === undefined ? null : (v ?? 0))
 
@@ -728,9 +742,10 @@ function __McInner() {
 
   // ---- design the room ----
   // during the ramp only the sense being turned up is active; in the design phase the sliders decide
-  const liveLight = roomPhase === 'ramp' ? (roomDim === 0 ? roomLevel : null) : sensoryLight
-  const liveSound = roomPhase === 'ramp' ? (roomDim === 1 ? roomLevel : null) : sensorySound
-  const roomFilter = `brightness(${0.55 + ((liveLight ?? 5) / 10) * 0.8})`
+  // the room is never dark or silent: outside its own step each sense rests at the ambient level
+  const liveLight = roomPhase === 'ramp' ? (roomDim === 0 ? roomLevel : ROOM_AMBIENT.light) : (sensoryLight ?? ROOM_AMBIENT.light)
+  const liveSound = roomPhase === 'ramp' ? (roomDim === 1 ? roomLevel : ROOM_AMBIENT.sound) : (sensorySound ?? ROOM_AMBIENT.sound)
+  const roomFilter = `brightness(${0.55 + (liveLight / 10) * 0.8})`
 
   useEffect(() => {
     if (stage !== 'sensory_story' || roomPhase !== 'ramp') return
@@ -743,9 +758,10 @@ function __McInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage, roomPhase, roomLevel, roomDim])
 
+  // runs when the room starts too, so the rain begins as soon as the child steps inside
   useEffect(() => {
     roomSoundRef.current?.setLevel(liveSound)
-  }, [liveSound])
+  }, [liveSound, roomPhase])
 
   useEffect(() => {
     if (stage === 'sensory_story') return

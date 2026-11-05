@@ -9,7 +9,7 @@ import {wilson} from './profile-stats'
  * this code; the record is built in the response and handed back to the caller.
  */
 
-export const RECORD_SCHEMA_VERSION = '1.6'
+export const RECORD_SCHEMA_VERSION = '1.7'
 
 export type Quest = 'adhd' | 'autism'
 export type AgeBand = '4-5' | '6-8' | '9-12' | '13-16'
@@ -84,6 +84,8 @@ export interface SessionRecord {
   parentCard?: ParentCardRecord
   /** autism quest only: what the child picked to help the sad sprite (record format 1.6 and later) */
   helpRound?: HelpRound
+  /** adhd quest only: which version of the steering game was played (record format 1.7 and later) */
+  steeringSkin?: 'arrows' | 'rocket'
   limits: string[]
 }
 
@@ -468,6 +470,7 @@ export function buildSessionRecord(args: {
     ...(args.quest === 'autism' && feelingsRounds(args.telemetry) ? {feelingsRounds: feelingsRounds(args.telemetry)!} : {}),
     ...(parentCard(args.telemetry) ? {parentCard: parentCard(args.telemetry)!} : {}),
     ...(args.quest === 'autism' && helpRound(args.telemetry) ? {helpRound: helpRound(args.telemetry)!} : {}),
+    ...(args.quest === 'adhd' && get(args.telemetry, 'steerRocket') !== null ? {steeringSkin: get(args.telemetry, 'steerRocket') === 1 ? 'rocket' as const : 'arrows' as const} : {}),
     limits: LIMITS,
   }
 }

@@ -80,6 +80,8 @@ const TELEMETRY_KEYS = [
   'parentTired', 'parentLikeHome', 'parentEnjoyed',
   // what helps the sad sprite: 0 a hug, 1 a quiet corner, 2 a story; time in ms
   'helpPick', 'helpMs',
+  // 1 when the steering game was the rocket version, 0 for arrows
+  'steerRocket',
 ] as const
 
 function cleanTelemetry(input: unknown): Record<string, number | null> {

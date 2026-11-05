@@ -13,7 +13,7 @@ export interface GameStory {
   fewTrials: boolean
 }
 
-type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'starLevels'> & Partial<Pick<SessionRecord, 'parentCard' | 'helpRound'>>
+type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'starLevels'> & Partial<Pick<SessionRecord, 'parentCard' | 'helpRound' | 'steeringSkin'>>
 
 const find = (r: Rec, key: string): Measure | undefined => r.measures.find((x) => x.key === key)
 const prop = (r: Rec, key: string): ProportionMeasure | null => {
@@ -107,6 +107,7 @@ function sunbird(r: Rec): string[] {
 
 function steering(r: Rec): string[] {
   const out: string[] = []
+  if (r.steeringSkin === 'rocket') out.push('This session used the rocket version of the steering game. The rules are the same as the arrow version.')
   const c = prop(r, 'flankerCongruent')
   const i = prop(r, 'flankerIncongruent')
   if (c && i) out.push(`${c.k} of ${c.n} rounds were answered correctly when the arrows matched, and ${i.k} of ${i.n} when they disagreed.`)

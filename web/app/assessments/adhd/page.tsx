@@ -222,6 +222,36 @@ function VelvetDuskmothSvg({className = 'w-28 h-28'}: {className?: string}) {
   )
 }
 
+/**
+ * The steering game's second skin: a rocket for the centre arrow and wind gusts for the side arrows.
+ * Same rules and same measure. The skin is chosen by the clinician with ?skin=rocket on the page address.
+ */
+function RocketSvg({direction, className}: {direction: 'left' | 'right'; className: string}) {
+  return (
+    <svg viewBox="0 0 48 48" className={className} fill="none" aria-hidden="true" style={{transform: direction === 'left' ? 'scaleX(-1)' : undefined}}>
+      <path d="M9 21 L1 24 L9 27 Z" fill="#FBBF24" />
+      <path d="M8 24 L3 16 L12 20 Z M8 24 L3 32 L12 28 Z" fill="#F97316" />
+      <path d="M8 24 L30 16 Q44 24 30 32 Z" fill="#F8FAFC" stroke="#1E3A8A" strokeWidth="1.5" strokeLinejoin="round" />
+      <circle cx="27" cy="24" r="3.5" fill="#38BDF8" stroke="#1E3A8A" strokeWidth="1.2" />
+    </svg>
+  )
+}
+
+function WindGustSvg({direction, className}: {direction: 'left' | 'right'; className: string}) {
+  return (
+    <svg viewBox="0 0 48 48" className={className} fill="none" aria-hidden="true" style={{transform: direction === 'left' ? 'scaleX(-1)' : undefined}}>
+      <path d="M4 16 Q18 10 30 16 T44 16" stroke="#38BDF8" strokeWidth="3" strokeLinecap="round" />
+      <path d="M4 24 Q18 18 30 24 T44 24" stroke="#7DD3FC" strokeWidth="3" strokeLinecap="round" />
+      <path d="M4 32 Q18 26 30 32 T44 32" stroke="#38BDF8" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function FlankerGlyph({skin, direction, isCenter, className}: {skin: 'arrows' | 'rocket'; direction: 'left' | 'right' | 'neutral'; isCenter: boolean; className: string}) {
+  if (skin === 'arrows' || direction === 'neutral') return <AstralChevronSvg direction={direction} isCenter={isCenter} className={className} />
+  return isCenter ? <RocketSvg direction={direction} className={className} /> : <WindGustSvg direction={direction} className={className} />
+}
+
 function AstralChevronSvg({direction, isCenter, className = 'w-11 h-11 sm:w-16 sm:h-16'}: {direction: 'left' | 'right' | 'neutral'; isCenter: boolean; className?: string}) {
   if (direction === 'neutral') {
     return (
@@ -457,6 +487,12 @@ function __McInner() {
   const [keeperObs, setKeeperObs] = useState<any>(null)
   const [parentOk, setParentOk] = useState(false)
   const [notice, setNotice] = useState('')
+
+  // steering skin: ?skin=rocket on the page address selects the rocket version (chosen by the clinician, not the child)
+  const [steerSkin, setSteerSkin] = useState<'arrows' | 'rocket'>('arrows')
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('skin') === 'rocket') setSteerSkin('rocket')
+  }, [])
 
   // Keyboard Navigation
   useEffect(() => {
@@ -853,6 +889,8 @@ function __McInner() {
         parentTired: parent?.tired ?? null,
         parentLikeHome: parent?.likeHome ?? null,
         parentEnjoyed: parent?.enjoyed ?? null,
+        // 1 when the steering game was played as the rocket version (same rules, same measure)
+        steerRocket: steerSkin === 'rocket' ? 1 : 0,
         pauseCount: ev.pauseCount,
         pausedSec: ev.pausedSec
       }
@@ -1236,14 +1274,14 @@ function __McInner() {
 
             <div className="relative my-6 flex items-center justify-center gap-3 md:gap-6 p-4 sm:p-8 rounded-3xl bg-[#D6E6F2] shadow-inner min-h-[8rem]">
               {flankerPhase === 'demo1' ? (
-                <AstralChevronSvg direction={currentFlanker.centerDir} isCenter={true} className="w-24 h-24 sm:w-32 sm:h-32" />
+                <FlankerGlyph skin={steerSkin} direction={currentFlanker.centerDir} isCenter={true} className="w-24 h-24 sm:w-32 sm:h-32" />
               ) : (
                 <>
-                  <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
-                  <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
-                  <AstralChevronSvg direction={currentFlanker.centerDir} isCenter={true} className={band.chev} />
-                  <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
-                  <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
+                  <FlankerGlyph skin={steerSkin} direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
+                  <FlankerGlyph skin={steerSkin} direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
+                  <FlankerGlyph skin={steerSkin} direction={currentFlanker.centerDir} isCenter={true} className={band.chev} />
+                  <FlankerGlyph skin={steerSkin} direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
+                  <FlankerGlyph skin={steerSkin} direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
                 </>
               )}
               {flankerFx.k > 0 && (

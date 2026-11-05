@@ -251,6 +251,62 @@ function AstralChevronSvg({direction, isCenter, className = 'w-11 h-11 sm:w-16 s
   )
 }
 
+const CV_CSS = `@keyframes cv-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}@keyframes cv-twinkle{0%,100%{opacity:.35}50%{opacity:1}}@keyframes cv-pop{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}25%{transform:translate(-50%,-60%) scale(1.25);opacity:1}100%{transform:translate(-50%,-130%) scale(1);opacity:0}}@keyframes cv-ring{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,.75)}50%{box-shadow:0 0 0 14px rgba(251,191,36,0)}}@keyframes cv-wobble{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}.cv-float{animation:cv-float 3.4s ease-in-out infinite}.cv-twinkle{animation:cv-twinkle 2.6s ease-in-out infinite}.cv-ring{animation:cv-ring 1.4s ease-in-out infinite}@media (prefers-reduced-motion:reduce){.cv-float,.cv-twinkle,.cv-ring{animation:none!important}}`
+
+function ChevronScene({className = 'w-full h-full'}: {className?: string}) {
+  const stars: [number, number, number][] = [[40, 30, 2.2], [110, 70, 1.6], [190, 24, 2], [290, 50, 1.5], [380, 22, 2.4], [470, 64, 1.8], [560, 34, 2.2], [70, 150, 1.5], [520, 150, 1.7], [330, 196, 1.4]]
+  return (
+    <svg role="img" aria-label="A golden sky-skiff sailing past glowing arrows" viewBox="0 0 600 240" preserveAspectRatio="xMidYMid slice" className={className}>
+      <defs>
+        <linearGradient id="cvSky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#1E1B4B" />
+          <stop offset="0.6" stopColor="#4C1D95" />
+          <stop offset="1" stopColor="#F59E0B" />
+        </linearGradient>
+        <radialGradient id="cvGlow" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stopColor="#FDE68A" stopOpacity="0.9" />
+          <stop offset="1" stopColor="#FDE68A" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="600" height="240" fill="url(#cvSky)" />
+      {stars.map(([x, y, r], i) => (
+        <circle key={i} cx={x} cy={y} r={r} fill="#FFF7D6" className="cv-twinkle" style={{animationDelay: `${(i % 5) * 0.4}s`}} />
+      ))}
+      <circle cx="505" cy="62" r="34" fill="#C4B5FD" />
+      <circle cx="517" cy="54" r="34" fill="#4C1D95" opacity="0.55" />
+      <ellipse cx="0" cy="250" rx="260" ry="46" fill="#6D28D9" opacity="0.55" />
+      <ellipse cx="600" cy="252" rx="280" ry="52" fill="#7C3AED" opacity="0.5" />
+      <g className="cv-float">
+        <ellipse cx="250" cy="142" rx="120" ry="60" fill="url(#cvGlow)" />
+        <path d="M150 128 L232 128 L232 50 Z" fill="#FDE68A" />
+        <path d="M242 128 L242 62 L318 128 Z" fill="#FBBF24" />
+        <rect x="231" y="40" width="4" height="96" rx="2" fill="#7C2D12" />
+        <path d="M235 40 L262 48 L235 56 Z" fill="#EF4444" />
+        <path d="M130 130 L360 130 Q338 172 282 176 L206 176 Q150 170 130 130 Z" fill="#C2410C" />
+        <path d="M138 138 L352 138" stroke="#FDBA74" strokeWidth="5" strokeLinecap="round" />
+        <circle cx="200" cy="154" r="7" fill="#FEF3C7" />
+        <circle cx="240" cy="156" r="7" fill="#FEF3C7" />
+        <circle cx="280" cy="154" r="7" fill="#FEF3C7" />
+      </g>
+      {[0, 1, 2].map((i) => (
+        <path key={i} d={`M ${420 + i * 46} 92 L ${456 + i * 46} 128 L ${420 + i * 46} 164`} fill="none" stroke="#FBBF24" strokeOpacity={1 - i * 0.28} strokeWidth="16" strokeLinecap="round" strokeLinejoin="round" transform="translate(-0 0)" />
+      ))}
+      <circle cx="90" cy="196" r="11" fill="#78350F" opacity="0.8" />
+      <circle cx="560" cy="205" r="8" fill="#78350F" opacity="0.8" />
+    </svg>
+  )
+}
+
+function StarTrail({done, total}: {done: number; total: number}) {
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-1.5" aria-label={`${Math.min(done, total)} of ${total} stars`}>
+      {Array.from({length: total}).map((_, i) => (
+        <span key={i} className={`inline-block text-2xl sm:text-3xl transition-all duration-300 ${i < done ? 'scale-110' : 'opacity-25 grayscale'}`} aria-hidden="true">⭐</span>
+      ))}
+    </div>
+  )
+}
+
 function StarlightNodeSvg({isLit}: {isLit: boolean}) {
   return (
     <svg viewBox="0 0 60 60" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -342,6 +398,10 @@ function __McInner() {
   const [flankerIncongruentTimes, setFlankerIncongruentTimes] = useState<number[]>([])
   const [currentFlanker, setCurrentFlanker] = useState<{centerDir: 'left' | 'right'; flankerDir: 'left' | 'right' | 'neutral'; isCongruent: boolean} | null>(null)
   const flankerStartRef = useRef<number>(0)
+  // practice rounds (not recorded): demo1 = one arrow, demo2 = arrow with friends, ready = child chooses to start
+  const [flankerPhase, setFlankerPhase] = useState<'demo1' | 'demo2' | 'ready' | 'real'>('real')
+  const [flankerFx, setFlankerFx] = useState<{k: number; ok: boolean}>({k: 0, ok: true})
+  const flankerLockRef = useRef(false)
 
   // Astrolabe Memory Matrix State
   const [memoryLevel, setMemoryLevel] = useState(1)
@@ -473,6 +533,11 @@ function __McInner() {
   useEffect(() => {
     if (stage !== 'flanker_game') return
 
+    // practice rounds never touch the recorded numbers
+    if (flankerPhase === 'demo1') { setCurrentFlanker({centerDir: 'right', flankerDir: 'neutral', isCongruent: true}); return }
+    if (flankerPhase === 'demo2') { setCurrentFlanker({centerDir: 'left', flankerDir: 'right', isCongruent: false}); return }
+    if (flankerPhase === 'ready') return
+
     if (flankerTrialIndex >= FLANKER_TOTAL_TRIALS) {
       playAudio('fanfare')
       setStage('memory_story')
@@ -486,10 +551,23 @@ function __McInner() {
 
     setCurrentFlanker({centerDir: center, flankerDir: flanker, isCongruent})
     flankerStartRef.current = performance.now()
-  }, [stage, flankerTrialIndex])
+  }, [stage, flankerTrialIndex, flankerPhase])
 
   function handleFlankerAnswer(dir: 'left' | 'right') {
     if (!currentFlanker) return
+    if (flankerPhase === 'ready') return
+    if (flankerPhase === 'demo1' || flankerPhase === 'demo2') {
+      if (flankerLockRef.current) return
+      const ok = dir === currentFlanker.centerDir
+      setFlankerFx((f) => ({k: f.k + 1, ok}))
+      if (!ok) { playAudio('miss'); return }
+      playAudio('star')
+      flankerLockRef.current = true
+      const next = flankerPhase === 'demo1' ? 'demo2' : 'ready'
+      setTimeout(() => { flankerLockRef.current = false; setFlankerPhase(next) }, 1100)
+      return
+    }
+    setFlankerFx((f) => ({k: f.k + 1, ok: dir === currentFlanker.centerDir}))
     flankerTotalsRef.current[currentFlanker.isCongruent ? 'congruent' : 'incongruent'] += 1
     const elapsed = Math.round(performance.now() - flankerStartRef.current)
 
@@ -954,90 +1032,121 @@ function __McInner() {
           </div>
         )}
 
-        {/* 4. CHAPTER 2 STORY: THE STARFIRE FLANKER */}
+        {/* 4. CHAPTER 2 STORY: THE SOLAR CHEVRONS (short, picture first) */}
         {stage === 'flanker_story' && (
           <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
-            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#0F172A]">
-              <img
-                src="/decor/itw/itw-adhd-support-focus-shield.webp"
-                alt="Cosmic Starfire Drift"
-                className="h-full w-full object-cover object-center opacity-90"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end p-6">
-                <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-white/10 px-3 py-1 rounded-full">
-                    Chapter 2: The Starfire Navigation
-                  </span>
-                  <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    The Solar Chevrons
-                  </h2>
-                </div>
+            <style>{CV_CSS}</style>
+            <div className="relative h-56 md:h-64 w-full overflow-hidden bg-[#1E1B4B]">
+              <ChevronScene className="h-full w-full" />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-5">
+                <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold">The Solar Chevrons</h2>
               </div>
             </div>
-
-            <div className="p-6 md:p-8">
-              <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
-                Your sky-skiff enters an astral meteor belt. Waves of radiant chevrons fly across your helm. Surrounding chevrons may try to confuse your course. <strong>Always focus ONLY on the CENTER golden chevron</strong>.
-              </p>
-
-              <div className="p-4 rounded-2xl bg-sky-50 border border-sky-200 flex items-center justify-center gap-3 mb-8">
-                <span className="text-xs font-bold text-sky-900">If Center points LEFT: press LEFT arrow or tap Left.</span>
-                <span className="text-xs font-bold text-sky-900">If Center points RIGHT: press RIGHT arrow or tap Right.</span>
+            <div className="p-6 md:p-8 text-center">
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float h-16 w-16" />
+                <p className="text-left text-base md:text-lg font-bold text-[#1F2937] max-w-xs">Tap the way the big golden arrow points!</p>
               </div>
-
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    playAudio('whoosh')
-                    setFlankerTrialIndex(0)
-                    setFlankerCongruentTimes([])
-                    setFlankerIncongruentTimes([])
-                    setStage('flanker_game')
-                  }}
-                  className="rounded-full bg-gradient-to-r from-sky-500 to-sky-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
-                >
-                  Take the Helm (12 Formations) →
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  playAudio('whoosh')
+                  setFlankerTrialIndex(0)
+                  setFlankerCongruentTimes([])
+                  setFlankerIncongruentTimes([])
+                  flankerLockRef.current = false
+                  setCurrentFlanker(null)
+                  // younger children get both practice rounds; older children get the short second one
+                  setFlankerPhase(band.id === '4-5' || band.id === '6-8' ? 'demo1' : 'demo2')
+                  setStage('flanker_game')
+                }}
+                className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-4 text-lg font-bold text-white shadow-lg hover:scale-105 transition-all"
+              >
+                Let’s practice →
+              </button>
             </div>
           </div>
         )}
 
-        {/* 5. CHAPTER 2 GAMEPLAY: FLANKER */}
-        {stage === 'flanker_game' && currentFlanker && (
-          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
-            <div className="flex justify-between items-center mb-6">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
-                Formation {flankerTrialIndex + 1} of {FLANKER_TOTAL_TRIALS}
-              </span>
-              <span className="text-xs font-bold text-sky-700 bg-sky-50 px-3 py-1 rounded-full border border-sky-200">
-                Focus on CENTER Star
-              </span>
-            </div>
-
-            <div className="my-10 flex items-center justify-center gap-3 md:gap-6 p-4 sm:p-8 rounded-3xl bg-[#D6E6F2] shadow-inner">
-              <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
-              <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
-              <AstralChevronSvg direction={currentFlanker.centerDir} isCenter={true} className={band.chev} />
-              <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
-              <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
+        {/* 5. CHAPTER 2 GAMEPLAY: FLANKER (practice rounds first, then the 12 recorded formations) */}
+        {stage === 'flanker_game' && flankerPhase === 'ready' && (
+          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-8 md:p-10 shadow-2xl text-center select-none">
+            <style>{CV_CSS}</style>
+            <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float mx-auto h-24 w-24" />
+            <p className="font-patrick text-3xl text-amber-800 font-bold mt-3">Great job!</p>
+            <p className="text-base md:text-lg font-bold text-[#1F2937] mt-2">Now the real game. Look at the big golden arrow!</p>
+            <div className="mt-6 flex flex-col items-center gap-3">
               <button
                 type="button"
-                onClick={() => handleFlankerAnswer('left')}
-                className="rounded-2xl border-2 border-sky-500 bg-sky-50 hover:bg-sky-500 hover:text-white py-8 text-2xl font-bold text-sky-700 shadow-md transition-all active:scale-95"
+                onClick={() => { playAudio('whoosh'); setFlankerTrialIndex(0); setFlankerCongruentTimes([]); setFlankerIncongruentTimes([]); flankerTotalsRef.current = {congruent: 0, incongruent: 0}; setFlankerPhase('real') }}
+                className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-12 py-4 text-xl font-bold text-white shadow-lg hover:scale-105 transition-all"
               >
-                ← Steer Left
+                I’m ready →
+              </button>
+              <button type="button" onClick={() => { flankerLockRef.current = false; setFlankerPhase('demo1') }} className="text-sm font-bold text-sky-700 underline">Practice again</button>
+            </div>
+          </div>
+        )}
+
+        {stage === 'flanker_game' && flankerPhase !== 'ready' && currentFlanker && (
+          <div className="relative rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-5 md:p-10 shadow-2xl text-center select-none">
+            <style>{CV_CSS}</style>
+            <div className="mb-4">
+              {flankerPhase === 'real' ? (
+                <StarTrail done={flankerTrialIndex} total={FLANKER_TOTAL_TRIALS} />
+              ) : (
+                <span className="inline-block rounded-full bg-amber-100 px-4 py-1 text-sm font-bold text-amber-800">Practice</span>
+              )}
+            </div>
+
+            {flankerPhase !== 'real' && (
+              <div className="mb-3 flex items-center justify-center gap-3">
+                <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float h-14 w-14" />
+                <p className="text-left text-base md:text-lg font-bold text-[#1F2937] max-w-xs">
+                  {flankerPhase === 'demo1' ? 'Tap the side the arrow points to!' : 'Look at the BIG golden arrow in the middle. Ignore the little ones!'}
+                </p>
+              </div>
+            )}
+
+            <div className="relative my-6 flex items-center justify-center gap-3 md:gap-6 p-4 sm:p-8 rounded-3xl bg-[#D6E6F2] shadow-inner min-h-[8rem]">
+              {flankerPhase === 'demo1' ? (
+                <AstralChevronSvg direction={currentFlanker.centerDir} isCenter={true} className="w-24 h-24 sm:w-32 sm:h-32" />
+              ) : (
+                <>
+                  <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
+                  <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
+                  <AstralChevronSvg direction={currentFlanker.centerDir} isCenter={true} className={band.chev} />
+                  <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
+                  <AstralChevronSvg direction={currentFlanker.flankerDir} isCenter={false} className={band.chev} />
+                </>
+              )}
+              {flankerFx.k > 0 && (
+                <span key={flankerFx.k} aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 text-5xl font-bold" style={{animation: 'cv-pop .9s ease-out forwards'}}>
+                  {flankerFx.ok ? '⭐' : '💫'}
+                </span>
+              )}
+            </div>
+
+            {flankerPhase !== 'real' && flankerFx.k > 0 && (
+              <p className="mb-3 font-patrick text-2xl font-bold text-amber-800" aria-live="polite">{flankerFx.ok ? 'Yes! Great!' : 'Try again! Look at the big golden one.'}</p>
+            )}
+
+            <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+              <button
+                type="button"
+                aria-label="Left"
+                onClick={() => handleFlankerAnswer('left')}
+                className={`rounded-3xl border-4 border-sky-500 bg-sky-100 py-6 shadow-md transition-all active:scale-95 flex items-center justify-center ${flankerPhase === 'demo1' && currentFlanker.centerDir === 'left' ? 'cv-ring' : ''}`}
+              >
+                <svg viewBox="0 0 48 48" className="h-16 w-16 sm:h-20 sm:w-20" fill="none"><path d="M 30 8 L 14 24 L 30 40" stroke="#0369A1" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
               <button
                 type="button"
+                aria-label="Right"
                 onClick={() => handleFlankerAnswer('right')}
-                className="rounded-2xl border-2 border-sky-500 bg-sky-50 hover:bg-sky-500 hover:text-white py-8 text-2xl font-bold text-sky-700 shadow-md transition-all active:scale-95"
+                className={`rounded-3xl border-4 border-sky-500 bg-sky-100 py-6 shadow-md transition-all active:scale-95 flex items-center justify-center ${flankerPhase === 'demo1' && currentFlanker.centerDir === 'right' ? 'cv-ring' : ''}`}
               >
-                Steer Right →
+                <svg viewBox="0 0 48 48" className="h-16 w-16 sm:h-20 sm:w-20" fill="none"><path d="M 18 8 L 34 24 L 18 40" stroke="#0369A1" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </button>
             </div>
           </div>

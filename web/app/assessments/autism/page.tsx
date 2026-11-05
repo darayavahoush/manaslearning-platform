@@ -10,6 +10,7 @@ import ParentCard, {type ParentAnswers} from '../../../components/assessments/Pa
 import {useState, useEffect, useRef, useMemo} from 'react'
 import Link from 'next/link'
 import KeeperFeedback from '../../../components/assessments/KeeperFeedback'
+import EndReport from '../../../components/assessments/report/EndReport'
 import {QuestStyles, Fireflies, AmbientToggle, GazeGuide} from '../../../components/assessments/QuestFX'
 
 // Enchanted Web Audio synthesizer: Soothing glass harps, crystal bells, warm kalimbas, and royal fanfare
@@ -1584,6 +1585,10 @@ function __McInner() {
             {agentResult && showClinicalDossier && (() => { const a: any = agentResult; return (
               <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="autism" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} measures={a.record?.measures} sortingCards={a.record?.sortingCards} gazeRounds={a.record?.gazeRounds} feelingsRounds={a.record?.feelingsRounds} parentCard={a.record?.parentCard} showRounds={a.record?.showRounds} />{a.record && <SessionRecordDownload record={a.record} />}</div>
             ) })()}
+            {/* PERSONALISED REPORT FOR THE PARENT: built from this session, shown only once a clinician has checked the wording */}
+            {agentResult && (agentResult as {record?: unknown}).record && (
+              <div className="mb-8"><EndReport record={(agentResult as {record: any}).record} name={(agentResult as {childName: string}).childName} /></div>
+            )}
             {/* GROWN-UP SUMMARY */}
             {showClinicalDossier && (
               <div className="rounded-3xl border-2 border-[#CBD5E1] bg-white p-8 md:p-12 shadow-2xl">

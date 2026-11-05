@@ -9,6 +9,7 @@ import {usePlayEvents} from '../../../components/assessments/play-events'
 import {useState, useEffect, useRef, useMemo} from 'react'
 import Link from 'next/link'
 import KeeperFeedback from '../../../components/assessments/KeeperFeedback'
+import EndReport from '../../../components/assessments/report/EndReport'
 import {QuestStyles, Fireflies, AmbientToggle} from '../../../components/assessments/QuestFX'
 
 // The star-sequence tone version: one clear pitch per star position (a pentatonic-style set, all within the child's range)
@@ -1763,6 +1764,10 @@ function __McInner() {
             {agentResult && showClinicalDossier && (() => { const a: any = agentResult; return (
               <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="adhd" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} measures={a.record?.measures} parentCard={a.record?.parentCard} steeringTrials={a.record?.steeringTrials} starLevels={a.record?.starLevels} />{a.record && <SessionRecordDownload record={a.record} />}</div>
             ) })()}
+            {/* PERSONALISED REPORT FOR THE PARENT: built from this session, shown only once a clinician has checked the wording */}
+            {agentResult && (agentResult as {record?: unknown}).record && (
+              <div className="mb-8"><EndReport record={(agentResult as {record: any}).record} name={(agentResult as {childName: string}).childName} /></div>
+            )}
             {/* GROWN-UP SUMMARY */}
             {showClinicalDossier && (
               <div className="rounded-3xl border-2 border-[#CBD5E1] bg-white p-8 md:p-12 shadow-2xl">

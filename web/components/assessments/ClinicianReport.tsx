@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { INSTRUMENT_VERSION } from './version'
+import type { Measure } from './session-record'
 
 export type ReportRow = { name: string; value: string; detail?: string; note?: string }
 export type Quest = 'dyslexia' | 'adhd' | 'autism'
@@ -21,6 +22,8 @@ export type ClinicianReportProps = {
   variant?: 'play' | 'questions'
   ageLabel?: string
   extra?: ReportExtra
+  /** the session record's measures; when given, a "Results by game" section is added */
+  measures?: Measure[]
 }
 
 /** Turns sentences like "Rhyme game: 3 of 5 ..." into table rows. */
@@ -60,6 +63,31 @@ const QUEST = {
     ],
   },
 } as const
+
+/** One plain line per game, tied to what its measures count. No interpretation. */
+const GAME_NOTE: Record<string, string> = {
+  'Sunbird game': 'Counts of sunbirds missed, taps on the shadow moth and tap speed, overall and by round.',
+  'Steering game': 'Rounds where the arrows matched and rounds where they disagreed, scored separately.',
+  'Star-sequence game': 'The longest star sequence repeated correctly.',
+  'Patience game': 'Early releases in a practice game. It is not a validated task.',
+  'Gaze game': 'Choices that matched where Aria looked or pointed, and how long choosing took.',
+  'Feelings match': 'Cartoon faces matched to the feeling shown.',
+  'Comfort choices': 'Light, sound and touch levels the child chose. These are preferences, not a test.',
+  'Sorting game': 'Gems sorted by colour, then by shape after the rule changed.',
+  'During the session': 'How the session went. These are not scores.',
+}
+
+function groupByGame(ms: Measure[] | undefined): Array<[string, Measure[]]> {
+  const map = new Map<string, Measure[]>()
+  for (const m of ms ?? []) {
+    const g = m.game || 'Other'
+    map.set(g, [...(map.get(g) ?? []), m])
+  }
+  const list = Array.from(map.entries())
+  return [...list.filter(([g]) => g !== 'During the session'), ...list.filter(([g]) => g === 'During the session')]
+}
+
+const pc = (x: number) => `${Math.round(x * 100)}%`
 
 const QSAMPLED = {
   dyslexia: 'choosing real words and correct spellings, finishing sentences, spelling by ear and answering questions about a short story.',
@@ -101,6 +129,7 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
   const ex: ReportExtra = p.extra || {}
   const measured = p.rows.filter((r) => !/^(chapters finished|spoken audio)$/i.test(r.name))
   const withData = measured.filter((r) => !/not enough data|not completed/i.test(r.value)).length
+  const games = groupByGame(p.measures)
   const date = p.generatedOn || new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })
 
   return (
@@ -155,6 +184,32 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
                 </tbody>
               </table>
             </section>
+
+            {!!games.length && (
+              <section className="cr-sec cr-flow">
+                <h2>Results by game</h2>
+                {games.map(([game, ms]) => (
+                  <div key={game} className="cr-game">
+                    <h3>{game}</h3>
+                    {GAME_NOTE[game] && <p className="cr-small">{GAME_NOTE[game]}</p>}
+                    <table className="cr-mini">
+                      <thead><tr><th>Measure</th><th>Result</th><th>95% interval</th></tr></thead>
+                      <tbody>
+                        {ms.map((m) => (
+                          <tr key={m.key}>
+                            <td>{m.label}{m.note && <div className="cr-note">{m.note}</div>}</td>
+                            {m.kind === 'proportion'
+                              ? <><td>{m.k} of {m.n} ({pc(m.p)})</td><td>{pc(m.lo)} to {pc(m.hi)}{m.wide ? ' · wide: too few trials to say much' : ''}</td></>
+                              : <><td>{m.value} {m.unit}{m.n ? ` (from ${m.n})` : ''}</td><td>–</td></>}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ))}
+                <p className="cr-small">Each game is shown on its own, and no scores are combined. A 95% interval shows how far a result could move by chance from one short session. A wide interval means there were too few trials to say much. Read every figure with the child’s age, tiredness and device in mind.</p>
+              </section>
+            )}
 
             {!!ex.compare?.length && (
               <section className="cr-sec">
@@ -263,7 +318,8 @@ const CSS = `
 .cr-paper h2{break-after:avoid}
 .cr-inline{display:inline-block;width:170px;border-bottom:1px solid #1F1B16}
 .cr-lines span{display:block;height:28px;border-bottom:1px solid #8A7F6E}
-.cr-appx h3{font-size:13px;margin:14px 0 6px}
+.cr-appx h3,.cr-game h3{font-size:13px;margin:14px 0 4px}
+.cr-game{break-inside:avoid}
 .cr-mini{width:100%;border-collapse:collapse;font-size:12px}
 .cr-mini th,.cr-mini td{border:1px solid #CFC5AE;padding:4px 8px;text-align:left;vertical-align:top}
 .cr-mini th{background:#F4ECDC}

@@ -9,7 +9,7 @@ import {wilson} from './profile-stats'
  * this code; the record is built in the response and handed back to the caller.
  */
 
-export const RECORD_SCHEMA_VERSION = '1.0'
+export const RECORD_SCHEMA_VERSION = '1.1'
 
 export type Quest = 'adhd' | 'autism'
 export type AgeBand = '4-5' | '6-8' | '9-12' | '13-16'
@@ -40,6 +40,8 @@ export interface ProportionMeasure {
   p: number
   lo: number
   hi: number
+  /** which game the measure belongs to, for grouping in the report */
+  game?: string
   /** true when the 95% interval is wider than 35 percentage points, i.e. there were too few trials to say much */
   wide: boolean
   note?: string
@@ -51,6 +53,7 @@ export interface ValueMeasure {
   label: string
   value: number
   unit: string
+  game?: string
   /** how many trials or taps the value comes from, when known */
   n: number | null
   note?: string
@@ -96,6 +99,33 @@ function countOrProportion(key: string, label: string, k: number | null, n: numb
   return proportion(key, label, k, n, note) ?? value(key, label, k, 'count', null, note)
 }
 
+/** Which game a measure belongs to. Keys that start with a prefix below, or match exactly, are grouped together in the report. */
+export function gameOf(key: string): string {
+  if (/^(omissions|commissions|anticipatory|hrtMs|rtvMs|rtFirstHalfMs|rtSecondHalfMs|cptDisplayMs|rtRound|omissionsRound)/.test(key)) return 'Sunbird game'
+  if (/^flanker/.test(key)) return 'Steering game'
+  if (/^workingMemory/.test(key)) return 'Star-sequence game'
+  if (/^prematureReleases/.test(key)) return 'Patience game'
+  if (/^gaze/.test(key)) return 'Gaze game'
+  if (/^feelings/.test(key)) return 'Feelings match'
+  if (/^(light|sound|touch)Level/.test(key)) return 'Comfort choices'
+  if (/^sort/.test(key)) return 'Sorting game'
+  if (/^(pause|retry)/.test(key)) return 'During the session'
+  return 'Other'
+}
+
+const tagGame = (m: Measure): Measure => ({...m, game: gameOf(m.key)})
+
+/** How the session went: practice repeats per game, and time the page was hidden. Omitted when the browser sent nothing. */
+function eventMeasures(t: Tele, retryKeys: Array<[string, string]>): Array<Measure | null> {
+  return [
+    ...retryKeys.map(([key, label]) => value(key, `Times practice was repeated, ${label}`, get(t, key), 'times', null,
+      'Not a score. Repeating practice is a normal choice.')),
+    value('pauseCount', 'Times the page was left or hidden during play', get(t, 'pauseCount'), 'times', null),
+    value('pausedSec', 'Total time the page was hidden', get(t, 'pausedSec'), 'seconds', null,
+      'Switching away can be a break, a call or a different app. It is not a finding about the child.'),
+  ]
+}
+
 function adhdMeasures(t: Tele): Array<Measure | null> {
   return [
     countOrProportion('omissions', 'Sunbirds missed', get(t, 'omissions'), get(t, 'cptTargets')),
@@ -111,6 +141,7 @@ function adhdMeasures(t: Tele): Array<Measure | null> {
     value('workingMemorySpan', 'Longest star sequence repeated', get(t, 'workingMemorySpan'), 'stars', null),
     proportion('prematureReleases', 'Early releases in the patience game', get(t, 'prematureReleases'), get(t, 'chargeTrials'),
       'Practice game for fun, not a validated task.'),
+    ...eventMeasures(t, [['retrySunbird', 'sunbird game'], ['retrySteering', 'steering game'], ['retryStars', 'star-sequence game']]),
   ]
 }
 
@@ -128,6 +159,7 @@ function autismMeasures(t: Tele): Array<Measure | null> {
       'Only a few cards, so the interval is wide.'),
     proportion('sortPost', 'Cards put in the right box after the rule changed (shape)', get(t, 'sortPostCorrect'), get(t, 'sortPostTotal'),
       'Only a few cards, so the interval is wide. Practice cards are never counted.'),
+    ...eventMeasures(t, [['retryGaze', 'gaze game'], ['retryFeelings', 'feelings match'], ['retrySorting', 'sorting game']]),
   ]
 }
 
@@ -177,7 +209,7 @@ export function buildSessionRecord(args: {
   environment: Environment
   instrumentVersion: string
 }): SessionRecord {
-  const raw = args.quest === 'adhd' ? adhdMeasures(args.telemetry) : autismMeasures(args.telemetry)
+  const raw = (args.quest === 'adhd' ? adhdMeasures(args.telemetry) : autismMeasures(args.telemetry))
   const inst = INSTRUMENTS[args.quest]
   return {
     schema: RECORD_SCHEMA_VERSION,
@@ -187,7 +219,7 @@ export function buildSessionRecord(args: {
     ageBand: ageBandOf(args.ageYears),
     recordedAt: new Date().toISOString(),
     environment: args.environment,
-    measures: raw.filter((m): m is Measure => m !== null),
+    measures: raw.filter((m): m is Measure => m !== null).map(tagGame),
     limits: LIMITS,
   }
 }
@@ -211,7 +243,7 @@ export function roundMeasures(
       i === 0 ? 'Shown only when at least 3 taps were recorded in the round.' : undefined))
     out.push(proportion(`omissionsRound${i + 1}`, `Sunbirds missed, round ${i + 1}`, rounds.misses[i] ?? null, perRound))
   }
-  return out.filter((m): m is Measure => m !== null)
+  return out.filter((m): m is Measure => m !== null).map(tagGame)
 }
 
 /** Browser only: collects the device details to send as `environment` with the session. */

@@ -4,6 +4,7 @@ import ReadAloud from '../../../components/assessments/ReadAloud'
 import ClinicianReportButton from '../../../components/assessments/ClinicianReport'
 import SessionRecordDownload from '../../../components/assessments/SessionRecordDownload'
 import {captureEnvironment} from '../../../components/assessments/session-record'
+import {usePlayEvents} from '../../../components/assessments/play-events'
 import {useState, useEffect, useRef, useMemo} from 'react'
 import Link from 'next/link'
 import KeeperFeedback from '../../../components/assessments/KeeperFeedback'
@@ -419,6 +420,7 @@ function __McInner() {
   const [flankerFx, setFlankerFx] = useState<{k: number; ok: boolean}>({k: 0, ok: true})
   const flankerLockRef = useRef(false)
   // practice rounds for the other games (never recorded)
+  const events = usePlayEvents()
   const [cptPrac, setCptPrac] = useState<'off' | 'bird' | 'bird_ok' | 'moth' | 'moth_oops' | 'moth_ok' | 'ready'>('off')
   const [memRetry, setMemRetry] = useState(0)
   const [memMsg, setMemMsg] = useState<'' | 'ok' | 'again'>('')
@@ -806,6 +808,7 @@ function __McInner() {
       wrongTaps: Array.from({length: cptPlan.blocks}, (_, b) => cptBlockFaRef.current[b] || 0)
     }
 
+    const ev = events.snapshot()
     const payload = {
       assessmentType: 'adhd',
       childName: heroName || 'Canopy Ranger',
@@ -832,7 +835,12 @@ function __McInner() {
         rtFirstHalfMs: halfOf(0, CPT_TOTAL_TRIALS / 2),
         rtSecondHalfMs: halfOf(CPT_TOTAL_TRIALS / 2, CPT_TOTAL_TRIALS),
         flankerCongruentTotal: flankerTotalsRef.current.congruent,
-        flankerIncongruentTotal: flankerTotalsRef.current.incongruent
+        flankerIncongruentTotal: flankerTotalsRef.current.incongruent,
+        retrySunbird: ev.retries.sunbird ?? 0,
+        retrySteering: ev.retries.steering ?? 0,
+        retryStars: ev.retries.stars ?? 0,
+        pauseCount: ev.pauseCount,
+        pausedSec: ev.pausedSec
       }
     }
 
@@ -1018,7 +1026,7 @@ function __McInner() {
                   </div>
                 </div>
                 <button type="button" onClick={() => { playAudio('chime'); setCptPrac('off') }} className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-12 py-4 text-xl font-bold text-white shadow-lg hover:scale-105 transition-all">I’m ready →</button>
-                <button type="button" onClick={() => setCptPrac('bird')} className="text-sm font-bold text-sky-700 underline">Practice again</button>
+                <button type="button" onClick={() => { events.noteRetry('sunbird'); setCptPrac('bird') }} className="text-sm font-bold text-sky-700 underline">Practice again</button>
               </div>
             ) : (
               <>
@@ -1187,7 +1195,7 @@ function __McInner() {
               >
                 I’m ready →
               </button>
-              <button type="button" onClick={() => { flankerLockRef.current = false; setFlankerPhase('demo1') }} className="text-sm font-bold text-sky-700 underline">Practice again</button>
+              <button type="button" onClick={() => { events.noteRetry('steering'); flankerLockRef.current = false; setFlankerPhase('demo1') }} className="text-sm font-bold text-sky-700 underline">Practice again</button>
             </div>
           </div>
         )}
@@ -1311,7 +1319,7 @@ function __McInner() {
             <p className="text-base md:text-lg font-bold text-[#1F2937] mt-2">Now the real stars. Watch, then tap the same ones!</p>
             <div className="mt-6 flex flex-col items-center gap-3">
               <button type="button" onClick={() => { playAudio('whoosh'); setMemPracReady(false); setMemoryLevel(1) }} className="rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 px-12 py-4 text-xl font-bold text-white shadow-lg hover:scale-105 transition-all">I’m ready →</button>
-              <button type="button" onClick={() => { setMemPracReady(false); setMemoryLevel(-1); setMemRetry((n) => n + 1) }} className="text-sm font-bold text-sky-700 underline">Practice again</button>
+              <button type="button" onClick={() => { events.noteRetry('stars'); setMemPracReady(false); setMemoryLevel(-1); setMemRetry((n) => n + 1) }} className="text-sm font-bold text-sky-700 underline">Practice again</button>
             </div>
           </div>
         )}
@@ -1578,7 +1586,7 @@ function __McInner() {
             )}
 
             {agentResult && showClinicalDossier && (() => { const a: any = agentResult; return (
-              <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="adhd" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} />{a.record && <SessionRecordDownload record={a.record} />}</div>
+              <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="adhd" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} measures={a.record?.measures} />{a.record && <SessionRecordDownload record={a.record} />}</div>
             ) })()}
             {/* GROWN-UP SUMMARY */}
             {showClinicalDossier && (

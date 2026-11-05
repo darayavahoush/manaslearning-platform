@@ -4,6 +4,7 @@ import ReadAloud from '../../../components/assessments/ReadAloud'
 import ClinicianReportButton from '../../../components/assessments/ClinicianReport'
 import SessionRecordDownload from '../../../components/assessments/SessionRecordDownload'
 import {captureEnvironment} from '../../../components/assessments/session-record'
+import {usePlayEvents} from '../../../components/assessments/play-events'
 import {useState, useEffect, useRef, useMemo} from 'react'
 import Link from 'next/link'
 import KeeperFeedback from '../../../components/assessments/KeeperFeedback'
@@ -384,6 +385,7 @@ function __McInner() {
   // one entry per sorted card: whether the tray chosen matched the rule shown for that card
   const [dccsCorrect, setDccsCorrect] = useState<boolean[]>([])
   const dccsStartRef = useRef<number>(0)
+  const events = usePlayEvents()
   const DCCS_SWITCH_AT = 3 // index of the first card played under the shape rule
   const DCCS_CARDS: Array<{color: 'red' | 'blue'; shape: 'star' | 'circle'; targetColorMatch: number; targetShapeMatch: number}> = [
     {color: 'red', shape: 'star', targetColorMatch: 0, targetShapeMatch: 1},
@@ -495,6 +497,7 @@ function __McInner() {
     const preAnswers = dccsCorrect.slice(0, DCCS_SWITCH_AT)
     const postAnswers = dccsCorrect.slice(DCCS_SWITCH_AT)
     const countTrue = (xs: boolean[]) => xs.filter(Boolean).length
+    const ev = events.snapshot()
 
     const payload = {
       assessmentType: 'autism',
@@ -515,7 +518,12 @@ function __McInner() {
         sortPreTotal: preAnswers.length,
         sortPreCorrect: countTrue(preAnswers),
         sortPostTotal: postAnswers.length,
-        sortPostCorrect: countTrue(postAnswers)
+        sortPostCorrect: countTrue(postAnswers),
+        retryGaze: ev.retries.ja ?? 0,
+        retryFeelings: ev.retries.tom ?? 0,
+        retrySorting: ev.retries.dccs ?? 0,
+        pauseCount: ev.pauseCount,
+        pausedSec: ev.pausedSec
       }
     }
 
@@ -570,7 +578,7 @@ function __McInner() {
           <ForestSpriteFaceSvg emotion="happy" className="h-24 w-24 animate-bounce" />
           <div className="flex gap-1"><StarSvg /><StarSvg /><StarSvg /></div>
           <button type="button" onClick={onStart} className="rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 px-12 py-5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all">Play! ▶</button>
-          <button type="button" onClick={() => { playAudio('tap'); setPrac({g, i: 0, tries: 0, msg: '', done: false}) }} className="rounded-full border-2 border-teal-600 bg-white px-6 py-2 text-base font-bold text-teal-800">Practice again</button>
+          <button type="button" onClick={() => { playAudio('tap'); events.noteRetry(g); setPrac({g, i: 0, tries: 0, msg: '', done: false}) }} className="rounded-full border-2 border-teal-600 bg-white px-6 py-2 text-base font-bold text-teal-800">Practice again</button>
         </div>
       </PracticeFrame>
     )
@@ -1181,7 +1189,7 @@ function __McInner() {
             )}
 
             {agentResult && showClinicalDossier && (() => { const a: any = agentResult; return (
-              <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="autism" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} />{a.record && <SessionRecordDownload record={a.record} />}</div>
+              <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="autism" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} measures={a.record?.measures} />{a.record && <SessionRecordDownload record={a.record} />}</div>
             ) })()}
             {/* GROWN-UP SUMMARY */}
             {showClinicalDossier && (

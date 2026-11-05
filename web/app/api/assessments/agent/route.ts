@@ -63,6 +63,8 @@ const TELEMETRY_KEYS = [
   'jaTrials', 'jaCorrect', 'jaMedianMs', 'feelingsTrials', 'feelingsCorrect',
   'lightLevel', 'soundLevel', 'touchLevel', 'sortCount', 'sortMedianMs',
   'sortPreCorrect', 'sortPreTotal', 'sortPostCorrect', 'sortPostTotal',
+  // How the session went (both quests): practice repeats per game, and time the page was hidden
+  'retrySunbird', 'retrySteering', 'retryStars', 'retryGaze', 'retryFeelings', 'retrySorting', 'pauseCount', 'pausedSec',
 ] as const
 
 function cleanTelemetry(input: unknown): Record<string, number | null> {

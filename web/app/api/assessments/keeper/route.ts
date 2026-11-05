@@ -37,6 +37,7 @@ function template(quest: string, nick: string, obs: Obs): Out {
     } else noticed.push("Letter game: not enough data from this session.");
     const s = obs.soundSpan;
     noticed.push(s?.attempts ? `Sound-order game: repeated up to ${s.longest} sounds in a row.` : "Sound-order game: not enough data from this session.");
+    if (obs.wordCheck?.trials) noticed.push(`Word game: ${obs.wordCheck.realCorrect} of ${obs.wordCheck.realTotal} real words and ${obs.wordCheck.madeUpCorrect} of ${obs.wordCheck.madeUpTotal} made-up words judged correctly.`);
     if (obs.spelling?.trials) line("spelling", obs.spelling, "Spelling game");
     homeGames.push({ title: "Rhyme walk", how: "On a walk, take turns naming things that rhyme with what you see. No right or wrong, just play." });
     homeGames.push({ title: "First-sound I-spy", how: "Play 'I spy something that starts with the sound sss', using the sound, not the letter name." });
@@ -79,7 +80,7 @@ function template(quest: string, nick: string, obs: Obs): Out {
 type Row = { name: string; value: string; detail?: string; note?: string };
 
 // Counts come straight from the play data, not from the AI wording, so the printed table is exact.
-function dyslexiaRows(obs: Obs): Row[] {
+function dyslexiaRows(obs: Obs, age: number | null = null): Row[] {
   const rows: Row[] = [];
   const num = (v: any) => typeof v === "number" && isFinite(v);
   const choice = (name: string, o: Obs | undefined) => {
@@ -106,6 +107,7 @@ function dyslexiaRows(obs: Obs): Row[] {
         l.falseTaps > 0 ? `mirror pairs (b/d, p/q): ${mirror}` : "",
         top.length ? `most frequent: ${top.join(", ")}` : "",
       ].filter(Boolean).join("; "),
+      note: age !== null && age < 8 ? "Mirror-letter confusions (b/d, p/q) are common in early readers, roughly up to age 7 or 8, so they say less at this age." : undefined,
     });
   } else rows.push({ name: "Letter game", value: "Not completed" });
   const s = obs.soundSpan;
@@ -116,8 +118,27 @@ function dyslexiaRows(obs: Obs): Row[] {
       detail: num(s.passed) ? `${s.passed} of ${s.attempts} sequences repeated correctly` : `${s.attempts} sequences tried`,
     });
   } else rows.push({ name: "Sound-order game", value: "Not completed" });
+  const w = obs.wordCheck;
+  if (w && num(w.trials) && w.trials > 0) {
+    const t = secs(w.medianMs);
+    rows.push({
+      name: "Word check (optional)",
+      value: `${w.realCorrect} of ${w.realTotal} real words accepted; ${w.madeUpCorrect} of ${w.madeUpTotal} made-up words rejected`,
+      detail: [
+        t ? `median response ${t} s from when the word appeared on screen` : "",
+        w.list === "older" ? "longer word list" : "shorter word list",
+        `random guessing would give about ${Math.round(w.trials / 2)} of ${w.trials} overall`,
+      ].filter(Boolean).join("; "),
+    });
+  }
   if (obs.spelling?.trials) choice("Spelling game (optional)", obs.spelling);
-  rows.push({ name: "Chapters finished", value: `${Array.isArray(obs.completed) ? obs.completed.length : 0} of 5`, detail: "The spelling chapter is optional." });
+  const voice = typeof obs.voice === "string" ? obs.voice.replace(/[^\p{L}\p{N} ()._-]/gu, "").slice(0, 60) : "";
+  rows.push({
+    name: "Spoken audio",
+    value: voice ? `Device voice: ${voice}` : "Device voice not reported",
+    detail: "Spoken words and sounds come from the device's built-in voice, which differs between phones and browsers.",
+  });
+  rows.push({ name: "Chapters finished", value: `${Array.isArray(obs.completed) ? obs.completed.length : 0} of ${num(obs.offered) && obs.offered > 0 ? obs.offered : 5}`, detail: "The word-check and spelling chapters are optional." });
   return rows;
 }
 
@@ -128,7 +149,9 @@ export async function POST(req: Request) {
   const nick = String(body?.nickname || "Explorer").replace(/[^\p{L}\p{N} ]/gu, "").slice(0, 20) || "Explorer";
   const obs: Obs = body?.observations && typeof body.observations === "object" ? body.observations : {};
   const fallback = template(quest, nick, obs);
-  const rows = quest === "dyslexia" ? dyslexiaRows(obs) : undefined;
+  const ageNum = Number(body?.age);
+  const age = Number.isFinite(ageNum) && ageNum >= 4 && ageNum <= 16 ? Math.round(ageNum) : null;
+  const rows = quest === "dyslexia" ? dyslexiaRows(obs, age) : undefined;
   const send = (o: Out) => NextResponse.json(rows ? { ...o, rows } : o);
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key || JSON.stringify(obs).length > 6000) return send(fallback);

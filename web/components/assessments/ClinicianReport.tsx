@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { INSTRUMENT_VERSION } from './version'
 
 export type ReportRow = { name: string; value: string; detail?: string; note?: string }
 export type Quest = 'dyslexia' | 'adhd' | 'autism'
@@ -27,7 +28,7 @@ export function rowsFromSentences(lines: string[]): ReportRow[] {
 const QUEST = {
   dyslexia: {
     title: 'Reading and sound-awareness play screener',
-    sampled: 'rhyming, first sounds, letter shapes (such as b and d), remembering sounds in order and, in the question version, spelling and short reading questions.',
+    sampled: 'rhyming, first sounds, letter shapes (such as b and d), remembering sounds in order and, as optional chapters, telling real words from made-up words (age 7 and over) and choosing the correct spelling. The question version covers spelling and short reading questions.',
     next: [
       'A hearing and vision check, if one has not been done recently.',
       'A literacy assessment by an educational psychologist or specialist teacher, usually covering phonological awareness, word and non-word reading, spelling and reading fluency.',
@@ -91,7 +92,8 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
   }, [open])
 
   const q = QUEST[p.quest]
-  const withData = p.rows.filter((r) => !/not enough data/i.test(r.value)).length
+  const measured = p.rows.filter((r) => !/^(chapters finished|spoken audio)$/i.test(r.name))
+  const withData = measured.filter((r) => !/not enough data|not completed/i.test(r.value)).length
   const date = p.generatedOn || new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })
 
   return (
@@ -107,13 +109,13 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
             <button type="button" className="cr-btn ghost" ref={closeRef} onClick={() => setOpen(false)}>Close</button>
           </div>
           <article className="cr-paper">
-            <table className="cr-wrap"><tfoot><tr><td className="cr-pfoot">Not a diagnostic report · {p.variant === 'questions' ? 'Question-based' : 'Play-based'} screening summary · {p.nickname || 'No name given'} · {date}</td></tr></tfoot><tbody><tr><td>
+            <table className="cr-wrap"><tfoot><tr><td className="cr-pfoot">Not a diagnostic report · {p.variant === 'questions' ? 'Question-based' : 'Play-based'} screening summary · {p.nickname || 'No name given'} · {date} · v{INSTRUMENT_VERSION}</td></tr></tfoot><tbody><tr><td>
             <header className="cr-sec">
               <p className="cr-kicker">{p.variant === 'questions' ? 'Question-based screening summary' : 'Play-based screening summary'} · Not a diagnostic report</p>
               <h1>{p.variant === 'questions' ? q.title.replace('play screener', 'question screener') : q.title}</h1>
               <table className="cr-meta"><tbody>
                 <tr><th>Play name</th><td>{p.nickname || 'Not given'}</td><th>Date</th><td>{date}</td></tr>
-                <tr><th>Age</th><td>{p.ageLabel ? p.ageLabel : p.age ? `${p.age} years (as entered)` : 'Not given'}</td><th>Measures with data</th><td>{withData} of {p.rows.length}</td></tr>
+                <tr><th>Age</th><td>{p.ageLabel ? p.ageLabel : p.age ? `${p.age} years (as entered)` : 'Not given'}</td><th>Measures with data</th><td>{withData} of {measured.length}</td></tr>
                 <tr><th>Child’s full name</th><td className="cr-line" /><th>Date of birth</th><td className="cr-line" /></tr>
               </tbody></table>
               <p className="cr-small">Full name and date of birth are left blank on purpose so they stay on paper and are never entered into the website.</p>
@@ -131,7 +133,7 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
                 <thead><tr><th>Activity</th><th>Recorded in this session</th></tr></thead>
                 <tbody>
                   {p.rows.map((r, i) => {
-                    const none = /not enough data/i.test(r.value)
+                    const none = /not enough data|not completed/i.test(r.value)
                     return (
                       <tr key={i}>
                         <td className="cr-name">{r.name}</td>
@@ -179,7 +181,7 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
             </section>
 
             <footer className="cr-sec cr-small">
-              Nothing from this session was saved on a server. The figures were produced in the browser{p.wording ? `, and the wording was written ${p.wording === 'ai' ? 'with the help of an AI model and checked automatically against the recorded numbers' : 'from a fixed template'}` : ''}. This summary is not a medical device and is not a diagnosis.
+              Report version {INSTRUMENT_VERSION}. Nothing from this session was saved on a server. The figures were produced in the browser{p.wording ? `, and the wording was written ${p.wording === 'ai' ? 'with the help of an AI model and checked automatically against the recorded numbers' : 'from a fixed template'}` : ''}. This summary is not a medical device and is not a diagnosis.
             </footer>
           </td></tr></tbody></table>
           </article>

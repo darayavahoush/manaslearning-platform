@@ -67,7 +67,7 @@ const QUEST = {
 } as const
 
 /** One plain line per game, tied to what its measures count. No interpretation. */
-const GAME_NOTE: Record<string, string> = {
+export const GAME_NOTE: Record<string, string> = {
   'Sunbird game': 'Counts of sunbirds missed, taps on the shadow moth and tap speed, overall and by round.',
   'Steering game': 'Rounds where the arrows matched and rounds where they disagreed, scored separately.',
   'Star-sequence game': 'The longest star sequence repeated correctly.',

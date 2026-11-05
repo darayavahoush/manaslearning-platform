@@ -76,6 +76,8 @@ const TELEMETRY_KEYS = [
   'feelingsMs1', 'feelingsMs2', 'feelingsMs3', 'feelingsMs4',
   // How the session went (both quests): practice repeats per game, and time the page was hidden
   'retrySunbird', 'retrySteering', 'retryStars', 'retryGaze', 'retryFeelings', 'retrySorting', 'pauseCount', 'pausedSec',
+  // the parent card, after the play: option index (0 to 2) for each question
+  'parentTired', 'parentLikeHome', 'parentEnjoyed',
 ] as const
 
 function cleanTelemetry(input: unknown): Record<string, number | null> {

@@ -13,7 +13,7 @@ export interface GameStory {
   fewTrials: boolean
 }
 
-type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'starLevels'>
+type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'starLevels'> & Partial<Pick<SessionRecord, 'parentCard'>>
 
 const find = (r: Rec, key: string): Measure | undefined => r.measures.find((x) => x.key === key)
 const prop = (r: Rec, key: string): ProportionMeasure | null => {
@@ -134,8 +134,18 @@ function patience(r: Rec): string[] {
   return p ? [`${p.k} of ${p.n} tries ended with an early release. This is a practice game, not a validated task.`] : []
 }
 
-function during(r: Rec): string[] {
+function parentAnswers(r: Rec): string[] {
+  const c = r.parentCard
+  if (!c) return []
   const out: string[] = []
+  if (c.tired) out.push(c.tired === 'Not at all' ? 'You said they did not seem tired.' : c.tired === 'A little' ? 'You said they seemed a little tired.' : 'You said they seemed quite tired.')
+  if (c.likeHome) out.push(c.likeHome === 'Very like' ? 'You said the play was very like how they are at home or in class.' : c.likeHome === 'Somewhat like' ? 'You said the play was somewhat like how they are at home or in class.' : 'You said the play was not much like how they are at home or in class.')
+  if (c.enjoyed) out.push(c.enjoyed === 'Enjoyed it' ? 'You said they enjoyed the play.' : c.enjoyed === 'It was okay' ? 'You said they found the play okay.' : 'You said they did not enjoy the play.')
+  return out
+}
+
+function during(r: Rec): string[] {
+  const out: string[] = [...parentAnswers(r)]
   const names: Record<string, string> = {
     retrySunbird: 'sunbird game', retrySteering: 'steering game', retryStars: 'star-sequence game',
     retryGaze: 'gaze game', retryFeelings: 'feelings match', retrySorting: 'sorting game',

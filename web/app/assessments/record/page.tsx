@@ -2,7 +2,7 @@
 
 import {useState} from 'react'
 import {FeelingsTable, GazeTable, StarTable, SteeringTable} from '../../../components/assessments/report/RoundTables'
-import type {FeelingsRound, GazeRound, StarLevel, SteeringTrial} from '../../../components/assessments/session-record'
+import type {FeelingsRound, GazeRound, ParentCardRecord, StarLevel, SteeringTrial} from '../../../components/assessments/session-record'
 
 /**
  * Clinician record viewer. Runs entirely in the browser: the session record is pasted or opened
@@ -24,6 +24,7 @@ type Rec = {
   feelingsRounds?: FeelingsRound[]
   steeringTrials?: SteeringTrial[]
   starLevels?: StarLevel[]
+  parentCard?: ParentCardRecord
   sortingCards?: Array<{card: number; rule: string; color: string; shape: string; box: string; right: boolean; ms: number | null}>
   limits: string[]
 }
@@ -129,6 +130,12 @@ export default function RecordViewer() {
               </table>
             </div>
 
+            {!!rec.parentCard && (
+              <>
+                <h3 className="mt-6 text-sm font-bold uppercase tracking-wide text-slate-500">Parent&apos;s answers after the play</h3>
+                <p className="mt-1 text-sm text-slate-700">Tired: {rec.parentCard.tired ?? 'Skipped'} · Like home or class: {rec.parentCard.likeHome ?? 'Skipped'} · Enjoyment: {rec.parentCard.enjoyed ?? 'Skipped'}</p>
+              </>
+            )}
             {!!rec.steeringTrials?.length && (<><h3 className="mt-6 text-sm font-bold uppercase tracking-wide text-slate-500">Steering game, round by round</h3><SteeringTable rounds={rec.steeringTrials} /></>)}
             {!!rec.starLevels?.length && (<><h3 className="mt-6 text-sm font-bold uppercase tracking-wide text-slate-500">Star-sequence game, level by level</h3><StarTable levels={rec.starLevels} /></>)}
             {!!rec.gazeRounds?.length && (<><h3 className="mt-6 text-sm font-bold uppercase tracking-wide text-slate-500">Gaze game, encounter by encounter</h3><GazeTable rounds={rec.gazeRounds} /></>)}

@@ -2,6 +2,7 @@
 import WelcomeWizard from '../../../components/assessments/WelcomeWizard'
 import ReadAloud from '../../../components/assessments/ReadAloud'
 import ClinicianReportButton from '../../../components/assessments/ClinicianReport'
+import ParentCard, {type ParentAnswers} from '../../../components/assessments/ParentCard'
 import SessionRecordDownload from '../../../components/assessments/SessionRecordDownload'
 import {captureEnvironment} from '../../../components/assessments/session-record'
 import {usePlayEvents} from '../../../components/assessments/play-events'
@@ -374,7 +375,7 @@ function bandFor(age: number): AgeBand {
 }
 
 function __McInner() {
-  const [stage, setStage] = useState<'welcome' | 'avatar' | 'cpt_story' | 'cpt_game' | 'flanker_story' | 'flanker_game' | 'memory_story' | 'memory_game' | 'situational_story' | 'situational_game' | 'trials' | 'agent_eval' | 'celebration'>('welcome')
+  const [stage, setStage] = useState<'welcome' | 'avatar' | 'cpt_story' | 'cpt_game' | 'flanker_story' | 'flanker_game' | 'memory_story' | 'memory_game' | 'situational_story' | 'situational_game' | 'trials' | 'parent_card' | 'agent_eval' | 'celebration'>('welcome')
 
   // Child Fantasy Persona
   const [heroName, setHeroName] = useState('')
@@ -754,7 +755,7 @@ function __McInner() {
             setChargeProgress(0)
             setChargeStatusText('idle')
           } else {
-            submitCognitiveAgent()
+            setStage('parent_card')
           }
         }, 1400)
       }
@@ -787,7 +788,7 @@ function __McInner() {
   }, [])
 
   // Submit via Multi-Node Agent
-  async function submitCognitiveAgent() {
+  async function submitCognitiveAgent(parent?: ParentAnswers) {
     setStage('agent_eval')
 
     const meanOf = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null)
@@ -848,6 +849,10 @@ function __McInner() {
         retrySunbird: ev.retries.sunbird ?? 0,
         retrySteering: ev.retries.steering ?? 0,
         retryStars: ev.retries.stars ?? 0,
+        // the parent card (each answer is 0 to 2, or null when skipped)
+        parentTired: parent?.tired ?? null,
+        parentLikeHome: parent?.likeHome ?? null,
+        parentEnjoyed: parent?.enjoyed ?? null,
         pauseCount: ev.pauseCount,
         pausedSec: ev.pausedSec
       }
@@ -1520,6 +1525,10 @@ function __McInner() {
         )}
 
         {/* 10. LOADING AGENTIC EVALUATION */}
+        {stage === 'parent_card' && (
+          <ParentCard childName={heroName} onDone={(a) => submitCognitiveAgent(a)} />
+        )}
+
         {stage === 'agent_eval' && (
           <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-12 shadow-2xl text-center">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full border-4 border-amber-500 border-t-transparent animate-spin flex items-center justify-center">
@@ -1595,7 +1604,7 @@ function __McInner() {
             )}
 
             {agentResult && showClinicalDossier && (() => { const a: any = agentResult; return (
-              <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="adhd" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} measures={a.record?.measures} steeringTrials={a.record?.steeringTrials} starLevels={a.record?.starLevels} />{a.record && <SessionRecordDownload record={a.record} />}</div>
+              <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="adhd" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} measures={a.record?.measures} parentCard={a.record?.parentCard} steeringTrials={a.record?.steeringTrials} starLevels={a.record?.starLevels} />{a.record && <SessionRecordDownload record={a.record} />}</div>
             ) })()}
             {/* GROWN-UP SUMMARY */}
             {showClinicalDossier && (

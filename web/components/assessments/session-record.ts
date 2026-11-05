@@ -9,7 +9,7 @@ import {wilson} from './profile-stats'
  * this code; the record is built in the response and handed back to the caller.
  */
 
-export const RECORD_SCHEMA_VERSION = '1.4'
+export const RECORD_SCHEMA_VERSION = '1.5'
 
 export type Quest = 'adhd' | 'autism'
 export type AgeBand = '4-5' | '6-8' | '9-12' | '13-16'
@@ -80,7 +80,15 @@ export interface SessionRecord {
   steeringTrials?: SteeringTrial[]
   /** adhd quest only: the star-sequence game level by level (record format 1.4 and later) */
   starLevels?: StarLevel[]
+  /** both quests: the parent's answers after the play, in words (record format 1.5 and later) */
+  parentCard?: ParentCardRecord
   limits: string[]
+}
+
+export interface ParentCardRecord {
+  tired: string | null
+  likeHome: string | null
+  enjoyed: string | null
 }
 
 export interface SteeringTrial {
@@ -403,6 +411,22 @@ export function starLevels(input: unknown, t: Tele): StarLevel[] | null {
   return out
 }
 
+const PARENT_OPTIONS = {
+  tired: ['Not at all', 'A little', 'Quite a lot'],
+  likeHome: ['Very like', 'Somewhat like', 'Not really like'],
+  enjoyed: ['Enjoyed it', 'It was okay', "Didn't enjoy it"],
+} as const
+
+/** The parent's answers, turned into words. Null when the card was skipped or nothing was answered. */
+export function parentCard(t: Tele): ParentCardRecord | null {
+  const pick = (key: string, opts: readonly string[]) => {
+    const v = get(t, key)
+    return v !== null && Number.isInteger(v) && v >= 0 && v < opts.length ? opts[v] : null
+  }
+  const out = {tired: pick('parentTired', PARENT_OPTIONS.tired), likeHome: pick('parentLikeHome', PARENT_OPTIONS.likeHome), enjoyed: pick('parentEnjoyed', PARENT_OPTIONS.enjoyed)}
+  return out.tired || out.likeHome || out.enjoyed ? out : null
+}
+
 export function buildSessionRecord(args: {
   quest: Quest
   ageYears: number | null
@@ -424,6 +448,7 @@ export function buildSessionRecord(args: {
     ...(args.quest === 'autism' && sortingCards(args.telemetry) ? {sortingCards: sortingCards(args.telemetry)!} : {}),
     ...(args.quest === 'autism' && gazeRounds(args.telemetry) ? {gazeRounds: gazeRounds(args.telemetry)!} : {}),
     ...(args.quest === 'autism' && feelingsRounds(args.telemetry) ? {feelingsRounds: feelingsRounds(args.telemetry)!} : {}),
+    ...(parentCard(args.telemetry) ? {parentCard: parentCard(args.telemetry)!} : {}),
     limits: LIMITS,
   }
 }

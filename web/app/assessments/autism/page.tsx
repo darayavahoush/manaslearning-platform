@@ -6,6 +6,7 @@ import SessionRecordDownload from '../../../components/assessments/SessionRecord
 import {captureEnvironment} from '../../../components/assessments/session-record'
 import {usePlayEvents} from '../../../components/assessments/play-events'
 import {startRoomSound, type RoomSound} from '../../../components/assessments/RoomSound'
+import ParentCard, {type ParentAnswers} from '../../../components/assessments/ParentCard'
 import {useState, useEffect, useRef, useMemo} from 'react'
 import Link from 'next/link'
 import KeeperFeedback from '../../../components/assessments/KeeperFeedback'
@@ -354,7 +355,7 @@ function HandArrow() {
 }
 
 function __McInner() {
-  const [stage, setStage] = useState<'welcome' | 'avatar' | 'ja_story' | 'ja_game' | 'tom_story' | 'tom_game' | 'sensory_story' | 'sensory_game' | 'dccs_story' | 'dccs_game' | 'agent_eval' | 'celebration'>('welcome')
+  const [stage, setStage] = useState<'welcome' | 'avatar' | 'ja_story' | 'ja_game' | 'tom_story' | 'tom_game' | 'sensory_story' | 'sensory_game' | 'dccs_story' | 'dccs_game' | 'parent_card' | 'agent_eval' | 'celebration'>('welcome')
 
   // Child Fantasy Persona
   const [guardianName, setGuardianName] = useState('')
@@ -495,7 +496,7 @@ function __McInner() {
       }
       if (dccsIndex >= DCCS_CARDS.length) {
         playAudio('fanfare')
-        submitAutismAgent()
+        setStage('parent_card')
         return
       }
       dccsStartRef.current = performance.now()
@@ -516,7 +517,7 @@ function __McInner() {
   }
 
   // Multi-Node Cognitive Agent Evaluation
-  async function submitAutismAgent() {
+  async function submitAutismAgent(parent?: ParentAnswers) {
     setStage('agent_eval')
 
     const medianOf = (xs: number[]) => {
@@ -570,6 +571,10 @@ function __McInner() {
         // card by card: box tapped (0 red star, 1 blue circle) and time in ms, cards 1 to 6
         ...Object.fromEntries(Array.from({length: DCCS_CARDS.length}, (_, i) => [`sortBin${i + 1}`, dccsBins[i] ?? null])),
         ...Object.fromEntries(Array.from({length: DCCS_CARDS.length}, (_, i) => [`sortMs${i + 1}`, dccsTimes[i] ?? null])),
+        // the parent card (each answer is 0 to 2, or null when skipped)
+        parentTired: parent?.tired ?? null,
+        parentLikeHome: parent?.likeHome ?? null,
+        parentEnjoyed: parent?.enjoyed ?? null,
         retryGaze: ev.retries.ja ?? 0,
         retryFeelings: ev.retries.tom ?? 0,
         retrySorting: ev.retries.dccs ?? 0,
@@ -1278,6 +1283,10 @@ function __McInner() {
         )}
 
         {/* 8. LOADING AGENT */}
+        {stage === 'parent_card' && (
+          <ParentCard childName={guardianName} onDone={(a) => submitAutismAgent(a)} />
+        )}
+
         {stage === 'agent_eval' && (
           <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-12 shadow-2xl text-center">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full border-4 border-teal-500 border-t-transparent animate-spin flex items-center justify-center">
@@ -1353,7 +1362,7 @@ function __McInner() {
             )}
 
             {agentResult && showClinicalDossier && (() => { const a: any = agentResult; return (
-              <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="autism" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} measures={a.record?.measures} sortingCards={a.record?.sortingCards} gazeRounds={a.record?.gazeRounds} feelingsRounds={a.record?.feelingsRounds} />{a.record && <SessionRecordDownload record={a.record} />}</div>
+              <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="autism" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} measures={a.record?.measures} sortingCards={a.record?.sortingCards} gazeRounds={a.record?.gazeRounds} feelingsRounds={a.record?.feelingsRounds} parentCard={a.record?.parentCard} />{a.record && <SessionRecordDownload record={a.record} />}</div>
             ) })()}
             {/* GROWN-UP SUMMARY */}
             {showClinicalDossier && (

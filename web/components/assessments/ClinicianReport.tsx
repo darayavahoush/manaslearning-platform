@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { INSTRUMENT_VERSION } from './version'
-import type { FeelingsRound, GazeRound, Measure, SortingCard, StarLevel, SteeringTrial } from './session-record'
+import type { FeelingsRound, GazeRound, Measure, ParentCardRecord, SortingCard, StarLevel, SteeringTrial } from './session-record'
 
 export type ReportRow = { name: string; value: string; detail?: string; note?: string }
 export type Quest = 'dyslexia' | 'adhd' | 'autism'
@@ -32,6 +32,8 @@ export type ClinicianReportProps = {
   /** adhd quest: the steering game arrow by arrow and the star-sequence game level by level */
   steeringTrials?: SteeringTrial[]
   starLevels?: StarLevel[]
+  /** both quests: the parent's answers after the play */
+  parentCard?: ParentCardRecord
 }
 
 /** Turns sentences like "Rhyme game: 3 of 5 ..." into table rows. */
@@ -192,6 +194,19 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
                 </tbody>
               </table>
             </section>
+
+            {!!p.parentCard && (
+              <section className="cr-sec cr-flow">
+                <h2>Parent&apos;s answers after the play</h2>
+                <table className="cr-mini">
+                  <tbody>
+                    <tr><td>Seemed tired</td><td>{p.parentCard.tired ?? 'Skipped'}</td></tr>
+                    <tr><td>Like how the child is at home or in class</td><td>{p.parentCard.likeHome ?? 'Skipped'}</td></tr>
+                    <tr><td>How the child seemed to feel about the play</td><td>{p.parentCard.enjoyed ?? 'Skipped'}</td></tr>
+                  </tbody>
+                </table>
+              </section>
+            )}
 
             {!!games.length && (
               <section className="cr-sec cr-flow">

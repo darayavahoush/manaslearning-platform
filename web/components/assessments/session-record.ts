@@ -188,6 +188,28 @@ export function buildSessionRecord(args: {
   }
 }
 
+/**
+ * Extra rows for the sunbird game, one pair per round: how fast the child tapped and how many sunbirds were missed.
+ * These show whether tapping changed over the session. Each round has only a few sunbirds, so the intervals are wide.
+ */
+export function roundMeasures(
+  rounds: {count: number; size: number; displayMs: number | null; rtMs: Array<number | null>; misses: number[]},
+  t: Tele,
+): Measure[] {
+  const targets = get(t, 'cptTargets')
+  const perRound = targets !== null && targets % rounds.count === 0 ? targets / rounds.count : null
+  const out: Array<Measure | null> = [
+    value('cptDisplayMs', 'How long each sunbird or moth stayed on screen', rounds.displayMs, 'ms', null,
+      'Set by age (longer for ages 4 to 5), so counts from different ages are not directly comparable.'),
+  ]
+  for (let i = 0; i < rounds.count; i++) {
+    out.push(value(`rtRound${i + 1}Ms`, `Average tap speed, round ${i + 1}`, rounds.rtMs[i] ?? null, 'ms', null,
+      i === 0 ? 'Shown only when at least 3 taps were recorded in the round.' : undefined))
+    out.push(proportion(`omissionsRound${i + 1}`, `Sunbirds missed, round ${i + 1}`, rounds.misses[i] ?? null, perRound))
+  }
+  return out.filter((m): m is Measure => m !== null)
+}
+
 /** Browser only: collects the device details to send as `environment` with the session. */
 export function captureEnvironment(): Environment {
   if (typeof window === 'undefined') {

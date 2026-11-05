@@ -1,6 +1,6 @@
 import {NextResponse} from 'next/server'
 import {INSTRUMENT_VERSION} from '../../../../components/assessments/version'
-import {buildSessionRecord, cleanEnvironment, type SessionRecord} from '../../../../components/assessments/session-record'
+import {buildSessionRecord, cleanEnvironment, roundMeasures, type SessionRecord} from '../../../../components/assessments/session-record'
 
 /**
  * Play-session summary for the Manas quests.
@@ -358,7 +358,10 @@ export async function POST(req: Request) {
       instrumentVersion: INSTRUMENT_VERSION,
     })
     const rounds = assessmentType === 'adhd' ? cleanRounds(body.cptBlocks, telemetry) : null
-    if (rounds) (record as SessionRecord & {sunbirdRounds?: SunbirdRounds}).sunbirdRounds = rounds
+    if (rounds) {
+      ;(record as SessionRecord & {sunbirdRounds?: SunbirdRounds}).sunbirdRounds = rounds
+      record.measures.push(...roundMeasures(rounds, telemetry))
+    }
     const indices = assessmentType === 'adhd' ? adhdObservations(telemetry) : autismObservations(telemetry)
     const withData = indices.filter((o) => o.value !== NOT_ENOUGH).length
 

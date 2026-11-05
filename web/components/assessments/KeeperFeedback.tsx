@@ -1,5 +1,6 @@
 "use client";
-import ClinicianReportButton, { rowsFromSentences } from "./ClinicianReport";
+import ClinicianReportButton, { rowsFromSentences, type ReportExtra } from "./ClinicianReport";
+import SessionRecord from "./SessionRecord";
 import { useEffect, useState } from "react";
 
 type Res = {
@@ -9,9 +10,10 @@ type Res = {
   homeGames: { title: string; how: string }[];
   source: "llm" | "template";
   rows?: { name: string; value: string; detail?: string; note?: string }[];
+  extra?: ReportExtra;
 };
 
-export default function KeeperFeedback({ quest, nickname, age, observations, mode = "story" }: { quest: "dyslexia" | "adhd" | "autism"; nickname: string; age?: number | null; observations: Record<string, any>; mode?: "story" | "focus" }) {
+export default function KeeperFeedback({ quest, nickname, age, observations, detail, mode = "story" }: { quest: "dyslexia" | "adhd" | "autism"; nickname: string; age?: number | null; observations: Record<string, any>; detail?: Record<string, any>; mode?: "story" | "focus" }) {
   const [res, setRes] = useState<Res | null>(null);
   const [tab, setTab] = useState<"child" | "parent">(mode === "focus" ? "parent" : "child");
   const [shown, setShown] = useState(0);
@@ -21,7 +23,7 @@ export default function KeeperFeedback({ quest, nickname, age, observations, mod
     fetch("/api/assessments/keeper", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ quest, nickname, age, observations }),
+      body: JSON.stringify({ quest, nickname, age, observations, detail }),
     })
       .then((r) => r.json())
       .then((d) => live && setRes(d))
@@ -56,11 +58,12 @@ export default function KeeperFeedback({ quest, nickname, age, observations, mod
         <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 20, padding: 24, fontSize: 16 }}>
           {mode === "focus" && <h2 style={{ margin: "0 0 12px", fontSize: 20 }}>Session summary</h2>}
           <p style={{ fontWeight: 700 }}>This is not a diagnosis. One play session cannot show whether a child has a learning difference. If you have concerns, please talk to a pediatrician, teacher or qualified clinician.</p>
+          {quest === "dyslexia" && <SessionRecord obs={observations} detail={detail ?? {}} />}
           <h3 style={{ marginTop: 16 }}>What we noticed while playing</h3>
           <ul>{res.noticed.map((n, i) => <li key={i}>{n}</li>)}</ul>
           {res.clinicianQuestions.length > 0 && (<><h3 style={{ marginTop: 16 }}>Questions you could bring to a clinician</h3><ul>{res.clinicianQuestions.map((n, i) => <li key={i}>{n}</li>)}</ul></>)}
           {res.homeGames.length > 0 && (<><h3 style={{ marginTop: 16 }}>Ideas to try at home</h3><ul>{res.homeGames.map((g, i) => <li key={i}><strong>{g.title}.</strong> {g.how}</li>)}</ul></>)}
-          <div style={{ marginTop: 16, textAlign: "center" }}><ClinicianReportButton quest={quest} nickname={nickname} age={age} rows={res.rows ?? rowsFromSentences(res.noticed)} clinicianQuestions={res.clinicianQuestions} wording={res.source === "llm" ? "ai" : "template"} /></div>
+          <div style={{ marginTop: 16, textAlign: "center" }}><ClinicianReportButton quest={quest} nickname={nickname} age={age} rows={res.rows ?? rowsFromSentences(res.noticed)} clinicianQuestions={res.clinicianQuestions} extra={res.extra} wording={res.source === "llm" ? "ai" : "template"} /></div>
           <p style={{ fontSize: 12, opacity: 0.7, marginTop: 16 }}>Nothing from this session is saved. Wording written {res.source === "llm" ? "by an AI model from this session's observations, checked automatically" : "from a fixed template"}.</p>
         </div>
       )}

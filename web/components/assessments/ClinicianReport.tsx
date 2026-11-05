@@ -5,6 +5,11 @@ import { INSTRUMENT_VERSION } from './version'
 
 export type ReportRow = { name: string; value: string; detail?: string; note?: string }
 export type Quest = 'dyslexia' | 'adhd' | 'autism'
+export type ReportExtra = {
+  method?: { name: string; samples: string; items: string; scoring: string }[]
+  compare?: string[]
+  appendix?: { title: string; head: string[]; rows: string[][] }[]
+}
 export type ClinicianReportProps = {
   quest: Quest
   nickname: string
@@ -15,6 +20,7 @@ export type ClinicianReportProps = {
   wording?: 'ai' | 'template'
   variant?: 'play' | 'questions'
   ageLabel?: string
+  extra?: ReportExtra
 }
 
 /** Turns sentences like "Rhyme game: 3 of 5 ..." into table rows. */
@@ -92,6 +98,7 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
   }, [open])
 
   const q = QUEST[p.quest]
+  const ex: ReportExtra = p.extra || {}
   const measured = p.rows.filter((r) => !/^(chapters finished|spoken audio)$/i.test(r.name))
   const withData = measured.filter((r) => !/not enough data|not completed/i.test(r.value)).length
   const date = p.generatedOn || new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -149,6 +156,25 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
               </table>
             </section>
 
+            {!!ex.compare?.length && (
+              <section className="cr-sec">
+                <h2>Descriptive comparisons</h2>
+                <ul>{(ex.compare ?? []).map((x, i) => <li key={i}>{x}</li>)}</ul>
+                <p className="cr-small">These restate the figures above side by side. They are not interpretations, and with this few items small differences are expected by chance.</p>
+              </section>
+            )}
+
+            {!!ex.method?.length && (
+              <section className="cr-sec">
+                <h2>How each activity works</h2>
+                <table className="cr-mini">
+                  <thead><tr><th>Activity</th><th>What it samples</th><th>Items</th><th>Scoring</th></tr></thead>
+                  <tbody>{(ex.method ?? []).map((m, i) => <tr key={i}><td><strong>{m.name}</strong></td><td>{m.samples}</td><td>{m.items}</td><td>{m.scoring}</td></tr>)}</tbody>
+                </table>
+                <p className="cr-small">Items are presented in a fixed order and the correct answer is placed on each side equally often, so every session is comparable.</p>
+              </section>
+            )}
+
             <section className="cr-sec">
               <h2>Conditions during play (parent to tick)</h2>
               <table className="cr-meta cr-cond"><tbody>
@@ -179,6 +205,22 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
               <ul>{q.next.map((x, i) => <li key={i}>{x}</li>)}</ul>
               <p className="cr-small">These are examples of common routes, not recommendations for this child. The clinician decides what is appropriate.</p>
             </section>
+
+            {!!ex.appendix?.length && (
+              <section className="cr-sec cr-appx">
+                <h2>Appendix: item-by-item record</h2>
+                <p className="cr-small">Every scored item in the order shown. Practice items are not listed. Times run from when the choices or word were available to the touch.</p>
+                {(ex.appendix ?? []).map((t, i) => (
+                  <div key={i}>
+                    <h3>{t.title}</h3>
+                    <table className="cr-mini">
+                      <thead><tr>{t.head.map((h, j) => <th key={j}>{h}</th>)}</tr></thead>
+                      <tbody>{t.rows.map((r, j) => <tr key={j}>{r.map((c, k) => <td key={k}>{c}</td>)}</tr>)}</tbody>
+                    </table>
+                  </div>
+                ))}
+              </section>
+            )}
 
             <footer className="cr-sec cr-small">
               Report version {INSTRUMENT_VERSION}. Nothing from this session was saved on a server. The figures were produced in the browser{p.wording ? `, and the wording was written ${p.wording === 'ai' ? 'with the help of an AI model and checked automatically against the recorded numbers' : 'from a fixed template'}` : ''}. This summary is not a medical device and is not a diagnosis.
@@ -221,6 +263,10 @@ const CSS = `
 .cr-paper h2{break-after:avoid}
 .cr-inline{display:inline-block;width:170px;border-bottom:1px solid #1F1B16}
 .cr-lines span{display:block;height:28px;border-bottom:1px solid #8A7F6E}
+.cr-appx h3{font-size:13px;margin:14px 0 6px}
+.cr-mini{width:100%;border-collapse:collapse;font-size:12px}
+.cr-mini th,.cr-mini td{border:1px solid #CFC5AE;padding:4px 8px;text-align:left;vertical-align:top}
+.cr-mini th{background:#F4ECDC}
 @media (max-width:640px){.cr-paper{padding:20px 16px;margin:0}}
 @media print{
   body > *:not(.cr-portal){display:none!important}
@@ -229,6 +275,9 @@ const CSS = `
   .cr-paper{box-shadow:none!important;margin:0!important;padding:0!important;max-width:none!important}
   .cr-sec,.cr-table tr,.cr-meta tr{break-inside:avoid}
   .cr-sec.cr-flow{break-inside:auto}
+  .cr-sec.cr-appx{break-inside:auto;break-before:page}
+  .cr-mini tr{break-inside:avoid}
+  .cr-mini thead{display:table-header-group}
   .cr-table thead{display:table-header-group}
   .cr-wrap>tfoot{display:table-footer-group}
   .cr-wrap>tbody>tr>td{padding-bottom:14px!important}

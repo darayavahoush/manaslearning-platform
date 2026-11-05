@@ -41,13 +41,14 @@ const FIRST = () => [mk("sun", "sock", "ball", true), mk("dog", "door", "fish"),
 const SPELL = () => [mk("rain", "rain", "rane", true), mk("night", "night", "nite"), mk("boat", "boat", "bote"), mk("cake", "cake", "caik"), mk("sheep", "sheep", "sheap"), mk("light", "light", "lite"), mk("train", "train", "trane"), mk("knife", "knife", "nife"), mk("dream", "dream", "dreem")];
 
 const CHAPTERS = [
-  { id: "rhyme", name: "Echo Cave", say: "Listen to the echo. Then tap the stone that rhymes with it.", hint: "Listen, then tap the stone that sounds like the echo's end.", plain: { name: "Rhyme judgement", hint: "You will hear a word, then two options. Choose the option that rhymes with the word." } },
-  { id: "first", name: "Sound Stones", say: "Listen to the word. Tap the stone that starts with the same sound.", hint: "Tap the stone whose word starts the same way.", plain: { name: "Initial sounds", hint: "You will hear a word, then two options. Choose the option that starts with the same sound." } },
-  { id: "letters", name: "Mirror Moths", say: "Find every letter that looks exactly like the lantern letter.", hint: "Tap every letter facing the same way as the lantern letter.", plain: { name: "Letter orientation", hint: "Find every letter that faces the same way as the target letter." } },
-  { id: "span", name: "Echo Steps", say: "Listen to the stones sing. Then sing them back in the same order.", hint: "Watch and listen, then tap the stones in the same order.", plain: { name: "Sound sequence", hint: "Listen to the sounds, then tap the numbered tiles in the same order." } },
-  { id: "words", name: "Lantern Words", say: "Some of these are real words. Some are made up. Tap real word or made-up word.", hint: "Read each word. Is it a real word, or one that was made up? You can skip this one.", plain: { name: "Word check", hint: "Decide whether each word on screen is a real word or a made-up word. Be quick, but try to be right. You can skip this part." } },
-  { id: "spell", name: "Spell Stones", say: "Listen to the word. Tap the way it is spelled. You can skip this one.", hint: "For readers: tap the spelling that looks right. Skipping is fine.", plain: { name: "Spelling", hint: "Listen to the word, then choose the correct spelling. You can skip this part." } },
+  { id: "rhyme", name: "Echo Cave", say: "Listen to the echo. Then tap the stone that rhymes with it.", hint: "Listen, then tap the stone that sounds like the echo's end.", plain: { name: "Rhyme judgement", hint: "You will hear a word, then two options. Choose the option that rhymes with the word.", measures: "Whether the child can tell which of two spoken words ends with the same sound as a target word.", items: "12 scored, plus 1 practice", mins: "About 4 minutes" } },
+  { id: "first", name: "Sound Stones", say: "Listen to the word. Tap the stone that starts with the same sound.", hint: "Tap the stone whose word starts the same way.", plain: { name: "Initial sounds", hint: "You will hear a word, then two options. Choose the option that starts with the same sound.", measures: "Whether the child can tell which of two spoken words begins with the same sound as a target word.", items: "12 scored, plus 1 practice", mins: "About 4 minutes" } },
+  { id: "letters", name: "Mirror Moths", say: "Find every letter that looks exactly like the lantern letter.", hint: "Tap every letter facing the same way as the lantern letter.", plain: { name: "Letter orientation", hint: "Find every letter that faces the same way as the target letter.", measures: "Picking out one letter among look-alikes (b, d, p, q), the shapes most often confused.", items: "4 boards of 12 tiles", mins: "About 3 minutes" } },
+  { id: "span", name: "Echo Steps", say: "Listen to the stones sing. Then sing them back in the same order.", hint: "Watch and listen, then tap the stones in the same order.", plain: { name: "Sound sequence", hint: "Listen to the sounds, then tap the numbered tiles in the same order.", measures: "Holding nonsense syllables in order and repeating them back, from 2 up to 5 in a row.", items: "Up to 8 scored sequences, plus 1 practice", mins: "About 4 minutes" } },
+  { id: "words", name: "Lantern Words", say: "Some of these are real words. Some are made up. Tap real word or made-up word.", hint: "Read each word. Is it a real word, or one that was made up? You can skip this one.", plain: { name: "Word check", hint: "Decide whether each word on screen is a real word or a made-up word. Be quick, but try to be right. You can skip this part.", measures: "Telling real words from made-up words, which can only be done by sounding the word out.", items: "12 scored, plus 2 practice", mins: "About 3 minutes" } },
+  { id: "spell", name: "Spell Stones", say: "Listen to the word. Tap the way it is spelled. You can skip this one.", hint: "For readers: tap the spelling that looks right. Skipping is fine.", plain: { name: "Spelling", hint: "Listen to the word, then choose the correct spelling. You can skip this part.", measures: "Choosing the correct spelling of a spoken word when the other option sounds the same.", items: "8 scored, plus 1 practice", mins: "About 3 minutes" } },
 ] as const;
+const ROMAN = ["I", "II", "III", "IV", "V", "VI"];
 const KEY: Record<string, string> = { rhyme: "rhyme", first: "firstSound", letters: "letters", span: "soundSpan", spell: "spelling", words: "wordCheck" };
 const PIP = ["Lovely listening!", "The lanterns are glowing.", "You are doing great.", "Keep going, explorer!", "Pip is cheering!", "One more ink drop."];
 
@@ -71,7 +72,7 @@ function AudioChoice({ items, mode, vol, focus, onInk, onDone }: { items: Item[]
   const [lit, setLit] = useState("");
   const [picked, setPicked] = useState<number | null>(null);
   const t0 = useRef(0), down = useRef(0), replays = useRef(0), tok = useRef(0);
-  const log = useRef<{ ok: boolean; rt: number }[]>([]);
+  const log = useRef<{ s: string; ok: boolean; rt: number }[]>([]);
   const item = items[i];
 
   const play = useCallback(async () => {
@@ -95,11 +96,11 @@ function AudioChoice({ items, mode, vol, focus, onInk, onDone }: { items: Item[]
 
   const pick = (n: number) => {
     if (!ready || picked !== null || !t0.current) return;
-    if (!item.practice) log.current.push({ ok: n === item.ok, rt: Math.max(0, (down.current > t0.current ? down.current : performance.now()) - t0.current) });
+    if (!item.practice) log.current.push({ s: item.say, ok: n === item.ok, rt: Math.max(0, (down.current > t0.current ? down.current : performance.now()) - t0.current) });
     setPicked(n); onInk();
     setTimeout(() => {
       if (i + 1 < items.length) setI(i + 1);
-      else onDone({ trials: log.current.length, correct: log.current.filter((x) => x.ok).length, medianMs: median(log.current.map((x) => x.rt)), medianSec: Math.round(median(log.current.map((x) => x.rt)) / 100) / 10, replays: replays.current });
+      else onDone({ trials: log.current.length, correct: log.current.filter((x) => x.ok).length, medianMs: median(log.current.map((x) => x.rt)), medianSec: Math.round(median(log.current.map((x) => x.rt)) / 100) / 10, replays: replays.current, items: log.current.map((x) => ({ s: x.s, ok: x.ok ? 1 : 0, ms: Math.round(x.rt) })) });
     }, 1000);
   };
   const words = [item.a, item.b];
@@ -132,13 +133,15 @@ const LAYOUT: Record<string, string[]> = {
 function Letters({ vol, onInk, onDone }: { vol: number; onInk: () => void; onDone: (s: any) => void }) {
   const [r, setR] = useState(0);
   const [sel, setSel] = useState<number[]>([]);
-  const st = useRef({ rounds: 0, hits: 0, falseTaps: 0, missed: 0, possibleHits: 0, possibleDistractors: 0, confusions: {} as Record<string, number> });
+  const st = useRef({ rounds: 0, hits: 0, falseTaps: 0, missed: 0, possibleHits: 0, possibleDistractors: 0, confusions: {} as Record<string, number>, byLetter: {} as Record<string, { hit: number; miss: number; fa: number }> });
   const target = LET[r];
   const tiles = useMemo(() => LAYOUT[target], [target]);
   useEffect(() => { setSel([]); const id = setTimeout(() => speak("Find every letter that looks exactly like this one.", vol), 400); return () => { clearTimeout(id); if (hasTTS()) window.speechSynthesis.cancel(); }; }, [r, vol]);
   const done = () => {
     const s = st.current; s.rounds++; s.possibleHits += tiles.filter((t) => t === target).length; s.possibleDistractors += tiles.filter((t) => t !== target).length;
     tiles.forEach((t, k) => { const on = sel.includes(k); if (t === target) on ? s.hits++ : s.missed++; else if (on) { s.falseTaps++; const key = `${target}>${t}`; s.confusions[key] = (s.confusions[key] || 0) + 1; } });
+    const bl = (s.byLetter[target] = s.byLetter[target] || { hit: 0, miss: 0, fa: 0 });
+    tiles.forEach((t, k) => { const on = sel.includes(k); if (t === target) { if (on) bl.hit++; else bl.miss++; } else if (on) bl.fa++; });
     onInk();
     if (r + 1 < LET.length) setR(r + 1); else onDone(s);
   };
@@ -164,21 +167,21 @@ function Span({ vol, focus, onInk, onDone }: { vol: number; focus: boolean; onIn
   const [inp, setInp] = useState<number[]>([]);
   const [lit, setLit] = useState(-1);
   const [ready, setReady] = useState(false);
-  const tok = useRef(0), longest = useRef(0), attempts = useRef(0), passed = useRef(0), failsAtLen = useRef(0);
+  const tok = useRef(0), longest = useRef(0), attempts = useRef(0), passed = useRef(0), failsAtLen = useRef(0), att = useRef<{ len: number; ok: number }[]>([]);
   useEffect(() => {
     const me = ++tok.current; const s = TRIALS[t].seq;
     setSeq(s); setInp([]); setReady(false);
     (async () => { await sleep(700); for (const n of s) { if (me !== tok.current) return; setLit(n); await speak(SYL[n], vol); setLit(-1); await sleep(250); } if (me === tok.current) setReady(true); })();
     return () => { tok.current++; if (hasTTS()) window.speechSynthesis.cancel(); };
   }, [t, vol]);
-  const finish = () => onDone({ attempts: attempts.current, passed: passed.current, longest: longest.current });
+  const finish = () => onDone({ attempts: attempts.current, passed: passed.current, longest: longest.current, items: att.current });
   const tap = (n: number) => {
     if (!ready) return; speak(SYL[n], vol);
     const next = [...inp, n]; setInp(next);
     if (next.length < seq.length) return;
     setReady(false); onInk();
     const ok = next.every((x, k) => x === seq[k]); const tr = TRIALS[t];
-    if (!tr.practice) { attempts.current++; if (ok) { longest.current = Math.max(longest.current, tr.len); passed.current++; failsAtLen.current = 0; } else failsAtLen.current++; }
+    if (!tr.practice) { attempts.current++; att.current.push({ len: tr.len, ok: ok ? 1 : 0 }); if (ok) { longest.current = Math.max(longest.current, tr.len); passed.current++; failsAtLen.current = 0; } else failsAtLen.current++; }
     const nextT = t + 1; const lastOfLen = !TRIALS[nextT] || TRIALS[nextT].len !== tr.len;
     setTimeout(() => { if (!TRIALS[nextT] || (failsAtLen.current >= 2 && lastOfLen)) finish(); else { if (lastOfLen) failsAtLen.current = 0; setT(nextT); } }, 900);
   };
@@ -214,7 +217,7 @@ function WordCheck({ list, onInk, onDone }: { list: "easy" | "older"; onInk: () 
   const [ready, setReady] = useState(false);
   const [fb, setFb] = useState("");
   const t0 = useRef(0), down = useRef(0), to = useRef<any>(0);
-  const log = useRef<{ real: boolean; ok: boolean; rt: number }[]>([]);
+  const log = useRef<{ w: string; real: boolean; ok: boolean; rt: number }[]>([]);
   const item = items[i];
   useEffect(() => () => clearTimeout(to.current), []);
   useEffect(() => {
@@ -225,7 +228,7 @@ function WordCheck({ list, onInk, onDone }: { list: "easy" | "older"; onInk: () 
   const advance = () => {
     if (i + 1 < items.length) { setI(i + 1); return; }
     const L = log.current, R = L.filter((x) => x.real), N = L.filter((x) => !x.real);
-    onDone({ list, trials: L.length, realTotal: R.length, realCorrect: R.filter((x) => x.ok).length, madeUpTotal: N.length, madeUpCorrect: N.filter((x) => x.ok).length, medianMs: median(L.map((x) => x.rt)) });
+    onDone({ list, trials: L.length, realTotal: R.length, realCorrect: R.filter((x) => x.ok).length, madeUpTotal: N.length, madeUpCorrect: N.filter((x) => x.ok).length, medianMs: median(L.map((x) => x.rt)), items: L.map((x) => ({ w: x.w, real: x.real ? 1 : 0, ok: x.ok ? 1 : 0, ms: Math.round(x.rt) })) });
   };
   const answer = (sayReal: boolean) => {
     if (!ready || !t0.current) return;
@@ -236,7 +239,7 @@ function WordCheck({ list, onInk, onDone }: { list: "easy" | "older"; onInk: () 
       to.current = setTimeout(advance, 1500);
       return;
     }
-    log.current.push({ real: item.real, ok, rt: Math.max(0, (down.current > t0.current ? down.current : performance.now()) - t0.current) });
+    log.current.push({ w: item.w, real: item.real, ok, rt: Math.max(0, (down.current > t0.current ? down.current : performance.now()) - t0.current) });
     onInk(); advance();
   };
   return (
@@ -263,6 +266,7 @@ function __McInner() {
   const [line, setLine] = useState("Hello! I am Pip, the Story-Keeper.");
   const [heard, setHeard] = useState<boolean | null>(null);
   const [obs, setObs] = useState<Record<string, any>>({ completed: [] });
+  const [detail, setDetail] = useState<Record<string, any>>({});
   const [sets] = useState(() => ({ rhyme: place(RHYME(), POS.rhyme), first: place(FIRST(), POS.first), spell: place(SPELL(), POS.spell) }));
   const [tested, setTested] = useState(false);
   const tts = typeof window !== "undefined" && hasTTS();
@@ -272,7 +276,12 @@ function __McInner() {
   const fin = () => { setObs((o) => ({ ...o, offered: chapters.length, voice: voiceLabel() })); setStage("end"); };
 
   const addInk = () => { setInk((n) => n + 1); setLine(PIP[Math.floor(Math.random() * PIP.length)]); };
-  const done = (id: string) => (s: any) => { setObs((o) => ({ ...o, [KEY[id]]: s, completed: [...o.completed, id] })); next(); };
+  const done = (id: string) => (s: any) => {
+    const { items, ...rest } = s || {};
+    setObs((o) => ({ ...o, [KEY[id]]: rest, completed: [...o.completed, id] }));
+    if (items) setDetail((d) => ({ ...d, [KEY[id]]: items }));
+    next();
+  };
   const next = () => { if (ch + 1 < chapters.length) { setCh(ch + 1); setStage("intro"); } else fin(); };
   useEffect(() => { if (stage === "intro") { const id = setTimeout(() => speak(teen ? chapters[ch].plain.hint : chapters[ch].say, vol), 300); return () => { clearTimeout(id); if (hasTTS()) window.speechSynthesis.cancel(); }; } }, [stage, ch, vol, teen, chapters]);
 
@@ -283,10 +292,16 @@ function __McInner() {
       <header className="dq-head">
         <h1>{plainUI ? "Reading & Sound Screener" : "The Whispering Library"}</h1>
         {stage !== "welcome" && (teen ? (
-          <div className="dq-prog" role="status">
-            <span>{stage === "end" ? "Complete" : `Part ${Math.min(ch + 1, chapters.length)} of ${chapters.length}: ${c.plain.name}`}</span>
-            <div className="dq-bar"><i style={{ width: `${Math.round(((stage === "end" ? chapters.length : ch) / chapters.length) * 100)}%` }} /></div>
-          </div>
+          <ol className="dq-ledger" aria-label="Progress">
+            {chapters.map((x, k) => {
+              const at = stage === "end" ? chapters.length : ch;
+              return (
+                <li key={x.id} className={k < at ? "done" : k === at ? "cur" : ""} aria-current={k === at && stage !== "end" ? "step" : undefined}>
+                  <b>{k < at ? "✓" : ROMAN[k]}</b><span>{x.plain.name}</span>
+                </li>
+              );
+            })}
+          </ol>
         ) : (
           <div className="dq-lamps" aria-label={`Chapter ${Math.min(ch + 1, chapters.length)} of ${chapters.length}, ${ink} ink drops`}>
             {chapters.map((_, k) => <span key={k} className={"dq-lamp" + (k < (stage === "end" ? chapters.length : ch) ? " on" : "")} />)}
@@ -298,6 +313,19 @@ function __McInner() {
       {stage === "welcome" && (
         <section className="dq-center">
           <p>A parent or guardian should complete this page. The child then does short listening, letter and word activities (about 20 to 30 minutes). Use headphones in a quiet room with the sound on.</p>
+          <article className="dq-card">
+            <h2 className="dq-kick">What happens in this session</h2>
+            <ol className="dq-list">
+              <li><b>Rhyme judgement</b>: 12 items, spoken words</li>
+              <li><b>Initial sounds</b>: 12 items, spoken words</li>
+              <li><b>Letter orientation</b>: 4 boards of b, d, p and q</li>
+              <li><b>Sound sequence</b>: repeating syllables, 2 to 5 in a row</li>
+              <li><b>Word check</b>: real or made-up words, ages 7 and over, optional</li>
+              <li><b>Spelling</b>: 8 items, optional</li>
+            </ol>
+            <h2 className="dq-kick">What is recorded</h2>
+            <p>Answers, response times and the name of the device voice, for this session only. Nothing is saved on our servers. At the end a printable clinician summary is produced, with an item-by-item appendix.</p>
+          </article>
           <label>Nickname (not the child’s full name)<br /><input className="dq-input" maxLength={16} value={nick} onChange={(e) => setNick(e.target.value)} /></label>
           <label>Age in years (4 to 16)<br /><input className="dq-input" inputMode="numeric" maxLength={2} value={age} onChange={(e) => setAge(e.target.value.replace(/\D/g, ""))} /></label>
           <label>Volume<br /><input type="range" min="0.2" max="1" step="0.1" value={vol} onChange={(e) => setVol(Number(e.target.value))} /></label>
@@ -324,8 +352,23 @@ function __McInner() {
 
       {stage === "intro" && (
         <section className="dq-center">
-          {teen ? <h2 className="dq-ch">{c.plain.name}</h2> : <Owl line={`Chapter ${ch + 1}: ${c.name}`} />}
-          <p>{teen ? c.plain.hint : c.hint}</p>
+          {teen ? (
+            <article className="dq-card">
+              <p className="dq-kick">Part {ch + 1} of {chapters.length}{c.id === "spell" || c.id === "words" ? " · optional" : ""}</p>
+              <h2 className="dq-ch">{c.plain.name}</h2>
+              <p>{c.plain.hint}</p>
+              <dl className="dq-meta">
+                <div><dt>What it samples</dt><dd>{c.plain.measures}</dd></div>
+                <div><dt>Items</dt><dd>{c.plain.items}</dd></div>
+                <div><dt>Time</dt><dd>{c.plain.mins}</dd></div>
+              </dl>
+            </article>
+          ) : (
+            <>
+              <Owl line={`Chapter ${ch + 1}: ${c.name}`} />
+              <p>{c.hint}</p>
+            </>
+          )}
           <div className="dq-row">
             <button className="dq-btn" onClick={() => setStage("play")}>Start</button>
             {(c.id === "spell" || c.id === "words") && <button className="dq-btn ghost" onClick={() => next()}>Skip</button>}
@@ -349,7 +392,7 @@ function __McInner() {
 
       {stage === "end" && (
         <section>
-          <KeeperFeedback quest="dyslexia" nickname={nick.trim() || "Explorer"} age={Number(age) || null} observations={obs} mode={teen ? "focus" : "story"} />
+          <KeeperFeedback quest="dyslexia" nickname={nick.trim() || "Explorer"} age={Number(age) || null} observations={obs} detail={detail} mode={teen ? "focus" : "story"} />
         </section>
       )}
     </main>
@@ -389,22 +432,38 @@ const CSS = `
 .dq-owl svg{animation:dq-float 3s ease-in-out infinite}
 .dq-ch{font-size:20px;margin:0}
 .dq-wordbox{min-height:96px;display:grid;place-items:center;font-size:44px;font-weight:600;letter-spacing:.06em;font-family:Verdana,sans-serif}
-.dq-prog{width:100%;max-width:420px;font-size:13px;opacity:.9;text-align:center}
-.dq-bar{height:4px;border-radius:4px;background:#2a323d;margin-top:6px;overflow:hidden}
-.dq-bar i{display:block;height:100%;background:#8fb4ff}
-.dq.focus{background:#12161c;color:#e6eaf0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;letter-spacing:.01em;line-height:1.6}
-.dq.focus h1{font-size:20px;font-weight:600;letter-spacing:.02em}
-.dq.focus .dq-stone{width:132px;height:84px;border-radius:14px;border:1px solid #3a4452;background:#1d2430!important;color:#e6eaf0;box-shadow:none}
-.dq.focus .dq-stone.lit{transform:none;border-color:#8fb4ff;box-shadow:0 0 0 3px #8fb4ff66}
-.dq.focus .dq-word{color:#e6eaf0;font-size:26px}
-.dq.focus .dq-ring{inset:-5px;border-radius:18px;border:3px solid #8fb4ff}
-.dq.focus .dq-lantern{background:#1d2430;color:#e6eaf0;border:1px solid #3a4452;border-radius:14px;font-family:Verdana,sans-serif}
-.dq.focus .dq-tile{background:#1d2430;border:1px solid #3a4452;color:#e6eaf0;border-radius:10px}
-.dq.focus .dq-tile.on{background:#8fb4ff;color:#0d1117;border-color:#8fb4ff}
-.dq.focus .dq-btn{background:#8fb4ff;color:#0d1117;font-weight:600;border-radius:10px;font-size:16px}
-.dq.focus .dq-btn.ghost{background:transparent;border:1px solid #4a5666;color:#e6eaf0}
-.dq.focus .dq-input{background:#1d2430;border:1px solid #3a4452;color:#e6eaf0;border-radius:10px}
-.dq.focus .dq-tag{background:#1d2430;border:1px solid #3a4452}
+.dq-kick{margin:0 0 4px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#d8b86a;font-family:system-ui,sans-serif;font-weight:600}
+.dq-meta{margin:16px 0 0;display:grid;gap:10px}
+.dq-meta div{display:grid;grid-template-columns:130px 1fr;gap:12px;padding-top:10px;border-top:1px solid #d8b86a2e}
+.dq-meta dt{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#b9ad8f;font-family:system-ui,sans-serif}
+.dq-meta dd{margin:0}
+.dq-list{margin:6px 0 14px;padding-left:20px}
+.dq-list li{margin:4px 0}
+.dq-ledger{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 16px;list-style:none;margin:0;padding:0;font-family:system-ui,sans-serif;font-size:12px}
+.dq-ledger li{display:flex;align-items:center;gap:6px;opacity:.55}
+.dq-ledger b{display:inline-grid;place-items:center;min-width:24px;height:24px;border:1px solid #d8b86a88;border-radius:50%;font-size:11px;font-weight:600}
+.dq-ledger li.cur{opacity:1}
+.dq-ledger li.cur b{background:#d8b86a;color:#0f1420;border-color:#d8b86a}
+.dq-ledger li.done{opacity:.9}
+.dq-ledger li.done b{border-color:#d8b86a;color:#d8b86a}
+.dq.focus{background:radial-gradient(ellipse at 50% -10%,#1d2740 0,#0f1420 62%);color:#ece6d6;font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;letter-spacing:.01em;line-height:1.65}
+.dq.focus h1{font-size:21px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:#d8b86a}
+.dq.focus h1::after{content:"";display:block;width:64px;height:1px;background:#d8b86a;margin:10px auto 0;opacity:.7}
+.dq.focus .dq-card{width:100%;max-width:560px;text-align:left;padding:22px 24px;border:1px solid #d8b86a44;border-radius:6px;background:linear-gradient(180deg,#18203a99,#111827cc);box-shadow:inset 0 1px 0 #ffffff12,0 10px 30px #0006}
+.dq.focus .dq-card p{margin:0 0 10px}
+.dq.focus .dq-ch{font-size:26px;font-weight:600;margin:0 0 8px}
+.dq.focus .dq-stone{width:132px;height:84px;border-radius:6px;border:1px solid #d8b86a66;background:linear-gradient(180deg,#1c2644,#141b30)!important;color:#ece6d6;box-shadow:inset 0 1px 0 #ffffff14}
+.dq.focus .dq-stone.lit{transform:none;border-color:#d8b86a;box-shadow:0 0 0 3px #d8b86a55}
+.dq.focus .dq-word{color:#ece6d6;font-size:26px}
+.dq.focus .dq-ring{inset:-5px;border-radius:9px;border:2px solid #d8b86a}
+.dq.focus .dq-lantern{background:#141b30;color:#ece6d6;border:1px solid #d8b86a66;border-radius:6px;font-family:Georgia,serif}
+.dq.focus .dq-tile{background:#141b30;border:1px solid #d8b86a55;color:#ece6d6;border-radius:6px;font-family:Georgia,serif}
+.dq.focus .dq-tile.on{background:#d8b86a;color:#0f1420;border-color:#d8b86a}
+.dq.focus .dq-btn{background:#d8b86a;color:#0f1420;font-weight:700;border-radius:6px;font-size:14px;letter-spacing:.08em;text-transform:uppercase;font-family:system-ui,sans-serif}
+.dq.focus .dq-btn.ghost{background:transparent;border:1px solid #d8b86a88;color:#ece6d6}
+.dq.focus .dq-input{background:#141b30;border:1px solid #d8b86a66;color:#ece6d6;border-radius:6px}
+.dq.focus .dq-tag{background:transparent;border:1px solid #d8b86a66;border-radius:3px;font-family:system-ui,sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.dq.focus .dq-wordbox{font-family:Georgia,serif}
 .dq.focus .dq-stone:focus-visible,.dq.focus .dq-btn:focus-visible,.dq.focus .dq-tile:focus-visible,.dq.focus .dq-input:focus-visible{outline:3px solid #fff}
 @media (prefers-reduced-motion:reduce){.dq *{animation:none!important;transition:none!important}}
 `;

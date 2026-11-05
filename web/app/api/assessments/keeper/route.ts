@@ -12,7 +12,19 @@ type Out = {
   homeGames: { title: string; how: string }[];
   source: "llm" | "template";
   rows?: { name: string; value: string; detail?: string; note?: string }[];
+  extra?: Extra;
 };
+type Extra = {
+  method?: { name: string; samples: string; items: string; scoring: string }[];
+  compare?: string[];
+  appendix?: { title: string; head: string[]; rows: string[][] }[];
+};
+
+const wilson = (k: number, n: number): [number, number] => {
+  const z = 1.96, p = k / n, d = 1 + (z * z) / n, c = p + (z * z) / (2 * n), m = z * Math.sqrt((p * (1 - p) + (z * z) / (4 * n)) / n);
+  return [Math.max(0, (c - m) / d), Math.min(1, (c + m) / d)];
+};
+const pct = (x: number) => Math.round(x * 100);
 
 function secs(ms: any) {
   return typeof ms === "number" && ms > 0 ? Math.round(ms / 100) / 10 : null;
@@ -87,6 +99,7 @@ function dyslexiaRows(obs: Obs, age: number | null = null): Row[] {
     if (!o || !num(o.trials) || o.trials <= 0) { rows.push({ name, value: "Not completed" }); return; }
     const t = secs(o.medianMs);
     const bits: string[] = [];
+    if (num(o.correct)) { const [lo, hi] = wilson(o.correct, o.trials); bits.push(`${pct(o.correct / o.trials)}% matched (95% interval ${pct(lo)} to ${pct(hi)}%, n = ${o.trials})`); }
     if (t) bits.push(`median response ${t} s from when the choices were available`);
     if (num(o.replays) && o.replays > 0) bits.push(`sounds replayed ${o.replays} ${o.replays === 1 ? "time" : "times"}`);
     rows.push({ name, value: `${o.correct} of ${o.trials} matching answers chosen`, detail: bits.join("; ") || undefined });
@@ -127,6 +140,7 @@ function dyslexiaRows(obs: Obs, age: number | null = null): Row[] {
       detail: [
         t ? `median response ${t} s from when the word appeared on screen` : "",
         w.list === "older" ? "longer word list" : "shorter word list",
+        num(w.realCorrect) && num(w.madeUpCorrect) ? (() => { const k = w.realCorrect + w.madeUpCorrect, [lo, hi] = wilson(k, w.trials); return `${pct(k / w.trials)}% correct overall (95% interval ${pct(lo)} to ${pct(hi)}%, n = ${w.trials})`; })() : "",
         `random guessing would give about ${Math.round(w.trials / 2)} of ${w.trials} overall`,
       ].filter(Boolean).join("; "),
     });
@@ -142,6 +156,61 @@ function dyslexiaRows(obs: Obs, age: number | null = null): Row[] {
   return rows;
 }
 
+// Item-by-item tables and side-by-side comparisons. Built from the counts and per-item data the child's own session produced.
+function dyslexiaExtra(obs: Obs, detail: Obs): Extra {
+  const num = (v: any) => typeof v === "number" && isFinite(v);
+  const clean = (s: any) => String(s ?? "").replace(/[^\p{L}\p{N} '-]/gu, "").slice(0, 24);
+  const list = (k: string): any[] => (Array.isArray(detail?.[k]) ? detail[k].slice(0, 40).filter((x: any) => x && typeof x === "object") : []);
+  const t = (ms: any) => (num(ms) && ms > 0 ? (Math.round(ms / 100) / 10).toFixed(1) : "-");
+  const appendix: NonNullable<Extra["appendix"]> = [];
+  const choice = (title: string, key: string, headWord: string) => {
+    const it = list(key);
+    if (it.length) appendix.push({ title, head: ["#", headWord, "Result", "Time (s)"], rows: it.map((x, i) => [String(i + 1), clean(x.s), x.ok ? "Matching answer" : "Other answer", t(x.ms)]) });
+  };
+  choice("Rhyme game", "rhyme", "Spoken word");
+  choice("First-sound game", "firstSound", "Spoken word");
+  const wc = list("wordCheck");
+  if (wc.length) appendix.push({ title: "Word check", head: ["#", "Word", "Type", "Response", "Time (s)"], rows: wc.map((x, i) => [String(i + 1), clean(x.w), x.real ? "Real" : "Made-up", x.ok ? "Correct" : x.real ? "Called made-up" : "Called real", t(x.ms)]) });
+  choice("Spelling game", "spelling", "Spoken word");
+  const sp = list("soundSpan");
+  if (sp.length) appendix.push({ title: "Sound-order game", head: ["Attempt", "Sequence length", "Result"], rows: sp.map((x, i) => [String(i + 1), num(x.len) ? String(x.len) : "-", x.ok ? "Repeated correctly" : "Not repeated correctly"]) });
+  const l = obs.letters;
+  if (l && num(l.rounds) && l.rounds > 0) {
+    const LT = ["b", "d", "p", "q"];
+    const bl = (l.byLetter && typeof l.byLetter === "object" ? l.byLetter : {}) as Record<string, any>;
+    const conf = (l.confusions && typeof l.confusions === "object" ? l.confusions : {}) as Record<string, any>;
+    const g = (c: string, k: string) => (num(bl[c]?.[k]) ? String(bl[c][k]) : "-");
+    appendix.push({ title: "Letter game: by target letter", head: ["Target", "Found (of 4)", "Missed", "Look-alike taps"], rows: LT.map((c) => [c, g(c, "hit"), g(c, "miss"), g(c, "fa")]) });
+    appendix.push({ title: "Letter game: which look-alike was tapped", head: ["Target \\ tapped", ...LT], rows: LT.map((a) => [a, ...LT.map((b) => (a === b ? "-" : String(num(conf[`${a}>${b}`]) ? conf[`${a}>${b}`] : 0)))]) });
+  }
+
+  const compare: string[] = [];
+  const half = (label: string, key: string) => {
+    const it = list(key);
+    if (it.length < 6) return;
+    const m = Math.floor(it.length / 2), a = it.slice(0, m), b = it.slice(m);
+    const c = (z: any[]) => z.filter((x) => x.ok).length;
+    compare.push(`${label}: ${c(a)} of ${a.length} matching answers in the first half, ${c(b)} of ${b.length} in the second half.`);
+  };
+  half("Rhyme game", "rhyme"); half("First-sound game", "firstSound"); half("Word check", "wordCheck"); half("Spelling game", "spelling");
+  const w = obs.wordCheck;
+  if (w && num(w.trials) && w.trials > 0) compare.push(`Word check: ${w.realCorrect} of ${w.realTotal} real words accepted, against ${w.madeUpCorrect} of ${w.madeUpTotal} made-up words rejected.`);
+  const all = [...list("rhyme"), ...list("firstSound"), ...list("spelling"), ...list("wordCheck")].filter((x) => num(x.ms));
+  const med = (z: any[]) => z.map((x) => x.ms).sort((p: number, q: number) => p - q)[Math.floor(z.length / 2)];
+  const good = all.filter((x) => x.ok), bad = all.filter((x) => !x.ok);
+  if (good.length >= 4 && bad.length >= 2) compare.push(`Median response time was ${t(med(good))} s for matching answers (${good.length} items) and ${t(med(bad))} s for other answers (${bad.length} items), pooled across the choice activities.`);
+
+  const method = [
+    { name: "Rhyme game", samples: "Hearing which of two spoken words ends with the same sound as a target word.", items: "12 scored, 1 practice", scoring: "One point per matching answer; median response time." },
+    { name: "First-sound game", samples: "Hearing which of two spoken words starts with the same sound as a target word.", items: "12 scored, 1 practice", scoring: "One point per matching answer; median response time." },
+    { name: "Letter game", samples: "Finding b, d, p or q among look-alike letters.", items: "4 boards of 12 tiles (16 matching, 32 look-alike)", scoring: "Found, missed and look-alike taps; which letter was tapped instead." },
+    { name: "Sound-order game", samples: "Repeating the nonsense syllables bah, dee, moe, koo in order, 2 to 5 in a row.", items: "Up to 8 scored, 1 practice", scoring: "Longest sequence repeated; stops after two misses at one length." },
+    { name: "Word check (age 7+)", samples: "Telling real words from made-up words; made-up words can only be told apart by sounding them out.", items: "12 scored, 2 practice", scoring: "Real words accepted, made-up words rejected; median response time." },
+    { name: "Spelling game", samples: "Choosing the correct spelling of a spoken word when the other option sounds the same.", items: "8 scored, 1 practice", scoring: "One point per correct spelling." },
+  ];
+  return { method, compare, appendix };
+}
+
 export async function POST(req: Request) {
   let body: any;
   try { body = await req.json(); } catch { return NextResponse.json({ error: "bad json" }, { status: 400 }); }
@@ -152,7 +221,9 @@ export async function POST(req: Request) {
   const ageNum = Number(body?.age);
   const age = Number.isFinite(ageNum) && ageNum >= 4 && ageNum <= 16 ? Math.round(ageNum) : null;
   const rows = quest === "dyslexia" ? dyslexiaRows(obs, age) : undefined;
-  const send = (o: Out) => NextResponse.json(rows ? { ...o, rows } : o);
+  const detail: Obs = body?.detail && typeof body.detail === "object" && JSON.stringify(body.detail).length < 9000 ? body.detail : {};
+  const extra = quest === "dyslexia" ? dyslexiaExtra(obs, detail) : undefined;
+  const send = (o: Out) => NextResponse.json(rows ? { ...o, rows, extra } : o);
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key || JSON.stringify(obs).length > 6000) return send(fallback);
   try {

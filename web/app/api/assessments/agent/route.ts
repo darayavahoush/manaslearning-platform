@@ -74,6 +74,46 @@ function cleanTelemetry(input: unknown): Record<string, number | null> {
   return out
 }
 
+// Per-round sunbird numbers (ADHD quest, v3 and later). Kept only if they are well formed AND add up to the session totals.
+export interface SunbirdRounds {
+  size: number
+  count: number
+  displayMs: number | null
+  windowMs: number | null
+  rtMs: Array<number | null>
+  misses: number[]
+  wrongTaps: number[]
+}
+
+function cleanRounds(input: unknown, t: Record<string, number | null>): SunbirdRounds | null {
+  if (!input || typeof input !== 'object') return null
+  const s = input as Raw
+  const count = Number(s.count)
+  const size = Number(s.size)
+  if (!Number.isInteger(count) || count < 1 || count > 8 || !Number.isInteger(size) || size < 1 || size > 20) return null
+  const list = (value: unknown, max: number, allowNull: boolean): Array<number | null> | null => {
+    if (!Array.isArray(value) || value.length !== count) return null
+    const out: Array<number | null> = []
+    for (const x of value) {
+      if (typeof x === 'number' && Number.isFinite(x) && x >= 0 && x <= max) out.push(Math.round(x))
+      else if (allowNull && x === null) out.push(null)
+      else return null
+    }
+    return out
+  }
+  const rtMs = list(s.rtMs, 10000, true)
+  const misses = list(s.misses, size, false) as number[] | null
+  const wrongTaps = list(s.wrongTaps, size, false) as number[] | null
+  if (!rtMs || !misses || !wrongTaps) return null
+  const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
+  // the rounds must match the totals the page reported, otherwise something is off and we do not report them
+  if (t.cptTrials !== count * size) return null
+  if (t.omissions !== null && t.omissions !== sum(misses)) return null
+  if (t.commissions !== null && t.commissions !== sum(wrongTaps)) return null
+  const ms = (value: unknown) => (typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 10000 ? Math.round(value) : null)
+  return {size, count, displayMs: ms(s.displayMs), windowMs: ms(s.windowMs), rtMs, misses, wrongTaps}
+}
+
 function cleanText(v: unknown, max: number, fallback: string): string {
   if (typeof v !== 'string') return fallback
   const t = v.replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, max)
@@ -105,7 +145,7 @@ function adhdObservations(t: Record<string, number | null>): Observation[] {
         `${trials} sightings in total`,
         t.cptAnticipatory !== null && t.cptAnticipatory > 0 ? `${times(t.cptAnticipatory)} tapped when nothing was on screen, or faster than a reaction is possible` : null,
       ].filter(Boolean).join(' · '),
-      note: `A few sightings is a short sample, so small differences mean very little. ${ONE_SESSION}`,
+      note: `The game has ${t.cptTargets ?? 'a small number of'} sunbird sightings, which is still a short sample, so small differences mean little. ${ONE_SESSION}`,
     })
   } else {
     obs.push({name: 'Spotting the sunbird', value: NOT_ENOUGH, detail: 'The game did not finish or did not report back.', note: ONE_SESSION})
@@ -317,6 +357,8 @@ export async function POST(req: Request) {
       environment: cleanEnvironment(body.environment, req.headers.get('user-agent')),
       instrumentVersion: INSTRUMENT_VERSION,
     })
+    const rounds = assessmentType === 'adhd' ? cleanRounds(body.cptBlocks, telemetry) : null
+    if (rounds) (record as SessionRecord & {sunbirdRounds?: SunbirdRounds}).sunbirdRounds = rounds
     const indices = assessmentType === 'adhd' ? adhdObservations(telemetry) : autismObservations(telemetry)
     const withData = indices.filter((o) => o.value !== NOT_ENOUGH).length
 

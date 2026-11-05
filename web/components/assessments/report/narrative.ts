@@ -13,7 +13,7 @@ export interface GameStory {
   fewTrials: boolean
 }
 
-type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds'>
+type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'starLevels'>
 
 const find = (r: Rec, key: string): Measure | undefined => r.measures.find((x) => x.key === key)
 const prop = (r: Rec, key: string): ProportionMeasure | null => {
@@ -109,8 +109,13 @@ function steering(r: Rec): string[] {
 }
 
 function stars(r: Rec): string[] {
+  const out: string[] = []
   const s = val(r, 'workingMemorySpan')
-  return s ? [`The longest star sequence repeated correctly was ${s.value} ${plural(s.value, 'star', 'stars')}.`] : []
+  if (s) out.push(`The longest star sequence repeated correctly was ${s.value} ${plural(s.value, 'star', 'stars')}.`)
+  for (const lv of r.starLevels ?? []) {
+    if (!lv.completed && lv.missedAt !== null) out.push(`The ${lv.length}-star sequence was not repeated in order. The first wrong tap was star ${lv.missedAt}.`)
+  }
+  return out
 }
 
 function patience(r: Rec): string[] {

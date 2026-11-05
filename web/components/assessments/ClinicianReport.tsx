@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { INSTRUMENT_VERSION } from './version'
-import type { FeelingsRound, GazeRound, Measure, SortingCard } from './session-record'
+import type { FeelingsRound, GazeRound, Measure, SortingCard, StarLevel, SteeringTrial } from './session-record'
 
 export type ReportRow = { name: string; value: string; detail?: string; note?: string }
 export type Quest = 'dyslexia' | 'adhd' | 'autism'
@@ -29,6 +29,9 @@ export type ClinicianReportProps = {
   /** autism quest: the gaze game and feelings match trial by trial */
   gazeRounds?: GazeRound[]
   feelingsRounds?: FeelingsRound[]
+  /** adhd quest: the steering game arrow by arrow and the star-sequence game level by level */
+  steeringTrials?: SteeringTrial[]
+  starLevels?: StarLevel[]
 }
 
 /** Turns sentences like "Rhyme game: 3 of 5 ..." into table rows. */
@@ -226,6 +229,26 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
                         <tbody>
                           {p.feelingsRounds.map((r) => (
                             <tr key={r.round}><td>{r.round}</td><td>{r.shown}</td><td>{r.chosen}</td><td>{r.matched ? 'Yes' : 'No'}</td><td>{r.ms !== null ? `${(Math.round(r.ms / 100) / 10).toFixed(1)} s` : '–'}</td></tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                    {game === 'Steering game' && !!p.steeringTrials?.length && (
+                      <table className="cr-mini">
+                        <thead><tr><th>Round</th><th>Arrows</th><th>Answered correctly</th><th>Time</th></tr></thead>
+                        <tbody>
+                          {p.steeringTrials.map((r) => (
+                            <tr key={r.trial}><td>{r.trial}</td><td>{r.arrows === 'matching' ? 'Matching' : 'Conflicting'}</td><td>{r.correct ? 'Yes' : 'No'}</td><td>{r.ms !== null ? `${(Math.round(r.ms / 100) / 10).toFixed(1)} s` : '–'}</td></tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                    {game === 'Star-sequence game' && !!p.starLevels?.length && (
+                      <table className="cr-mini">
+                        <thead><tr><th>Level</th><th>Stars in sequence</th><th>Result</th></tr></thead>
+                        <tbody>
+                          {p.starLevels.map((l) => (
+                            <tr key={l.level}><td>{l.level}</td><td>{l.length}</td><td>{l.completed ? 'Repeated in order' : `First wrong tap at star ${l.missedAt}`}</td></tr>
                           ))}
                         </tbody>
                       </table>

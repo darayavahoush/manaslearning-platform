@@ -1,6 +1,6 @@
 import {NextResponse} from 'next/server'
 import {INSTRUMENT_VERSION} from '../../../../components/assessments/version'
-import {buildSessionRecord, cleanEnvironment, roundMeasures, type SessionRecord} from '../../../../components/assessments/session-record'
+import {buildSessionRecord, cleanEnvironment, roundMeasures, starLevels, steeringTrials, type SessionRecord} from '../../../../components/assessments/session-record'
 import {ADHD_IDEAS, AUTISM_IDEAS} from '../../../../components/assessments/ideas'
 
 /**
@@ -349,6 +349,13 @@ export async function POST(req: Request) {
     if (rounds) {
       ;(record as SessionRecord & {sunbirdRounds?: SunbirdRounds}).sunbirdRounds = rounds
       record.measures.push(...roundMeasures(rounds, telemetry))
+    }
+    if (assessmentType === 'adhd') {
+      // each part is kept only if it is well formed and adds up to the session totals; otherwise it is left out
+      const steer = steeringTrials(body.steerTrials, telemetry)
+      if (steer) record.steeringTrials = steer
+      const stars = starLevels(body.starLevels, telemetry)
+      if (stars) record.starLevels = stars
     }
     const indices = assessmentType === 'adhd' ? adhdObservations(telemetry) : autismObservations(telemetry)
     const withData = indices.filter((o) => o.value !== NOT_ENOUGH).length

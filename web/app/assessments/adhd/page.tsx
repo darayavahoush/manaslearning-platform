@@ -411,6 +411,8 @@ function __McInner() {
   const cptStimRef = useRef<'target' | 'distractor' | null>(null)
   const cptRtLogRef = useRef<{i: number; rt: number}[]>([])
   const flankerTotalsRef = useRef({congruent: 0, incongruent: 0})
+  // every recorded steering answer in order (practice rounds are never logged)
+  const flankerLogRef = useRef<{congruent: boolean; ok: boolean; ms: number}[]>([])
   const [flankerCongruentTimes, setFlankerCongruentTimes] = useState<number[]>([])
   const [flankerIncongruentTimes, setFlankerIncongruentTimes] = useState<number[]>([])
   const [currentFlanker, setCurrentFlanker] = useState<{centerDir: 'left' | 'right'; flankerDir: 'left' | 'right' | 'neutral'; isCongruent: boolean} | null>(null)
@@ -436,6 +438,8 @@ function __McInner() {
   const [memoryTapCell, setMemoryTapCell] = useState<number | null>(null)
   const [memoryPhase, setMemoryPhase] = useState<'showing' | 'input' | 'feedback'>('showing')
   const [memoryMaxSpan, setMemoryMaxSpan] = useState(0)
+  // one entry per real star level (practice is never logged)
+  const starLogRef = useRef<{length: number; completed: boolean; missedAt: number | null}[]>([])
 
   // Chapter 4: Sunstone Charge State (100% Game, Zero Questions)
   const [chargeTrialIndex, setChargeTrialIndex] = useState(0)
@@ -613,6 +617,7 @@ function __McInner() {
     setFlankerFx((f) => ({k: f.k + 1, ok: dir === currentFlanker.centerDir}))
     flankerTotalsRef.current[currentFlanker.isCongruent ? 'congruent' : 'incongruent'] += 1
     const elapsed = Math.round(performance.now() - flankerStartRef.current)
+    flankerLogRef.current.push({congruent: currentFlanker.isCongruent, ok: dir === currentFlanker.centerDir, ms: elapsed})
 
     if (dir === currentFlanker.centerDir) {
       playAudio('star')
@@ -685,6 +690,7 @@ function __McInner() {
     if (updated[step] !== memorySequence[step]) {
       playAudio('miss')
       setMemoryPhase('feedback')
+      starLogRef.current.push({length: memorySequence.length, completed: false, missedAt: step + 1})
       setTimeout(() => {
         if (memoryLevel < 3) setMemoryLevel((l) => l + 1)
         else {
@@ -698,6 +704,7 @@ function __McInner() {
     if (updated.length === memorySequence.length) {
       playAudio('hit')
       setMemoryMaxSpan(memorySequence.length)
+      starLogRef.current.push({length: memorySequence.length, completed: true, missedAt: null})
       setMemoryPhase('feedback')
       setTimeout(() => {
         if (memoryLevel < 3) setMemoryLevel((l) => l + 1)
@@ -816,6 +823,8 @@ function __McInner() {
       guildClass,
       companion,
       cptBlocks,
+      steerTrials: flankerLogRef.current,
+      starLevels: starLogRef.current,
       telemetry: {
         cptTrials: CPT_TOTAL_TRIALS,
         cptResponses: cptResponseTimes.length,
@@ -1190,7 +1199,7 @@ function __McInner() {
             <div className="mt-6 flex flex-col items-center gap-3">
               <button
                 type="button"
-                onClick={() => { playAudio('whoosh'); setFlankerTrialIndex(0); setFlankerCongruentTimes([]); setFlankerIncongruentTimes([]); flankerTotalsRef.current = {congruent: 0, incongruent: 0}; setFlankerPhase('real') }}
+                onClick={() => { playAudio('whoosh'); setFlankerTrialIndex(0); setFlankerCongruentTimes([]); setFlankerIncongruentTimes([]); flankerTotalsRef.current = {congruent: 0, incongruent: 0}; flankerLogRef.current = []; setFlankerPhase('real') }}
                 className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-12 py-4 text-xl font-bold text-white shadow-lg hover:scale-105 transition-all"
               >
                 I’m ready →
@@ -1318,7 +1327,7 @@ function __McInner() {
             <p className="font-patrick text-3xl text-amber-800 font-bold mt-3">Great job!</p>
             <p className="text-base md:text-lg font-bold text-[#1F2937] mt-2">Now the real stars. Watch, then tap the same ones!</p>
             <div className="mt-6 flex flex-col items-center gap-3">
-              <button type="button" onClick={() => { playAudio('whoosh'); setMemPracReady(false); setMemoryLevel(1) }} className="rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 px-12 py-4 text-xl font-bold text-white shadow-lg hover:scale-105 transition-all">I’m ready →</button>
+              <button type="button" onClick={() => { playAudio('whoosh'); setMemPracReady(false); starLogRef.current = []; setMemoryLevel(1) }} className="rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 px-12 py-4 text-xl font-bold text-white shadow-lg hover:scale-105 transition-all">I’m ready →</button>
               <button type="button" onClick={() => { events.noteRetry('stars'); setMemPracReady(false); setMemoryLevel(-1); setMemRetry((n) => n + 1) }} className="text-sm font-bold text-sky-700 underline">Practice again</button>
             </div>
           </div>
@@ -1586,7 +1595,7 @@ function __McInner() {
             )}
 
             {agentResult && showClinicalDossier && (() => { const a: any = agentResult; return (
-              <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="adhd" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} measures={a.record?.measures} />{a.record && <SessionRecordDownload record={a.record} />}</div>
+              <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="adhd" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} measures={a.record?.measures} steeringTrials={a.record?.steeringTrials} starLevels={a.record?.starLevels} />{a.record && <SessionRecordDownload record={a.record} />}</div>
             ) })()}
             {/* GROWN-UP SUMMARY */}
             {showClinicalDossier && (

@@ -1,8 +1,8 @@
 'use client'
 
 import {useState} from 'react'
-import {FeelingsTable, GazeTable} from '../../../components/assessments/report/RoundTables'
-import type {FeelingsRound, GazeRound} from '../../../components/assessments/session-record'
+import {FeelingsTable, GazeTable, StarTable, SteeringTable} from '../../../components/assessments/report/RoundTables'
+import type {FeelingsRound, GazeRound, StarLevel, SteeringTrial} from '../../../components/assessments/session-record'
 
 /**
  * Clinician record viewer. Runs entirely in the browser: the session record is pasted or opened
@@ -22,6 +22,8 @@ type Rec = {
   measures: Array<Proportion | ValueM>
   gazeRounds?: GazeRound[]
   feelingsRounds?: FeelingsRound[]
+  steeringTrials?: SteeringTrial[]
+  starLevels?: StarLevel[]
   sortingCards?: Array<{card: number; rule: string; color: string; shape: string; box: string; right: boolean; ms: number | null}>
   limits: string[]
 }
@@ -127,6 +129,8 @@ export default function RecordViewer() {
               </table>
             </div>
 
+            {!!rec.steeringTrials?.length && (<><h3 className="mt-6 text-sm font-bold uppercase tracking-wide text-slate-500">Steering game, round by round</h3><SteeringTable rounds={rec.steeringTrials} /></>)}
+            {!!rec.starLevels?.length && (<><h3 className="mt-6 text-sm font-bold uppercase tracking-wide text-slate-500">Star-sequence game, level by level</h3><StarTable levels={rec.starLevels} /></>)}
             {!!rec.gazeRounds?.length && (<><h3 className="mt-6 text-sm font-bold uppercase tracking-wide text-slate-500">Gaze game, encounter by encounter</h3><GazeTable rounds={rec.gazeRounds} /></>)}
             {!!rec.feelingsRounds?.length && (<><h3 className="mt-6 text-sm font-bold uppercase tracking-wide text-slate-500">Feelings match, round by round</h3><FeelingsTable rounds={rec.feelingsRounds} /></>)}
             {!!rec.sortingCards?.length && (

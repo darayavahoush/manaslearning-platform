@@ -9,7 +9,7 @@ import {wilson} from './profile-stats'
  * this code; the record is built in the response and handed back to the caller.
  */
 
-export const RECORD_SCHEMA_VERSION = '1.3'
+export const RECORD_SCHEMA_VERSION = '1.4'
 
 export type Quest = 'adhd' | 'autism'
 export type AgeBand = '4-5' | '6-8' | '9-12' | '13-16'
@@ -76,7 +76,28 @@ export interface SessionRecord {
   gazeRounds?: GazeRound[]
   /** autism quest only: the feelings match round by round (record format 1.3 and later) */
   feelingsRounds?: FeelingsRound[]
+  /** adhd quest only: the steering game arrow by arrow (record format 1.4 and later) */
+  steeringTrials?: SteeringTrial[]
+  /** adhd quest only: the star-sequence game level by level (record format 1.4 and later) */
+  starLevels?: StarLevel[]
   limits: string[]
+}
+
+export interface SteeringTrial {
+  trial: number
+  /** matching: all three arrows point the same way; conflicting: the side arrows point the other way */
+  arrows: 'matching' | 'conflicting'
+  correct: boolean
+  ms: number | null
+}
+
+export interface StarLevel {
+  level: number
+  /** number of stars in the sequence */
+  length: number
+  completed: boolean
+  /** when not completed: the star (counted from 1) where the first wrong tap happened */
+  missedAt: number | null
 }
 
 export interface GazeRound {
@@ -312,6 +333,55 @@ export function feelingsRounds(t: Tele): FeelingsRound[] | null {
   }
   const total = get(t, 'feelingsCorrect')
   if (total !== null && total !== out.filter((x) => x.matched).length) return null
+  return out
+}
+
+/**
+ * Steering game, arrow by arrow (ADHD quest). One entry per answered round, in the order played.
+ * Kept only when every entry is well formed AND the counts add up to the session totals.
+ */
+export function steeringTrials(input: unknown, t: Tele): SteeringTrial[] | null {
+  if (!Array.isArray(input) || input.length < 1 || input.length > 24) return null
+  const out: SteeringTrial[] = []
+  for (let i = 0; i < input.length; i++) {
+    const x = input[i] as Record<string, unknown> | null
+    if (!x || typeof x !== 'object') return null
+    if (typeof x.congruent !== 'boolean' || typeof x.ok !== 'boolean') return null
+    const ms = typeof x.ms === 'number' && Number.isFinite(x.ms) ? cleanMs(x.ms) : null
+    out.push({trial: i + 1, arrows: x.congruent ? 'matching' : 'conflicting', correct: x.ok, ms})
+  }
+  const matching = out.filter((x) => x.arrows === 'matching')
+  const conflicting = out.filter((x) => x.arrows === 'conflicting')
+  const checks: Array<[number | null, number]> = [
+    [get(t, 'flankerCongruentTotal'), matching.length],
+    [get(t, 'flankerIncongruentTotal'), conflicting.length],
+    [get(t, 'flankerCongruentN'), matching.filter((x) => x.correct).length],
+    [get(t, 'flankerIncongruentN'), conflicting.filter((x) => x.correct).length],
+  ]
+  if (checks.some(([total, counted]) => total !== null && total !== counted)) return null
+  return out
+}
+
+/**
+ * Star-sequence game, level by level (ADHD quest). One entry per real level, in order.
+ * Kept only when every entry is well formed AND the longest completed sequence matches the session span.
+ */
+export function starLevels(input: unknown, t: Tele): StarLevel[] | null {
+  if (!Array.isArray(input) || input.length < 1 || input.length > 3) return null
+  const out: StarLevel[] = []
+  for (let i = 0; i < input.length; i++) {
+    const x = input[i] as Record<string, unknown> | null
+    if (!x || typeof x !== 'object') return null
+    const len = typeof x.length === 'number' ? x.length : NaN
+    const completed = x.completed
+    const missed = typeof x.missedAt === 'number' ? x.missedAt : null
+    if (!Number.isInteger(len) || len < 1 || len > 10 || typeof completed !== 'boolean') return null
+    if (completed ? missed !== null : missed === null || !Number.isInteger(missed) || missed < 1 || missed > len) return null
+    out.push({level: i + 1, length: len, completed, missedAt: completed ? null : missed})
+  }
+  const done = out.filter((x) => x.completed).map((x) => x.length)
+  const longest = done.length ? Math.max(...done) : null
+  if (get(t, 'workingMemorySpan') !== longest) return null
   return out
 }
 

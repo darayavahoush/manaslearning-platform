@@ -136,42 +136,54 @@ export default function GamifiedAssessmentsPage() {
         </div>
       </nav>
 
-      {/* HERO: two quest worlds meeting in the middle */}
-      <section className="relative isolate overflow-hidden text-[#2F2A24]" style={{ minHeight: 560 }}>
-        <div className="absolute inset-0 -z-10 bg-[#F4ECDC]" />
-        <img src="/decor/itw/quest-sky-citadel-banner.webp" alt="" className="hb-par hb-maskL absolute inset-y-0 left-0 -z-10 h-[115%] w-[62%] object-cover" style={{ ['--k' as string]: 0.16, filter: 'saturate(.5) brightness(1.12) contrast(.92)', opacity: 0.8 }} />
-        <img src="/decor/itw/quest-lumina-groves-banner.webp" alt="" className="hb-par hb-maskR absolute inset-y-0 right-0 -z-10 h-[115%] w-[62%] object-cover" style={{ ['--k' as string]: 0.1, filter: 'saturate(.5) brightness(1.12) contrast(.92)', opacity: 0.8 }} />
-        <div className="absolute inset-0 -z-10" style={{ background: 'radial-gradient(ellipse at 50% 46%, rgba(251,246,236,.93) 0%, rgba(251,246,236,.7) 50%, rgba(251,246,236,.2) 100%)' }} />
+      {/* HERO: two quest worlds meeting at dusk, lit by lanterns */}
+      <section className="hb-hero relative isolate overflow-hidden text-[#FFF8EA]" style={{ minHeight: 600 }}>
+        <div className="absolute inset-0 -z-10 bg-[#121C28]" />
+        <img src="/decor/itw/quest-sky-citadel-banner.webp" alt="" className="hb-par hb-maskL absolute inset-y-0 left-0 -z-10 h-[115%] w-[62%] object-cover" style={{ ['--k' as string]: 0.16, filter: 'saturate(1.08) brightness(.92) contrast(1.06)' }} />
+        <img src="/decor/itw/quest-lumina-groves-banner.webp" alt="" className="hb-par hb-maskR absolute inset-y-0 right-0 -z-10 h-[115%] w-[62%] object-cover" style={{ ['--k' as string]: 0.1, filter: 'saturate(1.08) brightness(.92) contrast(1.06)' }} />
+        <div className="absolute inset-0 -z-10" style={{ background: 'linear-gradient(180deg,rgba(14,22,36,.72) 0%,rgba(20,34,48,.34) 42%,rgba(14,22,34,.78) 100%)' }} />
+        <div className="absolute inset-0 -z-10" style={{ background: 'radial-gradient(ellipse 62% 56% at 50% 46%,rgba(12,20,32,.66) 0%,rgba(12,20,32,.28) 58%,rgba(12,20,32,0) 100%)' }} />
+        <div className="hb-glow absolute inset-0 -z-10" aria-hidden="true" />
+        <div className="hb-rays -z-10" aria-hidden="true" />
+        <span className="hb-lantern -z-10" style={{ left: -50, top: '16%' }} aria-hidden="true" />
+        <span className="hb-lantern -z-10" style={{ right: -40, top: '36%', animationDelay: '1.8s' }} aria-hidden="true" />
+        <div className="absolute inset-0 -z-10" aria-hidden="true">
+          {Array.from({ length: 26 }).map((_, i) => (
+            <span key={i} className="hb-star" style={{ left: `${(i * 41 + 7) % 100}%`, top: `${(i * 29 + 5) % 46}%`, width: 2 + (i % 3), height: 2 + (i % 3), animationDelay: `${(i % 9) * 0.45}s`, animationDuration: `${3 + (i % 4)}s` }} />
+          ))}
+        </div>
         <div className="hb-flies absolute inset-0 -z-10" aria-hidden="true">
-          {Array.from({ length: 18 }).map((_, i) => (
+          {Array.from({ length: 24 }).map((_, i) => (
             <span key={i} className="hb-fly" style={{ left: `${(i * 37) % 100}%`, top: `${(i * 53) % 90}%`, animationDelay: `${(i % 7) * 0.7}s`, animationDuration: `${5 + (i % 5)}s` }} />
           ))}
         </div>
 
         <div className="relative mx-auto max-w-4xl px-4 pt-14 pb-32 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#D9CDB4] bg-[#FFFCF5]/90 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#3F6F5C] shadow-sm">
+          <div className="hb-pill inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider">
             <span>🎮 100% Game-Based</span>
             <span>•</span>
             <span>Zero Reading Questions</span>
             <span>•</span>
             <span>Ages 4–12</span>
           </div>
-          <h1 className="font-patrick mt-5 text-4xl sm:text-5xl md:text-7xl leading-tight" style={{ textShadow: '0 2px 20px rgba(251,246,236,.95)' }}>
-            Step Into a Quest.<br /><span className="text-[#4F7F6E]">Understand Your Child Through Play.</span>
+          <h1 className="font-patrick mt-5 text-4xl sm:text-5xl md:text-7xl leading-tight text-white" style={{ textShadow: '0 0 30px rgba(255,214,130,.5), 0 2px 18px rgba(8,14,24,.6)' }}>
+            Step Into a Quest.<br /><span className="hb-shimmer inline-block">Understand Your Child Through Play.</span>
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-base sm:text-lg text-[#3A342B]" style={{ textShadow: '0 1px 12px rgba(251,246,236,.95)' }}>
+          <p className="mx-auto mt-5 max-w-2xl text-base sm:text-lg text-[#F4ECDD]" style={{ textShadow: '0 1px 14px rgba(8,14,24,.85)' }}>
             Child-friendly fantasy adventures that evaluate attention, social engagement, sensory regulation, and phonological processing through pure gameplay — without any complicated multiple-choice tests.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <a href="#quests" className="min-h-[44px] inline-flex items-center rounded-full border border-[#D9B877] bg-[#EFD7A0] px-7 py-3 text-sm font-bold text-[#3B2D12] shadow-sm hover:scale-105 transition-transform">Choose a quest</a>
-            <a href="/assessments/dyslexia" className="min-h-[44px] inline-flex items-center rounded-full border-2 border-[#8A7F6E]/50 bg-[#FFFCF5]/80 px-6 py-3 text-sm font-bold text-[#3A342B] backdrop-blur hover:bg-[#FFFCF5] transition-colors">The Whispering Library (reading quest)</a>
-            <a href="/assessments" className="min-h-[44px] inline-flex items-center rounded-full border border-[#C2B49A] bg-white/70 px-5 py-3 text-sm font-semibold text-[#5B4F41] hover:bg-white transition-colors">OG Clinical Directory →</a>
+            <a href="#quests" className="hb-btn-gold">Choose a quest</a>
+            <a href="/assessments/dyslexia" className="hb-btn-glass">The Whispering Library (reading quest)</a>
+            <a href="/assessments" className="hb-btn-ghost">OG Clinical Directory →</a>
           </div>
         </div>
-        <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="hb-owl absolute bottom-14 right-[6%] hidden h-24 w-24 sm:block" />
+        <div className="absolute bottom-14 right-[5%] hidden items-end gap-3 sm:flex">
+          <p className="hb-bubble mb-12 hidden lg:block">Hoot! Pick a quest and I will guide you.</p>
+          <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="hb-owl h-28 w-28" />
+        </div>
         <svg className="absolute bottom-0 left-0 w-full" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 50 C240 100 480 0 720 40 C960 80 1200 10 1440 50 L1440 90 L0 90Z" fill="#F8F1E2" /></svg>
       </section>
-
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         {/* FLAGSHIP QUESTS */}
         <section id="quests" className="pt-10 pb-6 scroll-mt-20">
@@ -346,5 +358,30 @@ const CSS = `
 .hb-paper::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 42% 28% at 12% 22%,rgba(226,179,176,.22),transparent 70%),radial-gradient(ellipse 40% 30% at 88% 38%,rgba(165,190,221,.2),transparent 70%),radial-gradient(ellipse 45% 26% at 20% 70%,rgba(185,210,190,.22),transparent 70%),radial-gradient(ellipse 40% 28% at 85% 88%,rgba(230,201,143,.22),transparent 70%)}
 .hb-paper::after{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.5;mix-blend-mode:multiply;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .3 0 0 0 .14 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
 a:focus-visible,button:focus-visible{outline:3px solid #2F2A24;outline-offset:3px}
+.hb-hero a:focus-visible{outline-color:#FFE6A8}
+.hb-glow{background:radial-gradient(ellipse 46% 38% at 50% 40%,rgba(255,204,120,.30),rgba(255,204,120,0) 70%);animation:hb-breathe 7s ease-in-out infinite;pointer-events:none}
+@keyframes hb-breathe{0%,100%{opacity:1}50%{opacity:.6}}
+.hb-rays{position:absolute;left:50%;top:-30%;width:150%;height:150%;transform:translateX(-50%);pointer-events:none;background:repeating-conic-gradient(from 0deg at 50% 0%,rgba(255,220,150,.11) 0deg 5deg,transparent 5deg 16deg);-webkit-mask-image:radial-gradient(ellipse 60% 70% at 50% 0%,#000,transparent 75%);mask-image:radial-gradient(ellipse 60% 70% at 50% 0%,#000,transparent 75%);animation:hb-sway 24s ease-in-out infinite alternate}
+@keyframes hb-sway{from{transform:translateX(-50%) rotate(-3deg)}to{transform:translateX(-50%) rotate(3deg)}}
+.hb-lantern{position:absolute;width:230px;height:230px;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(255,200,110,.5),rgba(255,200,110,0) 68%);filter:blur(6px);animation:hb-breathe 5s ease-in-out infinite}
+.hb-star{position:absolute;border-radius:50%;background:#FFF3D0;box-shadow:0 0 8px 2px rgba(255,235,190,.7);opacity:.3;animation:hb-twinkle 3.4s ease-in-out infinite}
+@keyframes hb-twinkle{50%{opacity:1;transform:scale(1.5)}}
+.hb-hero .hb-fly{width:8px;height:8px;background:#FFE7A8;box-shadow:0 0 18px 8px rgba(255,214,130,.5);filter:blur(.6px);opacity:.85;animation-name:hb-float}
+.hb-hero .hb-fly:nth-child(3n){background:#FFD1B8;box-shadow:0 0 18px 8px rgba(255,190,160,.4)}
+.hb-hero .hb-fly:nth-child(3n+1){background:#C9F0DC;box-shadow:0 0 18px 8px rgba(190,240,215,.4)}
+@keyframes hb-float{0%,100%{transform:translate(0,0);opacity:.15}50%{transform:translate(20px,-34px);opacity:1}}
+.hb-pill{border:1px solid rgba(255,226,160,.5);background:rgba(255,255,255,.09);color:#FBE7B4;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 0 24px -6px rgba(255,214,130,.5)}
+.hb-shimmer{background:linear-gradient(100deg,#FFE9B0 0%,#CDEBD9 50%,#FFE9B0 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;filter:drop-shadow(0 0 16px rgba(255,214,130,.4));animation:hb-shine 9s linear infinite}
+@keyframes hb-shine{to{background-position:200% 0}}
+.hb-btn-gold,.hb-btn-glass,.hb-btn-ghost{display:inline-flex;min-height:44px;align-items:center;border-radius:999px;font-size:14px;transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
+.hb-btn-gold{padding:12px 28px;font-weight:700;color:#3B2D12;background:linear-gradient(135deg,#FFE6A8,#EDB85A);border:1px solid rgba(255,236,190,.8);box-shadow:0 0 0 4px rgba(255,214,130,.14),0 12px 32px -10px rgba(240,184,90,.75)}
+.hb-btn-gold:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 0 0 6px rgba(255,214,130,.22),0 16px 40px -8px rgba(240,184,90,.95)}
+.hb-btn-glass{padding:12px 24px;font-weight:700;color:#FFF8EA;background:rgba(255,255,255,.13);border:1.5px solid rgba(255,255,255,.4);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.hb-btn-glass:hover{background:rgba(255,255,255,.22);transform:translateY(-2px)}
+.hb-btn-ghost{padding:12px 20px;font-weight:600;color:#EADFC8;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.28)}
+.hb-btn-ghost:hover{background:rgba(255,255,255,.14);transform:translateY(-2px)}
+.hb-hero .hb-owl{filter:saturate(1) drop-shadow(0 0 18px rgba(255,214,130,.6))}
+.hb-bubble{max-width:190px;padding:8px 14px;border-radius:16px 16px 4px 16px;font-size:13px;font-weight:600;color:#FFF8EA;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+@media (prefers-reduced-motion:reduce){.hb-glow,.hb-rays,.hb-lantern,.hb-star,.hb-shimmer,.hb-hero .hb-fly{animation:none!important}.hb-star{opacity:.7}.hb-rays{transform:translateX(-50%)}.hb-btn-gold:hover,.hb-btn-glass:hover,.hb-btn-ghost:hover{transform:none}}
 @media (prefers-reduced-motion:reduce){.hb-pop{animation:none!important}.hb-par,.hb-fly,.hb-owl,.hb-sticker,.hb-trail span{animation:none!important;transform:none!important}.hb-rv,.hb-tilt{transition:none!important}.hb-js .hb-rv:not(.hb-in){opacity:1;transform:none}}
 `

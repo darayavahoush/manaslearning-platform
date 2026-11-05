@@ -235,7 +235,7 @@ export default function GamifiedAssessmentsPage() {
               <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-[#3F7F68]"><span className="font-mono text-sm">✓</span> What game telemetry captures</h3>
               <ul className="list-inside list-disc space-y-2.5 text-xs leading-relaxed text-[#3A342B]">
                 <li>Millisecond reaction times, omissions, commissions, and motor delay inhibition (CPT-3).</li>
-                <li>Real-time visual gaze orientation and non-verbal emotion expression matching (ADOS-2).</li>
+                <li>Real-time visual gaze orientation and non-verbal emotion expression matching.</li>
                 <li>Child-directed sensory regulation thresholds for ambient illumination and audio frequencies (SPM-2).</li>
                 <li>Objective Wisconsin card sorting set-shifting cognitive flexibility across changing rules.</li>
               </ul>

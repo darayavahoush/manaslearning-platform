@@ -353,7 +353,7 @@ function __McInner() {
   const [guardianAge, setGuardianAge] = useState(7)
   const [guildAffinity, setGuildAffinity] = useState('Grove Harmonizer')
 
-  // Joint Attention Randomized Trials (ADOS-2 Module 1-3 Paradigm)
+  // Joint attention trials: Aria looks or points to one of three vessels, and the child chooses
   const [jaTrialIndex, setJaTrialIndex] = useState(0)
   const [jaResponseTimes, setJaResponseTimes] = useState<number[]>([])
   const [jaCorrectCount, setJaCorrectCount] = useState(0)

@@ -44,7 +44,7 @@ export function rowsFromSentences(lines: string[]): ReportRow[] {
 
 const QUEST = {
   dyslexia: {
-    title: 'Reading and sound-awareness play screener',
+    title: 'Reading and sound-awareness play activity',
     sampled: 'rhyming, first sounds, letter shapes (such as b and d), remembering sounds in order and, as optional chapters, telling real words from made-up words (age 7 and over) and choosing the correct spelling. The question version covers spelling and short reading questions.',
     next: [
       'A hearing and vision check, if one has not been done recently.',
@@ -53,7 +53,7 @@ const QUEST = {
     ],
   },
   adhd: {
-    title: 'Attention and self-control play screener',
+    title: 'Attention and self-control play activity',
     sampled: 'noticing a target, responding to the wrong target, slowing down when distractions conflict, remembering a sequence and waiting.',
     next: [
       'A hearing and vision check, and a look at sleep, health and stress, which can all affect attention.',
@@ -62,7 +62,7 @@ const QUEST = {
     ],
   },
   autism: {
-    title: 'Social communication and sensory comfort play screener',
+    title: 'Social communication and sensory comfort play activity',
     sampled: 'following gaze and pointing, matching cartoon faces to feelings, choosing comfortable light, sound and touch levels, and switching sorting rules.',
     next: [
       'A hearing and vision check, and a review of language development.',
@@ -153,10 +153,10 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
             <button type="button" className="cr-btn ghost" ref={closeRef} onClick={() => setOpen(false)}>Close</button>
           </div>
           <article className="cr-paper">
-            <table className="cr-wrap"><tfoot><tr><td className="cr-pfoot">Not a diagnostic report · {p.variant === 'questions' ? 'Question-based' : 'Play-based'} screening summary · {p.nickname || 'No name given'} · {date} · v{INSTRUMENT_VERSION}</td></tr></tfoot><tbody><tr><td>
+            <table className="cr-wrap"><tfoot><tr><td className="cr-pfoot">Not a diagnostic report · {p.variant === 'questions' ? 'Question-based' : 'Play-based'} summary · {p.nickname || 'No name given'} · {date} · v{INSTRUMENT_VERSION}</td></tr></tfoot><tbody><tr><td>
             <header className="cr-sec">
-              <p className="cr-kicker">{p.variant === 'questions' ? 'Question-based screening summary' : 'Play-based screening summary'} · Not a diagnostic report</p>
-              <h1>{p.variant === 'questions' ? q.title.replace('play screener', 'question screener') : q.title}</h1>
+              <p className="cr-kicker">{p.variant === 'questions' ? 'Question-based summary' : 'Play-based summary'} · Not a diagnostic report</p>
+              <h1>{p.variant === 'questions' ? q.title.replace('play activity', 'question-based activity') : q.title}</h1>
               <table className="cr-meta"><tbody>
                 <tr><th>Play name</th><td>{p.nickname || 'Not given'}</td><th>Date</th><td>{date}</td></tr>
                 <tr><th>Age</th><td>{p.ageLabel ? p.ageLabel : p.age ? `${p.age} years (as entered)` : 'Not given'}</td><th>Measures with data</th><td>{withData} of {measured.length}</td></tr>

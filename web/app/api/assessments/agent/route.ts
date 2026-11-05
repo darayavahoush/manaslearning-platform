@@ -372,7 +372,7 @@ export async function POST(req: Request) {
       superpowers: buildSuperpowers(assessmentType, childName, guildClass),
       clinicalReport: {
         generatedOn: new Date().toLocaleDateString('en-IN', {year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Kolkata'}),
-        instrument: {name: assessmentType === 'adhd' ? 'Manas attention play screener' : 'Manas social and sensory play screener', version: INSTRUMENT_VERSION},
+        instrument: {name: assessmentType === 'adhd' ? 'Manas attention play activity' : 'Manas social and sensory play activity', version: INSTRUMENT_VERSION},
         summary:
           withData === 0
             ? `${childName} did not finish enough of the games to show anything useful. You are welcome to try again.`

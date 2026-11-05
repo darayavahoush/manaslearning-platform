@@ -224,8 +224,8 @@ function autismMeasures(t: Tele): Array<Measure | null> {
 }
 
 const INSTRUMENTS: Record<Quest, {id: string; name: string}> = {
-  adhd: {id: 'manas-attention-play', name: 'Manas attention play screener'},
-  autism: {id: 'manas-social-sensory-play', name: 'Manas social and sensory play screener'},
+  adhd: {id: 'manas-attention-play', name: 'Manas attention play activity'},
+  autism: {id: 'manas-social-sensory-play', name: 'Manas social and sensory play activity'},
 }
 
 const LIMITS = [

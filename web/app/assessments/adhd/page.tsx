@@ -248,11 +248,11 @@ function StarlightNodeSvg({isLit}: {isLit: boolean}) {
       )}
       <path
         d="M 30 10 L 35 25 L 50 30 L 35 35 L 30 50 L 25 35 L 10 30 L 25 25 Z"
-        fill={isLit ? '#F59E0B' : '#8FA7BF'}
-        stroke={isLit ? '#D97706' : '#6B87A3'}
+        fill={isLit ? '#F59E0B' : '#CBD5E1'}
+        stroke={isLit ? '#D97706' : '#94A3B8'}
         strokeWidth="1.5"
       />
-      <circle cx="30" cy="30" r="4" fill={isLit ? '#FFFFFF' : '#4B6783'}/>
+      <circle cx="30" cy="30" r="4" fill={isLit ? '#FFFFFF' : '#64748B'}/>
     </svg>
   )
 }
@@ -295,6 +295,8 @@ function __McInner() {
   const [guildClass, setGuildClass] = useState('Canopy Sky Ranger')
   const [companion] = useState('Milo the Wise Owl')
   const band = bandFor(heroAge)
+  // the last two games (star memory and Sunstone charge) use the dark night-sky look
+  const darkStage = stage === 'memory_story' || stage === 'memory_game' || stage === 'situational_story' || stage === 'situational_game'
 
   // CPT-3 Randomized Parameters (Conners Continuous Performance Battery)
   const CPT_TOTAL_TRIALS = 20
@@ -663,12 +665,12 @@ function __McInner() {
   }
 
   return (
-    <main data-no-listen="true" className="relative min-h-screen bg-[#EAF3F8] q-age py-8 px-4 font-poppins text-[#1F2937] overflow-x-hidden selection:bg-amber-400 selection:text-amber-950">
+    <main data-no-listen="true" className={`relative min-h-screen ${darkStage ? 'bg-[#0B132B]' : 'bg-[#EAF3F8]'} q-age py-8 px-4 font-poppins text-[#1F2937] overflow-x-hidden selection:bg-amber-400 selection:text-amber-950`}>
       <style>{`.q-age .text-xs{font-size:${band.xs}rem!important;line-height:1.55!important}.q-age .text-sm{font-size:${band.sm}rem!important;line-height:1.55!important}.q-age .text-base{font-size:${band.base}rem!important;line-height:1.6!important}`}</style>
       {/* Immersive Fantasy Sky Citadel Celestial Backdrop */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
         <QuestStyles />
-        <Fireflies color="#D97706" />
+        <Fireflies color={darkStage ? '#FDE68A' : '#D97706'} />
         {/* Full-bleed citadel illustration with ambient atmospheric blur */}
         <img
           src="/decor/itw/quest-sky-citadel-banner.webp"
@@ -676,19 +678,19 @@ function __McInner() {
           className="w-full h-full object-cover object-center opacity-30 filter blur-[2px] scale-105"
         />
         {/* Enchanted celestial overlays & radial starlight glows */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#F4F9FC]/80 via-[#E4EFF6]/75 to-[#EAF3F8]/90" />
+        <div className={`absolute inset-0 bg-gradient-to-b ${darkStage ? 'from-[#0B132B]/75 via-[#1C2541]/70 to-[#0B132B]/90' : 'from-[#F4F9FC]/80 via-[#E4EFF6]/75 to-[#EAF3F8]/90'}`} />
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[55rem] h-[30rem] rounded-full bg-gradient-to-b from-amber-400/20 via-orange-500/10 to-transparent blur-3xl pointer-events-none" />
         <div className="absolute top-1/3 -left-32 w-96 h-96 rounded-full bg-cyan-400/15 blur-3xl pointer-events-none" />
         <div className="absolute bottom-10 -right-32 w-96 h-96 rounded-full bg-amber-300/15 blur-3xl pointer-events-none" />
         {/* Floating starlight constellation specks */}
-        <div className="absolute inset-0 opacity-40 bg-[radial-gradient(#9DB9D1_1px,transparent_1px)] [background-size:32px_32px]" />
+        <div className={`absolute inset-0 opacity-40 ${darkStage ? 'bg-[radial-gradient(#FDE68A_1px,transparent_1px)]' : 'bg-[radial-gradient(#9DB9D1_1px,transparent_1px)]'} [background-size:32px_32px]`} />
       </div>
 
       {notice && <div role="alert" className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-white px-5 py-3 text-sm font-bold text-slate-900 shadow-xl">{notice} <button type="button" className="ml-3 underline" onClick={() => setNotice('')}>Dismiss</button></div>}
       <AmbientToggle mood="citadel" />
       <div key={stage} className="mx-auto max-w-4xl relative z-10 qd-stage">
         {/* Navigation & Realm Indicator */}
-        <div className="mb-6 flex items-center justify-between text-xs [&_*]:text-[#1F2937]">
+        <div className={`mb-6 flex items-center justify-between text-xs ${darkStage ? '' : '[&_*]:text-[#1F2937]'}`}>
           <Link href="/assessments" prefetch={false} className="font-bold text-amber-300 hover:text-amber-200 hover:underline flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-amber-300/30 shadow-sm">
             ← Assessment Directory
           </Link>
@@ -1085,7 +1087,7 @@ function __McInner() {
               </span>
             </div>
 
-            <div className="mx-auto my-6 grid aspect-square grid-cols-3 gap-3 rounded-3xl bg-[#D6E6F2] p-4 shadow-2xl" style={{ width: '100%', maxWidth: band.grid }}>
+            <div className="mx-auto my-6 grid aspect-square grid-cols-3 gap-3 rounded-3xl bg-[#0F172A] p-4 shadow-2xl" style={{ width: '100%', maxWidth: band.grid }}>
               {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((idx) => {
                 const isLit = memoryLitCell === idx || memoryTapCell === idx
                 return (
@@ -1098,7 +1100,7 @@ function __McInner() {
                     className={`rounded-2xl p-2 transition-all flex items-center justify-center ${
                       isLit
                         ? 'bg-amber-400 shadow-[0_0_20px_#F59E0B] scale-105'
-                        : 'bg-[#F4F9FC] hover:bg-white'
+                        : 'bg-slate-800/80 hover:bg-slate-700/80'
                     } disabled:cursor-not-allowed`}
                   >
                     <StarlightNodeSvg isLit={isLit} />

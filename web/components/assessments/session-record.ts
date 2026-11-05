@@ -9,7 +9,7 @@ import {wilson} from './profile-stats'
  * this code; the record is built in the response and handed back to the caller.
  */
 
-export const RECORD_SCHEMA_VERSION = '1.7'
+export const RECORD_SCHEMA_VERSION = '1.8'
 
 export type Quest = 'adhd' | 'autism'
 export type AgeBand = '4-5' | '6-8' | '9-12' | '13-16'
@@ -86,6 +86,8 @@ export interface SessionRecord {
   helpRound?: HelpRound
   /** adhd quest only: which version of the steering game was played (record format 1.7 and later) */
   steeringSkin?: 'arrows' | 'rocket'
+  /** adhd quest only: how the star sequence was shown, lights or tones (record format 1.8 and later) */
+  starMode?: 'lights' | 'tones'
   limits: string[]
 }
 
@@ -470,6 +472,7 @@ export function buildSessionRecord(args: {
     ...(args.quest === 'autism' && feelingsRounds(args.telemetry) ? {feelingsRounds: feelingsRounds(args.telemetry)!} : {}),
     ...(parentCard(args.telemetry) ? {parentCard: parentCard(args.telemetry)!} : {}),
     ...(args.quest === 'autism' && helpRound(args.telemetry) ? {helpRound: helpRound(args.telemetry)!} : {}),
+    ...(args.quest === 'adhd' && get(args.telemetry, 'starTone') !== null ? {starMode: get(args.telemetry, 'starTone') === 1 ? 'tones' as const : 'lights' as const} : {}),
     ...(args.quest === 'adhd' && get(args.telemetry, 'steerRocket') !== null ? {steeringSkin: get(args.telemetry, 'steerRocket') === 1 ? 'rocket' as const : 'arrows' as const} : {}),
     limits: LIMITS,
   }

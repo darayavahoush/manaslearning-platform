@@ -11,6 +11,29 @@ import Link from 'next/link'
 import KeeperFeedback from '../../../components/assessments/KeeperFeedback'
 import {QuestStyles, Fireflies, AmbientToggle} from '../../../components/assessments/QuestFX'
 
+// The star-sequence tone version: one clear pitch per star position (a pentatonic-style set, all within the child's range)
+const STAR_TONE_HZ = [262, 294, 330, 392, 440, 523, 587, 659, 784]
+function playTone(hz: number) {
+  if (typeof window === 'undefined') return
+  try {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+    if (!AudioCtx) return
+    const ctx = new AudioCtx()
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {})
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = 'sine'
+    osc.frequency.value = hz
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + 0.02)
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.6)
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.start()
+    osc.stop(ctx.currentTime + 0.65)
+  } catch { /* audio is optional */ }
+}
+
 // Enchanted Web Audio synthesizer: Harmonic marimba, crystal bells, celestial glass, and royal fanfare
 function playAudio(type: 'hit' | 'chime' | 'miss' | 'tap' | 'fanfare' | 'star' | 'whoosh') {
   if (typeof window === 'undefined') return
@@ -466,6 +489,8 @@ function __McInner() {
   const [memorySequence, setMemorySequence] = useState<number[]>([])
   const [memoryUserSequence, setMemoryUserSequence] = useState<number[]>([])
   const [memoryLitCell, setMemoryLitCell] = useState<number | null>(null)
+  // ?mode=tone plays each star as a tone instead of lighting it (chosen by the clinician, not the child)
+  const starToneRef = useRef(false)
   const [memoryTapCell, setMemoryTapCell] = useState<number | null>(null)
   const [memoryPhase, setMemoryPhase] = useState<'showing' | 'input' | 'feedback'>('showing')
   const [memoryMaxSpan, setMemoryMaxSpan] = useState(0)
@@ -487,6 +512,11 @@ function __McInner() {
   const [keeperObs, setKeeperObs] = useState<any>(null)
   const [parentOk, setParentOk] = useState(false)
   const [notice, setNotice] = useState('')
+
+  // star-sequence mode: ?mode=tone on the page address selects the tone version
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('mode') === 'tone') starToneRef.current = true
+  }, [])
 
   // steering skin: ?skin=rocket on the page address selects the rocket version (chosen by the clinician, not the child)
   const [steerSkin, setSteerSkin] = useState<'arrows' | 'rocket'>('arrows')
@@ -683,9 +713,13 @@ function __McInner() {
 
     seq.forEach((cell, idx) => {
       setTimeout(() => {
-        setMemoryLitCell(cell)
-        playAudio('star')
-        setTimeout(() => setMemoryLitCell(null), band.litMs)
+        if (starToneRef.current) {
+          playTone(STAR_TONE_HZ[cell])
+        } else {
+          setMemoryLitCell(cell)
+          playAudio('star')
+          setTimeout(() => setMemoryLitCell(null), band.litMs)
+        }
       }, 500 + idx * band.stepMs)
     })
 
@@ -719,7 +753,7 @@ function __McInner() {
   function handleMemoryClick(cellIdx: number) {
     if (memoryPhase !== 'input') return
     if (memoryLevel < 1) { handleMemoryPracClick(cellIdx); return }
-    playAudio('star')
+    if (starToneRef.current) playTone(STAR_TONE_HZ[cellIdx]); else playAudio('star')
     const updated = [...memoryUserSequence, cellIdx]
     setMemoryUserSequence(updated)
 
@@ -891,6 +925,8 @@ function __McInner() {
         parentEnjoyed: parent?.enjoyed ?? null,
         // 1 when the steering game was played as the rocket version (same rules, same measure)
         steerRocket: steerSkin === 'rocket' ? 1 : 0,
+        // 1 when the star sequence used tones instead of lights
+        starTone: starToneRef.current ? 1 : 0,
         pauseCount: ev.pauseCount,
         pausedSec: ev.pausedSec
       }
@@ -1339,7 +1375,7 @@ function __McInner() {
 
             <div className="p-6 md:p-8">
               <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
-                Watch the stars light up. Then tap them in the same order!
+                {starToneRef.current ? 'Listen to the tones. Then tap the stars in the same order!' : 'Watch the stars light up. Then tap them in the same order!'}
               </p>
 
               <div className="text-center">
@@ -1383,7 +1419,7 @@ function __McInner() {
                 {memoryLevel < 1 ? 'Practice' : `Level ${memoryLevel} of 3 • Constellation Span: ${memorySequence.length || memoryLevel + 2}`}
               </span>
               <span className="text-xs font-bold text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
-                {memoryPhase === 'showing' ? 'Watch the stars!' : 'Your turn!'}
+                {memoryPhase === 'showing' ? (starToneRef.current ? 'Listen!' : 'Watch the stars!') : 'Your turn!'}
               </span>
             </div>
 

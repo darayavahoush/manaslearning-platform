@@ -82,6 +82,8 @@ const TELEMETRY_KEYS = [
   'helpPick', 'helpMs',
   // 1 when the steering game was the rocket version, 0 for arrows
   'steerRocket',
+  // 1 when the star sequence used tones instead of lights, 0 for lights
+  'starTone',
 ] as const
 
 function cleanTelemetry(input: unknown): Record<string, number | null> {

@@ -13,7 +13,7 @@ export interface GameStory {
   fewTrials: boolean
 }
 
-type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'starLevels'> & Partial<Pick<SessionRecord, 'parentCard' | 'helpRound' | 'steeringSkin'>>
+type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'starLevels'> & Partial<Pick<SessionRecord, 'parentCard' | 'helpRound' | 'steeringSkin' | 'starMode'>>
 
 const find = (r: Rec, key: string): Measure | undefined => r.measures.find((x) => x.key === key)
 const prop = (r: Rec, key: string): ProportionMeasure | null => {
@@ -123,6 +123,7 @@ function steering(r: Rec): string[] {
 
 function stars(r: Rec): string[] {
   const out: string[] = []
+  if (r.starMode === 'tones') out.push('This session used tones instead of lights. The sequence and the rules are the same, but the task is listening as well as remembering.')
   const s = val(r, 'workingMemorySpan')
   if (s) out.push(`The longest star sequence repeated correctly was ${s.value} ${plural(s.value, 'star', 'stars')}.`)
   for (const lv of r.starLevels ?? []) {

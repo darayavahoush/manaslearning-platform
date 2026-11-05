@@ -13,6 +13,15 @@ type Res = {
   extra?: ReportExtra;
 };
 
+// The play name is wrapped so the page translator leaves it alone and never sends it to a translation service.
+function keepName(text: string, name: string) {
+  const n = name.trim();
+  if (!n || n === "Explorer") return text;
+  const parts = text.split(n);
+  if (parts.length === 1) return text;
+  return parts.flatMap((part, i) => (i === 0 ? [part] : [<span key={i} translate="no" className="notranslate">{n}</span>, part]));
+}
+
 export default function KeeperFeedback({ quest, nickname, age, observations, detail, mode = "story" }: { quest: "dyslexia" | "adhd" | "autism"; nickname: string; age?: number | null; observations: Record<string, any>; detail?: Record<string, any>; mode?: "story" | "focus" }) {
   const [res, setRes] = useState<Res | null>(null);
   const [tab, setTab] = useState<"child" | "parent">(mode === "focus" ? "parent" : "child");
@@ -52,7 +61,7 @@ export default function KeeperFeedback({ quest, nickname, age, observations, det
       )}
       {tab === "child" && mode !== "focus" ? (
         <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 20, padding: 24, fontSize: 20 }} aria-live="polite">
-          {res.legend.slice(0, shown)}
+          {keepName(res.legend.slice(0, shown), nickname)}
         </div>
       ) : (
         <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 20, padding: 24, fontSize: 16 }}>
@@ -60,7 +69,7 @@ export default function KeeperFeedback({ quest, nickname, age, observations, det
           <p style={{ fontWeight: 700 }}>This is not a diagnosis. One play session cannot show whether a child has a learning difference. If you have concerns, please talk to a pediatrician, teacher or qualified clinician.</p>
           {quest === "dyslexia" && <SessionRecord obs={observations} detail={detail ?? {}} />}
           <h3 style={{ marginTop: 16 }}>What we noticed while playing</h3>
-          <ul>{res.noticed.map((n, i) => <li key={i}>{n}</li>)}</ul>
+          <ul>{res.noticed.map((n, i) => <li key={i}>{keepName(n, nickname)}</li>)}</ul>
           {res.clinicianQuestions.length > 0 && (<><h3 style={{ marginTop: 16 }}>Questions you could bring to a clinician</h3><ul>{res.clinicianQuestions.map((n, i) => <li key={i}>{n}</li>)}</ul></>)}
           {res.homeGames.length > 0 && (<><h3 style={{ marginTop: 16 }}>Ideas to try at home</h3><ul>{res.homeGames.map((g, i) => <li key={i}><strong>{g.title}.</strong> {g.how}</li>)}</ul></>)}
           <div style={{ marginTop: 16, textAlign: "center" }}><ClinicianReportButton quest={quest} nickname={nickname} age={age} rows={res.rows ?? rowsFromSentences(res.noticed)} clinicianQuestions={res.clinicianQuestions} extra={res.extra} wording={res.source === "llm" ? "ai" : "template"} /></div>

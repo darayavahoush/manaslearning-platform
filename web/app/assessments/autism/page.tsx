@@ -468,8 +468,8 @@ function __McInner() {
       <div key={stage} className="mx-auto max-w-4xl relative z-10 qd-stage">
         {/* Navigation & Realm Indicator */}
         <div className="mb-6 flex items-center justify-between text-xs">
-          <Link href="/assessments" prefetch={false} className="font-bold text-teal-300 hover:text-teal-200 hover:underline flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-teal-300/30 shadow-sm">
-            ← Assessment Directory
+          <Link href="/gamified-assessments" prefetch={false} className="font-bold text-teal-300 hover:text-teal-200 hover:underline flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-teal-300/30 shadow-sm">
+            ← Gamified Quests
           </Link>
           <div className="flex items-center gap-2">
             <span className="rounded-full bg-black/40 backdrop-blur-md px-3.5 py-1.5 font-bold text-teal-200 border border-teal-400/40 shadow-sm">

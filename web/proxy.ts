@@ -8,12 +8,17 @@ const LIVE = process.env.LIVE_ORIGIN || 'https://www.manaslearning.com'
 
 // Paths served by this Next app itself. Everything else comes from the live site.
 const OWN = [
-  '/consult', '/milo', '/experience', '/confirm', '/team', '/my', '/pay', '/assessments',
+  '/consult', '/milo', '/experience', '/confirm', '/team', '/my', '/pay',
+  '/gamified-assessments',
   '/api/i18n', '/api/types', '/api/availability', '/api/slots', '/api/book', '/api/confirm', '/api/team', '/api/milo', '/api/auth', '/api/my', '/api/pay', '/api/cron', '/api/assessments',
   '/web-static', '/logo.png', '/decor', '/_next/static/immutable', '/sounds',
   '/_next/webpack-hmr', '/__nextjs',
 ]
 const owns = (p: string) => {
+  // /assessments is NOT owned so it proxies directly to the live site's original assessments catalog
+  if (p === '/assessments' || p === '/assessments/') return false
+  if (p.startsWith('/assessments/')) return true
+  if (p.startsWith('/gamified-assessments')) return true
   if (OWN.some((o) => p === o || p.startsWith(o + '/'))) return true
   // Static media video files stored in public/videos
   if (p.startsWith('/videos/') && /\.(mp4|webm|ogg|mov)$/i.test(p)) return true

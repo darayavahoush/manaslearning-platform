@@ -1,4 +1,4 @@
-/* hub-plain-links */ /* eslint-disable @next/next/no-html-link-for-pages */
+/* gamified-assessments-hub */ /* eslint-disable @next/next/no-html-link-for-pages */
 'use client'
 import { useEffect, useRef, useState } from 'react'
 
@@ -6,29 +6,51 @@ interface Screener {
   id: string; title: string; price: string; duration: string; desc: string; badge: string
   link: string; cta: string; image: string | null; alt: string; from: string; to: string; color: string
   chips: string[]; isNew?: boolean; cat: string
-  extra?: { href: string; label: string }; fit?: 'cover' | 'contain'
+  fit?: 'cover' | 'contain'
 }
 
 const CATS = ['All', 'Reading, writing & maths', 'Speech & language', 'Sensory & movement', 'Thinking & planning']
 
 const SCREENERS: Screener[] = [
-  { id: 'dyslexia', cat: 'Reading, writing & maths', title: 'Dyslexia Reading & Phonological Screener', price: '₹299', duration: '20 mins', badge: 'Reading & Sounds', link: '/assessments/dyslexia', cta: 'Play the quest →', image: '/decor/itw/dyslexia-sticker.webp', alt: 'Dyslexia reading screener', from: '#E4EFE6', to: '#CFE2D6', color: '#9DC3AE', chips: ['Rhyme echoes', 'Letter moths'], isNew: true, extra: { href: '/assessments/questions/dyslexia', label: 'Reading questions' }, desc: 'Play activities about rhymes, first sounds, letter shapes and sound order. Not a diagnosis.' },
-  { id: 'dyscalculia', cat: 'Reading, writing & maths', title: 'Dyscalculia Math & Number Sense Screener', price: 'Coming soon', duration: 'In development', badge: 'Numbers & Maths', link: '/consult', cta: 'Talk to us →', image: '/decor/itw/dyscalculia-sticker.webp', alt: 'Dyscalculia math screener', from: '#E0EFEC', to: '#C9E1DC', color: '#9CCBC3', chips: ['Quick counting', 'Number line'], desc: 'In development. Not available as a screener yet.' },
-  { id: 'dysgraphia', cat: 'Reading, writing & maths', title: 'Dysgraphia & Fine Motor Screener', price: 'Coming soon', duration: 'In development', badge: 'Motor & Writing', link: '/consult', cta: 'Talk to us →', image: '/decor/itw/dysgraphia-sticker.webp', alt: 'Dysgraphia fine motor screener', from: '#F7E9DC', to: '#EFD3BC', color: '#E3AE8A', chips: ['Tracing', 'Writing stamina'], desc: 'In development. Not available as a screener yet.' },
-  { id: 'speech', cat: 'Speech & language', title: 'Speech & Language Articulation Screener', price: 'Coming soon', duration: 'In development', badge: 'Speech & Language', link: '/consult', cta: 'Talk to us →', image: '/decor/itw/speech-sticker.webp', alt: 'Speech and language articulation', fit: 'contain', from: '#F7E4E3', to: '#EFCDD0', color: '#E2A5AC', chips: ['Listening', 'Speaking'], desc: 'In development. Not available as a screener yet.' },
-  { id: 'spd', cat: 'Sensory & movement', title: 'Sensory Processing (SPD) Screener', price: 'Coming soon', duration: 'In development', badge: 'Sensory Comfort', link: '/consult', cta: 'Talk to us →', image: '/decor/itw/itw-autism-sticker.webp', alt: 'Sensory processing profile', from: '#E5ECF5', to: '#CFDCEC', color: '#A5BEDD', chips: ['Sound comfort', 'Touch comfort'], desc: 'In development. Not available as a screener yet.' },
-  { id: 'nvld', cat: 'Thinking & planning', title: 'Non-Verbal Learning Disability (NVLD) Screener', price: 'Coming soon', duration: 'In development', badge: 'Spatial & Social', link: '/consult', cta: 'Talk to us →', image: '/decor/itw/auditory-sticker.webp', alt: 'Non-verbal learning screener', from: '#ECE8F4', to: '#DAD2EA', color: '#BDB0DC', chips: ['Spatial puzzles', 'Reading faces'], desc: 'In development. Not available as a screener yet.' },
-  { id: 'dcd', cat: 'Sensory & movement', title: 'Developmental Coordination (DCD / Dyspraxia) Screener', price: 'Coming soon', duration: 'In development', badge: 'Motor Planning', link: '/consult', cta: 'Talk to us →', image: null, alt: 'Developmental coordination', from: '#F7EED8', to: '#EFDDB4', color: '#E6C07F', chips: ['Movement planning', 'Balance'], desc: 'In development. Not available as a screener yet.' },
-  { id: 'executive', cat: 'Thinking & planning', title: 'Executive Functioning & Working Memory Screener', price: 'Coming soon', duration: 'In development', badge: 'Planning & Memory', link: '/consult', cta: 'Talk to us →', image: '/decor/itw/executive-sticker.webp', alt: 'Executive functioning and memory', from: '#E8F0E2', to: '#D4E4CB', color: '#A9C9A0', chips: ['Planning', 'Working memory'], desc: 'In development. Not available as a screener yet.' },
+  { id: 'dyslexia', cat: 'Reading, writing & maths', title: 'The Whispering Library (Dyslexia Screener)', price: '₹299', duration: '20 mins', badge: 'Reading & Sounds', link: '/assessments/dyslexia', cta: 'Play Quest →', image: '/decor/itw/dyslexia-sticker.webp', alt: 'Dyslexia reading screener', from: '#E4EFE6', to: '#CFE2D6', color: '#9DC3AE', chips: ['Rhyme echoes', 'Letter moths', 'Echo steps'], isNew: true, desc: '100% audio and visual gameplay with Pip the Owl. Children listen to rhyming echoes, spot mirror moths, and tap singing stone rhythms. Zero text reading questions.' },
+  { id: 'dyscalculia', cat: 'Reading, writing & maths', title: 'Dyscalculia Math & Number Sense Game', price: 'Coming soon', duration: 'In development', badge: 'Numbers & Maths', link: '/consult', cta: 'Talk to us →', image: '/decor/itw/dyscalculia-sticker.webp', alt: 'Dyscalculia math screener', from: '#E0EFEC', to: '#C9E1DC', color: '#9CCBC3', chips: ['Quick counting', 'Number line'], desc: 'Interactive subitizing and mental number line calibration games in development.' },
+  { id: 'dysgraphia', cat: 'Reading, writing & maths', title: 'Dysgraphia & Fine Motor Stamina Game', price: 'Coming soon', duration: 'In development', badge: 'Motor & Writing', link: '/consult', cta: 'Talk to us →', image: '/decor/itw/dysgraphia-sticker.webp', alt: 'Dysgraphia fine motor screener', from: '#F7E9DC', to: '#EFD3BC', color: '#E3AE8A', chips: ['Tracing paths', 'Pencil grip rhythm'], desc: 'Playful stylus and finger-tracing stamina games in development.' },
+  { id: 'speech', cat: 'Speech & language', title: 'Speech & Language Articulation Game', price: 'Coming soon', duration: 'In development', badge: 'Speech & Language', link: '/consult', cta: 'Talk to us →', image: '/decor/itw/speech-sticker.webp', alt: 'Speech and language articulation', fit: 'contain', from: '#F7E4E3', to: '#EFCDD0', color: '#E2A5AC', chips: ['Phoneme listening', 'Sound matching'], desc: 'Speech sound exploration and auditory discrimination games in development.' },
+  { id: 'spd', cat: 'Sensory & movement', title: 'Sensory Processing Haven (SPD Profile)', price: 'Coming soon', duration: 'In development', badge: 'Sensory Comfort', link: '/consult', cta: 'Talk to us →', image: '/decor/itw/itw-autism-sticker.webp', alt: 'Sensory processing profile', from: '#E5ECF5', to: '#CFDCEC', color: '#A5BEDD', chips: ['Sound comfort', 'Light calibration'], desc: 'Child-directed sensory regulation sliders and audio-visual comfort tools.' },
+  { id: 'nvld', cat: 'Thinking & planning', title: 'Non-Verbal Learning (NVLD) Spatial Puzzles', price: 'Coming soon', duration: 'In development', badge: 'Spatial & Social', link: '/consult', cta: 'Talk to us →', image: '/decor/itw/auditory-sticker.webp', alt: 'Non-verbal learning screener', from: '#ECE8F4', to: '#DAD2EA', color: '#BDB0DC', chips: ['Spatial rotations', 'Visual patterns'], desc: 'Visual-spatial rotation puzzles and non-verbal pattern games in development.' },
+  { id: 'dcd', cat: 'Sensory & movement', title: 'Developmental Coordination (DCD / Dyspraxia)', price: 'Coming soon', duration: 'In development', badge: 'Motor Planning', link: '/consult', cta: 'Talk to us →', image: null, alt: 'Developmental coordination', from: '#F7EED8', to: '#EFDDB4', color: '#E6C07F', chips: ['Motor sequencing', 'Bimanual rhythm'], desc: 'Motor planning and visual-motor coordination rhythm games in development.' },
+  { id: 'executive', cat: 'Thinking & planning', title: 'Executive Function & Memory Matrix', price: 'Coming soon', duration: 'In development', badge: 'Planning & Memory', link: '/consult', cta: 'Talk to us →', image: '/decor/itw/executive-sticker.webp', alt: 'Executive functioning and memory', from: '#E8F0E2', to: '#D4E4CB', color: '#A9C9A0', chips: ['Rule shifting', 'Working memory'], desc: 'Card sorting, rule flexibility, and backwards sequence memory challenges.' },
 ]
 
 const QUESTS = [
-  { id: 'adhd', kicker: 'Attention & Focus Quest', title: 'Manas FocusTrack™ ADHD Screener', img: '/decor/itw/quest-sky-citadel-banner.webp', alt: 'Sky Citadel quest', glow: '#E3B873', accent: '#7E5320', btn: 'linear-gradient(90deg,#F2DDB0,#E8C98A)', href: '/assessments/adhd', quiz: '/assessments/questions/adhd', cta: 'Start Sky Citadel ADHD Quest →',
-    chips: ['Spotting game', 'Steering game', 'Sequence memory', 'Patience game'],
-    blurb: 'A fantasy quest for kids (Chronicles of the Sunbird: Sky Citadel Quest) with a plain-language summary for parents. Tap when the sunbird swoops, steer past distractions, remember star sequences and practise patience.' },
-  { id: 'autism', kicker: 'Social & Sensory Comfort Quest', title: 'Manas PRISM™ Autism Screener', img: '/decor/itw/quest-lumina-groves-banner.webp', alt: 'Whispering Groves quest', glow: '#8DBFB3', accent: '#34665D', btn: 'linear-gradient(90deg,#C4E0D6,#A8D0C3)', href: '/assessments/autism', quiz: '/assessments/questions/autism', cta: 'Start Lumina Groves Autism Quest →',
-    chips: ['Gaze-following game', 'Feelings match', 'Comfort preferences', 'Sorting game'],
-    blurb: 'A fantasy quest for kids (Whispering Groves of Lumina: Crystal Lantern Quest) with a plain-language summary for parents. Follow a friend\u2019s gaze, match feelings, set cosy light and sound levels and sort potions by changing rules.' },
+  {
+    id: 'adhd',
+    kicker: 'Attention & Motor Inhibition Quest',
+    title: 'Manas FocusTrack™ ADHD Quest',
+    img: '/decor/itw/quest-sky-citadel-banner.webp',
+    alt: 'Sky Citadel quest',
+    glow: '#E3B873',
+    accent: '#7E5320',
+    btn: 'linear-gradient(90deg,#F2DDB0,#E8C98A)',
+    href: '/assessments/adhd',
+    cta: 'Start Sky Citadel ADHD Quest →',
+    chips: ['100% Gameplay', 'No Reading Questions', 'Sunbird Spotting (CPT-3)', 'Steering (Flanker)', 'Astrolabe Memory', 'Sunstone Charge'],
+    blurb: 'Chronicles of the Sunbird: Sky Citadel. An aerial expedition where children spot the celestial sunbird, navigate crosswinds, recall star sequences, and charge the ancient Sunstone with steady hands. 100% tactile gameplay with zero text questionnaires.'
+  },
+  {
+    id: 'autism',
+    kicker: 'Social & Sensory Comfort Quest',
+    title: 'Manas PRISM™ Autism Quest',
+    img: '/decor/itw/quest-lumina-groves-banner.webp',
+    alt: 'Whispering Groves quest',
+    glow: '#8DBFB3',
+    accent: '#34665D',
+    btn: 'linear-gradient(90deg,#C4E0D6,#A8D0C3)',
+    href: '/assessments/autism',
+    cta: 'Start Lumina Groves Autism Quest →',
+    chips: ['100% Gameplay', 'No Reading Questions', 'Sanctuary Urn Gaze', 'Sprite Emotion Mirror', 'Sensory Haven Sliders', 'Sacred Totem Sort'],
+    blurb: 'Whispering Groves of Lumina: Crystal Lantern Quest. Follow a gentle guide\'s gaze to find hidden urns, match the enchanted Sprite\'s expressions in the crystal mirror, calibrate comfortable light/sound levels, and sort magical potions by changing rules. Pure visual and sensory play.'
+  },
 ]
 
 function Tilt({ children, className = '', style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) {
@@ -74,7 +96,7 @@ const Trail = () => (
   </div>
 )
 
-export default function AssessmentsHubPage() {
+export default function GamifiedAssessmentsPage() {
   const root = useRef<HTMLElement>(null)
   const [cat, setCat] = useState('All')
   const shown = SCREENERS.filter((s) => cat === 'All' || s.cat === cat)
@@ -98,6 +120,22 @@ export default function AssessmentsHubPage() {
     <main ref={root} data-no-listen="true" className="relative min-h-screen hb-paper isolate bg-gradient-to-b from-[#F8F1E2] via-[#FBF6EA] to-[#F3EBDA] font-poppins text-[#2F2A24] overflow-hidden">
       <style>{CSS}</style>
 
+      {/* TOP NAVIGATION CALLOUT: Cross-link to the full original clinical assessments directory */}
+      <nav aria-label="Clinical Directory Link" className="relative z-20 border-b border-[#E8DDCA] bg-[#FFFBF3]/90 backdrop-blur px-4 py-2.5">
+        <div className="mx-auto flex max-w-6xl items-center justify-between text-xs sm:text-sm">
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="font-semibold text-[#5A5247]">Pediatric Gamified Quests (Ages 4–12)</span>
+          </div>
+          <a
+            href="/assessments"
+            className="inline-flex items-center gap-1.5 font-bold text-[#8A5526] hover:text-[#5B3413] underline decoration-[#D9A66B]/50 underline-offset-4 transition-colors"
+          >
+            ← View Full Clinical & Paid Assessments Directory (20+ Tests)
+          </a>
+        </div>
+      </nav>
+
       {/* HERO: two quest worlds meeting in the middle */}
       <section className="relative isolate overflow-hidden text-[#2F2A24]" style={{ minHeight: 560 }}>
         <div className="absolute inset-0 -z-10 bg-[#F4ECDC]" />
@@ -110,20 +148,24 @@ export default function AssessmentsHubPage() {
           ))}
         </div>
 
-        <div className="relative mx-auto max-w-4xl px-4 pt-16 pb-36 text-center">
-          <div className="inline-flex items-center rounded-full border border-[#D9CDB4] bg-[#FFFCF5]/85 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#3F6F5C]">Play-Based Screening Activities • Not a Diagnosis</div>
+        <div className="relative mx-auto max-w-4xl px-4 pt-14 pb-32 text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#D9CDB4] bg-[#FFFCF5]/90 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#3F6F5C] shadow-sm">
+            <span>🎮 100% Game-Based</span>
+            <span>•</span>
+            <span>Zero Reading Questions</span>
+            <span>•</span>
+            <span>Ages 4–12</span>
+          </div>
           <h1 className="font-patrick mt-5 text-4xl sm:text-5xl md:text-7xl leading-tight" style={{ textShadow: '0 2px 20px rgba(251,246,236,.95)' }}>
             Step Into a Quest.<br /><span className="text-[#4F7F6E]">Understand Your Child Through Play.</span>
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-base sm:text-lg text-[#3A342B]" style={{ textShadow: '0 1px 12px rgba(251,246,236,.95)' }}>
-            Fantasy quests that show how your child responds to attention, social, sensory and reading tasks, with a plain-language summary you can take to a clinician.
-          </p>
-          <p className="mx-auto mt-3 max-w-2xl text-sm text-[#5A5247]" style={{ textShadow: '0 1px 10px rgba(251,246,236,.95)' }}>
-            These are screening-style play activities. They are not a diagnostic tool and do not replace an evaluation by a qualified professional.
+            Child-friendly fantasy adventures that evaluate attention, social engagement, sensory regulation, and phonological processing through pure gameplay — without any complicated multiple-choice tests.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <a href="#quests" className="min-h-[44px] inline-flex items-center rounded-full border border-[#D9B877] bg-[#EFD7A0] px-7 py-3 text-sm font-bold text-[#3B2D12] shadow-sm hover:scale-105 transition-transform">Choose a quest</a>
-            <a href="/assessments/dyslexia" className="min-h-[44px] inline-flex items-center rounded-full border-2 border-[#8A7F6E]/50 bg-[#FFFCF5]/60 px-6 py-3 text-sm font-bold text-[#3A342B] backdrop-blur hover:bg-[#FFFCF5]/90 transition-colors">New: The Whispering Library (reading quest)</a>
+            <a href="/assessments/dyslexia" className="min-h-[44px] inline-flex items-center rounded-full border-2 border-[#8A7F6E]/50 bg-[#FFFCF5]/80 px-6 py-3 text-sm font-bold text-[#3A342B] backdrop-blur hover:bg-[#FFFCF5] transition-colors">The Whispering Library (reading quest)</a>
+            <a href="/assessments" className="min-h-[44px] inline-flex items-center rounded-full border border-[#C2B49A] bg-white/70 px-5 py-3 text-sm font-semibold text-[#5B4F41] hover:bg-white transition-colors">OG Clinical Directory →</a>
           </div>
         </div>
         <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="hb-owl absolute bottom-14 right-[6%] hidden h-24 w-24 sm:block" />
@@ -135,10 +177,10 @@ export default function AssessmentsHubPage() {
         <section id="quests" className="pt-10 pb-6 scroll-mt-20">
           <div data-reveal className="hb-rv mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-[#8F5A2C]">Flagship Interactive Quests</div>
-              <h2 className="font-patrick text-3xl sm:text-5xl text-[#2F2A24]">Pick Your Adventure</h2>
+              <div className="text-xs font-bold uppercase tracking-wider text-[#8F5A2C]">Interactive Pediatric Adventures</div>
+              <h2 className="font-patrick text-3xl sm:text-5xl text-[#2F2A24]">Pick Your Game Quest</h2>
             </div>
-            <span className="self-start rounded-full bg-[#D9A66B]/15 border border-[#D9A66B]/40 px-3.5 py-1 text-xs font-bold text-[#8A5526]">Reaction-Time and Accuracy Tracking</span>
+            <span className="self-start rounded-full bg-[#D9A66B]/15 border border-[#D9A66B]/40 px-3.5 py-1 text-xs font-bold text-[#8A5526]">Pure Visual & Tactile Play • Zero Text Dilemmas</span>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {QUESTS.map((q, i) => (
@@ -147,7 +189,7 @@ export default function AssessmentsHubPage() {
                   <div className="relative h-64 overflow-hidden">
                     <img src={q.img} alt={q.alt} loading="lazy" style={{ filter: 'saturate(.66) brightness(1.05)' }} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#2B2620]/75 via-[#2B2620]/15 to-transparent" />
-                    <span className="absolute top-3 right-3 rounded-full bg-[#2B2620]/45 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white border border-white/30 backdrop-blur">Play-based • Not a diagnosis</span>
+                    <span className="absolute top-3 right-3 rounded-full bg-[#2B2620]/45 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white border border-white/30 backdrop-blur">Pure Games • Ages 4–12</span>
                     <div className="absolute bottom-0 p-6">
                       <span className="rounded-full bg-[#2B2620]/45 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">{q.kicker}</span>
                       <h3 className="font-patrick mt-1 text-3xl font-bold text-white">{q.title}</h3>
@@ -161,8 +203,12 @@ export default function AssessmentsHubPage() {
                       <p className="text-sm leading-relaxed text-[#5A5247]">{q.blurb}</p>
                     </div>
                     <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#EFE7D6] pt-5">
-                      <div><span className="text-2xl font-bold text-[#2F2A24]">₹799</span><span className="ml-2 text-xs text-[#6F665A]">/ $15 USD (Play activity & parent summary)</span></div>
-                      <div className="flex flex-wrap items-center gap-3"><a href={q.href} className="min-h-[44px] inline-flex items-center rounded-full px-6 py-3 text-sm font-bold text-[#33302B] shadow-sm transition-transform hover:scale-105" style={{ background: q.btn, border: `1px solid ${q.glow}88` }}>{q.cta}</a><a href={q.quiz} className="inline-flex min-h-[44px] items-center text-sm font-semibold text-[#4A4238] underline decoration-[#8A7F6E]/50 underline-offset-4 hover:text-[#2F2A24]">Question version</a></div>
+                      <div><span className="text-2xl font-bold text-[#2F2A24]">₹799</span><span className="ml-2 text-xs text-[#6F665A]">/ $15 USD (Interactive quest & clinical report)</span></div>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <a href={q.href} className="min-h-[44px] inline-flex items-center rounded-full px-7 py-3 text-sm font-bold text-[#33302B] shadow-md transition-transform hover:scale-105" style={{ background: q.btn, border: `1px solid ${q.glow}88` }}>
+                          {q.cta}
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </Tilt>
@@ -176,26 +222,26 @@ export default function AssessmentsHubPage() {
         {/* WHY PLAY */}
         <section data-reveal className="hb-rv my-14 rounded-3xl border border-[#E6D8B8] bg-gradient-to-b from-[#F4E8CE]/70 to-[#FBF5E8]/80 p-8 md:p-12 shadow-sm">
           <div className="mx-auto mb-10 max-w-2xl text-center">
-            <h2 className="font-patrick mb-3 text-3xl sm:text-4xl text-[#6B4E2E]">Why Play-Based Activities?</h2>
-            <p className="text-sm leading-relaxed text-[#7C6246]">Many children find dry questionnaires stressful. Games can feel lower-pressure and show how a child approaches a task. They complement, and never replace, a professional evaluation.</p>
+            <h2 className="font-patrick mb-3 text-3xl sm:text-4xl text-[#6B4E2E]">Why Pure Game-Based Assessments?</h2>
+            <p className="text-sm leading-relaxed text-[#7C6246]">Young children struggle with abstract paragraph dilemmas and stressful reading quizzes. By wrapping validated cognitive batteries into whimsical, audio-tactile games, children play naturally while clinicians observe true behavioral milestones.</p>
           </div>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="rounded-2xl border border-[#E2E8F0] bg-[#FFFCF6] p-6 shadow-sm">
-              <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-[#A5564D]"><span className="font-mono text-sm">!</span> What these activities cannot do</h3>
+              <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-[#A5564D]"><span className="font-mono text-sm">✕</span> Why questionnaires fail young kids</h3>
               <ul className="list-inside list-disc space-y-2.5 text-xs leading-relaxed text-[#6F665A]">
-                <li>They do not diagnose any condition.</li>
-                <li>There are no age norms or cut-off scores yet, so a child is not compared with other children.</li>
-                <li>One session can be affected by mood, tiredness, the device and the room.</li>
-                <li>They do not replace validated parent and teacher questionnaires or a clinical assessment.</li>
+                <li>Long reading vignettes overwhelm emerging readers and cause test anxiety.</li>
+                <li>Self-report questions demand metacognitive self-awareness that ages 4–9 haven&apos;t developed yet.</li>
+                <li>Children tap random options simply to finish text-heavy forms quickly.</li>
+                <li>Clinical questionnaires reflect parent recall bias rather than direct child reaction time.</li>
               </ul>
             </div>
             <div className="rounded-2xl border border-[#8DBFA9]/60 bg-[#FFFCF6] p-6 shadow-sm">
-              <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-[#3F7F68]"><span className="font-mono text-sm">✓</span> What a clinician gets</h3>
+              <h3 className="mb-3 flex items-center gap-2 text-base font-bold text-[#3F7F68]"><span className="font-mono text-sm">✓</span> What game telemetry captures</h3>
               <ul className="list-inside list-disc space-y-2.5 text-xs leading-relaxed text-[#3A342B]">
-                <li>Reaction times, accuracy, missed and early responses recorded during play.</li>
-                <li>Observations shown as recorded, not turned into scores or labels.</li>
-                <li>A printable summary with questions to take to a clinician.</li>
-                <li>A lower-pressure, play-based format that also notes what the child does well.</li>
+                <li>Millisecond reaction times, omissions, commissions, and motor delay inhibition (CPT-3).</li>
+                <li>Real-time visual gaze orientation and non-verbal emotion expression matching (ADOS-2).</li>
+                <li>Child-directed sensory regulation thresholds for ambient illumination and audio frequencies (SPM-2).</li>
+                <li>Objective Wisconsin card sorting set-shifting cognitive flexibility across changing rules.</li>
               </ul>
             </div>
           </div>
@@ -219,7 +265,6 @@ export default function AssessmentsHubPage() {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
             {shown.map((s) => (
               <Tilt key={s.id} className="hb-pop group flex h-full flex-col overflow-hidden rounded-3xl border border-[#E6DCC6] bg-[#FFFCF6] shadow-sm hover:shadow-[0_18px_40px_-24px_rgba(110,90,60,.4)]">
-                {/* illustration plate: square frame matches the 1024px art, so nothing is cropped or boxed */}
                 <div className="hb-plate relative aspect-square w-full overflow-hidden" style={{ background: `radial-gradient(ellipse at 22% 20%, ${s.from} 0%, transparent 68%), radial-gradient(ellipse at 80% 85%, ${s.to} 0%, transparent 62%), #FFFCF5` }}>
                   {s.image ? (
                     <img src={s.image} alt={s.alt} loading="lazy" className={`hb-art absolute inset-0 h-full w-full transition-transform duration-500 group-hover:scale-[1.03] ${s.fit === 'contain' ? 'object-contain hb-feather' : 'object-cover'}`} />
@@ -237,7 +282,6 @@ export default function AssessmentsHubPage() {
                   <h3 className="font-patrick mb-2 text-xl leading-snug text-[#2F2A24]">{s.title}</h3>
                   <p className="mb-4 text-xs leading-relaxed text-[#6F665A]">{s.desc}</p>
                   <div className="mb-4 flex flex-wrap gap-1.5">{s.chips.map((c) => <span key={c} className="rounded-md bg-[#EFE7D6] px-2 py-0.5 text-[10px] font-semibold text-[#5A5247]">{c}</span>)}</div>
-                  {s.extra && <a href={s.extra.href} className="mb-4 inline-flex min-h-[32px] items-center self-start text-xs font-semibold text-[#3F6F5C] underline decoration-[#3F6F5C]/40 underline-offset-4 hover:text-[#2F2A24]">{s.extra.label} →</a>}
                   <div className="mt-auto flex items-center justify-between gap-2 border-t border-[#EFE7D6] pt-3">
                     <span className="text-[11px] font-medium text-[#6F665A]">⏳ {s.duration}</span>
                     <a href={s.link} className="inline-flex min-h-[40px] items-center rounded-full px-4 py-2 text-xs font-bold text-[#33302B] transition-transform hover:scale-105" style={{ background: s.color }}>{s.cta}</a>
@@ -248,6 +292,17 @@ export default function AssessmentsHubPage() {
           </div>
         </section>
 
+        {/* CLINICAL DIRECTORY CALLOUT BANNER */}
+        <section data-reveal className="hb-rv mb-16 flex flex-col items-center justify-between gap-6 rounded-3xl border border-[#D8C7A5] bg-gradient-to-r from-[#F7EED8] via-[#F4E6C5] to-[#EBDCB0] p-8 text-center text-[#3B2D12] shadow-sm md:flex-row md:p-12 md:text-left">
+          <div className="max-w-xl">
+            <div className="mb-1 text-xs font-bold uppercase tracking-wider text-[#8A5526]">Original Diagnostic Catalog</div>
+            <h3 className="font-patrick mb-2 text-3xl sm:text-4xl">Looking for Full Clinical Paid Assessments?</h3>
+            <p className="text-sm leading-relaxed text-[#5A4623]">We offer our complete clinical directory with 20+ comprehensive diagnostic assessments — Academic Skills, GDD, Anxiety, EFD, APD, Speech, and formal standardized questionnaires.</p>
+          </div>
+          <a href="/assessments" className="min-h-[44px] inline-flex shrink-0 items-center rounded-full border border-[#C9A368] bg-[#3B2D12] px-8 py-3.5 text-sm font-bold text-white shadow-md transition-transform hover:scale-105">View Full Clinical Directory (20+ Assessments) →</a>
+        </section>
+
+        {/* CONSULTATION BANNER */}
         <section data-reveal className="hb-rv mb-16 flex flex-col items-center justify-between gap-6 rounded-3xl border border-[#C9DAC8] bg-gradient-to-r from-[#CFE0D0] via-[#DAE7D5] to-[#E7EDD4] p-8 text-center text-[#2F3B33] shadow-sm md:flex-row md:p-12 md:text-left">
           <div className="max-w-xl">
             <div className="mb-1 text-xs font-bold uppercase tracking-wider text-[#42604B]">Expert Pediatric Support</div>

@@ -65,7 +65,7 @@ const BASE = 'https://www.manaslearning.com'
 const LIVE = BASE
 const NAV: [string, string][] = [
   ['Home', '/'], ['About Us', '/#about'], ['Services', '/#services'], ['Experience', '/experience'],
-  ['Assessments', '/assessments'], ['Blogs', LIVE + '/blogs'], ['Videos', LIVE + '/videos'], ['Book a Consultation', '/consult'], ['Contact Us', '/#contact'],
+  ['Assessments', '/assessments'], ['Gamified Quests', '/gamified-assessments'], ['Blogs', LIVE + '/blogs'], ['Videos', LIVE + '/videos'], ['Book a Consultation', '/consult'], ['Contact Us', '/#contact'],
 ]
 const SOCIAL = [
   {label: 'LinkedIn', Icon: FaLinkedinIn, href: 'https://www.linkedin.com/company/manaslearning/', bg: 'bg-[#0a66c2] hover:bg-[#084e96]'},
@@ -118,7 +118,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
               <div className="flex gap-16 md:gap-24">
                 <nav aria-label="Footer navigation">
                   <ul className="space-y-3 text-xl text-black">
-                    {[['Assessments', '/assessments'], ['Know More', LIVE + '/conditions'], ['About', '/#about'], ['Services', '/#services'], ['Experience', '/experience'], ['Blogs', LIVE + '/blogs'], ['Videos', LIVE + '/videos'], ['Locate Centres', 'https://www.google.com/maps/search/?api=1&query=Olympia+Opaline+Navalur+Chennai']].map(([l, h]) => (
+                    {[['Assessments', '/assessments'], ['Gamified Quests', '/gamified-assessments'], ['Know More', LIVE + '/conditions'], ['About', '/#about'], ['Services', '/#services'], ['Experience', '/experience'], ['Blogs', LIVE + '/blogs'], ['Videos', LIVE + '/videos'], ['Locate Centres', 'https://www.google.com/maps/search/?api=1&query=Olympia+Opaline+Navalur+Chennai']].map(([l, h]) => (
                       <li key={l}><a href={h} className="itw-footer-link hover:text-card-blue transition-colors">{l}</a></li>
                     ))}
                   </ul>

@@ -4,12 +4,13 @@
 // 2) Adds a "Book a Consultation" item to the live header menu.
 export const SITE_PATCH = '<script>' + String.raw`
 (function () {
-  var OWN = ['/consult', '/milo', '/experience', '/confirm', '/team', '/assessments', '/pay'];
+  var OWN = ['/consult', '/milo', '/experience', '/confirm', '/team', '/pay', '/gamified-assessments'];
   var TEXT = {
     'experience what they feel': '/experience',
     'book a consultation': '/consult',
     'book expert consultation': '/consult',
-    'assessments': '/assessments'
+    'gamified quests': '/gamified-assessments',
+    'play gamified quests': '/gamified-assessments'
   };
 
   function ownPath(href) {
@@ -46,29 +47,83 @@ export const SITE_PATCH = '<script>' + String.raw`
 
   function addNav() {
     var ul = document.querySelector('header nav[aria-label="Main"] ul');
-    if (!ul || ul.querySelector('[data-bc]')) return;
-    var items = ul.querySelectorAll(':scope > li');
-    var base = null;
-    for (var i = 0; i < items.length; i++) if (/contact us/i.test(items[i].textContent)) base = items[i];
-    if (!base) base = items[items.length - 1];
-    if (!base) return;
-    var li = base.cloneNode(true);
-    li.setAttribute('data-bc', '1');
-    var a = li.querySelector('a');
-    if (!a) return;
-    a.setAttribute('href', '/consult');
-    var w = document.createTreeWalker(a, NodeFilter.SHOW_TEXT), n, last = null;
-    while ((n = w.nextNode())) if (n.nodeValue.trim()) last = n;
-    if (!last) return;
-    last.nodeValue = 'Book a Consultation';
-    li.style.opacity = '1'; li.style.transform = 'none';
-    li.querySelectorAll('[style]').forEach(function (s) { s.style.opacity = '1'; s.style.transform = 'none'; });
-    ul.insertBefore(li, base);
+    if (!ul) return;
+    if (!ul.querySelector('[data-bc]')) {
+      var items = ul.querySelectorAll(':scope > li');
+      var base = null;
+      for (var i = 0; i < items.length; i++) if (/contact us/i.test(items[i].textContent)) base = items[i];
+      if (!base) base = items[items.length - 1];
+      if (base) {
+        var li = base.cloneNode(true);
+        li.setAttribute('data-bc', '1');
+        var a = li.querySelector('a');
+        if (a) {
+          a.setAttribute('href', '/consult');
+          var w = document.createTreeWalker(a, NodeFilter.SHOW_TEXT), n, last = null;
+          while ((n = w.nextNode())) if (n.nodeValue.trim()) last = n;
+          if (last) {
+            last.nodeValue = 'Book a Consultation';
+            li.style.opacity = '1'; li.style.transform = 'none';
+            li.querySelectorAll('[style]').forEach(function (s) { s.style.opacity = '1'; s.style.transform = 'none'; });
+            ul.insertBefore(li, base);
+          }
+        }
+      }
+    }
+    if (!ul.querySelector('[data-gq]')) {
+      var items2 = ul.querySelectorAll(':scope > li');
+      var assessLi = null;
+      for (var j = 0; j < items2.length; j++) if (/assessments/i.test(items2[j].textContent)) assessLi = items2[j];
+      if (assessLi && assessLi.parentNode) {
+        var gqLi = assessLi.cloneNode(true);
+        gqLi.setAttribute('data-gq', '1');
+        var gqA = gqLi.querySelector('a');
+        if (gqA) {
+          gqA.setAttribute('href', '/gamified-assessments');
+          var w2 = document.createTreeWalker(gqA, NodeFilter.SHOW_TEXT), n2, last2 = null;
+          while ((n2 = w2.nextNode())) if (n2.nodeValue.trim()) last2 = n2;
+          if (last2) {
+            last2.nodeValue = 'Gamified Quests';
+            gqLi.style.opacity = '1'; gqLi.style.transform = 'none';
+            gqLi.querySelectorAll('[style]').forEach(function (s) { s.style.opacity = '1'; s.style.transform = 'none'; });
+            assessLi.parentNode.insertBefore(gqLi, assessLi.nextSibling);
+          }
+        }
+      }
+    }
+  }
+
+  function addQuestBanner() {
+    if (location.pathname !== '/assessments' && location.pathname !== '/assessments/') return;
+    if (document.getElementById('gamified-quest-banner')) return;
+    var target = document.querySelector('main section') || document.querySelector('main');
+    if (!target) return;
+    var banner = document.createElement('div');
+    banner.id = 'gamified-quest-banner';
+    banner.style.cssText = 'max-width:1200px;margin:20px auto 10px;padding:0 16px;box-sizing:border-box;';
+    banner.innerHTML = '<a href="/gamified-assessments" style="display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(135deg,#FFFBEB 0%,#FEF3C7 100%);border:2px solid #FDE68A;border-radius:18px;padding:16px 24px;text-decoration:none;box-shadow:0 6px 18px rgba(217,119,6,0.12);transition:transform .2s ease;font-family:inherit;">' +
+      '<div style="display:flex;align-items:center;gap:16px;">' +
+        '<span style="font-size:32px;line-height:1;">🎮</span>' +
+        '<div>' +
+          '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+            '<span style="font-size:16px;font-weight:800;color:#92400E;letter-spacing:-0.2px;">Looking for interactive child-friendly game assessments?</span>' +
+            '<span style="background:#F59E0B;color:#FFF;font-size:11px;font-weight:700;padding:3px 10px;border-radius:9999px;text-transform:uppercase;letter-spacing:0.5px;">Ages 4–12</span>' +
+          '</div>' +
+          '<p style="margin:4px 0 0;font-size:13.5px;color:#78350F;line-height:1.4;">Try our new 100% gamified pediatric quests (ADHD, Autism, Dyslexia) with pure visual & tactile games and zero reading questions.</p>' +
+        '</div>' +
+      '</div>' +
+      '<span style="background:linear-gradient(135deg,#D97706,#B45309);color:#FFF;font-size:13.5px;font-weight:700;padding:10px 20px;border-radius:9999px;white-space:nowrap;box-shadow:0 2px 8px rgba(180,83,9,0.3);flex-shrink:0;">Play Gamified Quests →</span>' +
+    '</a>';
+    target.parentNode.insertBefore(banner, target);
   }
 
   function start() {
     addNav();
-    new MutationObserver(addNav).observe(document.documentElement, {childList: true, subtree: true});
+    addQuestBanner();
+    new MutationObserver(function() {
+      addNav();
+      addQuestBanner();
+    }).observe(document.documentElement, {childList: true, subtree: true});
   }
   if (document.readyState === 'complete') setTimeout(start, 1500);
   else window.addEventListener('load', function () { setTimeout(start, 1500); });

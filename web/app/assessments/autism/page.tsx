@@ -272,6 +272,78 @@ const EMOTION_MIRROR_TRIALS = [
   }
 ]
 
+// PRACTICE-V2: unrecorded practice rounds, picture first, warm feedback. Nothing here is stored or scored.
+function sayIt(t: string) {
+  try {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+    const u = new SpeechSynthesisUtterance(t)
+    u.rate = 0.9
+    u.lang = 'en-IN'
+    window.speechSynthesis.cancel()
+    window.speechSynthesis.speak(u)
+  } catch {}
+}
+
+function StarSvg({className = 'w-10 h-10'}: {className?: string}) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z" fill="#FBBF24" stroke="#F59E0B" strokeWidth="1.2" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+type Prac = {g: 'ja' | 'tom' | 'dccs'; i: number; tries: number; msg: '' | 'yay' | 'retry'; done: boolean}
+const JA_PRACTICE = [
+  {targetPot: 1, avatarGaze: 'center' as const, isPointing: true},
+  {targetPot: 2, avatarGaze: 'right' as const, isPointing: true},
+]
+const TOM_PRACTICE = [
+  {target: 'happy' as const, options: ['happy', 'sad'] as const},
+  {target: 'sad' as const, options: ['calm', 'sad', 'happy'] as const},
+]
+const DCCS_PRACTICE = [
+  {color: 'red' as const, shape: 'circle' as const, tray: 0},
+  {color: 'blue' as const, shape: 'star' as const, tray: 1},
+]
+
+function PracticeFrame({step, total, say, msg, children}: {step: number; total: number; say: string; msg: '' | 'yay' | 'retry'; children: React.ReactNode}) {
+  return (
+    <div className="rounded-3xl border-4 border-amber-300 bg-white/95 backdrop-blur-md p-5 md:p-8 shadow-2xl text-center select-none">
+      <div className="mb-3 flex items-center justify-center gap-2" aria-label={`Practice ${Math.min(step + 1, total)} of ${total}`}>
+        {Array.from({length: total}).map((_, k) => (
+          <span key={k} className={`h-5 w-5 rounded-full border-2 border-amber-400 ${k < step ? 'bg-amber-400' : 'bg-white'}`} />
+        ))}
+        <span className="ml-2 rounded-full bg-amber-100 px-3 py-1 text-sm font-bold text-amber-800">Practice</span>
+      </div>
+      <p className="font-patrick text-2xl md:text-3xl font-bold text-teal-900 mb-4 leading-snug">{say}</p>
+      {children}
+      <div className="mt-4 min-h-[4.5rem]" role="status" aria-live="polite">
+        {msg === 'yay' && (
+          <div className="flex items-center justify-center gap-3 animate-bounce">
+            <ForestSpriteFaceSvg emotion="happy" className="h-16 w-16" />
+            <StarSvg />
+            <span className="font-patrick text-3xl font-bold text-emerald-700">Yay!</span>
+          </div>
+        )}
+        {msg === 'retry' && (
+          <div className="flex items-center justify-center gap-3">
+            <ForestSpriteFaceSvg emotion="calm" className="h-14 w-14" />
+            <span className="font-patrick text-2xl font-bold text-sky-700">Nice try! Look again.</span>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function HandArrow() {
+  return (
+    <svg viewBox="0 0 24 24" className="absolute -top-9 h-10 w-10 animate-bounce text-amber-500" aria-hidden="true">
+      <path d="M12 21l-8-9h5V3h6v9h5z" fill="currentColor" />
+    </svg>
+  )
+}
+
 function __McInner() {
   const [stage, setStage] = useState<'welcome' | 'avatar' | 'ja_story' | 'ja_game' | 'tom_story' | 'tom_game' | 'sensory_story' | 'sensory_game' | 'dccs_story' | 'dccs_game' | 'agent_eval' | 'celebration'>('welcome')
 
@@ -325,6 +397,13 @@ function __McInner() {
   const [keeperObs, setKeeperObs] = useState<any>(null)
   const [parentOk, setParentOk] = useState(false)
   const [notice, setNotice] = useState('')
+  const [prac, setPrac] = useState<Prac | null>(null)
+  const [dccsSwitchSeen, setDccsSwitchSeen] = useState(false)
+  const pracTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => { if (pracTimer.current) clearTimeout(pracTimer.current) }, [])
+  useEffect(() => {
+    if (stage === 'dccs_game' && dccsIndex === 3 && !dccsSwitchSeen) sayIt('New game! Now the same shape goes together!')
+  }, [stage, dccsIndex, dccsSwitchSeen])
 
   // Joint Attention Loop
   useEffect(() => {
@@ -442,6 +521,124 @@ function __McInner() {
     }
   }
 
+  // ---- practice rounds (never recorded) ----
+  function startJa() { playAudio('whoosh'); setPrac(null); setJaTrialIndex(0); setJaResponseTimes([]); setJaCorrectCount(0); setStage('ja_game') }
+  function startTom() { playAudio('whoosh'); setPrac(null); setTomTrialIndex(0); setTomScore(0); setStage('tom_game') }
+  function startDccs() { playAudio('fanfare'); setPrac(null); setDccsIndex(0); setDccsSwitchSeen(false); setStage('dccs_game') }
+  function beginPractice(g: Prac['g'], line: string) {
+    playAudio('whoosh')
+    setPrac({g, i: 0, tries: 0, msg: '', done: false})
+    sayIt(line)
+  }
+  function pracAnswer(ok: boolean, total: number) {
+    if (!prac || prac.msg === 'yay' || prac.done) return
+    if (pracTimer.current) clearTimeout(pracTimer.current)
+    if (ok) {
+      playAudio('chime')
+      sayIt('Yay! You did it!')
+      setPrac({...prac, msg: 'yay'})
+      pracTimer.current = setTimeout(() => {
+        setPrac((p) => (p ? (p.i + 1 < total ? {...p, i: p.i + 1, tries: 0, msg: ''} : {...p, done: true, msg: ''}) : p))
+      }, 1500)
+    } else {
+      playAudio('tap')
+      sayIt('Nice try! Look again.')
+      setPrac({...prac, tries: prac.tries + 1, msg: 'retry'})
+    }
+  }
+  function renderPracDone(g: Prac['g'], onStart: () => void) {
+    return (
+      <PracticeFrame step={2} total={2} say="You are ready!" msg="">
+        <div className="flex flex-col items-center gap-4">
+          <ForestSpriteFaceSvg emotion="happy" className="h-24 w-24 animate-bounce" />
+          <div className="flex gap-1"><StarSvg /><StarSvg /><StarSvg /></div>
+          <button type="button" onClick={onStart} className="rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 px-12 py-5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all">Play! ▶</button>
+          <button type="button" onClick={() => { playAudio('tap'); setPrac({g, i: 0, tries: 0, msg: '', done: false}) }} className="rounded-full border-2 border-teal-600 bg-white px-6 py-2 text-base font-bold text-teal-800">Practice again</button>
+        </div>
+      </PracticeFrame>
+    )
+  }
+  function renderJaPractice() {
+    if (!prac) return null
+    if (prac.done) return renderPracDone('ja', startJa)
+    const t = JA_PRACTICE[prac.i]
+    const showHand = prac.tries >= 2 || (prac.i === 0 && guardianAge <= 7)
+    const types = ['A', 'B', 'C'] as const
+    return (
+      <PracticeFrame step={prac.i} total={JA_PRACTICE.length} say={prac.i === 0 ? 'Aria points! Tap that pot!' : 'Where is Aria looking? Tap that pot!'} msg={prac.msg}>
+        <div className="my-2">
+          <GazeGuide key={`pj${prac.i}`} gaze={t.avatarGaze} isPointing={t.isPointing} onCue={() => {}} />
+        </div>
+        <div className="mx-auto my-6 grid max-w-lg grid-cols-3 gap-3 md:gap-6">
+          {types.map((ty, idx) => (
+            <button
+              key={ty}
+              type="button"
+              aria-label={`Pot ${idx + 1}`}
+              onClick={() => pracAnswer(idx === t.targetPot, JA_PRACTICE.length)}
+              className={`relative flex min-h-[120px] flex-col items-center justify-center rounded-3xl border-4 bg-slate-50 p-5 shadow-md transition-all hover:scale-105 active:scale-95 ${showHand && idx === t.targetPot ? 'border-amber-400 animate-pulse' : 'border-slate-200'}`}
+            >
+              {showHand && idx === t.targetPot && <HandArrow />}
+              <ArtisanVesselSvg type={ty} />
+            </button>
+          ))}
+        </div>
+      </PracticeFrame>
+    )
+  }
+  function renderTomPractice() {
+    if (!prac) return null
+    if (prac.done) return renderPracDone('tom', startTom)
+    const t = TOM_PRACTICE[prac.i]
+    const showHint = prac.tries >= 2
+    return (
+      <PracticeFrame step={prac.i} total={TOM_PRACTICE.length} say="Tap the same face!" msg={prac.msg}>
+        <div className="relative mx-auto my-4 flex h-44 w-44 items-center justify-center overflow-hidden rounded-full border-8 border-teal-300/80 bg-gradient-to-b from-[#064E3B] via-[#022C22] to-[#01140E] shadow-[0_0_40px_rgba(20,184,166,0.35)]">
+          <div className="animate-bounce"><ForestSpriteFaceSvg emotion={t.target} className="h-28 w-28" /></div>
+        </div>
+        <div className={`mx-auto grid max-w-lg gap-3 sm:gap-6 ${t.options.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+          {t.options.map((o) => (
+            <button
+              key={o}
+              type="button"
+              aria-label={o}
+              onClick={() => pracAnswer(o === t.target, TOM_PRACTICE.length)}
+              className={`flex min-h-[120px] items-center justify-center rounded-3xl border-4 bg-white p-4 shadow-md transition-all hover:scale-105 active:scale-95 ${showHint && o === t.target ? 'border-amber-400 animate-pulse' : 'border-[#E2E8F0]'}`}
+            >
+              <ForestSpriteFaceSvg emotion={o} className="h-20 w-20 sm:h-24 sm:w-24" />
+            </button>
+          ))}
+        </div>
+      </PracticeFrame>
+    )
+  }
+  function renderDccsPractice() {
+    if (!prac) return null
+    if (prac.done) return renderPracDone('dccs', startDccs)
+    const t = DCCS_PRACTICE[prac.i]
+    const showHint = prac.tries >= 2
+    const tray = (n: number, color: 'red' | 'blue', shape: 'star' | 'circle', label: string, tone: string) => (
+      <button
+        type="button"
+        aria-label={label}
+        onClick={() => pracAnswer(n === t.tray, DCCS_PRACTICE.length)}
+        className={`flex min-h-[150px] flex-col items-center justify-center gap-2 rounded-3xl border-4 p-5 shadow-md transition-all hover:scale-105 active:scale-95 ${tone} ${showHint && n === t.tray ? 'animate-pulse ring-4 ring-amber-400' : ''}`}
+      >
+        <JewelCardSvg color={color} shape={shape} />
+        <span className="text-lg font-bold text-slate-800">{label}</span>
+      </button>
+    )
+    return (
+      <PracticeFrame step={prac.i} total={DCCS_PRACTICE.length} say="Same COLOR goes together!" msg={prac.msg}>
+        <div className="my-4 flex justify-center"><JewelCardSvg color={t.color} shape={t.shape} /></div>
+        <div className="mx-auto grid max-w-md grid-cols-2 gap-4">
+          {tray(0, 'red', 'star', 'Red', 'border-rose-300 bg-rose-50/70')}
+          {tray(1, 'blue', 'circle', 'Blue', 'border-blue-300 bg-blue-50/70')}
+        </div>
+      </PracticeFrame>
+    )
+  }
+
   return (
     <main data-no-listen="true" className="relative min-h-screen bg-[#041D15] py-8 px-4 font-poppins text-[#1F2937] overflow-x-hidden selection:bg-teal-400 selection:text-teal-950">
       {/* Immersive Fantasy Whispering Groves Twilight Backdrop */}
@@ -530,7 +727,8 @@ function __McInner() {
         )}
 
         {/* 2. CHAPTER 1 STORY: ARIA'S POTTERY VERANDA */}
-        {stage === 'ja_story' && (
+        {stage === 'ja_story' && prac?.g === 'ja' && renderJaPractice()}
+        {stage === 'ja_story' && !prac && (
           <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
             <div className="relative h-60 md:h-72 w-full overflow-hidden bg-gradient-to-b from-[#CCFBF1] to-[#DBEAFE]">
               <img
@@ -551,23 +749,17 @@ function __McInner() {
             </div>
 
             <div className="p-6 md:p-8">
-              <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
-                Aria stands on a shaded sandstone veranda surrounded by handcrafted ceramic pots. She wants to show you a hidden treasure. <strong>Watch where Aria looks and points</strong>, and tap the exact vessel she is signaling!
+              <p className="font-patrick text-2xl md:text-3xl font-bold text-teal-900 text-center leading-snug mb-6">
+                Aria will point at a pot. Tap the pot she points to!
               </p>
 
               <div className="text-center">
                 <button
                   type="button"
-                  onClick={() => {
-                    playAudio('whoosh')
-                    setJaTrialIndex(0)
-                    setJaResponseTimes([])
-                    setJaCorrectCount(0)
-                    setStage('ja_game')
-                  }}
-                  className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
+                  onClick={() => beginPractice('ja', 'Aria will point at a pot. Tap the pot she points to!')}
+                  className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-12 py-5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
                 >
-                  Step onto Veranda ({JA_TRIALS.length} Encounters) →
+                  Let's practice! ▶
                 </button>
               </div>
             </div>
@@ -627,7 +819,8 @@ function __McInner() {
         )}
 
         {/* 4. CHAPTER 2 STORY: THE EMOTION MIRROR */}
-        {stage === 'tom_story' && (
+        {stage === 'tom_story' && prac?.g === 'tom' && renderTomPractice()}
+        {stage === 'tom_story' && !prac && (
           <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
             <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#1E3A8A]">
               <img
@@ -648,8 +841,8 @@ function __McInner() {
             </div>
 
             <div className="p-6 md:p-8 text-center">
-              <p className="text-sm md:text-base text-[#1E293B] font-medium leading-relaxed mb-6 max-w-lg mx-auto">
-                Look into the magical forest mirror! The Forest Sprite will show different feelings. Tap the emotion crystal that matches the Sprite’s face!
+              <p className="font-patrick text-2xl md:text-3xl font-bold text-teal-900 leading-snug mb-6 max-w-lg mx-auto">
+                The Sprite makes a face. Tap the same face!
               </p>
 
               <div className="flex items-center justify-center gap-6 mb-8">
@@ -674,15 +867,10 @@ function __McInner() {
               <div className="text-center">
                 <button
                   type="button"
-                  onClick={() => {
-                    playAudio('whoosh')
-                    setTomTrialIndex(0)
-                    setTomScore(0)
-                    setStage('tom_game')
-                  }}
-                  className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
+                  onClick={() => beginPractice('tom', 'The Sprite makes a face. Tap the same face!')}
+                  className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-12 py-5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
                 >
-                  Peer into the Emotion Mirror (4 Mini Rounds) →
+                  Let's practice! ▶
                 </button>
               </div>
             </div>
@@ -813,11 +1001,14 @@ function __McInner() {
                   onClick={() => {
                     playAudio('fanfare')
                     setDccsIndex(0)
-                    setStage('dccs_game')
+                    setDccsSwitchSeen(false)
+                    setPrac({g: 'dccs', i: 0, tries: 0, msg: '', done: false})
+                    setStage('dccs_story')
+                    sayIt('Put the gem in the box with the same color!')
                   }}
-                  className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
+                  className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-12 py-5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
                 >
-                  Save Sanctuary & Enter Final Alchemy Trial →
+                  Save and play the last game ▶
                 </button>
               </div>
             </div>
@@ -825,7 +1016,27 @@ function __McInner() {
         )}
 
         {/* 7. CHAPTER 4 GAMEPLAY: ALCHEMICAL DCCS */}
-        {stage === 'dccs_game' && DCCS_CARDS[dccsIndex] && (
+        {stage === 'dccs_story' && renderDccsPractice()}
+
+        {stage === 'dccs_game' && dccsIndex === 3 && !dccsSwitchSeen && (
+          <div className="rounded-3xl border-4 border-blue-300 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
+            <p className="font-patrick text-4xl md:text-5xl font-bold text-blue-800 mb-2">New game!</p>
+            <p className="font-patrick text-2xl md:text-3xl font-bold text-teal-900 mb-6">Now the same SHAPE goes together!</p>
+            <div className="mb-8 flex items-center justify-center gap-10">
+              <div className="flex flex-col items-center gap-2"><JewelCardSvg color="red" shape="star" /><span className="text-lg font-bold text-slate-800">Star</span></div>
+              <div className="flex flex-col items-center gap-2"><JewelCardSvg color="blue" shape="circle" /><span className="text-lg font-bold text-slate-800">Circle</span></div>
+            </div>
+            <button
+              type="button"
+              onClick={() => { playAudio('whoosh'); setDccsSwitchSeen(true); dccsStartRef.current = performance.now() }}
+              className="rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 px-12 py-5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
+            >
+              OK, let's go! ▶
+            </button>
+          </div>
+        )}
+
+        {stage === 'dccs_game' && DCCS_CARDS[dccsIndex] && !(dccsIndex === 3 && !dccsSwitchSeen) && (
           <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-4">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
@@ -834,12 +1045,12 @@ function __McInner() {
               <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
                 dccsRule === 'color' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-blue-50 text-blue-700 border-blue-200'
               }`}>
-                ACTIVE RULE: SORT BY {dccsRule.toUpperCase()}
+                {dccsRule === 'color' ? 'COLOR game' : 'SHAPE game'}
               </span>
             </div>
 
-            <p className="text-xs text-[#64748B] mb-6">
-              {dccsRule === 'color' ? 'Sort into the matching COLOR tray!' : 'Attention! Rule has switched! Sort into the matching SHAPE tray!'}
+            <p className="font-patrick text-2xl md:text-3xl font-bold text-teal-900 mb-4">
+              {dccsRule === 'color' ? 'Same COLOR goes together!' : 'Same SHAPE goes together!'}
             </p>
 
             {/* Target Gem to Sort */}
@@ -855,16 +1066,20 @@ function __McInner() {
               <button
                 type="button"
                 onClick={() => handleDccsSort(0)}
-                className="p-5 rounded-2xl border-2 border-rose-300 bg-rose-50/70 hover:bg-rose-100/70 text-xs font-bold text-rose-800 shadow-sm transition-all flex flex-col items-center"
+                aria-label="Red star box"
+                className="min-h-[150px] p-5 rounded-3xl border-4 border-rose-300 bg-rose-50/70 hover:bg-rose-100/70 active:scale-95 shadow-md transition-all flex flex-col items-center justify-center gap-2"
               >
-                <span>Tray A: Red / Star</span>
+                <JewelCardSvg color="red" shape="star" />
+                <span className="text-lg font-bold text-rose-800">Red star</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleDccsSort(1)}
-                className="p-5 rounded-2xl border-2 border-blue-300 bg-blue-50/70 hover:bg-blue-100/70 text-xs font-bold text-blue-800 shadow-sm transition-all flex flex-col items-center"
+                aria-label="Blue circle box"
+                className="min-h-[150px] p-5 rounded-3xl border-4 border-blue-300 bg-blue-50/70 hover:bg-blue-100/70 active:scale-95 shadow-md transition-all flex flex-col items-center justify-center gap-2"
               >
-                <span>Tray B: Blue / Circle</span>
+                <JewelCardSvg color="blue" shape="circle" />
+                <span className="text-lg font-bold text-blue-800">Blue circle</span>
               </button>
             </div>
           </div>

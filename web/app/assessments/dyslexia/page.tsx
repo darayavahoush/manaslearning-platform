@@ -98,10 +98,11 @@ function AudioChoice({ items, mode, vol, focus, onInk, onDone }: { items: Item[]
     if (!ready || picked !== null || !t0.current) return;
     if (!item.practice) log.current.push({ s: item.say, ok: n === item.ok, rt: Math.max(0, (down.current > t0.current ? down.current : performance.now()) - t0.current) });
     setPicked(n); onInk();
+    if (item.practice) speak(n === item.ok ? "Yes! Great listening!" : "Good try! This one was right.", vol); // PRACTICE-V2
     setTimeout(() => {
       if (i + 1 < items.length) setI(i + 1);
       else onDone({ trials: log.current.length, correct: log.current.filter((x) => x.ok).length, medianMs: median(log.current.map((x) => x.rt)), medianSec: Math.round(median(log.current.map((x) => x.rt)) / 100) / 10, replays: replays.current, items: log.current.map((x) => ({ s: x.s, ok: x.ok ? 1 : 0, ms: Math.round(x.rt) })) });
-    }, 1000);
+    }, item.practice ? 2400 : 1000);
   };
   const words = [item.a, item.b];
   return (
@@ -117,12 +118,17 @@ function AudioChoice({ items, mode, vol, focus, onInk, onDone }: { items: Item[]
           </Stone>
         ))}
       </div>
-      <p className="dq-small">{ready ? "Your turn" : "Listening..."}</p>
+      <p className="dq-small">{item.practice && picked !== null ? (picked === item.ok ? "Yes! Great listening!" : "Good try! The glowing one was right.") : ready ? "Your turn" : "Listening..."}</p>
     </div>
   );
 }
 
 const LET = ["b", "d", "p", "q"];
+// Two practice boards (not recorded): first an easy one, then one with look-alike letters.
+const PRACTICE_BOARDS = [
+  { target: "b", tiles: ["b", "o", "o", "b"] },
+  { target: "d", tiles: ["d", "b", "d", "p", "b", "q"] },
+];
 // Fixed boards: 4 matching tiles and 8 look-alikes each (4 mirror, 2 + 2 other).
 const LAYOUT: Record<string, string[]> = {
   b: ["d", "b", "p", "b", "d", "q", "d", "b", "p", "d", "q", "b"],
@@ -133,10 +139,31 @@ const LAYOUT: Record<string, string[]> = {
 function Letters({ vol, onInk, onDone }: { vol: number; onInk: () => void; onDone: (s: any) => void }) {
   const [r, setR] = useState(0);
   const [sel, setSel] = useState<number[]>([]);
+  const [pp, setPp] = useState(0);
+  const [pfb, setPfb] = useState({ msg: "", lock: false, tries: 0 });
   const st = useRef({ rounds: 0, hits: 0, falseTaps: 0, missed: 0, possibleHits: 0, possibleDistractors: 0, confusions: {} as Record<string, number>, byLetter: {} as Record<string, { hit: number; miss: number; fa: number }> });
   const target = LET[r];
+  const pb = PRACTICE_BOARDS[pp];
+  const checkPractice = () => {
+    if (!pb || pfb.lock) return;
+    const want = pb.tiles.map((t, k) => (t === pb.target ? k : -1)).filter((k) => k >= 0);
+    const ok = want.length === sel.length && want.every((k) => sel.includes(k));
+    if (ok) {
+      speak("Great looking!", vol);
+      setPfb({ msg: "Great looking!", lock: true, tries: 0 });
+      setTimeout(() => { setPfb({ msg: "", lock: false, tries: 0 }); setPp(pp + 1); }, 1800);
+    } else if (pfb.tries >= 1) {
+      speak("These ones face the same way.", vol);
+      setSel(want);
+      setPfb({ msg: "These ones face the same way.", lock: true, tries: pfb.tries + 1 });
+      setTimeout(() => { setPfb({ msg: "", lock: false, tries: 0 }); setPp(pp + 1); }, 2600);
+    } else {
+      speak("Nice try! Look again.", vol);
+      setPfb({ msg: "Nice try! Look again at which way it faces.", lock: false, tries: pfb.tries + 1 });
+    }
+  };
   const tiles = useMemo(() => LAYOUT[target], [target]);
-  useEffect(() => { setSel([]); const id = setTimeout(() => speak("Find every letter that looks exactly like this one.", vol), 400); return () => { clearTimeout(id); if (hasTTS()) window.speechSynthesis.cancel(); }; }, [r, vol]);
+  useEffect(() => { setSel([]); const id = setTimeout(() => speak("Find every letter that looks exactly like this one.", vol), 400); return () => { clearTimeout(id); if (hasTTS()) window.speechSynthesis.cancel(); }; }, [r, vol, pp]);
   const done = () => {
     const s = st.current; s.rounds++; s.possibleHits += tiles.filter((t) => t === target).length; s.possibleDistractors += tiles.filter((t) => t !== target).length;
     tiles.forEach((t, k) => { const on = sel.includes(k); if (t === target) on ? s.hits++ : s.missed++; else if (on) { s.falseTaps++; const key = `${target}>${t}`; s.confusions[key] = (s.confusions[key] || 0) + 1; } });
@@ -147,6 +174,20 @@ function Letters({ vol, onInk, onDone }: { vol: number; onInk: () => void; onDon
   };
   return (
     <div className="dq-center">
+      {pb && (
+        <>
+          <p className="dq-tag">Practice {pp + 1} of {PRACTICE_BOARDS.length}: nothing counts yet</p>
+          <div className="dq-lantern" aria-label={`Lantern letter ${pb.target}`}>{pb.target}</div>
+          <div className="dq-grid">
+            {pb.tiles.map((t, k) => (
+              <button key={k} className={"dq-tile" + (sel.includes(k) ? " on" : "")} aria-pressed={sel.includes(k)} disabled={pfb.lock} onClick={() => setSel(sel.includes(k) ? sel.filter((x) => x !== k) : [...sel, k])}>{t}</button>
+            ))}
+          </div>
+          <p className="dq-small" role="status">{pfb.msg || "Tap every letter that looks the same, then press Done."}</p>
+          <button className="dq-btn" disabled={pfb.lock || sel.length === 0} onClick={checkPractice}>Done</button>
+        </>
+      )}
+      {!pb && (<>
       <div className="dq-lantern" aria-label={`Lantern letter ${target}`}>{target}</div>
       <div className="dq-grid">
         {tiles.map((t, k) => (
@@ -154,6 +195,7 @@ function Letters({ vol, onInk, onDone }: { vol: number; onInk: () => void; onDon
         ))}
       </div>
       <button className="dq-btn" onClick={done}>Done</button>
+      </>)}
     </div>
   );
 }

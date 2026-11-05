@@ -1,4 +1,6 @@
 'use client'
+import WelcomeWizard from '../../../components/assessments/WelcomeWizard'
+import ReadAloud from '../../../components/assessments/ReadAloud'
 import ClinicianReportButton from '../../../components/assessments/ClinicianReport'
 import {useState, useEffect, useRef, useMemo} from 'react'
 import Link from 'next/link'
@@ -474,6 +476,7 @@ function __McInner() {
           </div>
         </div>
 
+        <ReadAloud age={guardianAge} stage={stage} />
         {/* 1. WELCOME SCREEN: LUMINA GROVES REALM */}
         {stage === 'welcome' && (
           <div className="rounded-3xl border-2 border-teal-200 bg-white overflow-hidden shadow-2xl">
@@ -500,89 +503,26 @@ function __McInner() {
             </div>
 
             <div className="p-6 md:p-10">
-              {/* Grove Affinity Selector */}
-              <div className="mb-8">
-                <label className="block text-xs font-bold uppercase tracking-wider text-teal-900 mb-3">
-                  Step 1: Choose Your Grove Affinity
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {GROVE_AFFINITIES.map((cls) => {
-                    const isSelected = guildAffinity === cls.name
-                    const SvgComponent = cls.Svg
-                    return (
-                      <button
-                        key={cls.name}
-                        type="button"
-                        onClick={() => { playAudio('tap'); setGuildAffinity(cls.name) }}
-                        className={`rounded-2xl p-4 text-left border-2 transition-all flex flex-col justify-between ${
-                          isSelected
-                            ? 'border-teal-500 bg-teal-50/80 shadow-md ring-2 ring-teal-300'
-                            : 'border-[#E7E5E4] bg-white hover:border-teal-300'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className={`p-2 rounded-xl ${isSelected ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
-                            <SvgComponent className="w-5 h-5" />
-                          </div>
-                          {isSelected && <span className="text-[10px] font-bold text-teal-800 uppercase bg-teal-200/80 px-2 py-0.5 rounded-full">Active</span>}
-                        </div>
-                        <div>
-                          <strong className="text-sm text-[#0F172A] block font-bold">{cls.name}</strong>
-                          <span className="text-xs text-[#64748B]">{cls.desc}</span>
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* Guardian Codename & Age */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-teal-900 mb-2">
-                    Step 2: Enter Your Guardian Codename
-                  </label>
-                  <input
-                    type="text"
-                    value={guardianName}
-                    onChange={(e) => setGuardianName(e.target.value)}
-                    placeholder="e.g. Guardian Diya or Rohan of the Grove"
-                    className="w-full rounded-2xl border-2 border-[#E7E5E4] px-4 py-3 text-sm font-semibold text-[#0F172A] focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-teal-900 mb-2">
-                    Step 3: Age Category
-                  </label>
-                  <select
-                    value={guardianAge}
-                    onChange={(e) => setGuardianAge(Number(e.target.value))}
-                    className="w-full rounded-2xl border-2 border-[#E7E5E4] px-4 py-3 text-sm font-semibold text-[#0F172A] focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200 bg-white"
-                  >
-                    {[4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map((age) => (
-                      <option key={age} value={age}>
-                        Age {age}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <label className="mb-5 flex items-start gap-3 text-left text-xs leading-relaxed text-slate-700">
-                <input type="checkbox" checked={parentOk} onChange={(e) => setParentOk(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0" />
-                <span>I am this child&apos;s parent or guardian. This is a play activity, not a diagnosis. We do not save anything from this session. At the end, the codename and play counts are sent to write the summary, and an AI model may help word it.</span>
-              </label>
-              {/* Start Button */}
-              <div className="text-center pt-2">
-                <button
-                  type="button"
-                  disabled={!guardianName.trim() || !parentOk}
-                  onClick={() => { playAudio('chime'); setStage('ja_story') }}
-                  className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-10 py-4 text-base font-bold text-white shadow-lg hover:from-teal-700 hover:to-emerald-700 disabled:opacity-50 hover:scale-105 active:scale-95 transition-all"
-                >
-                  Enter the Whispering Groves: Chapter 1 →
-                </button>
-              </div>
+              <WelcomeWizard
+                theme="teal"
+                classLabel="Grove Affinity"
+                classes={GROVE_AFFINITIES}
+                selected={guildAffinity}
+                onSelect={(n) => { playAudio('tap'); setGuildAffinity(n) }}
+                nameLabel="Guardian Codename"
+                namePlaceholder="e.g. Guardian Diya or Rohan of the Grove"
+                name={guardianName}
+                onName={setGuardianName}
+                ages={[4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}
+                age={guardianAge}
+                onAge={setGuardianAge}
+                ageNote={(a) => (a <= 8 ? 'For this age each story screen has a Hear this button that reads the instructions aloud.' : '')}
+                consent={parentOk}
+                onConsent={setParentOk}
+                startLabel="Enter the Whispering Groves: Chapter 1 →"
+                onStart={() => { playAudio('chime'); setStage('ja_story') }}
+                onTick={() => playAudio('tap')}
+              />
             </div>
           </div>
         )}

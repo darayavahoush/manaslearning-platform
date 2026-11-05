@@ -136,14 +136,24 @@ function AstrolabeCrystalSvg({className = 'w-6 h-6'}: {className?: string}) {
 }
 
 // --- Go/no-go task: fixed, balanced order so every child sees the same trials ---------------------------
-// G = sunbird (tap), N = moth (wait). 14 sunbirds, 6 moths, never two moths in a row.
-const CPT_ORDER = 'GGNGGGNGGNGGGNGGNGGN'
+// G = sunbird (tap), N = moth (wait). Rounds of 10: 7 sunbirds, 3 moths, never two moths in a row.
+// The first 20 entries are the original order; later rounds were generated once from a fixed seed (20261105).
+const CPT_ORDER = 'GGNGGGNGGNGGGNGGNGGNGGNGGGNGGNGGNGNGGNGGGGNGGNGGGNGNGGGGGNGN'
 // Wait before each shape appears (ms). Same four values as before, in a fixed order, five of each.
-const CPT_WAITS = [1200, 2050, 850, 1600, 1600, 850, 2050, 1200, 850, 1200, 1600, 2050, 2050, 1600, 1200, 850, 1200, 850, 2050, 1600]
+const CPT_WAITS = [1200, 2050, 850, 1600, 1600, 850, 2050, 1200, 850, 1200, 1600, 2050, 2050, 1600, 1200, 850, 1200, 850, 2050, 1600, 850, 1200, 2050, 1600, 2050, 1200, 1600, 850, 2050, 1600, 1200, 850, 2050, 1600, 850, 1200, 2050, 1600, 850, 1200, 2050, 850, 1600, 1200, 850, 1600, 1200, 2050, 1600, 1200, 2050, 850, 1600, 850, 1200, 2050, 1200, 1600, 850, 2050]
 // A tap counts from the moment the shape appears until this long after, even if the shape has already gone.
 const CPT_WINDOW_MS = 1000
 // A "hit" faster than this is counted as an early tap, not as a reaction.
 const CPT_MIN_RT_MS = 150
+// Task length and display time by age. These are OUR ESTIMATES for child-friendly length, not published norms.
+// A round is 10 sightings. Ages 4-5: 3 rounds, shape shown 1.5 s. Ages 6-7: 4 rounds, 0.68 s. Ages 8-11: 4-5 rounds, 0.54 s. Ages 12+: 5-6 rounds, 0.44 s.
+const CPT_BLOCK = 10
+function cptPlanFor(age: number) {
+  const blocks = age <= 5 ? 3 : age <= 8 ? 4 : age <= 12 ? 5 : 6
+  const displayMs = age <= 5 ? 1500 : age <= 7 ? 680 : age <= 11 ? 540 : 440
+  // the tap window must outlast the time the shape is on screen
+  return {blocks, size: CPT_BLOCK, total: blocks * CPT_BLOCK, displayMs, windowMs: Math.max(CPT_WINDOW_MS, displayMs + 300)}
+}
 // Arrow game: centre arrow direction (L/R) and whether the side arrows match (C) or conflict (I).
 const FLANKER_ORDER = ['LC', 'RI', 'RC', 'LC', 'LI', 'RC', 'RI', 'LC', 'RC', 'LI', 'LC', 'RI']
 
@@ -303,7 +313,13 @@ function __McInner() {
   const darkStage = stage === 'memory_story' || stage === 'memory_game' || stage === 'situational_story' || stage === 'situational_game'
 
   // CPT-3 Randomized Parameters (Conners Continuous Performance Battery)
-  const CPT_TOTAL_TRIALS = 20
+  const cptPlan = cptPlanFor(heroAge)
+  const CPT_TOTAL_TRIALS = cptPlan.total
+  const [cptResting, setCptResting] = useState(false)
+  const cptRestingRef = useRef(false)
+  const cptRestedAtRef = useRef(-1)
+  const cptBlockMissRef = useRef<number[]>([])
+  const cptBlockFaRef = useRef<number[]>([])
   const [cptTrialIndex, setCptTrialIndex] = useState(0)
   const [cptStimulus, setCptStimulus] = useState<'target' | 'distractor' | null>(null)
   const [cptResponseTimes, setCptResponseTimes] = useState<number[]>([])
@@ -383,9 +399,15 @@ function __McInner() {
       return
     }
 
+    // child-controlled rest between rounds; no timers run while resting
+    if (cptTrialIndex > 0 && cptTrialIndex % cptPlan.size === 0 && cptRestedAtRef.current !== cptTrialIndex) {
+      cptRestingRef.current = true
+      setCptResting(true)
+      return
+    }
     const stim = CPT_ORDER[cptTrialIndex % CPT_ORDER.length] === 'G' ? 'target' : 'distractor'
     const wait = CPT_WAITS[cptTrialIndex % CPT_WAITS.length]
-    const displayDuration = heroAge <= 7 ? 680 : heroAge <= 11 ? 540 : 440
+    const displayDuration = cptPlan.displayMs
     const timers: ReturnType<typeof setTimeout>[] = []
     const later = (fn: () => void, ms: number) => { timers.push(setTimeout(fn, ms)) }
 
@@ -406,15 +428,20 @@ function __McInner() {
       later(() => { setCptStimulus(null); setCptActive(false) }, displayDuration)
       later(() => {
         cptWindowOpenRef.current = false
-        if (stim === 'target' && !cptRespondedRef.current) setCptOmissions((o) => o + 1)
+        if (stim === 'target' && !cptRespondedRef.current) {
+          setCptOmissions((o) => o + 1)
+          const b = Math.floor(cptTrialIndex / cptPlan.size)
+          cptBlockMissRef.current[b] = (cptBlockMissRef.current[b] || 0) + 1
+        }
         later(() => setCptTrialIndex((i) => i + 1), 340)
-      }, CPT_WINDOW_MS)
+      }, cptPlan.windowMs)
     }, wait)
 
     return () => timers.forEach(clearTimeout)
-  }, [stage, cptTrialIndex, heroAge])
+  }, [stage, cptTrialIndex, heroAge, cptResting])
 
   function handleCptTap() {
+    if (cptRestingRef.current) return
     // nothing is on screen: not a hit and not a miss, but worth recording
     if (!cptWindowOpenRef.current) {
       setCptAnticipatory((n) => n + 1)
@@ -437,6 +464,8 @@ function __McInner() {
     } else {
       playAudio('miss')
       setCptCommissions((c) => c + 1)
+      const fb = Math.floor(cptTrialIndex / cptPlan.size)
+      cptBlockFaRef.current[fb] = (cptBlockFaRef.current[fb] || 0) + 1
     }
   }
 
@@ -619,6 +648,15 @@ function __McInner() {
       return xs.length >= 3 && m !== null ? Math.round(m) : null
     }
     const cptTargets = CPT_ORDER.slice(0, CPT_TOTAL_TRIALS).split('').filter((x) => x === 'G').length
+    const cptBlocks = {
+      size: cptPlan.size,
+      count: cptPlan.blocks,
+      displayMs: cptPlan.displayMs,
+      windowMs: cptPlan.windowMs,
+      rtMs: Array.from({length: cptPlan.blocks}, (_, b) => halfOf(b * cptPlan.size, (b + 1) * cptPlan.size)),
+      misses: Array.from({length: cptPlan.blocks}, (_, b) => cptBlockMissRef.current[b] || 0),
+      wrongTaps: Array.from({length: cptPlan.blocks}, (_, b) => cptBlockFaRef.current[b] || 0)
+    }
 
     const payload = {
       assessmentType: 'adhd',
@@ -626,6 +664,7 @@ function __McInner() {
       childAge: heroAge,
       guildClass,
       companion,
+      cptBlocks,
       telemetry: {
         cptTrials: CPT_TOTAL_TRIALS,
         cptResponses: cptResponseTimes.length,
@@ -815,13 +854,18 @@ function __McInner() {
                     setCptCommissions(0)
                     setCptLastRt(null)
                     setCptAnticipatory(0)
+                    setCptResting(false)
+                    cptRestingRef.current = false
+                    cptRestedAtRef.current = -1
+                    cptBlockMissRef.current = []
+                    cptBlockFaRef.current = []
                     cptRtLogRef.current = []
                     flankerTotalsRef.current = {congruent: 0, incongruent: 0}
                     setStage('cpt_game')
                   }}
                   className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
                 >
-                  Start (20 sightings) →
+                  Start ({CPT_TOTAL_TRIALS} sightings in {cptPlan.blocks} rounds) →
                 </button>
               </div>
             </div>
@@ -830,10 +874,23 @@ function __McInner() {
 
         {/* 3. CHAPTER 1 GAMEPLAY: CPT-3 VIGILANCE */}
         {stage === 'cpt_game' && (
-          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
+          <div className="relative rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
+            {cptResting && (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 rounded-3xl bg-white p-6 text-center">
+                <h3 className="font-patrick text-3xl font-bold text-[#92400E]">Rest time</h3>
+                <p className="max-w-sm text-sm text-[#475569]">Round {Math.floor(cptTrialIndex / cptPlan.size)} of {cptPlan.blocks} is done. Take a breath and wiggle your fingers. Press the button when you are ready for the next round.</p>
+                <button
+                  type="button"
+                  onClick={() => { cptRestedAtRef.current = cptTrialIndex; cptRestingRef.current = false; setCptResting(false); playAudio('chime') }}
+                  className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-3.5 text-base font-bold text-white shadow-lg"
+                >
+                  I am ready →
+                </button>
+              </div>
+            )}
             <div className="flex justify-between items-center mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
-                Sighting {cptTrialIndex + 1} of {CPT_TOTAL_TRIALS}
+                Sighting {Math.min(cptTrialIndex + 1, CPT_TOTAL_TRIALS)} of {CPT_TOTAL_TRIALS} · Round {Math.min(Math.floor(cptTrialIndex / cptPlan.size) + 1, cptPlan.blocks)} of {cptPlan.blocks}
               </span>
               <div className="flex items-center gap-2">
                 {cptLastRt && (

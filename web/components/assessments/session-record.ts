@@ -9,7 +9,7 @@ import {wilson} from './profile-stats'
  * this code; the record is built in the response and handed back to the caller.
  */
 
-export const RECORD_SCHEMA_VERSION = '1.8'
+export const RECORD_SCHEMA_VERSION = '1.9'
 
 export type Quest = 'adhd' | 'autism'
 export type AgeBand = '4-5' | '6-8' | '9-12' | '13-16'
@@ -88,6 +88,8 @@ export interface SessionRecord {
   steeringSkin?: 'arrows' | 'rocket'
   /** adhd quest only: how the star sequence was shown, lights or tones (record format 1.8 and later) */
   starMode?: 'lights' | 'tones'
+  /** autism quest only: the reversed turn, where the child shows Aria the urn with the sparkle (record format 1.9 and later) */
+  showRounds?: ShowRound[]
   limits: string[]
 }
 
@@ -121,12 +123,24 @@ export interface StarLevel {
   missedAt: number | null
 }
 
+export interface ShowRound {
+  round: number
+  /** the urn with the sparkle */
+  target: string
+  /** the urn the child showed Aria, or null when the turn was skipped */
+  chosen: string | null
+  matched: boolean | null
+  ms: number | null
+}
+
 export interface GazeRound {
   round: number
   /** the vessel Aria looked at */
   target: string
   /** true when Aria also pointed, false when she only looked */
   pointing: boolean
+  /** true for the harder encounters, where the target urn is partly behind a pillar */
+  hidden: boolean
   chosen: string
   matched: boolean
   ms: number | null
@@ -186,7 +200,7 @@ export function gameOf(key: string): string {
   if (/^flanker/.test(key)) return 'Steering game'
   if (/^workingMemory/.test(key)) return 'Star-sequence game'
   if (/^prematureReleases/.test(key)) return 'Patience game'
-  if (/^gaze/.test(key)) return 'Gaze game'
+  if (/^(gaze|show)/.test(key)) return 'Gaze game'
   if (/^feelings/.test(key)) return 'Feelings match'
   if (/^(light|sound|touch)Level|^(rampStop|adjust|shieldUses|designSec)/.test(key)) return 'Comfort choices'
   if (/^sort/.test(key)) return 'Sorting game'
@@ -247,6 +261,10 @@ function autismMeasures(t: Tele): Array<Measure | null> {
   return [
     proportion('gazeMatches', "Choices matching where Aria looked or pointed", get(t, 'jaCorrect'), get(t, 'jaTrials')),
     value('gazeMedianMs', 'Median time to choose in the gaze game', get(t, 'jaMedianMs'), 'ms', get(t, 'jaTrials')),
+    proportion('showBids', 'Turns in which the child showed Aria a vessel', get(t, 'showBids'), 2,
+      'Two short turns at the end of the gaze game. Showing is the child starting shared attention, not following it.'),
+    proportion('showMatches', 'Shown vessels that had the sparkle', get(t, 'showMatches'), get(t, 'showBids'),
+      'Only a few turns, so the interval is wide.'),
     proportion('feelingsMatches', 'Cartoon faces matched', get(t, 'feelingsCorrect'), get(t, 'feelingsTrials')),
     value('lightLevel', 'Comfort level chosen for light', get(t, 'lightLevel'), 'of 10', null, 'A preference, not a test result.'),
     value('soundLevel', 'Comfort level chosen for sound', get(t, 'soundLevel'), 'of 10', null, 'A preference, not a test result.'),
@@ -334,10 +352,13 @@ export function sortingCards(t: Tele): SortingCard[] | null {
 
 const POTS = ['Left urn', 'Centre amphora', 'Right vessel']
 // The six gaze encounters in the order played. Must match JA_TRIALS in app/assessments/autism/page.tsx.
-const GAZE_ORDER: Array<{pot: number; pointing: boolean}> = [
-  {pot: 0, pointing: false}, {pot: 2, pointing: true}, {pot: 1, pointing: false},
-  {pot: 0, pointing: true}, {pot: 2, pointing: false}, {pot: 1, pointing: true},
+// The last two are the harder ones, with the target urn partly behind a pillar.
+const GAZE_ORDER: Array<{pot: number; pointing: boolean; hidden: boolean}> = [
+  {pot: 0, pointing: false, hidden: false}, {pot: 2, pointing: true, hidden: false}, {pot: 1, pointing: false, hidden: false},
+  {pot: 0, pointing: true, hidden: false}, {pot: 2, pointing: false, hidden: true}, {pot: 1, pointing: true, hidden: true},
 ]
+// The two show-Aria turns: the urn with the sparkle, in order. Must match SHOW_TARGETS in app/assessments/autism/page.tsx.
+const SHOW_TARGETS = [2, 0]
 // The four feelings rounds in the order played, with the options as shown. Must match EMOTION_MIRROR_TRIALS in the same file.
 const FEELINGS_ROUNDS: Array<{target: string; options: string[]}> = [
   {target: 'happy', options: ['sad', 'happy', 'surprised']},
@@ -354,10 +375,34 @@ export function gazeRounds(t: Tele): GazeRound[] | null {
     const pick = get(t, `gazePick${i + 1}`)
     if (pick === null || ![0, 1, 2].includes(pick)) return null
     const g = GAZE_ORDER[i]
-    out.push({round: i + 1, target: POTS[g.pot], pointing: g.pointing, chosen: POTS[pick], matched: pick === g.pot, ms: cleanMs(get(t, `gazeMs${i + 1}`))})
+    out.push({round: i + 1, target: POTS[g.pot], pointing: g.pointing, hidden: g.hidden, chosen: POTS[pick], matched: pick === g.pot, ms: cleanMs(get(t, `gazeMs${i + 1}`))})
   }
   const total = get(t, 'jaCorrect')
   if (total !== null && total !== out.filter((x) => x.matched).length) return null
+  return out
+}
+
+/** Reversed turn: the child shows Aria a vessel. Kept only when the choices are valid and add up to the session totals. */
+export function showRounds(t: Tele): ShowRound[] | null {
+  const out: ShowRound[] = []
+  for (let i = 0; i < SHOW_TARGETS.length; i++) {
+    const pick = get(t, `showPick${i + 1}`)
+    if (pick !== null && ![0, 1, 2].includes(pick)) return null
+    const target = SHOW_TARGETS[i]
+    out.push({
+      round: i + 1,
+      target: POTS[target],
+      chosen: pick === null ? null : POTS[pick],
+      matched: pick === null ? null : pick === target,
+      ms: pick === null ? null : cleanMs(get(t, `showMs${i + 1}`)),
+    })
+  }
+  const bids = get(t, 'showBids')
+  // no show data at all (an older payload): leave the table out rather than show empty turns
+  if (bids === null && out.every((x) => x.chosen === null)) return null
+  if (bids !== null && bids !== out.filter((x) => x.chosen !== null).length) return null
+  const matches = get(t, 'showMatches')
+  if (matches !== null && matches !== out.filter((x) => x.matched).length) return null
   return out
 }
 
@@ -472,6 +517,7 @@ export function buildSessionRecord(args: {
     ...(args.quest === 'autism' && feelingsRounds(args.telemetry) ? {feelingsRounds: feelingsRounds(args.telemetry)!} : {}),
     ...(parentCard(args.telemetry) ? {parentCard: parentCard(args.telemetry)!} : {}),
     ...(args.quest === 'autism' && helpRound(args.telemetry) ? {helpRound: helpRound(args.telemetry)!} : {}),
+    ...(args.quest === 'autism' && showRounds(args.telemetry) ? {showRounds: showRounds(args.telemetry)!} : {}),
     ...(args.quest === 'adhd' && get(args.telemetry, 'starTone') !== null ? {starMode: get(args.telemetry, 'starTone') === 1 ? 'tones' as const : 'lights' as const} : {}),
     ...(args.quest === 'adhd' && get(args.telemetry, 'steerRocket') !== null ? {steeringSkin: get(args.telemetry, 'steerRocket') === 1 ? 'rocket' as const : 'arrows' as const} : {}),
     limits: LIMITS,

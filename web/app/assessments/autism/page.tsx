@@ -355,7 +355,7 @@ function HandArrow() {
 }
 
 function __McInner() {
-  const [stage, setStage] = useState<'welcome' | 'avatar' | 'ja_story' | 'ja_game' | 'tom_story' | 'tom_game' | 'sensory_story' | 'sensory_game' | 'dccs_story' | 'dccs_game' | 'parent_card' | 'agent_eval' | 'celebration'>('welcome')
+  const [stage, setStage] = useState<'welcome' | 'avatar' | 'ja_story' | 'ja_game' | 'tom_story' | 'tom_game' | 'sensory_story' | 'sensory_game' | 'ja_show' | 'dccs_story' | 'dccs_game' | 'parent_card' | 'agent_eval' | 'celebration'>('welcome')
 
   // Child Fantasy Persona
   const [guardianName, setGuardianName] = useState('')
@@ -364,6 +364,12 @@ function __McInner() {
 
   // Joint attention trials: Aria looks or points to one of three vessels, and the child chooses
   const [jaTrialIndex, setJaTrialIndex] = useState(0)
+  const [showRound, setShowRound] = useState(0)
+  const [showTurned, setShowTurned] = useState(false)
+  const [showPick, setShowPick] = useState<Array<number | null>>([])
+  const [showMs, setShowMs] = useState<Array<number | null>>([])
+  const [showSkipReady, setShowSkipReady] = useState(false)
+  const showStartRef = useRef<number>(0)
   const [jaResponseTimes, setJaResponseTimes] = useState<number[]>([])
   const [jaCorrectCount, setJaCorrectCount] = useState(0)
   // vessel chosen on each encounter: 0 left, 1 centre, 2 right
@@ -376,8 +382,13 @@ function __McInner() {
     const list = [0, 1, 2].flatMap((p) => [false, true].map((pt) => ({targetPot: p, avatarGaze: gz[p] as 'left' | 'center' | 'right', isPointing: pt, title: names[p]})))
     // Fixed order so every child sees the same six trials: each pot once with and once without
     // pointing, no pot twice in a row, pointing alternates.
-    return [0, 5, 2, 1, 4, 3].map((i) => list[i])
+    // the last two encounters are the harder ones: the target urn is partly behind a pillar
+    return [0, 5, 2, 1, 4, 3].map((i, pos) => ({...list[i], hidden: pos >= 4}))
   }, [])
+
+  // Reversed turn: the child shows Aria the urn with the sparkle, while Aria is looking away from it
+  const SHOW_TARGETS = [2, 0] as const
+  const POT_GAZE = ['left', 'center', 'right'] as const
 
   // Chapter 2: Emotion Mirror State (Visual Social Recognition Game)
   const [tomTrialIndex, setTomTrialIndex] = useState(0)
@@ -447,9 +458,49 @@ function __McInner() {
       jaStartRef.current = performance.now()
     } else if (stage === 'ja_game' && jaTrialIndex >= JA_TRIALS.length) {
       playAudio('fanfare')
-      setStage('tom_story')
+      setShowRound(0)
+      setShowTurned(false)
+      setShowPick([])
+      setShowMs([])
+      setStage('ja_show')
     }
   }, [stage, jaTrialIndex, JA_TRIALS])
+
+  // reversed turn: how long before a skip button appears, and the pause after the child's choice
+  useEffect(() => {
+    if (stage !== 'ja_show' || showTurned) return
+    setShowSkipReady(false)
+    showStartRef.current = performance.now()
+    const t = setTimeout(() => setShowSkipReady(true), 12000)
+    return () => clearTimeout(t)
+  }, [stage, showRound, showTurned])
+
+  function nextShow() {
+    setShowTurned(false)
+    if (showRound + 1 < SHOW_TARGETS.length) {
+      setShowRound((r) => r + 1)
+    } else {
+      playAudio('fanfare')
+      setStage('tom_story')
+    }
+  }
+
+  // null means the child skipped the turn
+  function handleShowPick(i: number | null) {
+    if (showTurned) return
+    if (i === null) {
+      setShowPick((p) => { const n = [...p]; n[showRound] = null; return n })
+      setShowMs((m) => { const n = [...m]; n[showRound] = null; return n })
+      nextShow()
+      return
+    }
+    const ms = Math.round(performance.now() - showStartRef.current)
+    setShowPick((p) => { const n = [...p]; n[showRound] = i; return n })
+    setShowMs((m) => { const n = [...m]; n[showRound] = ms; return n })
+    setShowTurned(true)
+    playAudio('chime')
+    setTimeout(() => nextShow(), 1800)
+  }
 
   function handlePotSelect(idx: number) {
     if (stage !== 'ja_game' || !jaReady) return
@@ -589,6 +640,13 @@ function __McInner() {
         ...Object.fromEntries(Array.from({length: JA_TRIALS.length}, (_, i) => [`gazeMs${i + 1}`, jaResponseTimes[i] ?? null])),
         // what helps the sad sprite: 0 a hug, 1 a quiet corner, 2 a story, and the time in ms
         helpPick: helpPick,
+        // reversed turn: vessel shown (0 left, 1 centre, 2 right) and time in ms, turns 1 and 2; how many were shown and how many had the sparkle
+        showPick1: showPick[0] ?? null,
+        showPick2: showPick[1] ?? null,
+        showMs1: showMs[0] ?? null,
+        showMs2: showMs[1] ?? null,
+        showBids: showPick.filter((x) => x !== null && x !== undefined).length,
+        showMatches: SHOW_TARGETS.filter((tg, i) => showPick[i] === tg).length,
         helpMs: helpMs,
         // round by round in the feelings match: face chosen (position in that round's options) and time in ms
         ...Object.fromEntries(Array.from({length: EMOTION_MIRROR_TRIALS.length}, (_, i) => [`feelingsPick${i + 1}`, tomPicks[i] ?? null])),
@@ -961,25 +1019,28 @@ function __McInner() {
               <button
                 type="button"
                 onClick={() => handlePotSelect(0)}
-                className="p-4 rounded-3xl border-2 border-slate-200 bg-slate-50 hover:border-teal-500 hover:bg-teal-50/50 transition-all flex flex-col items-center shadow-sm hover:shadow-md"
+                className="relative p-4 rounded-3xl border-2 border-slate-200 bg-slate-50 hover:border-teal-500 hover:bg-teal-50/50 transition-all flex flex-col items-center shadow-sm hover:shadow-md"
               >
                 <ArtisanVesselSvg type="A" />
+                {JA_TRIALS[jaTrialIndex].hidden && JA_TRIALS[jaTrialIndex].targetPot === 0 && <span aria-hidden="true" className="pointer-events-none absolute inset-x-6 top-2 h-1/2 rounded-t-2xl bg-slate-700/90 border-2 border-slate-800" />}
                 <span className="mt-2 text-[11px] font-bold text-slate-700">Left Urn</span>
               </button>
               <button
                 type="button"
                 onClick={() => handlePotSelect(1)}
-                className="p-4 rounded-3xl border-2 border-slate-200 bg-slate-50 hover:border-teal-500 hover:bg-teal-50/50 transition-all flex flex-col items-center shadow-sm hover:shadow-md"
+                className="relative p-4 rounded-3xl border-2 border-slate-200 bg-slate-50 hover:border-teal-500 hover:bg-teal-50/50 transition-all flex flex-col items-center shadow-sm hover:shadow-md"
               >
                 <ArtisanVesselSvg type="B" />
+                {JA_TRIALS[jaTrialIndex].hidden && JA_TRIALS[jaTrialIndex].targetPot === 1 && <span aria-hidden="true" className="pointer-events-none absolute inset-x-6 top-2 h-1/2 rounded-t-2xl bg-slate-700/90 border-2 border-slate-800" />}
                 <span className="mt-2 text-[11px] font-bold text-slate-700">Center Urn</span>
               </button>
               <button
                 type="button"
                 onClick={() => handlePotSelect(2)}
-                className="p-4 rounded-3xl border-2 border-slate-200 bg-slate-50 hover:border-teal-500 hover:bg-teal-50/50 transition-all flex flex-col items-center shadow-sm hover:shadow-md"
+                className="relative p-4 rounded-3xl border-2 border-slate-200 bg-slate-50 hover:border-teal-500 hover:bg-teal-50/50 transition-all flex flex-col items-center shadow-sm hover:shadow-md"
               >
                 <ArtisanVesselSvg type="C" />
+                {JA_TRIALS[jaTrialIndex].hidden && JA_TRIALS[jaTrialIndex].targetPot === 2 && <span aria-hidden="true" className="pointer-events-none absolute inset-x-6 top-2 h-1/2 rounded-t-2xl bg-slate-700/90 border-2 border-slate-800" />}
                 <span className="mt-2 text-[11px] font-bold text-slate-700">Right Urn</span>
               </button>
             </div>
@@ -987,6 +1048,54 @@ function __McInner() {
         )}
 
         {/* 4. CHAPTER 2 STORY: THE EMOTION MIRROR */}
+        {stage === 'ja_show' && (
+          <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
+            <div className="flex justify-between items-center mb-6">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
+                Your turn {showRound + 1} of {SHOW_TARGETS.length}
+              </span>
+              <span className="text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
+                Show Aria
+              </span>
+            </div>
+
+            <div className="my-4">
+              <GazeGuide
+                key={`show-${showRound}-${showTurned ? 'turned' : 'away'}`}
+                gaze={showTurned && showPick[showRound] !== null && showPick[showRound] !== undefined ? POT_GAZE[showPick[showRound] as number] : POT_GAZE[SHOW_TARGETS[showRound] === 2 ? 0 : 2]}
+                isPointing={false}
+                onCue={() => {}}
+              />
+            </div>
+
+            <p className="font-patrick text-xl sm:text-2xl text-teal-900 font-bold mb-6">
+              Aria cannot see the sparkle. Tap the urn that has it, to show her!
+            </p>
+
+            <div className="grid grid-cols-3 gap-3 md:gap-6 max-w-md mx-auto my-8">
+              {[0, 1, 2].map((pot) => (
+                <button
+                  key={pot}
+                  type="button"
+                  disabled={showTurned}
+                  onClick={() => handleShowPick(pot)}
+                  className="relative p-4 rounded-3xl border-2 border-slate-200 bg-slate-50 hover:border-teal-500 hover:bg-teal-50/50 transition-all flex flex-col items-center shadow-sm hover:shadow-md disabled:cursor-not-allowed"
+                >
+                  <ArtisanVesselSvg type={pot === 0 ? 'A' : pot === 1 ? 'B' : 'C'} />
+                  {SHOW_TARGETS[showRound] === pot && <span aria-hidden="true" className="absolute -top-2 -right-1 text-2xl">✨</span>}
+                  <span className="mt-2 text-[11px] font-bold text-slate-700">{pot === 0 ? 'Left Urn' : pot === 1 ? 'Center Urn' : 'Right Urn'}</span>
+                </button>
+              ))}
+            </div>
+
+            {showSkipReady && !showTurned && (
+              <button type="button" onClick={() => handleShowPick(null)} className="text-sm font-bold text-slate-600 underline">
+                Skip this turn
+              </button>
+            )}
+          </div>
+        )}
+
         {stage === 'tom_story' && prac?.g === 'tom' && renderTomPractice()}
         {stage === 'tom_story' && !prac && (
           <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
@@ -1413,7 +1522,7 @@ function __McInner() {
             )}
 
             {agentResult && showClinicalDossier && (() => { const a: any = agentResult; return (
-              <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="autism" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} measures={a.record?.measures} sortingCards={a.record?.sortingCards} gazeRounds={a.record?.gazeRounds} feelingsRounds={a.record?.feelingsRounds} parentCard={a.record?.parentCard} />{a.record && <SessionRecordDownload record={a.record} />}</div>
+              <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="autism" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} measures={a.record?.measures} sortingCards={a.record?.sortingCards} gazeRounds={a.record?.gazeRounds} feelingsRounds={a.record?.feelingsRounds} parentCard={a.record?.parentCard} showRounds={a.record?.showRounds} />{a.record && <SessionRecordDownload record={a.record} />}</div>
             ) })()}
             {/* GROWN-UP SUMMARY */}
             {showClinicalDossier && (

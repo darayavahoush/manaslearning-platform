@@ -84,6 +84,8 @@ const TELEMETRY_KEYS = [
   'steerRocket',
   // 1 when the star sequence used tones instead of lights, 0 for lights
   'starTone',
+  // reversed turn: vessel shown (0 left, 1 centre, 2 right) and time in ms for turns 1 and 2; turns shown and turns with the sparkle
+  'showPick1', 'showPick2', 'showMs1', 'showMs2', 'showBids', 'showMatches',
 ] as const
 
 function cleanTelemetry(input: unknown): Record<string, number | null> {

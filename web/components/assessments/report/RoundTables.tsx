@@ -1,4 +1,4 @@
-import type {FeelingsRound, GazeRound, StarLevel, SteeringTrial} from '../session-record'
+import type {FeelingsRound, GazeRound, ShowRound, StarLevel, SteeringTrial} from '../session-record'
 
 const sec = (ms: number | null) => (ms !== null ? `${(Math.round(ms / 100) / 10).toFixed(1)} s` : 'Not recorded')
 const head = 'border-b-2 border-slate-300 text-xs uppercase tracking-wide text-slate-500'
@@ -8,11 +8,11 @@ export function GazeTable({rounds}: {rounds: GazeRound[]}) {
   return (
     <div className="mt-2 overflow-x-auto">
       <table className="w-full min-w-[30rem] border-collapse text-left text-sm">
-        <thead><tr className={head}><th className="py-1 pr-3">Encounter</th><th className="py-1 pr-3">Aria</th><th className="py-1 pr-3">Looked at</th><th className="py-1 pr-3">Child chose</th><th className="py-1 pr-3">Matched</th><th className="py-1">Time</th></tr></thead>
+        <thead><tr className={head}><th className="py-1 pr-3">Encounter</th><th className="py-1 pr-3">Aria</th><th className="py-1 pr-3">Looked at</th><th className="py-1 pr-3">Partly behind pillar</th><th className="py-1 pr-3">Child chose</th><th className="py-1 pr-3">Matched</th><th className="py-1">Time</th></tr></thead>
         <tbody>
           {rounds.map((r) => (
             <tr key={r.round} className="border-b border-slate-200">
-              <td className="py-1 pr-3">{r.round}</td><td className="py-1 pr-3">{r.pointing ? 'Looked and pointed' : 'Looked only'}</td><td className="py-1 pr-3">{r.target}</td><td className="py-1 pr-3">{r.chosen}</td><td className="py-1 pr-3">{r.matched ? 'Yes' : 'No'}</td><td className="py-1">{sec(r.ms)}</td>
+              <td className="py-1 pr-3">{r.round}</td><td className="py-1 pr-3">{r.pointing ? 'Looked and pointed' : 'Looked only'}</td><td className="py-1 pr-3">{r.target}</td><td className="py-1 pr-3">{r.hidden ? 'Yes' : 'No'}</td><td className="py-1 pr-3">{r.chosen}</td><td className="py-1 pr-3">{r.matched ? 'Yes' : 'No'}</td><td className="py-1">{sec(r.ms)}</td>
             </tr>
           ))}
         </tbody>
@@ -68,6 +68,24 @@ export function StarTable({levels}: {levels: StarLevel[]}) {
             <tr key={l.level} className="border-b border-slate-200">
               <td className="py-1 pr-3">{l.level}</td><td className="py-1 pr-3">{l.length}</td>
               <td className="py-1">{l.completed ? 'Repeated in order' : `First wrong tap at star ${l.missedAt}`}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+/** Reversed turn: the vessel the child showed Aria, and whether it had the sparkle. */
+export function ShowTable({rounds}: {rounds: ShowRound[]}) {
+  return (
+    <div className="mt-2 overflow-x-auto">
+      <table className="w-full min-w-[26rem] border-collapse text-left text-sm">
+        <thead><tr className={head}><th className="py-1 pr-3">Turn</th><th className="py-1 pr-3">Sparkly urn</th><th className="py-1 pr-3">Child showed Aria</th><th className="py-1 pr-3">Matched</th><th className="py-1">Time</th></tr></thead>
+        <tbody>
+          {rounds.map((r) => (
+            <tr key={r.round} className="border-b border-slate-200">
+              <td className="py-1 pr-3">{r.round}</td><td className="py-1 pr-3">{r.target}</td><td className="py-1 pr-3">{r.chosen ?? 'Skipped'}</td><td className="py-1 pr-3">{r.matched === null ? '–' : r.matched ? 'Yes' : 'No'}</td><td className="py-1">{sec(r.ms)}</td>
             </tr>
           ))}
         </tbody>

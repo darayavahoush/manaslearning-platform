@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { INSTRUMENT_VERSION } from './version'
-import type { FeelingsRound, GazeRound, HelpRound, Measure, ParentCardRecord, SortingCard, StarLevel, SteeringTrial } from './session-record'
+import type { FeelingsRound, GazeRound, HelpRound, Measure, ParentCardRecord, ShowRound, SortingCard, StarLevel, SteeringTrial } from './session-record'
 
 export type ReportRow = { name: string; value: string; detail?: string; note?: string }
 export type Quest = 'dyslexia' | 'adhd' | 'autism'
@@ -36,6 +36,8 @@ export type ClinicianReportProps = {
   parentCard?: ParentCardRecord
   /** autism quest: what the child chose to help the sad sprite */
   helpRound?: HelpRound
+  /** autism quest: the reversed turn, where the child showed Aria the urn with the sparkle */
+  showRounds?: ShowRound[]
 }
 
 /** Turns sentences like "Rhyme game: 3 of 5 ..." into table rows. */
@@ -232,10 +234,10 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
                     </table>
                     {game === 'Gaze game' && !!p.gazeRounds?.length && (
                       <table className="cr-mini">
-                        <thead><tr><th>Encounter</th><th>Aria</th><th>Looked at</th><th>Child chose</th><th>Matched</th><th>Time</th></tr></thead>
+                        <thead><tr><th>Encounter</th><th>Aria</th><th>Looked at</th><th>Partly behind pillar</th><th>Child chose</th><th>Matched</th><th>Time</th></tr></thead>
                         <tbody>
                           {p.gazeRounds.map((r) => (
-                            <tr key={r.round}><td>{r.round}</td><td>{r.pointing ? 'Looked and pointed' : 'Looked only'}</td><td>{r.target}</td><td>{r.chosen}</td><td>{r.matched ? 'Yes' : 'No'}</td><td>{r.ms !== null ? `${(Math.round(r.ms / 100) / 10).toFixed(1)} s` : '–'}</td></tr>
+                            <tr key={r.round}><td>{r.round}</td><td>{r.pointing ? 'Looked and pointed' : 'Looked only'}</td><td>{r.target}</td><td>{r.hidden ? 'Yes' : 'No'}</td><td>{r.chosen}</td><td>{r.matched ? 'Yes' : 'No'}</td><td>{r.ms !== null ? `${(Math.round(r.ms / 100) / 10).toFixed(1)} s` : '–'}</td></tr>
                           ))}
                         </tbody>
                       </table>
@@ -246,6 +248,16 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
                         <tbody>
                           {p.feelingsRounds.map((r) => (
                             <tr key={r.round}><td>{r.round}</td><td>{r.shown}</td><td>{r.chosen}</td><td>{r.matched ? 'Yes' : 'No'}</td><td>{r.ms !== null ? `${(Math.round(r.ms / 100) / 10).toFixed(1)} s` : '–'}</td></tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                    {game === 'Gaze game' && !!p.showRounds?.length && (
+                      <table className="cr-mini">
+                        <thead><tr><th>Turn</th><th>Sparkly urn</th><th>Child showed Aria</th><th>Matched</th><th>Time</th></tr></thead>
+                        <tbody>
+                          {p.showRounds.map((r) => (
+                            <tr key={r.round}><td>{r.round}</td><td>{r.target}</td><td>{r.chosen ?? 'Skipped'}</td><td>{r.matched === null ? '–' : r.matched ? 'Yes' : 'No'}</td><td>{r.ms !== null ? `${(Math.round(r.ms / 100) / 10).toFixed(1)} s` : '–'}</td></tr>
                           ))}
                         </tbody>
                       </table>

@@ -13,7 +13,7 @@ export interface GameStory {
   fewTrials: boolean
 }
 
-type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'starLevels'> & Partial<Pick<SessionRecord, 'parentCard' | 'helpRound' | 'steeringSkin' | 'starMode'>>
+type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'starLevels'> & Partial<Pick<SessionRecord, 'parentCard' | 'helpRound' | 'steeringSkin' | 'starMode' | 'showRounds'>>
 
 const find = (r: Rec, key: string): Measure | undefined => r.measures.find((x) => x.key === key)
 const prop = (r: Rec, key: string): ProportionMeasure | null => {
@@ -40,6 +40,15 @@ function gaze(r: Rec, who: string): string[] {
       return `${xs.filter((x) => x.matched).length} of ${xs.length}`
     }
     out.push(`When Aria looked and pointed, ${split(true)} choices matched. When she only looked, ${split(false)} matched.`)
+    const hid = rounds.filter((x) => x.hidden)
+    if (hid.length) out.push(`When the target urn was partly behind a pillar, ${hid.filter((x) => x.matched).length} of ${hid.length} choices matched.`)
+  }
+  if (r.showRounds?.length) {
+    const shown = r.showRounds.filter((x) => x.chosen !== null)
+    const sparkle = shown.filter((x) => x.matched).length
+    out.push(shown.length === 0
+      ? `In the show-Aria turns, ${who} did not show her a vessel.`
+      : `In the show-Aria turns, ${who} showed Aria a vessel in ${shown.length} of ${r.showRounds.length} turns, and the urn with the sparkle in ${sparkle} of them.`)
   }
   return out
 }

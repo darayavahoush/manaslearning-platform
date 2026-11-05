@@ -294,9 +294,9 @@ export default function GamifiedAssessmentsPage() {
                   <h3 className="font-patrick mb-2 text-xl leading-snug text-[#2F2A24]">{s.title}</h3>
                   <p className="mb-4 text-xs leading-relaxed text-[#6F665A]">{s.desc}</p>
                   <div className="mb-4 flex flex-wrap gap-1.5">{s.chips.map((c) => <span key={c} className="rounded-md bg-[#EFE7D6] px-2 py-0.5 text-[10px] font-semibold text-[#5A5247]">{c}</span>)}</div>
-                  <div className="mt-auto flex items-center justify-between gap-2 border-t border-[#EFE7D6] pt-3">
-                    <span className="text-[11px] font-medium text-[#6F665A]">⏳ {s.duration}</span>
-                    <a href={s.link} className="inline-flex min-h-[40px] items-center rounded-full px-4 py-2 text-xs font-bold text-[#33302B] transition-transform hover:scale-105" style={{ background: s.color }}>{s.cta}</a>
+                  <div className="mt-auto flex flex-wrap items-center justify-between gap-x-2 gap-y-2.5 border-t border-[#EFE7D6] pt-3">
+                    <span className="whitespace-nowrap text-[11px] font-medium text-[#6F665A]">⏳ {s.duration}</span>
+                    <a href={s.link} className="ml-auto inline-flex min-h-[40px] shrink-0 items-center whitespace-nowrap rounded-full px-3.5 py-2 text-xs font-bold text-[#33302B] transition-transform hover:scale-105" style={{ background: s.color }}>{s.cta}</a>
                   </div>
                 </div>
               </Tilt>

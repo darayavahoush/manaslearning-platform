@@ -876,13 +876,25 @@ function __McInner() {
         {stage === 'cpt_game' && (
           <div className="relative rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             {cptResting && (
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 rounded-3xl bg-white p-6 text-center">
-                <h3 className="font-patrick text-3xl font-bold text-[#92400E]">Rest time</h3>
-                <p className="max-w-sm text-sm text-[#475569]">Round {Math.floor(cptTrialIndex / cptPlan.size)} of {cptPlan.blocks} is done. Take a breath and wiggle your fingers. Press the button when you are ready for the next round.</p>
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 overflow-hidden rounded-3xl bg-gradient-to-b from-[#FFF4D6] via-[#FFFDF6] to-[#E4F2EA] p-5 text-center sm:gap-4 sm:p-6">
+                <style>{`@keyframes cr-breathe{0%,100%{transform:scale(.7);opacity:.5}50%{transform:scale(1);opacity:1}}@keyframes cr-bob{50%{transform:translateY(-8px)}}@media (prefers-reduced-motion:reduce){.cr-ring,.cr-owl{animation:none!important}}`}</style>
+                <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cr-owl h-20 w-20" style={{ animation: 'cr-bob 3.2s ease-in-out infinite' }} />
+                <h3 className="font-patrick text-4xl font-bold text-[#92400E]">Rest time</h3>
+                <div className="flex items-center gap-2" role="img" aria-label={`${Math.floor(cptTrialIndex / cptPlan.size)} of ${cptPlan.blocks} rounds done`}>
+                  {Array.from({ length: cptPlan.blocks }).map((_, i) => (
+                    <span key={i} className={`h-3.5 w-3.5 rounded-full ${i < Math.floor(cptTrialIndex / cptPlan.size) ? 'bg-amber-500' : 'bg-amber-200'}`} />
+                  ))}
+                </div>
+                <p className="text-sm font-semibold text-[#475569]">Round {Math.floor(cptTrialIndex / cptPlan.size)} of {cptPlan.blocks} is done. Nice work so far!</p>
+                <div className="relative flex h-20 w-20 items-center justify-center">
+                  <span className="cr-ring absolute inset-0 rounded-full bg-amber-300/60" style={{ animation: 'cr-breathe 6s ease-in-out infinite' }} />
+                  <span className="relative text-xs font-semibold text-[#92400E]">Breathe</span>
+                </div>
+                <p className="max-w-xs text-sm text-[#475569]">Take a slow breath with the glowing circle. Press the button when you are ready for the next round.</p>
                 <button
                   type="button"
                   onClick={() => { cptRestedAtRef.current = cptTrialIndex; cptRestingRef.current = false; setCptResting(false); playAudio('chime') }}
-                  className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-3.5 text-base font-bold text-white shadow-lg"
+                  className="min-h-[52px] rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-3.5 text-base font-bold text-white shadow-lg transition-transform hover:scale-105"
                 >
                   I am ready →
                 </button>

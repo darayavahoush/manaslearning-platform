@@ -372,16 +372,19 @@ function __McInner() {
   const [tomScore, setTomScore] = useState(0)
 
   // Sensory Calibration State (SPM-2)
-  const [sensoryLight, setSensoryLight] = useState(5)
-  const [sensorySound, setSensorySound] = useState(6)
-  const [sensoryTouch, setSensoryTouch] = useState(7)
+  const [sensoryLight, setSensoryLight] = useState<number | null>(null)
+  const [sensorySound, setSensorySound] = useState<number | null>(null)
+  const [sensoryTouch, setSensoryTouch] = useState<number | null>(null)
   const [sanctuaryChoice, setSanctuaryChoice] = useState('Dim twilight corner with weighted cloud cushion & soft rain')
 
   // Dimensional Change Card Sort (DCCS) Dynamic State
   const [dccsIndex, setDccsIndex] = useState(0)
   const [dccsRule, setDccsRule] = useState<'color' | 'shape'>('color')
   const [dccsTimes, setDccsTimes] = useState<number[]>([])
+  // one entry per sorted card: whether the tray chosen matched the rule shown for that card
+  const [dccsCorrect, setDccsCorrect] = useState<boolean[]>([])
   const dccsStartRef = useRef<number>(0)
+  const DCCS_SWITCH_AT = 3 // index of the first card played under the shape rule
   const DCCS_CARDS: Array<{color: 'red' | 'blue'; shape: 'star' | 'circle'; targetColorMatch: number; targetShapeMatch: number}> = [
     {color: 'red', shape: 'star', targetColorMatch: 0, targetShapeMatch: 1},
     {color: 'blue', shape: 'circle', targetColorMatch: 1, targetShapeMatch: 0},
@@ -402,7 +405,7 @@ function __McInner() {
   const pracTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => () => { if (pracTimer.current) clearTimeout(pracTimer.current) }, [])
   useEffect(() => {
-    if (stage === 'dccs_game' && dccsIndex === 3 && !dccsSwitchSeen) sayIt('New game! Now the same shape goes together!')
+    if (stage === 'dccs_game' && dccsIndex === DCCS_SWITCH_AT && !dccsSwitchSeen) sayIt('New game! Now the same shape goes together!')
   }, [stage, dccsIndex, dccsSwitchSeen])
 
   // Joint Attention Loop
@@ -452,7 +455,7 @@ function __McInner() {
   useEffect(() => {
     if (stage === 'dccs_game') {
       if (dccsIndex === 0) setDccsRule('color')
-      if (dccsIndex === 3) {
+      if (dccsIndex === DCCS_SWITCH_AT) {
         setDccsRule('shape')
         playAudio('sensory')
       }
@@ -468,6 +471,11 @@ function __McInner() {
   function handleDccsSort(targetBin: number) {
     const elapsed = Math.round(performance.now() - dccsStartRef.current)
     setDccsTimes((prev) => [...prev, elapsed])
+    // Tray 0 holds the red star and tray 1 the blue circle, so the right tray is set by the card itself.
+    const card = DCCS_CARDS[dccsIndex]
+    const ruleNow = dccsIndex < DCCS_SWITCH_AT ? 'color' : 'shape'
+    const rightBin = ruleNow === 'color' ? (card.color === 'red' ? 0 : 1) : (card.shape === 'star' ? 0 : 1)
+    setDccsCorrect((prev) => [...prev, targetBin === rightBin])
     playAudio('hit')
     setDccsIndex((i) => i + 1)
   }
@@ -482,6 +490,11 @@ function __McInner() {
       const m = Math.floor(s.length / 2)
       return Math.round(s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2)
     }
+
+    // Cards 1-3 follow the colour rule, cards 4-6 the shape rule (see DCCS_SWITCH_AT).
+    const preAnswers = dccsCorrect.slice(0, DCCS_SWITCH_AT)
+    const postAnswers = dccsCorrect.slice(DCCS_SWITCH_AT)
+    const countTrue = (xs: boolean[]) => xs.filter(Boolean).length
 
     const payload = {
       assessmentType: 'autism',
@@ -498,7 +511,11 @@ function __McInner() {
         soundLevel: sensorySound,
         touchLevel: sensoryTouch,
         sortCount: dccsTimes.length,
-        sortMedianMs: medianOf(dccsTimes)
+        sortMedianMs: medianOf(dccsTimes),
+        sortPreTotal: preAnswers.length,
+        sortPreCorrect: countTrue(preAnswers),
+        sortPostTotal: postAnswers.length,
+        sortPostCorrect: countTrue(postAnswers)
       }
     }
 
@@ -524,7 +541,7 @@ function __McInner() {
   // ---- practice rounds (never recorded) ----
   function startJa() { playAudio('whoosh'); setPrac(null); setJaTrialIndex(0); setJaResponseTimes([]); setJaCorrectCount(0); setStage('ja_game') }
   function startTom() { playAudio('whoosh'); setPrac(null); setTomTrialIndex(0); setTomScore(0); setStage('tom_game') }
-  function startDccs() { playAudio('fanfare'); setPrac(null); setDccsIndex(0); setDccsSwitchSeen(false); setStage('dccs_game') }
+  function startDccs() { playAudio('fanfare'); setPrac(null); setDccsIndex(0); setDccsTimes([]); setDccsCorrect([]); setDccsSwitchSeen(false); setStage('dccs_game') }
   function beginPractice(g: Prac['g'], line: string) {
     playAudio('whoosh')
     setPrac({g, i: 0, tries: 0, msg: '', done: false})
@@ -952,45 +969,48 @@ function __McInner() {
                 <div>
                   <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
                     <span>Lighting Level</span>
-                    <span>{sensoryLight <= 3 ? 'Dim Warm Glow' : sensoryLight <= 7 ? 'Soft Natural Sunlight' : 'Bright Daylight'}</span>
+                    <span>{sensoryLight === null ? 'Slide to choose' : sensoryLight <= 3 ? 'Dim Warm Glow' : sensoryLight <= 7 ? 'Soft Natural Sunlight' : 'Bright Daylight'}</span>
                   </div>
                   <input
                     type="range"
                     min="1"
                     max="10"
-                    value={sensoryLight}
+                    value={sensoryLight ?? 5}
                     onChange={(e) => setSensoryLight(Number(e.target.value))}
-                    className="w-full accent-teal-600"
+                    onPointerDown={(e) => { if (sensoryLight === null) setSensoryLight(Number((e.currentTarget as HTMLInputElement).value)) }}
+                    className={`w-full accent-teal-600 ${sensoryLight === null ? 'opacity-50' : ''}`}
                   />
                 </div>
 
                 <div>
                   <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
                     <span>Soundscape (Rain & Wind Chimes)</span>
-                    <span>{sensorySound <= 3 ? 'Whisper Quiet' : sensorySound <= 7 ? 'Gentle Forest Rain' : 'Lively Waterfall'}</span>
+                    <span>{sensorySound === null ? 'Slide to choose' : sensorySound <= 3 ? 'Whisper Quiet' : sensorySound <= 7 ? 'Gentle Forest Rain' : 'Lively Waterfall'}</span>
                   </div>
                   <input
                     type="range"
                     min="1"
                     max="10"
-                    value={sensorySound}
+                    value={sensorySound ?? 5}
                     onChange={(e) => setSensorySound(Number(e.target.value))}
-                    className="w-full accent-teal-600"
+                    onPointerDown={(e) => { if (sensorySound === null) setSensorySound(Number((e.currentTarget as HTMLInputElement).value)) }}
+                    className={`w-full accent-teal-600 ${sensorySound === null ? 'opacity-50' : ''}`}
                   />
                 </div>
 
                 <div>
                   <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
                     <span>Cushion & Blanket Comfort</span>
-                    <span>{sensoryTouch <= 4 ? 'Light Feather Pillows' : 'Soothing Weighted Blanket'}</span>
+                    <span>{sensoryTouch === null ? 'Slide to choose' : sensoryTouch <= 4 ? 'Light Feather Pillows' : 'Soothing Weighted Blanket'}</span>
                   </div>
                   <input
                     type="range"
                     min="1"
                     max="10"
-                    value={sensoryTouch}
+                    value={sensoryTouch ?? 5}
                     onChange={(e) => setSensoryTouch(Number(e.target.value))}
-                    className="w-full accent-teal-600"
+                    onPointerDown={(e) => { if (sensoryTouch === null) setSensoryTouch(Number((e.currentTarget as HTMLInputElement).value)) }}
+                    className={`w-full accent-teal-600 ${sensoryTouch === null ? 'opacity-50' : ''}`}
                   />
                 </div>
               </div>
@@ -1018,7 +1038,7 @@ function __McInner() {
         {/* 7. CHAPTER 4 GAMEPLAY: ALCHEMICAL DCCS */}
         {stage === 'dccs_story' && renderDccsPractice()}
 
-        {stage === 'dccs_game' && dccsIndex === 3 && !dccsSwitchSeen && (
+        {stage === 'dccs_game' && dccsIndex === DCCS_SWITCH_AT && !dccsSwitchSeen && (
           <div className="rounded-3xl border-4 border-blue-300 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <p className="font-patrick text-4xl md:text-5xl font-bold text-blue-800 mb-2">New game!</p>
             <p className="font-patrick text-2xl md:text-3xl font-bold text-teal-900 mb-6">Now the same SHAPE goes together!</p>
@@ -1036,7 +1056,7 @@ function __McInner() {
           </div>
         )}
 
-        {stage === 'dccs_game' && DCCS_CARDS[dccsIndex] && !(dccsIndex === 3 && !dccsSwitchSeen) && (
+        {stage === 'dccs_game' && DCCS_CARDS[dccsIndex] && !(dccsIndex === DCCS_SWITCH_AT && !dccsSwitchSeen) && (
           <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-4">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">

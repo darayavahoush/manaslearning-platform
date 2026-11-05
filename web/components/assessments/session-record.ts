@@ -124,6 +124,10 @@ function autismMeasures(t: Tele): Array<Measure | null> {
     value('touchLevel', 'Comfort level chosen for touch', get(t, 'touchLevel'), 'of 10', null, 'A preference, not a test result.'),
     value('sortCount', 'Cards sorted', get(t, 'sortCount'), 'cards', null),
     value('sortMedianMs', 'Median time per card in the sorting game', get(t, 'sortMedianMs'), 'ms', get(t, 'sortCount')),
+    proportion('sortPre', 'Cards put in the right box under the first (colour) rule', get(t, 'sortPreCorrect'), get(t, 'sortPreTotal'),
+      'Only a few cards, so the interval is wide.'),
+    proportion('sortPost', 'Cards put in the right box after the rule changed (shape)', get(t, 'sortPostCorrect'), get(t, 'sortPostTotal'),
+      'Only a few cards, so the interval is wide. Practice cards are never counted.'),
   ]
 }
 

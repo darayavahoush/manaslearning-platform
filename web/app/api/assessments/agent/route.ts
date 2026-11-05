@@ -62,6 +62,7 @@ const TELEMETRY_KEYS = [
   // Autism quest
   'jaTrials', 'jaCorrect', 'jaMedianMs', 'feelingsTrials', 'feelingsCorrect',
   'lightLevel', 'soundLevel', 'touchLevel', 'sortCount', 'sortMedianMs',
+  'sortPreCorrect', 'sortPreTotal', 'sortPostCorrect', 'sortPostTotal',
 ] as const
 
 function cleanTelemetry(input: unknown): Record<string, number | null> {
@@ -206,6 +207,18 @@ function adhdObservations(t: Record<string, number | null>): Observation[] {
   return obs
 }
 
+/** Plain wording for how many cards went in the right box before and after the rule changed. Counts only, no judgement. */
+function sortAccuracyText(t: Record<string, number | null>): string {
+  const part = (k: number | null, n: number | null, rule: string) =>
+    k !== null && n !== null && n > 0 && k <= n ? `${Math.round(k)} of ${Math.round(n)} went in the right box under the ${rule} rule` : null
+  const a = part(t.sortPreCorrect, t.sortPreTotal, 'colour')
+  const b = part(t.sortPostCorrect, t.sortPostTotal, 'shape')
+  const cap = (x: string) => x[0].toUpperCase() + x.slice(1)
+  if (a && b) return `${cap(a)}, and ${b}.`
+  if (a || b) return `${cap((a ?? b) as string)}.`
+  return 'Which box each card went in was not recorded.'
+}
+
 function autismObservations(t: Record<string, number | null>): Observation[] {
   const obs: Observation[] = []
 
@@ -231,22 +244,26 @@ function autismObservations(t: Record<string, number | null>): Observation[] {
     obs.push({name: 'Matching feelings', value: NOT_ENOUGH, detail: 'The game did not finish.', note: ONE_SESSION})
   }
 
-  if (t.lightLevel !== null && t.soundLevel !== null && t.touchLevel !== null) {
+  if (t.lightLevel !== null || t.soundLevel !== null || t.touchLevel !== null) {
+    const lvl = (label: string, v: number | null) => `${label} ${v === null ? 'not chosen' : `${Math.round(v)}/10`}`
     obs.push({
       name: 'Comfort preferences',
-      value: `Light ${Math.round(t.lightLevel)}/10 · Sound ${Math.round(t.soundLevel)}/10 · Touch ${Math.round(t.touchLevel)}/10`,
+      value: `${lvl('Light', t.lightLevel)} · ${lvl('Sound', t.soundLevel)} · ${lvl('Touch', t.touchLevel)}`,
       detail: 'The levels your child picked for the lantern, the rain and the cushion.',
       note: 'These show what felt cosy in the game. They are preferences, not a test result.',
     })
   } else {
-    obs.push({name: 'Comfort preferences', value: NOT_ENOUGH, detail: 'The sliders were not recorded.', note: 'These are preferences, not a test result.'})
+    obs.push({name: 'Comfort preferences', value: NOT_ENOUGH, detail: 'The sliders were not moved.', note: 'These are preferences, not a test result.'})
   }
 
   if (t.sortCount !== null && t.sortCount > 0) {
     obs.push({
       name: 'Sorting game',
       value: `${Math.round(t.sortCount)} cards sorted`,
-      detail: t.sortMedianMs !== null ? `About ${Math.round(t.sortMedianMs)} ms per card` : 'Timing was not recorded.',
+      detail: [
+        t.sortMedianMs !== null ? `About ${Math.round(t.sortMedianMs)} ms per card.` : 'Timing was not recorded.',
+        sortAccuracyText(t),
+      ].filter(Boolean).join(' '),
       note: `The sorting rule changes part-way, which is hard for many people. ${ONE_SESSION}`,
     })
   } else {

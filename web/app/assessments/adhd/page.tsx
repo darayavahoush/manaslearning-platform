@@ -2,6 +2,8 @@
 import WelcomeWizard from '../../../components/assessments/WelcomeWizard'
 import ReadAloud from '../../../components/assessments/ReadAloud'
 import ClinicianReportButton from '../../../components/assessments/ClinicianReport'
+import SessionRecordDownload from '../../../components/assessments/SessionRecordDownload'
+import {captureEnvironment} from '../../../components/assessments/session-record'
 import {useState, useEffect, useRef, useMemo} from 'react'
 import Link from 'next/link'
 import KeeperFeedback from '../../../components/assessments/KeeperFeedback'
@@ -651,7 +653,7 @@ function __McInner() {
       const res = await fetch('/api/assessments/agent', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
+        body: JSON.stringify({...payload, environment: captureEnvironment()})
       })
       if (!res.ok) throw new Error('Agent evaluation failed')
       const json = await res.json()
@@ -1260,7 +1262,7 @@ function __McInner() {
             )}
 
             {agentResult && showClinicalDossier && (() => { const a: any = agentResult; return (
-              <div className="mb-4 flex justify-center"><ClinicianReportButton quest="adhd" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} /></div>
+              <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="adhd" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} />{a.record && <SessionRecordDownload record={a.record} />}</div>
             ) })()}
             {/* GROWN-UP SUMMARY */}
             {showClinicalDossier && (

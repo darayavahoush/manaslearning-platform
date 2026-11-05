@@ -13,7 +13,7 @@ export interface GameStory {
   fewTrials: boolean
 }
 
-type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'starLevels'> & Partial<Pick<SessionRecord, 'parentCard' | 'helpRound' | 'steeringSkin' | 'starMode' | 'showRounds'>>
+type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'starLevels'> & Partial<Pick<SessionRecord, 'parentCard' | 'helpRound' | 'steeringSkin' | 'starMode' | 'showRounds' | 'ruleCheck'>>
 
 const find = (r: Rec, key: string): Measure | undefined => r.measures.find((x) => x.key === key)
 const prop = (r: Rec, key: string): ProportionMeasure | null => {
@@ -87,6 +87,9 @@ function sorting(r: Rec, who: string): string[] {
   const pre = prop(r, 'sortPre')
   const post = prop(r, 'sortPost')
   const out: string[] = []
+  if (r.ruleCheck) {
+    out.push(`Asked just after the change which way the gems were being sorted, ${who} said by ${r.ruleCheck.answered}. ${r.ruleCheck.correct ? 'That is the new rule.' : 'That is the rule from before the change.'}`)
+  }
   if (pre) out.push(`${who} put ${pre.k} of ${pre.n} cards in the right box under the colour rule.`)
   if (post) out.push(`After the rule changed to shape, ${post.k} of ${post.n} cards went in the right box.`)
   const key = r.sortingCards?.find((c) => c.card === 4)

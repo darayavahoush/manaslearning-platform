@@ -9,7 +9,7 @@ import {wilson} from './profile-stats'
  * this code; the record is built in the response and handed back to the caller.
  */
 
-export const RECORD_SCHEMA_VERSION = '1.9'
+export const RECORD_SCHEMA_VERSION = '1.10'
 
 export type Quest = 'adhd' | 'autism'
 export type AgeBand = '4-5' | '6-8' | '9-12' | '13-16'
@@ -90,6 +90,8 @@ export interface SessionRecord {
   starMode?: 'lights' | 'tones'
   /** autism quest only: the reversed turn, where the child shows Aria the urn with the sparkle (record format 1.9 and later) */
   showRounds?: ShowRound[]
+  /** autism quest only: which rule the child named straight after the first shape card (record format 1.10 and later) */
+  ruleCheck?: RuleCheck
   limits: string[]
 }
 
@@ -121,6 +123,14 @@ export interface StarLevel {
   completed: boolean
   /** when not completed: the star (counted from 1) where the first wrong tap happened */
   missedAt: number | null
+}
+
+export interface RuleCheck {
+  /** the rule the child named */
+  answered: 'colour' | 'shape'
+  /** true when the child named the rule in force after the change (shape) */
+  correct: boolean
+  ms: number | null
 }
 
 export interface ShowRound {
@@ -276,6 +286,8 @@ function autismMeasures(t: Tele): Array<Measure | null> {
     proportion('sortPost', 'Cards put in the right box after the rule changed (shape)', get(t, 'sortPostCorrect'), get(t, 'sortPostTotal'),
       'Only a few cards, so the interval is wide. Practice cards are never counted.'),
     ...roomMeasures(t),
+    value('ruleNamed', 'Named the rule straight after the change (1 = the new rule, 0 = the old one)', get(t, 'ruleCheck'), 'score', null,
+      'One question, so this is a single answer, not a rate.'),
     ...eventMeasures(t, [['retryGaze', 'gaze game'], ['retryFeelings', 'feelings match'], ['retrySorting', 'sorting game']]),
   ]
 }
@@ -380,6 +392,13 @@ export function gazeRounds(t: Tele): GazeRound[] | null {
   const total = get(t, 'jaCorrect')
   if (total !== null && total !== out.filter((x) => x.matched).length) return null
   return out
+}
+
+/** Quick check straight after the first shape card. Null when it was not asked. */
+export function ruleCheck(t: Tele): RuleCheck | null {
+  const v = get(t, 'ruleCheck')
+  if (v !== 0 && v !== 1) return null
+  return {answered: v === 1 ? 'shape' : 'colour', correct: v === 1, ms: cleanMs(get(t, 'ruleCheckMs'))}
 }
 
 /** Reversed turn: the child shows Aria a vessel. Kept only when the choices are valid and add up to the session totals. */
@@ -518,6 +537,7 @@ export function buildSessionRecord(args: {
     ...(parentCard(args.telemetry) ? {parentCard: parentCard(args.telemetry)!} : {}),
     ...(args.quest === 'autism' && helpRound(args.telemetry) ? {helpRound: helpRound(args.telemetry)!} : {}),
     ...(args.quest === 'autism' && showRounds(args.telemetry) ? {showRounds: showRounds(args.telemetry)!} : {}),
+    ...(args.quest === 'autism' && ruleCheck(args.telemetry) ? {ruleCheck: ruleCheck(args.telemetry)!} : {}),
     ...(args.quest === 'adhd' && get(args.telemetry, 'starTone') !== null ? {starMode: get(args.telemetry, 'starTone') === 1 ? 'tones' as const : 'lights' as const} : {}),
     ...(args.quest === 'adhd' && get(args.telemetry, 'steerRocket') !== null ? {steeringSkin: get(args.telemetry, 'steerRocket') === 1 ? 'rocket' as const : 'arrows' as const} : {}),
     limits: LIMITS,

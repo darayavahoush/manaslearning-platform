@@ -429,6 +429,7 @@ function __McInner() {
   const dccsStartRef = useRef<number>(0)
   const events = usePlayEvents()
   const DCCS_SWITCH_AT = 3 // index of the first card played under the shape rule
+  const DCCS_WARN_SECONDS = 3 // the warning sign shows for this long before the rule changes
   const DCCS_CARDS: Array<{color: 'red' | 'blue'; shape: 'star' | 'circle'; targetColorMatch: number; targetShapeMatch: number}> = [
     {color: 'red', shape: 'star', targetColorMatch: 0, targetShapeMatch: 1},
     {color: 'blue', shape: 'circle', targetColorMatch: 1, targetShapeMatch: 0},
@@ -446,11 +447,33 @@ function __McInner() {
   const [notice, setNotice] = useState('')
   const [prac, setPrac] = useState<Prac | null>(null)
   const [dccsSwitchSeen, setDccsSwitchSeen] = useState(false)
+  // warning sign before the rule changes (seconds left, null when not showing); then a quick check of which rule is in use
+  const [dccsWarnLeft, setDccsWarnLeft] = useState<number | null>(null)
+  const [dccsRuleCheck, setDccsRuleCheck] = useState(false)
+  const [dccsRuleAnswer, setDccsRuleAnswer] = useState<{answered: 'colour' | 'shape'; ms: number} | null>(null)
+  const ruleCheckStartRef = useRef<number>(0)
   const pracTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => () => { if (pracTimer.current) clearTimeout(pracTimer.current) }, [])
   useEffect(() => {
-    if (stage === 'dccs_game' && dccsIndex === DCCS_SWITCH_AT && !dccsSwitchSeen) sayIt('New game! Now the same shape goes together!')
   }, [stage, dccsIndex, dccsSwitchSeen])
+
+  // the warning: a sign tells the child a change is coming, but not what it is; the card header shows the new rule
+  useEffect(() => {
+    if (stage === 'dccs_game' && dccsWarnLeft === DCCS_WARN_SECONDS) sayIt('Watch the sign. Something is about to change.')
+  }, [stage, dccsWarnLeft])
+
+  useEffect(() => {
+    if (stage !== 'dccs_game' || dccsWarnLeft === null) return
+    const t = setTimeout(() => {
+      if (dccsWarnLeft <= 1) {
+        setDccsWarnLeft(null)
+        dccsStartRef.current = performance.now()
+      } else {
+        setDccsWarnLeft(dccsWarnLeft - 1)
+      }
+    }, 1000)
+    return () => clearTimeout(t)
+  }, [stage, dccsWarnLeft])
 
   // Joint Attention Loop
   useEffect(() => {
@@ -586,6 +609,21 @@ function __McInner() {
     setDccsCorrect((prev) => [...prev, targetBin === rightBin])
     setDccsBins((prev) => [...prev, targetBin])
     playAudio('hit')
+    if (dccsIndex === DCCS_SWITCH_AT) {
+      // the first shape card is done: now the child names the rule in force
+      ruleCheckStartRef.current = performance.now()
+      setDccsRuleCheck(true)
+      return
+    }
+    if (dccsIndex + 1 === DCCS_SWITCH_AT) setDccsWarnLeft(DCCS_WARN_SECONDS)
+    setDccsIndex((i) => i + 1)
+  }
+
+  function handleRuleCheck(answered: 'colour' | 'shape') {
+    setDccsRuleAnswer({answered, ms: Math.round(performance.now() - ruleCheckStartRef.current)})
+    setDccsRuleCheck(false)
+    playAudio('chime')
+    dccsStartRef.current = performance.now()
     setDccsIndex((i) => i + 1)
   }
 
@@ -658,6 +696,9 @@ function __McInner() {
         parentTired: parent?.tired ?? null,
         parentLikeHome: parent?.likeHome ?? null,
         parentEnjoyed: parent?.enjoyed ?? null,
+        // quick check straight after the rule changed: 1 when the child said shape, 0 for colour, null if not asked
+        ruleCheck: dccsRuleAnswer ? (dccsRuleAnswer.answered === 'shape' ? 1 : 0) : null,
+        ruleCheckMs: dccsRuleAnswer?.ms ?? null,
         retryGaze: ev.retries.ja ?? 0,
         retryFeelings: ev.retries.tom ?? 0,
         retrySorting: ev.retries.dccs ?? 0,
@@ -1375,25 +1416,28 @@ function __McInner() {
         {/* 7. CHAPTER 4 GAMEPLAY: ALCHEMICAL DCCS */}
         {stage === 'dccs_story' && renderDccsPractice()}
 
-        {stage === 'dccs_game' && dccsIndex === DCCS_SWITCH_AT && !dccsSwitchSeen && (
-          <div className="rounded-3xl border-4 border-blue-300 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
-            <p className="font-patrick text-4xl md:text-5xl font-bold text-blue-800 mb-2">New game!</p>
-            <p className="font-patrick text-2xl md:text-3xl font-bold text-teal-900 mb-6">Now the same SHAPE goes together!</p>
-            <div className="mb-8 flex items-center justify-center gap-10">
-              <div className="flex flex-col items-center gap-2"><JewelCardSvg color="red" shape="star" /><span className="text-lg font-bold text-slate-800">Star</span></div>
-              <div className="flex flex-col items-center gap-2"><JewelCardSvg color="blue" shape="circle" /><span className="text-lg font-bold text-slate-800">Circle</span></div>
+        {stage === 'dccs_game' && dccsWarnLeft !== null && (
+          <div className="rounded-3xl border-4 border-amber-300 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
+            <p className="font-patrick text-4xl md:text-5xl font-bold text-amber-800 mb-2">Watch the sign!</p>
+            <p className="text-base md:text-lg text-slate-700 mb-6">Something is about to change. Get ready.</p>
+            <div key={dccsWarnLeft} className="mx-auto mb-4 flex h-28 w-28 items-center justify-center rounded-full border-8 border-amber-400 bg-amber-50 text-5xl font-bold text-amber-800 animate-pulse">
+              {dccsWarnLeft}
             </div>
-            <button
-              type="button"
-              onClick={() => { playAudio('whoosh'); setDccsSwitchSeen(true); dccsStartRef.current = performance.now() }}
-              className="rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 px-12 py-5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
-            >
-              OK, let's go! ▶
-            </button>
           </div>
         )}
 
-        {stage === 'dccs_game' && DCCS_CARDS[dccsIndex] && !(dccsIndex === DCCS_SWITCH_AT && !dccsSwitchSeen) && (
+        {stage === 'dccs_game' && dccsRuleCheck && (
+          <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
+            <p className="font-patrick text-3xl md:text-4xl font-bold text-teal-900 mb-2">Quick check!</p>
+            <p className="text-base md:text-lg text-slate-800 mb-8">Which way are the gems being sorted right now?</p>
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <button type="button" onClick={() => handleRuleCheck('colour')} className="rounded-2xl border-4 border-rose-400 bg-rose-50 px-8 py-5 text-xl font-bold text-rose-800 shadow-md hover:scale-105 active:scale-95 transition-all">By COLOR</button>
+              <button type="button" onClick={() => handleRuleCheck('shape')} className="rounded-2xl border-4 border-blue-400 bg-blue-50 px-8 py-5 text-xl font-bold text-blue-800 shadow-md hover:scale-105 active:scale-95 transition-all">By SHAPE</button>
+            </div>
+          </div>
+        )}
+
+        {stage === 'dccs_game' && DCCS_CARDS[dccsIndex] && dccsWarnLeft === null && !dccsRuleCheck && (
           <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-4">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">

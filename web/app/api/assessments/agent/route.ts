@@ -86,6 +86,8 @@ const TELEMETRY_KEYS = [
   'starTone',
   // reversed turn: vessel shown (0 left, 1 centre, 2 right) and time in ms for turns 1 and 2; turns shown and turns with the sparkle
   'showPick1', 'showPick2', 'showMs1', 'showMs2', 'showBids', 'showMatches',
+  // quick check straight after the first shape card: 1 shape, 0 colour; time in ms
+  'ruleCheck', 'ruleCheckMs',
 ] as const
 
 function cleanTelemetry(input: unknown): Record<string, number | null> {

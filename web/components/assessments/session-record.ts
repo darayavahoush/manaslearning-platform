@@ -167,7 +167,7 @@ export function gameOf(key: string): string {
   if (/^prematureReleases/.test(key)) return 'Patience game'
   if (/^gaze/.test(key)) return 'Gaze game'
   if (/^feelings/.test(key)) return 'Feelings match'
-  if (/^(light|sound|touch)Level/.test(key)) return 'Comfort choices'
+  if (/^(light|sound|touch)Level|^(rampStop|adjust|shieldUses|designSec)/.test(key)) return 'Comfort choices'
   if (/^sort/.test(key)) return 'Sorting game'
   if (/^(pause|retry)/.test(key)) return 'During the session'
   return 'Other'
@@ -205,6 +205,23 @@ function adhdMeasures(t: Tele): Array<Measure | null> {
   ]
 }
 
+/** Design the room: where each sense was said to be too much, slider moves, calm shield taps and time to save. */
+function roomMeasures(t: Tele): Array<Measure | null> {
+  const out: Array<Measure | null> = []
+  for (const label of ['Light', 'Sound', 'Texture'] as const) {
+    const stop = get(t, `rampStop${label}`)
+    if (stop !== null && stop > 0) {
+      out.push(value(`rampStop${label}`, `Level where ${label === 'Texture' ? 'cushion weight' : label === 'Sound' ? 'rain sound' : 'light'} was said to be too much`, stop, 'of 10', null,
+        'Chosen by the child while the setting was turned up slowly. Not a threshold, and not a test result.'))
+    }
+    out.push(value(`adjust${label}`, `Times the ${label === 'Texture' ? 'cushion' : label === 'Sound' ? 'rain' : 'light'} setting was moved while designing`, get(t, `adjust${label}`), 'moves', null))
+  }
+  out.push(value('shieldUses', 'Times the calm shield was tapped', get(t, 'shieldUses'), 'times', null,
+    'Not a score. Choosing the calmest setting is a normal choice.'))
+  out.push(value('designSec', 'Time spent designing the room', get(t, 'designSec'), 'seconds', null))
+  return out
+}
+
 function autismMeasures(t: Tele): Array<Measure | null> {
   return [
     proportion('gazeMatches', "Choices matching where Aria looked or pointed", get(t, 'jaCorrect'), get(t, 'jaTrials')),
@@ -219,6 +236,7 @@ function autismMeasures(t: Tele): Array<Measure | null> {
       'Only a few cards, so the interval is wide.'),
     proportion('sortPost', 'Cards put in the right box after the rule changed (shape)', get(t, 'sortPostCorrect'), get(t, 'sortPostTotal'),
       'Only a few cards, so the interval is wide. Practice cards are never counted.'),
+    ...roomMeasures(t),
     ...eventMeasures(t, [['retryGaze', 'gaze game'], ['retryFeelings', 'feelings match'], ['retrySorting', 'sorting game']]),
   ]
 }

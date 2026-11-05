@@ -63,6 +63,8 @@ const TELEMETRY_KEYS = [
   // Autism quest
   'jaTrials', 'jaCorrect', 'jaMedianMs', 'feelingsTrials', 'feelingsCorrect',
   'lightLevel', 'soundLevel', 'touchLevel', 'sortCount', 'sortMedianMs',
+  // design the room: level where each sense was said to be too much (0 = never said), slider moves, calm shield taps, seconds to save
+  'rampStopLight', 'rampStopSound', 'rampStopTexture', 'adjustLight', 'adjustSound', 'adjustTexture', 'shieldUses', 'designSec',
   'sortPreCorrect', 'sortPreTotal', 'sortPostCorrect', 'sortPostTotal',
   // card by card in the sorting game: box tapped (0 or 1) and time in ms, cards 1 to 6
   'sortBin1', 'sortBin2', 'sortBin3', 'sortBin4', 'sortBin5', 'sortBin6',
@@ -230,6 +232,16 @@ function sortAccuracyText(t: Record<string, number | null>): string {
   return 'Which box each card went in was not recorded.'
 }
 
+/** Plain wording for the turn-it-up-slowly part of the room game. Counts and levels only. */
+function describeRoom(t: Record<string, number | null>): string {
+  const part = (label: string, key: string) => {
+    const v = t[`rampStop${label}`]
+    return `${key} ${v !== null && v !== undefined && v > 0 ? `at level ${Math.round(v)} of 10` : 'never reached too much'}`
+  }
+  const moves = (t.adjustLight ?? 0) + (t.adjustSound ?? 0) + (t.adjustTexture ?? 0)
+  return `Turned up slowly, the child said it was too much for ${part('Light', 'light')}, ${part('Sound', 'sound')} and ${part('Texture', 'cushion')}. Moved the settings ${moves} ${moves === 1 ? 'time' : 'times'}${(t.shieldUses ?? 0) > 0 ? `, and used the calm shield ${t.shieldUses} ${t.shieldUses === 1 ? 'time' : 'times'}` : ''}.`
+}
+
 function autismObservations(t: Record<string, number | null>): Observation[] {
   const obs: Observation[] = []
 
@@ -260,9 +272,14 @@ function autismObservations(t: Record<string, number | null>): Observation[] {
     obs.push({
       name: 'Comfort preferences',
       value: `${lvl('Light', t.lightLevel)} · ${lvl('Sound', t.soundLevel)} · ${lvl('Touch', t.touchLevel)}`,
-      detail: 'The levels your child picked for the lantern, the rain and the cushion.',
+      detail: [
+        'The levels your child picked for the light, the rain and the cushion.',
+        t.designSec !== null ? describeRoom(t) : null,
+      ].filter(Boolean).join(' '),
       note: 'These show what felt cosy in the game. They are preferences, not a test result.',
     })
+  } else if (t.designSec !== null) {
+    obs.push({name: 'Comfort preferences', value: 'Room designed, no settings chosen', detail: describeRoom(t), note: 'These are preferences, not a test result.'})
   } else {
     obs.push({name: 'Comfort preferences', value: NOT_ENOUGH, detail: 'The sliders were not moved.', note: 'These are preferences, not a test result.'})
   }

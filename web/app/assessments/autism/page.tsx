@@ -5,6 +5,7 @@ import ClinicianReportButton from '../../../components/assessments/ClinicianRepo
 import SessionRecordDownload from '../../../components/assessments/SessionRecordDownload'
 import {captureEnvironment} from '../../../components/assessments/session-record'
 import {usePlayEvents} from '../../../components/assessments/play-events'
+import {startRoomSound, type RoomSound} from '../../../components/assessments/RoomSound'
 import {useState, useEffect, useRef, useMemo} from 'react'
 import Link from 'next/link'
 import KeeperFeedback from '../../../components/assessments/KeeperFeedback'
@@ -274,6 +275,13 @@ const EMOTION_MIRROR_TRIALS = [
 ]
 
 // PRACTICE-V2: unrecorded practice rounds, picture first, warm feedback. Nothing here is stored or scored.
+// Design the room: each sense is turned up slowly, one step every ROOM_STEP_MS, until the child says it is too much.
+const ROOM_DIM_NAMES = ['light', 'rain sound', 'cushion weight'] as const
+const ROOM_STEP_MS = 1200
+const ROOM_TOP = 10
+// telemetry: a stop of 0 means the child never said it was too much; undefined means that sense was never reached
+const stopOf = (v: number | null | undefined) => (v === undefined ? null : (v ?? 0))
+
 function sayIt(t: string) {
   try {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
@@ -383,6 +391,15 @@ function __McInner() {
   const [sensorySound, setSensorySound] = useState<number | null>(null)
   const [sensoryTouch, setSensoryTouch] = useState<number | null>(null)
   const [sanctuaryChoice, setSanctuaryChoice] = useState('Dim twilight corner with weighted cloud cushion & soft rain')
+  const [roomPhase, setRoomPhase] = useState<'intro' | 'ramp' | 'design'>('intro')
+  const [roomDim, setRoomDim] = useState(0)
+  const [roomLevel, setRoomLevel] = useState(1)
+  const [roomStops, setRoomStops] = useState<Array<number | null | undefined>>([undefined, undefined, undefined])
+  const [roomAdjusts, setRoomAdjusts] = useState({light: 0, sound: 0, texture: 0})
+  const [roomShields, setRoomShields] = useState(0)
+  const roomDesignStartRef = useRef<number>(0)
+  const roomDesignSecRef = useRef<number | null>(null)
+  const roomSoundRef = useRef<RoomSound | null>(null)
 
   // Dimensional Change Card Sort (DCCS) Dynamic State
   const [dccsIndex, setDccsIndex] = useState(0)
@@ -529,6 +546,15 @@ function __McInner() {
         lightLevel: sensoryLight,
         soundLevel: sensorySound,
         touchLevel: sensoryTouch,
+        // design the room: the level where each sense was said to be too much, slider moves, calm shield taps, seconds to save
+        rampStopLight: stopOf(roomStops[0]),
+        rampStopSound: stopOf(roomStops[1]),
+        rampStopTexture: stopOf(roomStops[2]),
+        adjustLight: roomAdjusts.light,
+        adjustSound: roomAdjusts.sound,
+        adjustTexture: roomAdjusts.texture,
+        shieldUses: roomShields,
+        designSec: roomDesignSecRef.current,
         sortCount: dccsTimes.length,
         sortMedianMs: medianOf(dccsTimes),
         sortPreTotal: preAnswers.length,
@@ -571,8 +597,70 @@ function __McInner() {
     }
   }
 
+  // ---- design the room ----
+  // during the ramp only the sense being turned up is active; in the design phase the sliders decide
+  const liveLight = roomPhase === 'ramp' ? (roomDim === 0 ? roomLevel : null) : sensoryLight
+  const liveSound = roomPhase === 'ramp' ? (roomDim === 1 ? roomLevel : null) : sensorySound
+  const roomFilter = `brightness(${0.55 + ((liveLight ?? 5) / 10) * 0.8})`
+
+  useEffect(() => {
+    if (stage !== 'sensory_story' || roomPhase !== 'ramp') return
+    const t = setTimeout(() => {
+      if (roomLevel >= ROOM_TOP) finishRampDim(null)
+      else setRoomLevel((l) => l + 1)
+    }, ROOM_STEP_MS)
+    return () => clearTimeout(t)
+    // finishRampDim is rebuilt from the same state on every render, so this timer always sees current values
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage, roomPhase, roomLevel, roomDim])
+
+  useEffect(() => {
+    roomSoundRef.current?.setLevel(liveSound)
+  }, [liveSound])
+
+  useEffect(() => {
+    if (stage === 'sensory_story') return
+    roomSoundRef.current?.stop()
+    roomSoundRef.current = null
+  }, [stage])
+
+  useEffect(() => () => { roomSoundRef.current?.stop(); roomSoundRef.current = null }, [])
+
   // ---- practice rounds (never recorded) ----
   function startJa() { playAudio('whoosh'); setPrac(null); setJaTrialIndex(0); setJaResponseTimes([]); setJaCorrectCount(0); setJaPicks([]); setStage('ja_game') }
+  function startRoom() {
+    playAudio('whoosh')
+    roomSoundRef.current?.stop()
+    roomSoundRef.current = startRoomSound()
+    setRoomDim(0)
+    setRoomLevel(1)
+    setRoomStops([undefined, undefined, undefined])
+    setRoomPhase('ramp')
+  }
+
+  function finishRampDim(stop: number | null) {
+    setRoomStops((prev) => prev.map((v, i) => (i === roomDim ? stop : v)))
+    if (roomDim < ROOM_DIM_NAMES.length - 1) {
+      setRoomDim((d) => d + 1)
+      setRoomLevel(1)
+    } else {
+      roomDesignStartRef.current = performance.now()
+      setRoomPhase('design')
+    }
+  }
+
+  function bumpAdjust(dim: 'light' | 'sound' | 'texture') {
+    setRoomAdjusts((a) => ({...a, [dim]: a[dim] + 1}))
+  }
+
+  function shieldRoom() {
+    playAudio('whoosh')
+    setSensoryLight(1)
+    setSensorySound(1)
+    setSensoryTouch(1)
+    setRoomShields((n) => n + 1)
+  }
+
   function startTom() { playAudio('whoosh'); setPrac(null); setTomTrialIndex(0); setTomScore(0); setTomPicks([]); setTomTimes([]); setStage('tom_game') }
   function startDccs() { playAudio('fanfare'); setPrac(null); setDccsIndex(0); setDccsTimes([]); setDccsCorrect([]); setDccsBins([]); setDccsSwitchSeen(false); setStage('dccs_game') }
   function beginPractice(g: Prac['g'], line: string) {
@@ -979,7 +1067,8 @@ function __McInner() {
               <img
                 src="/decor/itw/quest-sanctuary-haven.webp"
                 alt="Sensory Sanctuary Haven"
-                className="h-full w-full object-cover object-center"
+                className="h-full w-full object-cover object-center transition-[filter] duration-1000 ease-linear"
+                style={{filter: roomFilter}}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent flex items-end p-6">
                 <div>
@@ -987,83 +1076,133 @@ function __McInner() {
                     Chapter 3: The Sensory Sanctuary
                   </span>
                   <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    Calibrating Your Restorative Haven
+                    Design Your Restorative Haven
                   </h2>
                 </div>
               </div>
             </div>
 
             <div className="p-6 md:p-8">
-              <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
-                Inside the tranquil treehouse sanctuary, you have full control over the environment. Tune the light, soothing rain sound, and cushion weight to create your absolute most comfortable resting sanctuary!
-              </p>
-
-              <div className="space-y-6 max-w-md mx-auto mb-8">
-                <div>
-                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
-                    <span>Lighting Level</span>
-                    <span>{sensoryLight === null ? 'Slide to choose' : sensoryLight <= 3 ? 'Dim Warm Glow' : sensoryLight <= 7 ? 'Soft Natural Sunlight' : 'Bright Daylight'}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    value={sensoryLight ?? 5}
-                    onChange={(e) => setSensoryLight(Number(e.target.value))}
-                    onPointerDown={(e) => { if (sensoryLight === null) setSensoryLight(Number((e.currentTarget as HTMLInputElement).value)) }}
-                    className={`w-full accent-teal-600 ${sensoryLight === null ? 'opacity-50' : ''}`}
-                  />
+              {roomPhase === 'intro' && (
+                <div className="text-center">
+                  <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-2 max-w-xl mx-auto">
+                    Step inside the treehouse sanctuary. We will turn up the light, the soft rain and the cushion weight slowly, one at a time. Tap &quot;That&apos;s too much&quot; as soon as it is enough. Then you design the room yourself.
+                  </p>
+                  <p className="text-xs text-slate-500 mb-6">Turn the device volume down before you start.</p>
+                  <button
+                    type="button"
+                    onClick={startRoom}
+                    className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-12 py-5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
+                  >
+                    Step inside ▶
+                  </button>
                 </div>
+              )}
 
-                <div>
-                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
-                    <span>Soundscape (Rain & Wind Chimes)</span>
-                    <span>{sensorySound === null ? 'Slide to choose' : sensorySound <= 3 ? 'Whisper Quiet' : sensorySound <= 7 ? 'Gentle Forest Rain' : 'Lively Waterfall'}</span>
+              {roomPhase === 'ramp' && (
+                <div className="max-w-md mx-auto text-center">
+                  <p className="text-sm font-bold text-slate-700 mb-3" aria-live="polite">
+                    Now the {ROOM_DIM_NAMES[roomDim]} is rising, one step at a time
+                  </p>
+                  <div className="flex gap-1 justify-center mb-6" aria-label={`Level ${roomLevel} of 10`}>
+                    {Array.from({length: ROOM_TOP}, (_, i) => (
+                      <span key={i} className={`h-4 w-6 rounded ${i < roomLevel ? 'bg-teal-500' : 'bg-slate-200'}`} />
+                    ))}
                   </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    value={sensorySound ?? 5}
-                    onChange={(e) => setSensorySound(Number(e.target.value))}
-                    onPointerDown={(e) => { if (sensorySound === null) setSensorySound(Number((e.currentTarget as HTMLInputElement).value)) }}
-                    className={`w-full accent-teal-600 ${sensorySound === null ? 'opacity-50' : ''}`}
-                  />
+                  <button
+                    type="button"
+                    onClick={() => finishRampDim(roomLevel)}
+                    className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-4 text-xl font-bold text-white shadow-lg hover:scale-105 active:scale-95 transition-all"
+                  >
+                    That&apos;s too much
+                  </button>
                 </div>
+              )}
 
-                <div>
-                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
-                    <span>Cushion & Blanket Comfort</span>
-                    <span>{sensoryTouch === null ? 'Slide to choose' : sensoryTouch <= 4 ? 'Light Feather Pillows' : 'Soothing Weighted Blanket'}</span>
+              {roomPhase === 'design' && (
+                <>
+                  <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
+                    Now make it yours. Tune the light, the soft rain and the cushion weight, or tap the calm shield to make everything softest at once.
+                  </p>
+                  <div className="space-y-6 max-w-md mx-auto mb-6">
+                    <div>
+                      <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
+                        <span>Lighting Level</span>
+                        <span>{sensoryLight === null ? 'Slide to choose' : sensoryLight <= 3 ? 'Dim Warm Glow' : sensoryLight <= 7 ? 'Soft Natural Sunlight' : 'Bright Daylight'}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="1"
+                        max="10"
+                        value={sensoryLight ?? 5}
+                        onChange={(e) => { setSensoryLight(Number(e.target.value)); bumpAdjust('light') }}
+                        onPointerDown={(e) => { if (sensoryLight === null) setSensoryLight(Number((e.currentTarget as HTMLInputElement).value)) }}
+                        className={`w-full accent-teal-600 ${sensoryLight === null ? 'opacity-50' : ''}`}
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
+                        <span>Soundscape (Rain & Wind Chimes)</span>
+                        <span>{sensorySound === null ? 'Slide to choose' : sensorySound <= 3 ? 'Whisper Quiet' : sensorySound <= 7 ? 'Gentle Forest Rain' : 'Lively Waterfall'}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="1"
+                        max="10"
+                        value={sensorySound ?? 5}
+                        onChange={(e) => { setSensorySound(Number(e.target.value)); bumpAdjust('sound') }}
+                        onPointerDown={(e) => { if (sensorySound === null) setSensorySound(Number((e.currentTarget as HTMLInputElement).value)) }}
+                        className={`w-full accent-teal-600 ${sensorySound === null ? 'opacity-50' : ''}`}
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
+                        <span>Cushion & Blanket Comfort</span>
+                        <span>{sensoryTouch === null ? 'Slide to choose' : sensoryTouch <= 4 ? 'Light Feather Pillows' : 'Soothing Weighted Blanket'}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="1"
+                        max="10"
+                        value={sensoryTouch ?? 5}
+                        onChange={(e) => { setSensoryTouch(Number(e.target.value)); bumpAdjust('texture') }}
+                        onPointerDown={(e) => { if (sensoryTouch === null) setSensoryTouch(Number((e.currentTarget as HTMLInputElement).value)) }}
+                        className={`w-full accent-teal-600 ${sensoryTouch === null ? 'opacity-50' : ''}`}
+                      />
+                    </div>
                   </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="10"
-                    value={sensoryTouch ?? 5}
-                    onChange={(e) => setSensoryTouch(Number(e.target.value))}
-                    onPointerDown={(e) => { if (sensoryTouch === null) setSensoryTouch(Number((e.currentTarget as HTMLInputElement).value)) }}
-                    className={`w-full accent-teal-600 ${sensoryTouch === null ? 'opacity-50' : ''}`}
-                  />
-                </div>
-              </div>
 
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    playAudio('fanfare')
-                    setDccsIndex(0)
-                    setDccsSwitchSeen(false)
-                    setPrac({g: 'dccs', i: 0, tries: 0, msg: '', done: false})
-                    setStage('dccs_story')
-                    sayIt('Put the gem in the box with the same color!')
-                  }}
-                  className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-12 py-5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
-                >
-                  Save and play the last game ▶
-                </button>
-              </div>
+                  <div className="text-center mb-6">
+                    <button
+                      type="button"
+                      onClick={shieldRoom}
+                      className="rounded-full border-2 border-teal-600 bg-white px-6 py-3 text-sm font-bold text-teal-800 hover:bg-teal-50 active:scale-95 transition-all"
+                    >
+                      Calm shield: make it all softest
+                    </button>
+                  </div>
+
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        roomDesignSecRef.current = Math.round((performance.now() - roomDesignStartRef.current) / 1000)
+                        playAudio('fanfare')
+                        setDccsIndex(0)
+                        setDccsSwitchSeen(false)
+                        setPrac({g: 'dccs', i: 0, tries: 0, msg: '', done: false})
+                        setStage('dccs_story')
+                        sayIt('Put the gem in the box with the same color!')
+                      }}
+                      className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-12 py-5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
+                    >
+                      Save and play the last game ▶
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}

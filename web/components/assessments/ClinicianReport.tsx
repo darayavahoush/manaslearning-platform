@@ -80,7 +80,7 @@ export const GAME_NOTE: Record<string, string> = {
   'Patience game': 'Early releases in a practice game. It is not a validated task.',
   'Gaze game': 'Choices that matched where Aria looked or pointed, and how long choosing took.',
   'Feelings match': 'Cartoon faces matched to the feeling shown.',
-  'Comfort choices': 'Light, sound and touch levels the child chose. These are preferences, not a test.',
+  'Comfort choices': 'Levels chosen in the room, and the level at which each sense was said to be too much. These are preferences and reactions from one session, not a test.',
   'Sorting game': 'Gems sorted by colour, then by shape after the rule changed.',
   'During the session': 'How the session went. These are not scores.',
 }

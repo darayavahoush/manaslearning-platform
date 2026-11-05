@@ -54,12 +54,23 @@ function feelings(r: Rec): string[] {
 }
 
 function comfort(r: Rec, who: string): string[] {
+  const out: string[] = []
   const pick = (key: string, label: string) => {
     const v = val(r, key)
     return `${label} ${v ? `${v.value} out of 10` : 'not chosen'}`
   }
-  if (!['lightLevel', 'soundLevel', 'touchLevel'].some((k) => val(r, k))) return []
-  return [`${who} chose: ${pick('lightLevel', 'light')}, ${pick('soundLevel', 'sound')}, ${pick('touchLevel', 'touch')}. These were choices in a game, so they are preferences, not results.`]
+  if (['lightLevel', 'soundLevel', 'touchLevel'].some((k) => val(r, k))) {
+    out.push(`${who} chose: ${pick('lightLevel', 'light')}, ${pick('soundLevel', 'sound')}, ${pick('touchLevel', 'touch')}. These were choices in a game, so they are preferences, not results.`)
+  }
+  // the room was only run through the turn-it-up-slowly part when designSec is present; a missing stop then means "never said too much"
+  if (val(r, 'designSec')) {
+    const said = (label: string, name: string) => {
+      const v = val(r, `rampStop${label}`)
+      return `${name} ${v ? `at ${v.value} of 10` : 'never reached too much'}`
+    }
+    out.push(`When each sense was turned up slowly, ${who} said it was too much for: ${said('Light', 'light')}; ${said('Sound', 'rain sound')}; ${said('Texture', 'cushion weight')}. One session shows only what felt like too much that day.`)
+  }
+  return out
 }
 
 function sorting(r: Rec, who: string): string[] {

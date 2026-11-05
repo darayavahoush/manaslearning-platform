@@ -13,7 +13,7 @@ export interface GameStory {
   fewTrials: boolean
 }
 
-type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards'>
+type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds'>
 
 const find = (r: Rec, key: string): Measure | undefined => r.measures.find((x) => x.key === key)
 const prop = (r: Rec, key: string): ProportionMeasure | null => {
@@ -32,12 +32,25 @@ function gaze(r: Rec, who: string): string[] {
   const g = prop(r, 'gazeMatches')
   if (!g) return []
   const t = val(r, 'gazeMedianMs')
-  return [`${who} chose the vessel Aria looked or pointed at in ${g.k} of ${g.n} rounds${t ? `, usually after about ${secs(t.value)} seconds` : ''}.`]
+  const out = [`${who} chose the vessel Aria looked or pointed at in ${g.k} of ${g.n} rounds${t ? `, usually after about ${secs(t.value)} seconds` : ''}.`]
+  const rounds = r.gazeRounds
+  if (rounds?.length) {
+    const split = (pointing: boolean) => {
+      const xs = rounds.filter((x) => x.pointing === pointing)
+      return `${xs.filter((x) => x.matched).length} of ${xs.length}`
+    }
+    out.push(`When Aria looked and pointed, ${split(true)} choices matched. When she only looked, ${split(false)} matched.`)
+  }
+  return out
 }
 
 function feelings(r: Rec): string[] {
   const f = prop(r, 'feelingsMatches')
-  return f ? [`${f.k} of ${f.n} cartoon faces were matched to the feeling shown.`] : []
+  if (!f) return []
+  const out = [`${f.k} of ${f.n} cartoon faces were matched to the feeling shown.`]
+  const missed = r.feelingsRounds?.filter((x) => !x.matched) ?? []
+  if (missed.length) out.push(`${missed.map((x) => `For the ${x.shown} face, the ${x.chosen} face was chosen`).join('; ')}.`)
+  return out
 }
 
 function comfort(r: Rec, who: string): string[] {

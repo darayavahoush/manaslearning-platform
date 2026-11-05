@@ -67,6 +67,11 @@ const TELEMETRY_KEYS = [
   // card by card in the sorting game: box tapped (0 or 1) and time in ms, cards 1 to 6
   'sortBin1', 'sortBin2', 'sortBin3', 'sortBin4', 'sortBin5', 'sortBin6',
   'sortMs1', 'sortMs2', 'sortMs3', 'sortMs4', 'sortMs5', 'sortMs6',
+  // encounter by encounter in the gaze game (vessel 0 to 2, time in ms) and round by round in the feelings match (option 0 to 2, time in ms)
+  'gazePick1', 'gazePick2', 'gazePick3', 'gazePick4', 'gazePick5', 'gazePick6',
+  'gazeMs1', 'gazeMs2', 'gazeMs3', 'gazeMs4', 'gazeMs5', 'gazeMs6',
+  'feelingsPick1', 'feelingsPick2', 'feelingsPick3', 'feelingsPick4',
+  'feelingsMs1', 'feelingsMs2', 'feelingsMs3', 'feelingsMs4',
   // How the session went (both quests): practice repeats per game, and time the page was hidden
   'retrySunbird', 'retrySteering', 'retryStars', 'retryGaze', 'retryFeelings', 'retrySorting', 'pauseCount', 'pausedSec',
 ] as const

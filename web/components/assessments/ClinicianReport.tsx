@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { INSTRUMENT_VERSION } from './version'
-import type { Measure, SortingCard } from './session-record'
+import type { FeelingsRound, GazeRound, Measure, SortingCard } from './session-record'
 
 export type ReportRow = { name: string; value: string; detail?: string; note?: string }
 export type Quest = 'dyslexia' | 'adhd' | 'autism'
@@ -26,6 +26,9 @@ export type ClinicianReportProps = {
   measures?: Measure[]
   /** autism quest: the sorting game card by card */
   sortingCards?: SortingCard[]
+  /** autism quest: the gaze game and feelings match trial by trial */
+  gazeRounds?: GazeRound[]
+  feelingsRounds?: FeelingsRound[]
 }
 
 /** Turns sentences like "Rhyme game: 3 of 5 ..." into table rows. */
@@ -207,6 +210,26 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
                         ))}
                       </tbody>
                     </table>
+                    {game === 'Gaze game' && !!p.gazeRounds?.length && (
+                      <table className="cr-mini">
+                        <thead><tr><th>Encounter</th><th>Aria</th><th>Looked at</th><th>Child chose</th><th>Matched</th><th>Time</th></tr></thead>
+                        <tbody>
+                          {p.gazeRounds.map((r) => (
+                            <tr key={r.round}><td>{r.round}</td><td>{r.pointing ? 'Looked and pointed' : 'Looked only'}</td><td>{r.target}</td><td>{r.chosen}</td><td>{r.matched ? 'Yes' : 'No'}</td><td>{r.ms !== null ? `${(Math.round(r.ms / 100) / 10).toFixed(1)} s` : '–'}</td></tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                    {game === 'Feelings match' && !!p.feelingsRounds?.length && (
+                      <table className="cr-mini">
+                        <thead><tr><th>Round</th><th>Feeling shown</th><th>Child chose</th><th>Matched</th><th>Time</th></tr></thead>
+                        <tbody>
+                          {p.feelingsRounds.map((r) => (
+                            <tr key={r.round}><td>{r.round}</td><td>{r.shown}</td><td>{r.chosen}</td><td>{r.matched ? 'Yes' : 'No'}</td><td>{r.ms !== null ? `${(Math.round(r.ms / 100) / 10).toFixed(1)} s` : '–'}</td></tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
                     {game === 'Sorting game' && !!p.sortingCards?.length && (
                       <table className="cr-mini">
                         <thead><tr><th>Card</th><th>Rule shown</th><th>Box tapped</th><th>Matched the rule</th><th>Time</th></tr></thead>

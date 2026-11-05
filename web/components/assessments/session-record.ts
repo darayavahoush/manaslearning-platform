@@ -9,7 +9,7 @@ import {wilson} from './profile-stats'
  * this code; the record is built in the response and handed back to the caller.
  */
 
-export const RECORD_SCHEMA_VERSION = '1.2'
+export const RECORD_SCHEMA_VERSION = '1.3'
 
 export type Quest = 'adhd' | 'autism'
 export type AgeBand = '4-5' | '6-8' | '9-12' | '13-16'
@@ -72,7 +72,32 @@ export interface SessionRecord {
   measures: Measure[]
   /** autism quest only: what happened on each sorting card, in the order played (record format 1.2 and later) */
   sortingCards?: SortingCard[]
+  /** autism quest only: the gaze game encounter by encounter (record format 1.3 and later) */
+  gazeRounds?: GazeRound[]
+  /** autism quest only: the feelings match round by round (record format 1.3 and later) */
+  feelingsRounds?: FeelingsRound[]
   limits: string[]
+}
+
+export interface GazeRound {
+  round: number
+  /** the vessel Aria looked at */
+  target: string
+  /** true when Aria also pointed, false when she only looked */
+  pointing: boolean
+  chosen: string
+  matched: boolean
+  ms: number | null
+}
+
+export interface FeelingsRound {
+  round: number
+  /** the feeling the sprite showed */
+  shown: string
+  /** the feeling the child chose */
+  chosen: string
+  matched: boolean
+  ms: number | null
 }
 
 export interface SortingCard {
@@ -247,6 +272,49 @@ export function sortingCards(t: Tele): SortingCard[] | null {
   return out
 }
 
+const POTS = ['Left urn', 'Centre amphora', 'Right vessel']
+// The six gaze encounters in the order played. Must match JA_TRIALS in app/assessments/autism/page.tsx.
+const GAZE_ORDER: Array<{pot: number; pointing: boolean}> = [
+  {pot: 0, pointing: false}, {pot: 2, pointing: true}, {pot: 1, pointing: false},
+  {pot: 0, pointing: true}, {pot: 2, pointing: false}, {pot: 1, pointing: true},
+]
+// The four feelings rounds in the order played, with the options as shown. Must match EMOTION_MIRROR_TRIALS in the same file.
+const FEELINGS_ROUNDS: Array<{target: string; options: string[]}> = [
+  {target: 'happy', options: ['sad', 'happy', 'surprised']},
+  {target: 'sad', options: ['happy', 'sad', 'calm']},
+  {target: 'surprised', options: ['calm', 'surprised', 'sad']},
+  {target: 'calm', options: ['surprised', 'happy', 'calm']},
+]
+const cleanMs = (ms: number | null) => (ms !== null && ms >= 0 && ms <= 600000 ? Math.round(ms) : null)
+
+/** Gaze game encounter by encounter. Kept only when all six choices are present and add up to the session total. */
+export function gazeRounds(t: Tele): GazeRound[] | null {
+  const out: GazeRound[] = []
+  for (let i = 0; i < GAZE_ORDER.length; i++) {
+    const pick = get(t, `gazePick${i + 1}`)
+    if (pick === null || ![0, 1, 2].includes(pick)) return null
+    const g = GAZE_ORDER[i]
+    out.push({round: i + 1, target: POTS[g.pot], pointing: g.pointing, chosen: POTS[pick], matched: pick === g.pot, ms: cleanMs(get(t, `gazeMs${i + 1}`))})
+  }
+  const total = get(t, 'jaCorrect')
+  if (total !== null && total !== out.filter((x) => x.matched).length) return null
+  return out
+}
+
+/** Feelings match round by round. Kept only when all four choices are present and add up to the session total. */
+export function feelingsRounds(t: Tele): FeelingsRound[] | null {
+  const out: FeelingsRound[] = []
+  for (let i = 0; i < FEELINGS_ROUNDS.length; i++) {
+    const pick = get(t, `feelingsPick${i + 1}`)
+    const r = FEELINGS_ROUNDS[i]
+    if (pick === null || ![0, 1, 2].includes(pick)) return null
+    out.push({round: i + 1, shown: r.target, chosen: r.options[pick], matched: r.options[pick] === r.target, ms: cleanMs(get(t, `feelingsMs${i + 1}`))})
+  }
+  const total = get(t, 'feelingsCorrect')
+  if (total !== null && total !== out.filter((x) => x.matched).length) return null
+  return out
+}
+
 export function buildSessionRecord(args: {
   quest: Quest
   ageYears: number | null
@@ -266,6 +334,8 @@ export function buildSessionRecord(args: {
     environment: args.environment,
     measures: raw.filter((m): m is Measure => m !== null).map(tagGame),
     ...(args.quest === 'autism' && sortingCards(args.telemetry) ? {sortingCards: sortingCards(args.telemetry)!} : {}),
+    ...(args.quest === 'autism' && gazeRounds(args.telemetry) ? {gazeRounds: gazeRounds(args.telemetry)!} : {}),
+    ...(args.quest === 'autism' && feelingsRounds(args.telemetry) ? {feelingsRounds: feelingsRounds(args.telemetry)!} : {}),
     limits: LIMITS,
   }
 }

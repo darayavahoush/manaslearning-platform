@@ -357,6 +357,8 @@ function __McInner() {
   const [jaTrialIndex, setJaTrialIndex] = useState(0)
   const [jaResponseTimes, setJaResponseTimes] = useState<number[]>([])
   const [jaCorrectCount, setJaCorrectCount] = useState(0)
+  // vessel chosen on each encounter: 0 left, 1 centre, 2 right
+  const [jaPicks, setJaPicks] = useState<number[]>([])
   const jaStartRef = useRef<number>(0)
   const [jaReady, setJaReady] = useState(false)
   const JA_TRIALS = useMemo(() => {
@@ -371,6 +373,10 @@ function __McInner() {
   // Chapter 2: Emotion Mirror State (Visual Social Recognition Game)
   const [tomTrialIndex, setTomTrialIndex] = useState(0)
   const [tomScore, setTomScore] = useState(0)
+  // face chosen on each round (index into that round's options) and time to choose in ms
+  const [tomPicks, setTomPicks] = useState<number[]>([])
+  const [tomTimes, setTomTimes] = useState<number[]>([])
+  const tomStartRef = useRef<number>(0)
 
   // Sensory Calibration State (SPM-2)
   const [sensoryLight, setSensoryLight] = useState<number | null>(null)
@@ -427,6 +433,7 @@ function __McInner() {
     setJaReady(false)
     const elapsed = Math.round(performance.now() - jaStartRef.current)
     setJaResponseTimes((prev) => [...prev, elapsed])
+    setJaPicks((prev) => [...prev, idx])
 
     if (idx === JA_TRIALS[jaTrialIndex].targetPot) {
       playAudio('hit')
@@ -438,7 +445,13 @@ function __McInner() {
   }
 
   // Chapter 2: Emotion Mirror Handling (Pure visual matching, zero reading questions)
+  useEffect(() => {
+    if (stage === 'tom_game') tomStartRef.current = performance.now()
+  }, [stage, tomTrialIndex])
+
   function handleEmotionSelect(selectedEmotion: string) {
+    setTomTimes((prev) => [...prev, Math.round(performance.now() - tomStartRef.current)])
+    setTomPicks((prev) => [...prev, (EMOTION_MIRROR_TRIALS[tomTrialIndex].options as readonly string[]).indexOf(selectedEmotion)])
     const isCorrect = selectedEmotion === EMOTION_MIRROR_TRIALS[tomTrialIndex].target
     if (isCorrect) {
       playAudio('chime')
@@ -522,6 +535,12 @@ function __McInner() {
         sortPreCorrect: countTrue(preAnswers),
         sortPostTotal: postAnswers.length,
         sortPostCorrect: countTrue(postAnswers),
+        // encounter by encounter in the gaze game: vessel chosen (0 left, 1 centre, 2 right) and time in ms
+        ...Object.fromEntries(Array.from({length: JA_TRIALS.length}, (_, i) => [`gazePick${i + 1}`, jaPicks[i] ?? null])),
+        ...Object.fromEntries(Array.from({length: JA_TRIALS.length}, (_, i) => [`gazeMs${i + 1}`, jaResponseTimes[i] ?? null])),
+        // round by round in the feelings match: face chosen (position in that round's options) and time in ms
+        ...Object.fromEntries(Array.from({length: EMOTION_MIRROR_TRIALS.length}, (_, i) => [`feelingsPick${i + 1}`, tomPicks[i] ?? null])),
+        ...Object.fromEntries(Array.from({length: EMOTION_MIRROR_TRIALS.length}, (_, i) => [`feelingsMs${i + 1}`, tomTimes[i] ?? null])),
         // card by card: box tapped (0 red star, 1 blue circle) and time in ms, cards 1 to 6
         ...Object.fromEntries(Array.from({length: DCCS_CARDS.length}, (_, i) => [`sortBin${i + 1}`, dccsBins[i] ?? null])),
         ...Object.fromEntries(Array.from({length: DCCS_CARDS.length}, (_, i) => [`sortMs${i + 1}`, dccsTimes[i] ?? null])),
@@ -553,8 +572,8 @@ function __McInner() {
   }
 
   // ---- practice rounds (never recorded) ----
-  function startJa() { playAudio('whoosh'); setPrac(null); setJaTrialIndex(0); setJaResponseTimes([]); setJaCorrectCount(0); setStage('ja_game') }
-  function startTom() { playAudio('whoosh'); setPrac(null); setTomTrialIndex(0); setTomScore(0); setStage('tom_game') }
+  function startJa() { playAudio('whoosh'); setPrac(null); setJaTrialIndex(0); setJaResponseTimes([]); setJaCorrectCount(0); setJaPicks([]); setStage('ja_game') }
+  function startTom() { playAudio('whoosh'); setPrac(null); setTomTrialIndex(0); setTomScore(0); setTomPicks([]); setTomTimes([]); setStage('tom_game') }
   function startDccs() { playAudio('fanfare'); setPrac(null); setDccsIndex(0); setDccsTimes([]); setDccsCorrect([]); setDccsBins([]); setDccsSwitchSeen(false); setStage('dccs_game') }
   function beginPractice(g: Prac['g'], line: string) {
     playAudio('whoosh')
@@ -1195,7 +1214,7 @@ function __McInner() {
             )}
 
             {agentResult && showClinicalDossier && (() => { const a: any = agentResult; return (
-              <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="autism" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} measures={a.record?.measures} sortingCards={a.record?.sortingCards} />{a.record && <SessionRecordDownload record={a.record} />}</div>
+              <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="autism" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} measures={a.record?.measures} sortingCards={a.record?.sortingCards} gazeRounds={a.record?.gazeRounds} feelingsRounds={a.record?.feelingsRounds} />{a.record && <SessionRecordDownload record={a.record} />}</div>
             ) })()}
             {/* GROWN-UP SUMMARY */}
             {showClinicalDossier && (

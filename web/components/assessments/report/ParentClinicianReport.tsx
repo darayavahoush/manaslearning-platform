@@ -4,6 +4,7 @@ import type {Roadmap} from '../roadmap/generate'
 import {GAME_NOTE} from '../ClinicianReport'
 import type {Measure, SessionRecord} from '../session-record'
 import {buildGameStories} from './narrative'
+import {FeelingsTable, GazeTable} from './RoundTables'
 import {CLINICIAN_QUESTIONS, REPORT_REVIEWED, REPORT_TEXT} from './library'
 
 /**
@@ -13,7 +14,7 @@ import {CLINICIAN_QUESTIONS, REPORT_REVIEWED, REPORT_TEXT} from './library'
  */
 
 export type ReportRecord = Pick<SessionRecord, 'quest' | 'measures' | 'instrument' | 'schema' | 'recordedAt' | 'limits'> &
-  Partial<Pick<SessionRecord, 'ageYears' | 'ageBand' | 'environment' | 'sortingCards'>>
+  Partial<Pick<SessionRecord, 'ageYears' | 'ageBand' | 'environment' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds'>>
 
 const pc = (x: number) => `${Math.round(x * 100)}%`
 const QUEST_NAME = {adhd: 'Attention and activity play', autism: 'Social and sensory play'} as const
@@ -98,6 +99,8 @@ export default function ParentClinicianReport({record, name, roadmap}: {record: 
                   </tbody>
                 </table>
               </div>
+              {game === 'Gaze game' && !!record.gazeRounds?.length && <GazeTable rounds={record.gazeRounds} />}
+              {game === 'Feelings match' && !!record.feelingsRounds?.length && <FeelingsTable rounds={record.feelingsRounds} />}
               {game === 'Sorting game' && !!record.sortingCards?.length && (
                 <div className="mt-2 overflow-x-auto">
                   <table className="w-full min-w-[30rem] border-collapse text-left text-sm">

@@ -57,7 +57,7 @@ export default function ReportPreview() {
               onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; const c = await f.text(); setText(c); load(c) }} />
             <label className="mt-4 block text-sm font-semibold" htmlFor="pr-text">Or paste the record</label>
             <textarea id="pr-text" value={text} onChange={(e) => setText(e.target.value)} rows={4}
-              className="mt-2 w-full rounded-lg border border-slate-300 p-2 font-mono text-xs" placeholder='{"schema":"1.2", ...}' />
+              className="mt-2 w-full rounded-lg border border-slate-300 p-2 font-mono text-xs" placeholder='{"schema":"1.3", ...}' />
             <button type="button" onClick={() => load(text)} className="mt-2 min-h-[44px] rounded-full bg-teal-700 px-5 text-sm font-bold text-white">Show report</button>
             {error && <p role="alert" className="mt-2 text-sm font-semibold text-rose-700">{error}</p>}
 

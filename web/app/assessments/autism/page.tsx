@@ -384,6 +384,8 @@ function __McInner() {
   const [dccsTimes, setDccsTimes] = useState<number[]>([])
   // one entry per sorted card: whether the tray chosen matched the rule shown for that card
   const [dccsCorrect, setDccsCorrect] = useState<boolean[]>([])
+  // one entry per sorted card: which box was tapped (0 = red star box, 1 = blue circle box)
+  const [dccsBins, setDccsBins] = useState<number[]>([])
   const dccsStartRef = useRef<number>(0)
   const events = usePlayEvents()
   const DCCS_SWITCH_AT = 3 // index of the first card played under the shape rule
@@ -478,6 +480,7 @@ function __McInner() {
     const ruleNow = dccsIndex < DCCS_SWITCH_AT ? 'color' : 'shape'
     const rightBin = ruleNow === 'color' ? (card.color === 'red' ? 0 : 1) : (card.shape === 'star' ? 0 : 1)
     setDccsCorrect((prev) => [...prev, targetBin === rightBin])
+    setDccsBins((prev) => [...prev, targetBin])
     playAudio('hit')
     setDccsIndex((i) => i + 1)
   }
@@ -519,6 +522,9 @@ function __McInner() {
         sortPreCorrect: countTrue(preAnswers),
         sortPostTotal: postAnswers.length,
         sortPostCorrect: countTrue(postAnswers),
+        // card by card: box tapped (0 red star, 1 blue circle) and time in ms, cards 1 to 6
+        ...Object.fromEntries(Array.from({length: DCCS_CARDS.length}, (_, i) => [`sortBin${i + 1}`, dccsBins[i] ?? null])),
+        ...Object.fromEntries(Array.from({length: DCCS_CARDS.length}, (_, i) => [`sortMs${i + 1}`, dccsTimes[i] ?? null])),
         retryGaze: ev.retries.ja ?? 0,
         retryFeelings: ev.retries.tom ?? 0,
         retrySorting: ev.retries.dccs ?? 0,
@@ -549,7 +555,7 @@ function __McInner() {
   // ---- practice rounds (never recorded) ----
   function startJa() { playAudio('whoosh'); setPrac(null); setJaTrialIndex(0); setJaResponseTimes([]); setJaCorrectCount(0); setStage('ja_game') }
   function startTom() { playAudio('whoosh'); setPrac(null); setTomTrialIndex(0); setTomScore(0); setStage('tom_game') }
-  function startDccs() { playAudio('fanfare'); setPrac(null); setDccsIndex(0); setDccsTimes([]); setDccsCorrect([]); setDccsSwitchSeen(false); setStage('dccs_game') }
+  function startDccs() { playAudio('fanfare'); setPrac(null); setDccsIndex(0); setDccsTimes([]); setDccsCorrect([]); setDccsBins([]); setDccsSwitchSeen(false); setStage('dccs_game') }
   function beginPractice(g: Prac['g'], line: string) {
     playAudio('whoosh')
     setPrac({g, i: 0, tries: 0, msg: '', done: false})
@@ -1189,7 +1195,7 @@ function __McInner() {
             )}
 
             {agentResult && showClinicalDossier && (() => { const a: any = agentResult; return (
-              <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="autism" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} measures={a.record?.measures} />{a.record && <SessionRecordDownload record={a.record} />}</div>
+              <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="autism" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} measures={a.record?.measures} sortingCards={a.record?.sortingCards} />{a.record && <SessionRecordDownload record={a.record} />}</div>
             ) })()}
             {/* GROWN-UP SUMMARY */}
             {showClinicalDossier && (

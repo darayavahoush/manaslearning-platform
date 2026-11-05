@@ -18,6 +18,7 @@ type Rec = {
   recordedAt: string
   environment: {userAgent: string | null; language: string | null; timezone: string | null; screen: {width: number; height: number; pixelRatio: number} | null; touch: boolean | null}
   measures: Array<Proportion | ValueM>
+  sortingCards?: Array<{card: number; rule: string; color: string; shape: string; box: string; right: boolean; ms: number | null}>
   limits: string[]
 }
 
@@ -121,6 +122,24 @@ export default function RecordViewer() {
                 </tbody>
               </table>
             </div>
+
+            {!!rec.sortingCards?.length && (
+              <>
+                <h3 className="mt-6 text-sm font-bold uppercase tracking-wide text-slate-500">Sorting game, card by card</h3>
+                <div className="mt-1 overflow-x-auto">
+                  <table className="w-full min-w-[30rem] border-collapse text-left text-sm">
+                    <thead><tr className="border-b-2 border-slate-300 text-xs uppercase tracking-wide text-slate-500"><th className="py-2 pr-3">Card</th><th className="py-2 pr-3">Rule shown</th><th className="py-2 pr-3">Box tapped</th><th className="py-2 pr-3">Matched the rule</th><th className="py-2">Time</th></tr></thead>
+                    <tbody>
+                      {rec.sortingCards.map((c) => (
+                        <tr key={c.card} className="border-b border-slate-200">
+                          <td className="py-2 pr-3">{c.card}: {c.color} {c.shape}</td><td className="py-2 pr-3">{c.rule}</td><td className="py-2 pr-3">{c.box}</td><td className="py-2 pr-3">{c.right ? 'Yes' : 'No'}</td><td className="py-2">{c.ms !== null ? `${(Math.round(c.ms / 100) / 10).toFixed(1)} s` : 'Not recorded'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
 
             <h3 className="mt-6 text-sm font-bold uppercase tracking-wide text-slate-500">Testing conditions</h3>
             <ul className="mt-1 text-sm text-slate-700">

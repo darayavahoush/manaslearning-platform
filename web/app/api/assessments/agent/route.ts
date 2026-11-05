@@ -64,6 +64,9 @@ const TELEMETRY_KEYS = [
   'jaTrials', 'jaCorrect', 'jaMedianMs', 'feelingsTrials', 'feelingsCorrect',
   'lightLevel', 'soundLevel', 'touchLevel', 'sortCount', 'sortMedianMs',
   'sortPreCorrect', 'sortPreTotal', 'sortPostCorrect', 'sortPostTotal',
+  // card by card in the sorting game: box tapped (0 or 1) and time in ms, cards 1 to 6
+  'sortBin1', 'sortBin2', 'sortBin3', 'sortBin4', 'sortBin5', 'sortBin6',
+  'sortMs1', 'sortMs2', 'sortMs3', 'sortMs4', 'sortMs5', 'sortMs6',
   // How the session went (both quests): practice repeats per game, and time the page was hidden
   'retrySunbird', 'retrySteering', 'retryStars', 'retryGaze', 'retryFeelings', 'retrySorting', 'pauseCount', 'pausedSec',
 ] as const

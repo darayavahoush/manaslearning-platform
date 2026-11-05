@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { INSTRUMENT_VERSION } from './version'
-import type { Measure } from './session-record'
+import type { Measure, SortingCard } from './session-record'
 
 export type ReportRow = { name: string; value: string; detail?: string; note?: string }
 export type Quest = 'dyslexia' | 'adhd' | 'autism'
@@ -24,6 +24,8 @@ export type ClinicianReportProps = {
   extra?: ReportExtra
   /** the session record's measures; when given, a "Results by game" section is added */
   measures?: Measure[]
+  /** autism quest: the sorting game card by card */
+  sortingCards?: SortingCard[]
 }
 
 /** Turns sentences like "Rhyme game: 3 of 5 ..." into table rows. */
@@ -205,6 +207,18 @@ export default function ClinicianReportButton(p: ClinicianReportProps) {
                         ))}
                       </tbody>
                     </table>
+                    {game === 'Sorting game' && !!p.sortingCards?.length && (
+                      <table className="cr-mini">
+                        <thead><tr><th>Card</th><th>Rule shown</th><th>Box tapped</th><th>Matched the rule</th><th>Time</th></tr></thead>
+                        <tbody>
+                          {p.sortingCards.map((c) => (
+                            <tr key={c.card}>
+                              <td>{c.card}: {c.color} {c.shape}</td><td>{c.rule}</td><td>{c.box}</td><td>{c.right ? 'Yes' : 'No'}</td><td>{c.ms !== null ? `${(Math.round(c.ms / 100) / 10).toFixed(1)} s` : '–'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                 ))}
                 <p className="cr-small">Each game is shown on its own, and no scores are combined. A 95% interval shows how far a result could move by chance from one short session. A wide interval means there were too few trials to say much. Read every figure with the child’s age, tiredness and device in mind.</p>

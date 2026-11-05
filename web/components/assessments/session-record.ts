@@ -9,7 +9,7 @@ import {wilson} from './profile-stats'
  * this code; the record is built in the response and handed back to the caller.
  */
 
-export const RECORD_SCHEMA_VERSION = '1.1'
+export const RECORD_SCHEMA_VERSION = '1.2'
 
 export type Quest = 'adhd' | 'autism'
 export type AgeBand = '4-5' | '6-8' | '9-12' | '13-16'
@@ -70,7 +70,21 @@ export interface SessionRecord {
   recordedAt: string
   environment: Environment
   measures: Measure[]
+  /** autism quest only: what happened on each sorting card, in the order played (record format 1.2 and later) */
+  sortingCards?: SortingCard[]
   limits: string[]
+}
+
+export interface SortingCard {
+  card: number
+  rule: 'colour' | 'shape'
+  color: 'red' | 'blue'
+  shape: 'star' | 'circle'
+  /** the box the child tapped */
+  box: 'Red star box' | 'Blue circle box'
+  /** whether that box matched the rule shown for this card */
+  right: boolean
+  ms: number | null
 }
 
 type Tele = Record<string, number | null>
@@ -202,6 +216,37 @@ export function cleanEnvironment(input: unknown, headerUserAgent?: string | null
   }
 }
 
+// The six sorting cards in the order they are played. Must match DCCS_CARDS in app/assessments/autism/page.tsx.
+// Cards 1 to 3 are played under the colour rule and cards 4 to 6 under the shape rule.
+// Box 0 is the red star box and box 1 is the blue circle box.
+const SORT_CARDS: Array<{color: 'red' | 'blue'; shape: 'star' | 'circle'}> = [
+  {color: 'red', shape: 'star'}, {color: 'blue', shape: 'circle'}, {color: 'red', shape: 'circle'},
+  {color: 'blue', shape: 'star'}, {color: 'red', shape: 'star'}, {color: 'blue', shape: 'circle'},
+]
+const SORT_SWITCH_AT = 3
+
+/**
+ * Card by card sorting results. Kept only when all six boxes are present and add up to the session totals,
+ * otherwise something is off and the table is left out.
+ */
+export function sortingCards(t: Tele): SortingCard[] | null {
+  const out: SortingCard[] = []
+  for (let i = 0; i < SORT_CARDS.length; i++) {
+    const bin = get(t, `sortBin${i + 1}`)
+    if (bin !== 0 && bin !== 1) return null
+    const c = SORT_CARDS[i]
+    const rule = i < SORT_SWITCH_AT ? 'colour' : 'shape'
+    const rightBox = rule === 'colour' ? (c.color === 'red' ? 0 : 1) : (c.shape === 'star' ? 0 : 1)
+    const ms = get(t, `sortMs${i + 1}`)
+    out.push({card: i + 1, rule, color: c.color, shape: c.shape, box: bin === 0 ? 'Red star box' : 'Blue circle box', right: bin === rightBox, ms: ms !== null && ms >= 0 && ms <= 600000 ? Math.round(ms) : null})
+  }
+  const pre = out.slice(0, SORT_SWITCH_AT).filter((x) => x.right).length
+  const post = out.slice(SORT_SWITCH_AT).filter((x) => x.right).length
+  const preT = get(t, 'sortPreCorrect'), postT = get(t, 'sortPostCorrect')
+  if ((preT !== null && preT !== pre) || (postT !== null && postT !== post)) return null
+  return out
+}
+
 export function buildSessionRecord(args: {
   quest: Quest
   ageYears: number | null
@@ -220,6 +265,7 @@ export function buildSessionRecord(args: {
     recordedAt: new Date().toISOString(),
     environment: args.environment,
     measures: raw.filter((m): m is Measure => m !== null).map(tagGame),
+    ...(args.quest === 'autism' && sortingCards(args.telemetry) ? {sortingCards: sortingCards(args.telemetry)!} : {}),
     limits: LIMITS,
   }
 }

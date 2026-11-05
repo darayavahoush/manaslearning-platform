@@ -1,5 +1,6 @@
 import {NextResponse} from 'next/server'
 import {INSTRUMENT_VERSION} from '../../../../components/assessments/version'
+import {buildSessionRecord, cleanEnvironment, type SessionRecord} from '../../../../components/assessments/session-record'
 
 /**
  * Play-session summary for the Manas quests.
@@ -27,6 +28,7 @@ export interface AssessmentAgentState {
   companion?: string
   guildClass?: string
   telemetry: Record<string, number | null>
+  record: SessionRecord
   superpowers: {
     realmTitle: string
     crestBadge: string
@@ -308,6 +310,13 @@ export async function POST(req: Request) {
     const childName = cleanText(body.childName, 40, assessmentType === 'adhd' ? 'Canopy Ranger' : 'Grove Seeker')
     const guildClass = cleanText(body.guildClass, 40, '')
     const telemetry = cleanTelemetry(body.telemetry)
+    const record = buildSessionRecord({
+      quest: assessmentType,
+      ageYears: cleanAge(body.childAge),
+      telemetry,
+      environment: cleanEnvironment(body.environment, req.headers.get('user-agent')),
+      instrumentVersion: INSTRUMENT_VERSION,
+    })
     const indices = assessmentType === 'adhd' ? adhdObservations(telemetry) : autismObservations(telemetry)
     const withData = indices.filter((o) => o.value !== NOT_ENOUGH).length
 
@@ -319,6 +328,7 @@ export async function POST(req: Request) {
       companion: cleanText(body.companion, 40, ''),
       guildClass,
       telemetry,
+      record,
       superpowers: buildSuperpowers(assessmentType, childName, guildClass),
       clinicalReport: {
         generatedOn: new Date().toLocaleDateString('en-IN', {year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Kolkata'}),

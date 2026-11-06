@@ -429,10 +429,10 @@ const CHARGE_TRIALS = [
 // child-interface and span research. They are not clinical norms.
 type AgeBand = { id: string; xs: number; sm: number; base: number; chev: string; bird: string; grid: number; seqs: number[][]; stepMs: number; litMs: number }
 const AGE_BANDS: AgeBand[] = [
-  { id: '4-5', xs: 1.15, sm: 1.25, base: 1.4, chev: 'w-12 h-12 sm:w-24 sm:h-24', bird: 'w-40 h-40 sm:w-48 sm:h-48', grid: 420, seqs: [[1, 5], [3, 0, 6], [8, 4, 1, 6]], stepMs: 1000, litMs: 700 },
-  { id: '6-8', xs: 1.05, sm: 1.15, base: 1.3, chev: 'w-12 h-12 sm:w-20 sm:h-20', bird: 'w-36 h-36 sm:w-44 sm:h-44', grid: 400, seqs: [[1, 5, 7], [3, 0, 6, 2], [8, 4, 1, 6, 3]], stepMs: 900, litMs: 600 },
-  { id: '9-12', xs: 0.95, sm: 1.05, base: 1.15, chev: 'w-11 h-11 sm:w-16 sm:h-16', bird: 'w-32 h-32 sm:w-40 sm:h-40', grid: 380, seqs: [[4, 0, 7, 2], [1, 6, 3, 8, 5], [7, 2, 5, 0, 8, 3]], stepMs: 800, litMs: 520 },
-  { id: '13-16', xs: 0.9, sm: 1, base: 1.1, chev: 'w-11 h-11 sm:w-16 sm:h-16', bird: 'w-32 h-32 sm:w-36 sm:h-36', grid: 360, seqs: [[2, 6, 1, 8, 4], [5, 0, 7, 3, 6, 1], [8, 3, 0, 5, 2, 7, 4]], stepMs: 700, litMs: 450 },
+  { id: '4-5', xs: 1.15, sm: 1.25, base: 1.4, chev: 'w-12 h-12 sm:w-24 sm:h-24', bird: 'w-40 h-40 sm:w-48 sm:h-48', grid: 520, seqs: [[1, 5], [3, 0, 6], [8, 4, 1, 6]], stepMs: 1000, litMs: 700 },
+  { id: '6-8', xs: 1.05, sm: 1.15, base: 1.3, chev: 'w-12 h-12 sm:w-20 sm:h-20', bird: 'w-36 h-36 sm:w-44 sm:h-44', grid: 500, seqs: [[1, 5, 7], [3, 0, 6, 2], [8, 4, 1, 6, 3]], stepMs: 900, litMs: 600 },
+  { id: '9-12', xs: 0.95, sm: 1.05, base: 1.15, chev: 'w-11 h-11 sm:w-16 sm:h-16', bird: 'w-32 h-32 sm:w-40 sm:h-40', grid: 480, seqs: [[4, 0, 7, 2], [1, 6, 3, 8, 5], [7, 2, 5, 0, 8, 3]], stepMs: 800, litMs: 520 },
+  { id: '13-16', xs: 0.9, sm: 1, base: 1.1, chev: 'w-11 h-11 sm:w-16 sm:h-16', bird: 'w-32 h-32 sm:w-36 sm:h-36', grid: 460, seqs: [[2, 6, 1, 8, 4], [5, 0, 7, 3, 6, 1], [8, 3, 0, 5, 2, 7, 4]], stepMs: 700, litMs: 450 },
 ]
 function bandFor(age: number): AgeBand {
   return age <= 5 ? AGE_BANDS[0] : age <= 8 ? AGE_BANDS[1] : age <= 12 ? AGE_BANDS[2] : AGE_BANDS[3]
@@ -1566,8 +1566,8 @@ function __McInner() {
         )}
 
         {stage === 'memory_game' && !memPracReady && (
-          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
-            <div className="flex justify-between items-center mb-6">
+          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-3 sm:p-6 md:p-10 shadow-2xl text-center select-none">
+            <div className="flex justify-between items-center mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
                 {memoryLevel < 1 ? 'Practice' : `Level ${memoryLevel} of 3 • Constellation Span: ${memorySequence.length || memoryLevel + 2}`}
               </span>
@@ -1584,7 +1584,7 @@ function __McInner() {
                 </p>
               </div>
             )}
-            <div className="mx-auto my-6 grid aspect-square grid-cols-3 gap-5 sm:gap-8 rounded-3xl bg-[#0F172A] p-5 sm:p-8 shadow-2xl" style={{ width: '100%', maxWidth: band.grid }}>
+            <div className="mx-auto my-4 grid aspect-square grid-cols-3 gap-3 sm:gap-7 rounded-3xl bg-[#0F172A] p-3 sm:p-7 shadow-2xl" style={{ width: '100%', maxWidth: band.grid }}>
               {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((idx) => {
                 const isLit = memoryLitCell === idx || memoryTapCell === idx
                 return (
@@ -1594,7 +1594,7 @@ function __McInner() {
                     disabled={memoryPhase !== 'input'}
                     onPointerDown={() => { if (memoryPhase === 'input') { setMemoryTapCell(idx); setTimeout(() => setMemoryTapCell((c) => (c === idx ? null : c)), 320) } }}
                     onClick={() => handleMemoryClick(idx)}
-                    className={`rounded-full p-3 sm:p-4 transition-all flex items-center justify-center ${
+                    className={`rounded-full p-0.5 sm:p-2 transition-all flex items-center justify-center ${
                       isLit
                         ? 'bg-amber-400 shadow-[0_0_20px_#F59E0B] scale-105'
                         : 'bg-slate-800/80 hover:bg-slate-700/80'

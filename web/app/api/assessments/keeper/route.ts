@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { runKeeperGraph } from "./graph";
+import { llmConfig } from "./llm";
 
 // Story-Keeper: turns RAW play observations into (1) a child-facing legend and
 // (2) parent-facing notes. Nothing is stored or logged. No norms, scores or diagnoses.
@@ -226,10 +227,10 @@ export async function POST(req: Request) {
   const detail: Obs = body?.detail && typeof body.detail === "object" && JSON.stringify(body.detail).length < 9000 ? body.detail : {};
   const extra = quest === "dyslexia" ? dyslexiaExtra(obs, detail) : undefined;
   const send = (o: Out) => NextResponse.json(rows ? { ...o, rows, extra } : o);
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key || JSON.stringify(obs).length > 6000) return send(fallback);
+  const llm = llmConfig();
+  if (!llm || JSON.stringify(obs).length > 6000) return send(fallback);
   try {
-    return send(await runKeeperGraph({ quest, nick, obs, fallback, apiKey: key }));
+    return send(await runKeeperGraph({ quest, nick, obs, fallback, llm }));
   } catch {
     return send(fallback);
   }

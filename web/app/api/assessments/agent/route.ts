@@ -98,6 +98,18 @@ const TELEMETRY_KEYS = [
   // % of looking time on the face, % of looking time on the right of the screen, and the face share per picture
   'lookStatus', 'lookCal', 'lookShown', 'lookTrials', 'lookSocialPct', 'lookRightPct',
   'lookPct1', 'lookPct2', 'lookPct3', 'lookPct4', 'lookPct5', 'lookPct6',
+  // Reading quest: items and matching answers for the rhyme, first-sound and spelling games, median time (ms) and sound replays
+  'rhymeTrials', 'rhymeCorrect', 'rhymeMedianMs', 'rhymeReplays',
+  'firstSoundTrials', 'firstSoundCorrect', 'firstSoundMedianMs', 'firstSoundReplays',
+  'spellTrials', 'spellCorrect', 'spellMedianMs',
+  // letter game: matching letters found of those possible, look-alike taps of look-alike tiles, and how many of the taps were a mirror pair
+  'letterRounds', 'letterHits', 'letterPossible', 'letterFalse', 'letterDistractors', 'letterMissed', 'letterMirrorFalse',
+  // sound-order game: sequences tried, repeated correctly, and the longest repeated
+  'soundSpanAttempts', 'soundSpanPassed', 'soundSpanLongest',
+  // word check: real and made-up words, how many were judged correctly, median time (ms)
+  'wordTrials', 'wordRealTotal', 'wordRealCorrect', 'wordMadeTotal', 'wordMadeCorrect', 'wordMedianMs',
+  // practice repeats in the letter game
+  'retryLetters',
 ] as const
 
 function cleanTelemetry(input: unknown): Record<string, number | null> {
@@ -370,8 +382,29 @@ export async function POST(req: Request) {
   try {
     const body = (await req.json()) as Raw
     const assessmentType = body?.assessmentType
-    if (assessmentType !== 'adhd' && assessmentType !== 'autism') {
+    if (assessmentType !== 'adhd' && assessmentType !== 'autism' && assessmentType !== 'dyslexia') {
       return NextResponse.json({error: 'Unknown activity'}, {status: 400})
+    }
+
+    if (assessmentType === 'dyslexia') {
+      // The reading quest only needs the session record: counts, times and intervals, built here so the page is never trusted.
+      const dyslexiaTelemetry = cleanTelemetry(body.telemetry)
+      const dyslexiaRecord = buildSessionRecord({
+        quest: 'dyslexia',
+        ageYears: cleanAge(body.childAge),
+        telemetry: dyslexiaTelemetry,
+        environment: cleanEnvironment(body.environment, req.headers.get('user-agent')),
+        instrumentVersion: INSTRUMENT_VERSION,
+      })
+      return NextResponse.json({
+        success: true,
+        data: {
+          assessmentType: 'dyslexia',
+          childName: cleanText(body.childName, 40, 'Explorer'),
+          childAge: cleanAge(body.childAge),
+          record: dyslexiaRecord,
+        },
+      })
     }
 
     const childName = cleanText(body.childName, 40, assessmentType === 'adhd' ? 'Canopy Ranger' : 'Grove Seeker')

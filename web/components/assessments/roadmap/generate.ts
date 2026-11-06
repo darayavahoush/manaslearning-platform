@@ -1,5 +1,5 @@
 import type {Measure, Quest} from '../session-record'
-import {ADHD_IDEAS, AUTISM_IDEAS, IDEA_TOPICS, type IdeaTopic} from '../ideas'
+import {ADHD_IDEAS, AUTISM_IDEAS, DYSLEXIA_IDEAS, IDEA_TOPICS, type IdeaTopic} from '../ideas'
 import {EXPECTED_GAMES, TEXT, WINDOWS, type WindowId} from './library'
 
 /**
@@ -66,7 +66,7 @@ function comfortItem(record: RoadmapInput['record']): RoadmapItem | null {
 
 export function generateRoadmap(input: RoadmapInput): Roadmap {
   const {record} = input
-  const ideas = record.quest === 'adhd' ? ADHD_IDEAS : AUTISM_IDEAS
+  const ideas = record.quest === 'adhd' ? ADHD_IDEAS : record.quest === 'dyslexia' ? DYSLEXIA_IDEAS : AUTISM_IDEAS
   const focus = IDEA_TOPICS.filter((t) => input.focus.includes(t))
   const notes = dataNotes(record)
 

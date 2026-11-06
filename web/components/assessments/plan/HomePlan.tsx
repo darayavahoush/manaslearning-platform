@@ -2,7 +2,7 @@
 import {useState} from 'react'
 import type {Quest} from '../session-record'
 import {generatePlan, type Answers} from './generate'
-import {PLAN_REVIEWED, QUESTIONS} from './library'
+import {PLAN_REVIEWED, questionsFor} from './library'
 
 /**
  * The 4-week home plan. The parent answers a few questions about their child, then gets a plan built by fixed rules from
@@ -14,6 +14,7 @@ export default function HomePlan({quest, name}: {quest: Quest; name?: string}) {
   const [done, setDone] = useState(false)
   const [ticks, setTicks] = useState<Record<string, boolean>>({})
   const who = name?.trim() || 'your child'
+  const QUESTIONS = questionsFor(quest)
 
   if (!done) {
     const q = QUESTIONS[step]

@@ -13,7 +13,7 @@ import {LOOK_SOCIAL_SIDES, MIN_VALID_TRIALS} from './camera/gaze-side'
 
 export const RECORD_SCHEMA_VERSION = '1.13'
 
-export type Quest = 'adhd' | 'autism'
+export type Quest = 'adhd' | 'autism' | 'dyslexia'
 export type AgeBand = '4-5' | '6-8' | '9-12' | '13-16'
 
 export function ageBandOf(age: number | null): AgeBand | null {
@@ -239,6 +239,12 @@ export function gameOf(key: string): string {
   if (/^sort/.test(key)) return 'Sorting game'
   if (/^cam/.test(key)) return 'Camera (optional)'
   if (/^look/.test(key)) return 'Looking game (optional camera)'
+  if (/^rhyme/.test(key)) return 'Rhyme game'
+  if (/^firstSound/.test(key)) return 'First-sound game'
+  if (/^letter/.test(key)) return 'Letter game'
+  if (/^soundSpan/.test(key)) return 'Sound-order game'
+  if (/^wordCheck/.test(key)) return 'Word check (optional)'
+  if (/^spelling/.test(key)) return 'Spelling game (optional)'
   if (/^(pause|retry)/.test(key)) return 'During the session'
   return 'Other'
 }
@@ -329,6 +335,36 @@ function roomMeasures(t: Tele): Array<Measure | null> {
   return out
 }
 
+const TWO_CHOICES = 'Two choices, so guessing alone would give about half.'
+
+/** The reading quest. Every row is a count out of a known number of items, so each one carries an interval. */
+function dyslexiaMeasures(t: Tele): Array<Measure | null> {
+  return [
+    proportion('rhymeMatches', 'Rhyme choices that matched the target word', get(t, 'rhymeCorrect'), get(t, 'rhymeTrials'), TWO_CHOICES),
+    value('rhymeMedianMs', 'Median time to choose, rhyme game', get(t, 'rhymeMedianMs'), 'ms', get(t, 'rhymeTrials')),
+    value('rhymeReplays', 'Times the sounds were replayed, rhyme game', get(t, 'rhymeReplays'), 'times', null,
+      'Not a score. Replaying is a normal choice.'),
+    proportion('firstSoundMatches', 'First-sound choices that matched the target word', get(t, 'firstSoundCorrect'), get(t, 'firstSoundTrials'), TWO_CHOICES),
+    value('firstSoundMedianMs', 'Median time to choose, first-sound game', get(t, 'firstSoundMedianMs'), 'ms', get(t, 'firstSoundTrials')),
+    value('firstSoundReplays', 'Times the sounds were replayed, first-sound game', get(t, 'firstSoundReplays'), 'times', null,
+      'Not a score. Replaying is a normal choice.'),
+    proportion('letterFound', 'Matching letters found', get(t, 'letterHits'), get(t, 'letterPossible')),
+    proportion('letterLookalikeTaps', 'Look-alike letters tapped by mistake', get(t, 'letterFalse'), get(t, 'letterDistractors')),
+    value('letterMirrorTaps', 'Mistaken taps that were a mirror pair (b and d, or p and q)', get(t, 'letterMirrorFalse'), 'taps', get(t, 'letterFalse'),
+      'Mirror-letter mix-ups are common in young readers, so they say less at younger ages.'),
+    proportion('soundSpanPassed', 'Sound sequences repeated in the right order', get(t, 'soundSpanPassed'), get(t, 'soundSpanAttempts'),
+      'The game stops after two misses at one length, so children do not all try the same number of sequences.'),
+    value('soundSpanLongest', 'Longest sound sequence repeated', get(t, 'soundSpanLongest'), 'sounds', null),
+    proportion('wordCheckReal', 'Real words accepted as real', get(t, 'wordRealCorrect'), get(t, 'wordRealTotal')),
+    proportion('wordCheckMadeUp', 'Made-up words rejected as made up', get(t, 'wordMadeCorrect'), get(t, 'wordMadeTotal'),
+      'Made-up words can only be told apart by sounding them out. Guessing alone would give about half.'),
+    value('wordCheckMedianMs', 'Median time to answer, word check', get(t, 'wordMedianMs'), 'ms', get(t, 'wordTrials')),
+    proportion('spellingCorrect', 'Correct spellings chosen', get(t, 'spellCorrect'), get(t, 'spellTrials'), TWO_CHOICES),
+    value('spellingMedianMs', 'Median time to choose, spelling game', get(t, 'spellMedianMs'), 'ms', get(t, 'spellTrials')),
+    ...eventMeasures(t, [['retryLetters', 'letter game']]),
+  ]
+}
+
 function autismMeasures(t: Tele): Array<Measure | null> {
   return [
     proportion('gazeMatches', "Choices matching where Aria looked or pointed", get(t, 'jaCorrect'), get(t, 'jaTrials')),
@@ -392,6 +428,7 @@ function lookingMeasures(t: Tele): Array<Measure | null> {
 const INSTRUMENTS: Record<Quest, {id: string; name: string}> = {
   adhd: {id: 'manas-attention-play', name: 'Manas attention play activity'},
   autism: {id: 'manas-social-sensory-play', name: 'Manas social and sensory play activity'},
+  dyslexia: {id: 'manas-reading-sound-play', name: 'Manas reading and sound play activity'},
 }
 
 const LIMITS = [
@@ -399,7 +436,7 @@ const LIMITS = [
   'No norms: nothing here is compared with other children, and there are no cut-offs or labels.',
   '95% intervals are Wilson intervals. They treat each trial as independent, which is only approximately true.',
   'A wide interval means there were too few trials to say much. It is not a finding about the child.',
-  'This record cannot show whether a child has ADHD, autism or any other condition. Only a clinician can assess that.',
+  'This record cannot show whether a child has ADHD, autism, dyslexia or any other condition. Only a clinician can assess that.',
 ]
 
 function cleanString(v: unknown, max: number): string | null {
@@ -617,7 +654,7 @@ export function buildSessionRecord(args: {
   environment: Environment
   instrumentVersion: string
 }): SessionRecord {
-  const raw = (args.quest === 'adhd' ? adhdMeasures(args.telemetry) : autismMeasures(args.telemetry))
+  const raw = args.quest === 'adhd' ? adhdMeasures(args.telemetry) : args.quest === 'dyslexia' ? dyslexiaMeasures(args.telemetry) : autismMeasures(args.telemetry)
   const inst = INSTRUMENTS[args.quest]
   return {
     schema: RECORD_SCHEMA_VERSION,
@@ -641,6 +678,8 @@ export function buildSessionRecord(args: {
     ...(args.quest === 'autism' && lookingRecord(args.telemetry) ? {looking: lookingRecord(args.telemetry)!} : {}),
     limits: [
       ...LIMITS,
+      ...(args.quest === 'dyslexia'
+        ? ['Spoken words and sounds come from the voice built into the device, which differs between phones and browsers, so the same word can sound different from one device to another.'] : []),
       ...(args.quest === 'adhd' && cameraRecord(args.telemetry)?.status === 'used'
         ? ['Camera numbers come from head and eye direction read on the device. They do not show why a child looked away, they have not been checked against anything, and lighting, the camera angle and where the screen sits change them.'] : []),
       ...(args.quest === 'autism' && lookingRecord(args.telemetry)?.status === 'used'

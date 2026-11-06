@@ -9,7 +9,7 @@
  */
 export const PLAN_REVIEWED = false
 
-export type GoalId = 'start' | 'settle' | 'change' | 'feelings' | 'friends' | 'senses' | 'sleep' | 'mornings'
+export type GoalId = 'start' | 'settle' | 'change' | 'feelings' | 'friends' | 'senses' | 'sleep' | 'mornings' | 'sounds' | 'letters' | 'reading'
 export type Option = {id: string; label: string}
 export type Question = {id: string; title: string; hint?: string; kind: 'single' | 'multi'; max?: number; options: Option[]}
 
@@ -22,10 +22,21 @@ export const GOALS: Array<Option & {id: GoalId}> = [
   {id: 'senses', label: 'Sounds, lights and textures'},
   {id: 'sleep', label: 'Bedtime and sleep routine'},
   {id: 'mornings', label: 'School mornings'},
+  {id: 'sounds', label: 'Hearing and playing with sounds in words'},
+  {id: 'letters', label: 'Telling similar letters apart'},
+  {id: 'reading', label: 'Reading and spelling with confidence'},
 ]
+
+/** Which goals each quest offers. The reading quest offers reading goals, the other two offer the original eight. */
+const READING_GOALS: GoalId[] = ['sounds', 'letters', 'reading', 'start', 'feelings', 'mornings']
+const ORIGINAL_GOALS: GoalId[] = ['start', 'settle', 'change', 'feelings', 'friends', 'senses', 'sleep', 'mornings']
+export const goalsFor = (quest: string): GoalId[] => (quest === 'dyslexia' ? READING_GOALS : ORIGINAL_GOALS)
 
 export const QUESTIONS: Question[] = [
   {id: 'goals', title: 'What would you most like some help with?', hint: 'Pick up to 3.', kind: 'multi', max: 3, options: GOALS},
+  {id: 'readfeel', title: 'How does your child feel about reading and writing?', kind: 'single', options: [
+    {id: 'enjoys', label: 'Mostly enjoys it'}, {id: 'mixed', label: 'Depends on the day'}, {id: 'avoids', label: 'Tries to avoid it'}, {id: 'upset', label: 'Gets upset or tearful'},
+  ]},
   {id: 'hardest', title: 'When is the day hardest?', kind: 'single', options: [
     {id: 'morning', label: 'Morning'}, {id: 'afterschool', label: 'After school'}, {id: 'homework', label: 'Homework time'},
     {id: 'evening', label: 'Evening'}, {id: 'bedtime', label: 'Bedtime'}, {id: 'outings', label: 'Outings and crowded places'},
@@ -59,6 +70,15 @@ export const QUESTIONS: Question[] = [
     {id: 'me', label: 'Just me'}, {id: 'two', label: 'Two adults'}, {id: 'family', label: 'Adults and brothers or sisters'},
   ]},
 ]
+
+/** The questions for one quest: the goals offered fit the quest, and questions that do not apply to it are left out. */
+export const questionsFor = (quest: string): Question[] => {
+  const goals = goalsFor(quest)
+  const reading = quest === 'dyslexia'
+  return QUESTIONS
+    .filter((q) => (q.id === 'readfeel' ? reading : reading ? !['change', 'senses'].includes(q.id) : true))
+    .map((q) => (q.id === 'goals' ? {...q, options: GOALS.filter((g) => goals.includes(g.id))} : q))
+}
 
 /** What a child loves, as a short phrase that fits into a sentence. */
 export const LOVE_PHRASE: Record<string, string> = {
@@ -123,6 +143,20 @@ export const ACTIVITIES: Activity[] = [
   {id: 'mornings-1', goal: 'mornings', minutes: 10, text: 'Pack the bag and lay out clothes the night before, with your child, using a picture checklist.'},
   {id: 'mornings-2', goal: 'mornings', minutes: 10, text: 'Make a morning picture routine on the wall (wake, wash, dress, eat, shoes). Let your child tick each step.'},
   {id: 'mornings-3', goal: 'mornings', minutes: 5, text: 'Build in a few spare minutes so there is no rush, and give a gentle 10-minute and 5-minute warning before leaving.'},
+  // hearing and playing with sounds in words
+  {id: 'sounds-1', goal: 'sounds', minutes: 10, text: 'Play "I spy" with sounds, not letters: "I spy something that starts with sss." Take turns, and let your child spy for you too.'},
+  {id: 'sounds-2', goal: 'sounds', minutes: 10, moves: true, text: 'On a walk, take turns finding things that rhyme with a word you pick. Words about {love} are a good place to start. There is no right or wrong, just play.'},
+  {id: 'sounds-3', goal: 'sounds', minutes: 5, text: 'Clap the beats in names and in favourite words, one clap for each part. Then try some words about {love}.'},
+  {id: 'sounds-4', goal: 'sounds', minutes: 10, text: 'Say a word slowly in pieces, "c-a-t", and let your child blend it back into "cat". Then swap, so your child says the pieces and you blend.'},
+  // telling similar letters apart
+  {id: 'letters-1', goal: 'letters', minutes: 5, text: 'Trace b and d in the air or in a tray of sand, saying "bat, then ball" for b and "drum" for d. A few minutes a few times a week is enough.'},
+  {id: 'letters-2', goal: 'letters', minutes: 10, text: 'Make b, d, p and q out of play dough, and notice together which way the round part faces.'},
+  {id: 'letters-3', goal: 'letters', minutes: 10, moves: true, text: 'Play letter hunt around the house: find one letter on signs, packets and books, and tick off each one you spot together.'},
+  // reading and spelling with confidence
+  {id: 'reading-1', goal: 'reading', minutes: 10, text: 'Read aloud together, taking turns by page or paragraph. Choose a book or story about {love}, and stop while it is still fun.'},
+  {id: 'reading-2', goal: 'reading', minutes: 10, text: 'Listen to an audiobook while your child follows the printed page with a finger, so stories stay enjoyable while reading builds.'},
+  {id: 'reading-3', goal: 'reading', minutes: 10, text: 'Pick a small pile of everyday words on cards and find them together in a book. Keep the pile small so it feels like a win.'},
+  {id: 'reading-4', goal: 'reading', minutes: 15, text: 'Write one or two sentences together about your day, with your child choosing the words. Celebrate the ideas and leave spelling fixes for later.'},
 ]
 
 export const WEEK_THEMES = [

@@ -42,3 +42,23 @@ export const AUTISM_IDEAS: Record<IdeaTopic, string[]> = {
     'Seamless clothing, sunglasses or ear defenders may help in busy places, if your child finds them bothersome.',
   ],
 }
+
+export const DYSLEXIA_IDEAS: Record<IdeaTopic, string[]> = {
+  classroom: [
+    'Ask the teacher whether your child can sit near the front, where the board and the teacher’s voice are easiest to see and hear.',
+    'A clear, uncluttered font with generous spacing and some off-white paper can make printed pages easier on the eyes for some children.',
+    'Ask whether instructions can be given aloud as well as written down, and whether spelling mistakes can be marked separately from ideas.',
+  ],
+  examinations: [
+    'Ask the school whether extra time, a reader or a quieter room is possible for tests, if your child finds reading the questions hard.',
+    'Ask whether answers can sometimes be given aloud or typed, so that writing speed is not the thing being tested.',
+  ],
+  executive: [
+    'Break homework into short blocks with a visual timer, and read the first instruction together before your child starts.',
+    'Colour-coded folders for each subject and a simple checklist can cut down on time spent looking for things.',
+  ],
+  sensoryDiet: [
+    'Reading aloud together for 10 minutes, taking turns by page or paragraph, keeps reading warm rather than a chore.',
+    'Audiobooks alongside printed books let your child enjoy stories at their own level while reading skills build.',
+  ],
+}

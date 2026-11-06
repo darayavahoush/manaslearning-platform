@@ -21,8 +21,8 @@ const TOPIC_LABEL: Record<IdeaTopic, string> = {
 function toRecord(text: string): ReportRecord {
   const raw = JSON.parse(text)
   const cand = raw?.record ?? raw?.data?.record ?? raw
-  if (!cand || (cand.quest !== 'adhd' && cand.quest !== 'autism') || !Array.isArray(cand.measures) || !cand.instrument) {
-    throw new Error('This needs a Manas Profile session record from the attention (ADHD) or social and sensory (autism) quest.')
+  if (!cand || (cand.quest !== 'adhd' && cand.quest !== 'autism' && cand.quest !== 'dyslexia') || !Array.isArray(cand.measures) || !cand.instrument) {
+    throw new Error('This needs a Manas Profile session record from the attention (ADHD), social and sensory (autism) or reading (dyslexia) quest.')
   }
   return {...cand, limits: Array.isArray(cand.limits) ? cand.limits : [], recordedAt: String(cand.recordedAt ?? ''), schema: String(cand.schema ?? '')}
 }

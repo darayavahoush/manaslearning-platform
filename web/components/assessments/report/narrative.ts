@@ -205,11 +205,66 @@ function looking(r: Rec, who: string): string[] {
   return out
 }
 
+/** A two-choice listening or spelling game: how many matched, how long choosing took, and how often the sounds were replayed. */
+function twoChoice(r: Rec, matchKey: string, medianKey: string, replayKey: string, what: string): string[] {
+  const m = prop(r, matchKey)
+  if (!m) return []
+  const t = val(r, medianKey)
+  const rp = val(r, replayKey)
+  const out = [`${m.k} of ${m.n} ${what}${t ? `, usually chosen after about ${secs(t.value)} seconds` : ''}.`]
+  if (rp && rp.value > 0) out.push(`The sounds were replayed ${times(rp.value)}. Replaying is a normal thing to do.`)
+  return out
+}
+
+function rhyme(r: Rec): string[] {
+  return twoChoice(r, 'rhymeMatches', 'rhymeMedianMs', 'rhymeReplays', 'choices matched the word that rhymed with the one heard')
+}
+
+function firstSound(r: Rec): string[] {
+  return twoChoice(r, 'firstSoundMatches', 'firstSoundMedianMs', 'firstSoundReplays', 'choices matched the word that started with the same sound')
+}
+
+function letters(r: Rec): string[] {
+  const found = prop(r, 'letterFound')
+  if (!found) return []
+  const out = [`${found.k} of ${found.n} matching letters (among b, d, p and q) were found.`]
+  const taps = prop(r, 'letterLookalikeTaps')
+  if (taps) {
+    const mirror = val(r, 'letterMirrorTaps')
+    out.push(`${taps.k} of ${taps.n} look-alike letters were tapped by mistake${taps.k > 0 && mirror ? `, ${mirror.value} of them a mirror pair (b and d, or p and q)` : ''}.`)
+  }
+  return out
+}
+
+function soundOrder(r: Rec): string[] {
+  const p = prop(r, 'soundSpanPassed')
+  if (!p) return []
+  const longest = val(r, 'soundSpanLongest')
+  return [`${p.k} of ${p.n} sound sequences were repeated in the right order${longest && longest.value > 0 ? `, the longest with ${longest.value} sounds` : ''}.`]
+}
+
+function wordCheck(r: Rec): string[] {
+  const real = prop(r, 'wordCheckReal')
+  const made = prop(r, 'wordCheckMadeUp')
+  if (!real && !made) return []
+  const out: string[] = []
+  if (real) out.push(`${real.k} of ${real.n} real words were accepted as real.`)
+  if (made) out.push(`${made.k} of ${made.n} made-up words were spotted as made up. Spotting them means sounding the word out.`)
+  return out
+}
+
+function spelling(r: Rec): string[] {
+  const s = prop(r, 'spellingCorrect')
+  if (!s) return []
+  const t = val(r, 'spellingMedianMs')
+  return [`${s.k} of ${s.n} spellings chosen were the correct one${t ? `, usually after about ${secs(t.value)} seconds` : ''}.`]
+}
+
 function during(r: Rec): string[] {
   const out: string[] = [...parentAnswers(r)]
   const names: Record<string, string> = {
     retrySunbird: 'sunbird game', retrySteering: 'steering game', retryStars: 'star-sequence game',
-    retryGaze: 'gaze game', retryFeelings: 'feelings match', retrySorting: 'sorting game',
+    retryGaze: 'gaze game', retryFeelings: 'feelings match', retrySorting: 'sorting game', retryLetters: 'letter game',
   }
   const repeats = Object.entries(names)
     .map(([key, label]) => [label, val(r, key)?.value ?? 0] as const)
@@ -235,6 +290,12 @@ export function buildGameStories(record: Rec, name?: string): {stories: GameStor
     'Feelings match': (r) => feelings(r, who),
     'Comfort choices': (r) => comfort(r, who),
     'Sorting game': (r) => sorting(r, who),
+    'Rhyme game': rhyme,
+    'First-sound game': firstSound,
+    'Letter game': letters,
+    'Sound-order game': soundOrder,
+    'Word check (optional)': wordCheck,
+    'Spelling game (optional)': spelling,
   }
   const games = [...EXPECTED_GAMES[record.quest]] as string[]
   const stories: GameStory[] = []
@@ -244,6 +305,12 @@ export function buildGameStories(record: Rec, name?: string): {stories: GameStor
     if (!lines.length) { missing.push(game); continue }
     const fewTrials = record.measures.some((m) => m.game === game && m.kind === 'proportion' && m.wide)
     stories.push({game, lines, fewTrials})
+  }
+  if (record.quest === 'dyslexia') {
+    for (const game of ['Word check (optional)', 'Spelling game (optional)']) {
+      const lines = builders[game](record)
+      if (lines.length) stories.push({game, lines, fewTrials: record.measures.some((m) => m.game === game && m.kind === 'proportion' && m.wide)})
+    }
   }
   const cl = camera(record, who)
   if (cl.length) stories.push({game: 'Camera (optional)', lines: cl, fewTrials: false})

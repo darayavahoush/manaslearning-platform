@@ -1,5 +1,5 @@
 import type {Quest} from '../session-record'
-import {ACTIVITIES, CALM_PHRASE, GOALS, HARDEST_PHRASE, HOW_TO_GIVE, LOVE_PHRASE, PLAN_TEXT, WEEK_THEMES, type Activity, type GoalId} from './library'
+import {ACTIVITIES, CALM_PHRASE, GOALS, HARDEST_PHRASE, HOW_TO_GIVE, LOVE_PHRASE, PLAN_TEXT, WEEK_THEMES, goalsFor, type Activity, type GoalId} from './library'
 
 export type Answers = Partial<Record<string, string[]>>
 
@@ -16,10 +16,9 @@ export interface HomePlan {
 
 const one = (a: Answers, id: string): string | null => a[id]?.[0] ?? null
 const many = (a: Answers, id: string): string[] => a[id] ?? []
-const GOAL_IDS = new Set<string>(GOALS.map((g) => g.id))
 
 /** Same inputs give the same plan; nothing is random. */
-export function generatePlan(answers: Answers, _quest: Quest): HomePlan {
+export function generatePlan(answers: Answers, quest: Quest): HomePlan {
   const loves = many(answers, 'loves')
   const lovePhrase = (n: number) => (loves.length ? LOVE_PHRASE[loves[n % loves.length]] : 'something your child loves')
   const calms = many(answers, 'calm').map((c) => CALM_PHRASE[c]).filter(Boolean)
@@ -33,14 +32,16 @@ export function generatePlan(answers: Answers, _quest: Quest): HomePlan {
   const changeReact = one(answers, 'change')
   const sensesPicked = many(answers, 'senses').filter((s) => s !== 'none')
 
-  let goals = many(answers, 'goals').filter((g): g is GoalId => GOAL_IDS.has(g))
+  const offered = new Set<string>(goalsFor(quest))
+  const readfeel = one(answers, 'readfeel')
+  let goals = many(answers, 'goals').filter((g): g is GoalId => offered.has(g))
   // a hard time of day and sensory worries add to the goals only when the parent did not pick any
   if (!goals.length) {
     if (hardest === 'morning') goals.push('mornings')
     if (hardest === 'bedtime') goals.push('sleep')
     if (hardest === 'homework' || hardest === 'afterschool') goals.push('start')
     if (hardest === 'outings' || sensesPicked.length) goals.push('senses')
-    if (!goals.length) goals = ['start', 'feelings']
+    if (!goals.length) goals = quest === 'dyslexia' ? ['sounds', 'reading'] : ['start', 'feelings']
   }
   goals = Array.from(new Set(goals))
 
@@ -63,6 +64,7 @@ export function generatePlan(answers: Answers, _quest: Quest): HomePlan {
   const w1: PlanItem[] = [{id: 'notice', text: PLAN_TEXT.notice, minutes: 2}]
   if (hardest) w1.push({id: 'hardest', text: `Pay extra attention to ${HARDEST_PHRASE[hardest]}. Write down what happens just before things get hard and what helps.`, minutes: 5})
   if (loves.length) w1.push({id: 'anchor', text: fill(PLAN_TEXT.anchor, 0), minutes: 5})
+  if (readfeel === 'avoids' || readfeel === 'upset') w1.push({id: 'readwarm', text: 'Keep reading and writing times short, 5 to 10 minutes, and warm. Stop before your child is tired, and name something you enjoyed about it. Notice the effort, not only the result.', minutes: 5})
   if (changeReact === 'warning' || changeReact === 'hard') w1.push({id: 'warn', text: 'Start giving a visual countdown at 5 minutes and at 2 minutes before every switch. Keep the same words.', minutes: 5})
   if (sensesPicked.length) {
     // pick the setup that matches what bothers the child: a quiet corner or a heads-up for sound, light and crowds,
@@ -82,6 +84,7 @@ export function generatePlan(answers: Answers, _quest: Quest): HomePlan {
   if (hardest === 'homework' || hardest === 'afterschool') extra.push('start')
   if (changeReact === 'warning' || changeReact === 'hard') extra.push('change')
   if (sensesPicked.length) extra.push('senses')
+  if (quest === 'dyslexia') extra.push('reading', 'sounds', 'letters')
   extra.push('feelings', 'start')
   const g2 = goals[1] ?? extra.find((g) => g !== g1) ?? g1
   const w2 = take(g1, 0, 3)

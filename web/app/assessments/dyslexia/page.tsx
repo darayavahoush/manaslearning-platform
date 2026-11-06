@@ -1,10 +1,14 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import KeeperFeedback from "../../../components/assessments/KeeperFeedback";
+import ParentCard, { type ParentAnswers } from "../../../components/assessments/ParentCard";
+import EndReport from "../../../components/assessments/report/EndReport";
+import SessionRecordDownload from "../../../components/assessments/SessionRecordDownload";
+import { captureEnvironment, type SessionRecord } from "../../../components/assessments/session-record";
+import { usePlayEvents } from "../../../components/assessments/play-events";
 
 // The Whispering Library: a screening-style play session inspired by rhyme judgment,
 // initial-sound matching, letter-orientation discrimination, sound-sequence span and
-// spelling choice tasks. Not a diagnosis. Nothing is stored.
+// spelling choice tasks. Not a diagnosis. Nothing is stored: at the end the counts are sent once to build the report, and the page keeps no copy.
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const shuffle = <T,>(a: T[]) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
@@ -297,8 +301,11 @@ function WordCheck({ list, onInk, onDone }: { list: "easy" | "older"; onInk: () 
   );
 }
 
-function __McInner() {
-  const [stage, setStage] = useState<"welcome" | "sound" | "intro" | "play" | "end">("welcome");
+function McInner() {
+  const [stage, setStage] = useState<"welcome" | "sound" | "intro" | "play" | "parent" | "eval" | "end">("welcome");
+  const events = usePlayEvents();
+  const [reportRecord, setReportRecord] = useState<SessionRecord | null>(null);
+  const [notice, setNotice] = useState("");
   const [ch, setCh] = useState(0);
   const [nick, setNick] = useState("");
   const [age, setAge] = useState("");
@@ -308,20 +315,63 @@ function __McInner() {
   const [line, setLine] = useState("Hello! I am Pip, the Story-Keeper.");
   const [heard, setHeard] = useState<boolean | null>(null);
   const [obs, setObs] = useState<Record<string, any>>({ completed: [] });
-  const [detail, setDetail] = useState<Record<string, any>>({});
   const [sets] = useState(() => ({ rhyme: place(RHYME(), POS.rhyme), first: place(FIRST(), POS.first), spell: place(SPELL(), POS.spell) }));
   const [tested, setTested] = useState(false);
   const tts = typeof window !== "undefined" && hasTTS();
   const chapters = useMemo(() => CHAPTERS.filter((x) => x.id !== "words" || Number(age) >= 7), [age]);
   const teen = Number(age) >= 10;
   const plainUI = stage === "welcome" || teen;
-  const fin = () => { setObs((o) => ({ ...o, offered: chapters.length, voice: voiceLabel() })); setStage("end"); };
+  const allDone = stage === "parent" || stage === "eval" || stage === "end";
+  const fin = () => { setObs((o) => ({ ...o, offered: chapters.length, voice: voiceLabel() })); setStage("parent"); };
+
+  // Flat counts for the server, which builds the session record itself and does not trust the page.
+  const telemetry = (parent: ParentAnswers | null): Record<string, number | null> => {
+    const n = (v: unknown): number | null => (typeof v === "number" && isFinite(v) ? v : null);
+    const choice = (o: Record<string, number> | undefined): Record<string, number> | null => (o && n(o.trials) ? o : null);
+    const rh = choice(obs.rhyme), fs = choice(obs.firstSound), sp = choice(obs.spelling);
+    const l = obs.letters && n(obs.letters.rounds) ? obs.letters : null;
+    const conf = (l?.confusions || {}) as Record<string, number>;
+    const mirror = ["b>d", "d>b", "p>q", "q>p"].reduce((a, k) => a + (conf[k] || 0), 0);
+    const s = obs.soundSpan && n(obs.soundSpan.attempts) ? obs.soundSpan : null;
+    const w = choice(obs.wordCheck);
+    const ev = events.snapshot();
+    return {
+      rhymeTrials: rh ? rh.trials : null, rhymeCorrect: rh ? rh.correct : null, rhymeMedianMs: rh ? n(rh.medianMs) : null, rhymeReplays: rh ? n(rh.replays) : null,
+      firstSoundTrials: fs ? fs.trials : null, firstSoundCorrect: fs ? fs.correct : null, firstSoundMedianMs: fs ? n(fs.medianMs) : null, firstSoundReplays: fs ? n(fs.replays) : null,
+      spellTrials: sp ? sp.trials : null, spellCorrect: sp ? sp.correct : null, spellMedianMs: sp ? n(sp.medianMs) : null,
+      letterRounds: l ? l.rounds : null, letterHits: l ? n(l.hits) : null, letterPossible: l ? n(l.possibleHits) : null, letterFalse: l ? n(l.falseTaps) : null,
+      letterDistractors: l ? n(l.possibleDistractors) : null, letterMissed: l ? n(l.missed) : null, letterMirrorFalse: l ? mirror : null,
+      soundSpanAttempts: s ? s.attempts : null, soundSpanPassed: s ? n(s.passed) : null, soundSpanLongest: s ? n(s.longest) : null,
+      wordTrials: w ? w.trials : null, wordRealTotal: w ? n(w.realTotal) : null, wordRealCorrect: w ? n(w.realCorrect) : null,
+      wordMadeTotal: w ? n(w.madeUpTotal) : null, wordMadeCorrect: w ? n(w.madeUpCorrect) : null, wordMedianMs: w ? n(w.medianMs) : null,
+      pauseCount: ev.pauseCount, pausedSec: ev.pausedSec,
+      parentTired: parent?.tired ?? null, parentLikeHome: parent?.likeHome ?? null, parentEnjoyed: parent?.enjoyed ?? null,
+    };
+  };
+
+  const submit = async (parent: ParentAnswers | null) => {
+    setNotice(""); setStage("eval");
+    try {
+      const res = await fetch("/api/assessments/agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assessmentType: "dyslexia", childName: nick.trim() || "Explorer", childAge: Number(age) || null, telemetry: telemetry(parent), environment: captureEnvironment() }),
+      });
+      if (!res.ok) throw new Error("report failed");
+      const json = await res.json();
+      setReportRecord(json.data.record);
+      setStage("end");
+    } catch {
+      setNotice("Something went wrong while writing the report. Please try again.");
+      setStage("parent");
+    }
+  };
 
   const addInk = () => { setInk((n) => n + 1); setLine(PIP[Math.floor(Math.random() * PIP.length)]); };
   const done = (id: string) => (s: any) => {
-    const { items, ...rest } = s || {};
+    const rest = { ...(s || {}) };
+    delete rest.items; // item-by-item rows are not part of the report record
     setObs((o) => ({ ...o, [KEY[id]]: rest, completed: [...o.completed, id] }));
-    if (items) setDetail((d) => ({ ...d, [KEY[id]]: items }));
     next();
   };
   const next = () => { if (ch + 1 < chapters.length) { setCh(ch + 1); setStage("intro"); } else fin(); };
@@ -336,9 +386,9 @@ function __McInner() {
         {stage !== "welcome" && (teen ? (
           <ol className="dq-ledger" aria-label="Progress">
             {chapters.map((x, k) => {
-              const at = stage === "end" ? chapters.length : ch;
+              const at = allDone ? chapters.length : ch;
               return (
-                <li key={x.id} className={k < at ? "done" : k === at ? "cur" : ""} aria-current={k === at && stage !== "end" ? "step" : undefined}>
+                <li key={x.id} className={k < at ? "done" : k === at ? "cur" : ""} aria-current={k === at && !allDone ? "step" : undefined}>
                   <b>{k < at ? "✓" : ROMAN[k]}</b><span>{x.plain.name}</span>
                 </li>
               );
@@ -346,7 +396,7 @@ function __McInner() {
           </ol>
         ) : (
           <div className="dq-lamps" aria-label={`Chapter ${Math.min(ch + 1, chapters.length)} of ${chapters.length}, ${ink} ink drops`}>
-            {chapters.map((_, k) => <span key={k} className={"dq-lamp" + (k < (stage === "end" ? chapters.length : ch) ? " on" : "")} />)}
+            {chapters.map((_, k) => <span key={k} className={"dq-lamp" + (k < (allDone ? chapters.length : ch) ? " on" : "")} />)}
             <span className="dq-ink">{ink} ink</span>
           </div>
         ))}
@@ -366,13 +416,13 @@ function __McInner() {
               <li><b>Spelling</b>: 8 items, optional</li>
             </ol>
             <h2 className="dq-kick">What is recorded</h2>
-            <p>Answers, response times and the name of the device voice, for this session only. Nothing is saved on our servers. At the end a printable clinician summary is produced, with an item-by-item appendix.</p>
+            <p>Counts of answers, response times, and how often the page was left during play, for this session only. Nothing is saved on our servers. At the end you answer three short questions, then get a report for you (what went well, what may need support, what needs a closer look), a 4-week home plan, and a one-page summary for a clinician.</p>
           </article>
           <label>Nickname (not the child’s full name)<br /><input className="dq-input" maxLength={16} value={nick} onChange={(e) => setNick(e.target.value)} /></label>
           <label>Age in years (4 to 16)<br /><input className="dq-input" inputMode="numeric" maxLength={2} value={age} onChange={(e) => setAge(e.target.value.replace(/\D/g, ""))} /></label>
           <label>Volume<br /><input type="range" min="0.2" max="1" step="0.1" value={vol} onChange={(e) => setVol(Number(e.target.value))} /></label>
           <label className="dq-check"><input type="checkbox" checked={parent} onChange={(e) => setParent(e.target.checked)} /> I am this child's parent or guardian and I agree to the notes below.</label>
-          <p className="dq-small">This is a play activity, not a diagnosis. We do not save anything from this session. At the end, only the nickname, age, play counts and the name of the device’s speech voice are sent to write the summary, and an AI model may help word it.</p>
+          <p className="dq-small">This is a play activity, not a diagnosis. We do not save anything from this session. At the end, only the nickname, age and play counts are sent once to build the report, and no AI model is used to write it.</p>
           <button className="dq-btn" disabled={!parent || !nick.trim() || !(Number(age) >= 4 && Number(age) <= 16)} onClick={() => setStage("sound")}>Next</button>
         </section>
       )}
@@ -432,9 +482,32 @@ function __McInner() {
         </>
       )}
 
-      {stage === "end" && (
-        <section>
-          <KeeperFeedback quest="dyslexia" nickname={nick.trim() || "Explorer"} age={Number(age) || null} observations={obs} detail={detail} mode={teen ? "focus" : "story"} />
+      {stage === "parent" && (
+        <section className="dq-wide">
+          {notice && <p role="alert" className="dq-notice">{notice}</p>}
+          <div className="dq-report"><ParentCard childName={nick.trim()} onDone={(a) => submit(a)} /></div>
+          <button className="dq-btn ghost dq-rest" onClick={() => submit(null)}>Skip and see the report</button>
+        </section>
+      )}
+
+      {stage === "eval" && (
+        <section className="dq-center" aria-live="polite">
+          {!teen && <Owl line="Pip is writing it all down..." />}
+          <p>Writing the report...</p>
+        </section>
+      )}
+
+      {stage === "end" && reportRecord && (
+        <section className="dq-wide">
+          <div className="dq-center">
+            {!teen && <Owl line={`Well done, ${nick.trim() || "Explorer"}! The lanterns are glowing.`} />}
+            <h2 className="dq-ch">{teen ? "Session complete" : "You finished the Whispering Library!"}</h2>
+            {!teen && <p>You collected {ink} ink drops. The report below is for the grown-up.</p>}
+          </div>
+          <div className="dq-report">
+            <EndReport record={reportRecord} name={nick.trim() || "Explorer"} />
+            <div className="dq-actions"><SessionRecordDownload record={reportRecord} /></div>
+          </div>
         </section>
       )}
     </main>
@@ -450,6 +523,10 @@ const CSS = `
 .dq-lamp.on{background:#ffd76a;box-shadow:0 0 10px #ffd76a}
 .dq-ink{margin-left:8px;font-size:14px}
 .dq-center{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:560px;margin:0 auto;text-align:center}
+.dq-wide{max-width:860px;margin:0 auto}
+.dq-report{color:#0f172a;letter-spacing:normal;line-height:1.5;font-family:system-ui,-apple-system,Segoe UI,sans-serif;text-align:left}
+.dq-actions{margin:16px 0 0;display:flex;justify-content:center}
+.dq-notice{background:#fff2;border:1px solid #d9b45a;border-radius:12px;padding:10px 14px;margin:0 0 12px;text-align:center}
 .dq-row{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
 .dq-owl{display:flex;align-items:center;gap:12px;max-width:560px;margin:0 auto 12px;background:rgba(255,255,255,.08);border-radius:20px;padding:8px 16px}
 .dq-stone{position:relative;width:104px;height:104px;border-radius:50%;border:3px solid #fff3;color:#2b1d05;cursor:pointer;display:grid;place-items:center;transition:transform .2s}
@@ -515,5 +592,5 @@ import { useState as __mcUseState, useEffect as __mcUseEffect } from "react";
 export default function __McGate(props: any) {
   const [mounted, setMounted] = __mcUseState(false);
   __mcUseEffect(() => { setMounted(true); }, []);
-  return mounted ? <__McInner {...props} /> : null;
+  return mounted ? <McInner {...props} /> : null;
 }

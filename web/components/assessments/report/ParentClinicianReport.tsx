@@ -14,10 +14,10 @@ import {CLINICIAN_QUESTIONS, REPORT_REVIEWED, REPORT_TEXT} from './library'
  */
 
 export type ReportRecord = Pick<SessionRecord, 'quest' | 'measures' | 'instrument' | 'schema' | 'recordedAt' | 'limits'> &
-  Partial<Pick<SessionRecord, 'ageYears' | 'ageBand' | 'environment' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'steeringTrials' | 'starLevels' | 'showRounds' | 'camera' | 'looking'>>
+  Partial<Pick<SessionRecord, 'ageYears' | 'ageBand' | 'environment' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'steeringTrials' | 'starLevels' | 'showRounds' | 'camera' | 'looking' | 'parentCard'>>
 
 const pc = (x: number) => `${Math.round(x * 100)}%`
-const QUEST_NAME = {adhd: 'Attention and activity play', autism: 'Social and sensory play'} as const
+const QUEST_NAME = {adhd: 'Attention and activity play', autism: 'Social and sensory play', dyslexia: 'Reading and sound play'} as const
 
 function groupByGame(ms: Measure[]): Array<[string, Measure[]]> {
   const map = new Map<string, Measure[]>()

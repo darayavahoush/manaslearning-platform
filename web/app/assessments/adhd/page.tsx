@@ -174,14 +174,22 @@ const CPT_WINDOW_MS = 1000
 // A "hit" faster than this is counted as an early tap, not as a reaction.
 const CPT_MIN_RT_MS = 150
 // Task length and display time by age. These are OUR ESTIMATES for child-friendly length, not published norms.
-// A round is 10 sightings. Ages 4-5: 3 rounds, shape shown 1.5 s. Ages 6-7: 4 rounds, 0.68 s. Ages 8-11: 4-5 rounds, 0.54 s. Ages 12+: 5-6 rounds, 0.44 s.
+// A round is 10 sightings. Ages 4-5: 2 rounds, shape shown 1.5 s. Ages 6-8: 3 rounds, 0.68 s. Ages 9-16: 4 rounds, 0.54 s then 0.44 s.
 const CPT_BLOCK = 10
 function cptPlanFor(age: number) {
-  const blocks = age <= 5 ? 3 : age <= 8 ? 4 : age <= 12 ? 5 : 6
+  const blocks = age <= 5 ? 2 : age <= 8 ? 3 : 4
   const displayMs = age <= 5 ? 1500 : age <= 7 ? 680 : age <= 11 ? 540 : 440
   // the tap window must outlast the time the shape is on screen
   return {blocks, size: CPT_BLOCK, total: blocks * CPT_BLOCK, displayMs, windowMs: Math.max(CPT_WINDOW_MS, displayMs + 300)}
 }
+// Each round of the sunbird game has its own name and ring colour, and ends with a "sunstone" to collect, so the rounds feel
+// different. Only the outer ring changes: the sunbird, the moth and the dark centre behind them are the same every time.
+const CPT_SCENES = [
+  {name: 'Dawn Meadow', ring: 'border-amber-300/80', stone: 'Dawn Sunstone'},
+  {name: 'Golden Canopy', ring: 'border-emerald-300/80', stone: 'Canopy Sunstone'},
+  {name: 'River Mist', ring: 'border-sky-300/80', stone: 'River Sunstone'},
+  {name: 'Starlit Peak', ring: 'border-violet-300/80', stone: 'Starlight Sunstone'},
+]
 // Arrow game: centre arrow direction (L/R) and whether the side arrows match (C) or conflict (I).
 const FLANKER_ORDER = ['LC', 'RI', 'RC', 'LC', 'LI', 'RC', 'RI', 'LC', 'RC', 'LI', 'LC', 'RI']
 
@@ -430,6 +438,26 @@ function bandFor(age: number): AgeBand {
   return age <= 5 ? AGE_BANDS[0] : age <= 8 ? AGE_BANDS[1] : age <= 12 ? AGE_BANDS[2] : AGE_BANDS[3]
 }
 
+// Star patterns are drawn fresh for every session so a child never meets the same pattern twice. Each level keeps the length it
+// had before, every star is a different cell, and no three in a row sit on one line (which would make the pattern easier to chunk).
+const STAR_LINES = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]]
+function randomStarSeq(len: number, avoid: number[][] = []): number[] {
+  for (let tries = 0; tries < 300; tries++) {
+    const cells = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    for (let i = cells.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[cells[i], cells[j]] = [cells[j], cells[i]]
+    }
+    const s = cells.slice(0, len)
+    const inLine = (i: number) => STAR_LINES.some((l) => l.includes(s[i - 2]) && l.includes(s[i - 1]) && l.includes(s[i]))
+    let ok = true
+    for (let i = 2; i < len && ok; i++) if (inLine(i)) ok = false
+    if (ok && avoid.some((a) => a.join() === s.join())) ok = false
+    if (ok) return s
+  }
+  return Array.from({length: len}, (_, i) => (i * 4) % 9)
+}
+
 function __McInner() {
   const [stage, setStage] = useState<'welcome' | 'avatar' | 'camera_setup' | 'cpt_story' | 'cpt_hold' | 'cpt_game' | 'flanker_story' | 'flanker_game' | 'memory_story' | 'memory_game' | 'situational_story' | 'situational_game' | 'trials' | 'parent_card' | 'agent_eval' | 'celebration'>('welcome')
 
@@ -516,6 +544,7 @@ function __McInner() {
   const [memoryPhase, setMemoryPhase] = useState<'showing' | 'input' | 'feedback'>('showing')
   const [memoryMaxSpan, setMemoryMaxSpan] = useState(0)
   // one entry per real star level (practice is never logged)
+  const starPlanRef = useRef<{bandId: string; levels: number[][]; prac1: number[]; prac2: number[]} | null>(null)
   const starLogRef = useRef<{length: number; completed: boolean; missedAt: number | null}[]>([])
 
   // Chapter 4: Sunstone Charge State (100% Game, Zero Questions)
@@ -755,10 +784,18 @@ function __McInner() {
   useEffect(() => {
     if (stage !== 'memory_game') return
 
-    // Fixed sequences (3, 4 and 5 stars, one try each) so every child sees the same items.
-    const MEMORY_SEQS = band.seqs
+    // New patterns for every session (see randomStarSeq), drawn once and kept, so a replay of a level shows the same pattern.
+    // The lengths match the age band's three levels, so the span measured is on the same scale for every child.
+    let plan = starPlanRef.current
+    if (!plan || plan.bandId !== band.id) {
+      const levels: number[][] = []
+      band.seqs.forEach((s) => levels.push(randomStarSeq(s.length, levels)))
+      plan = {bandId: band.id, levels, prac1: [Math.floor(Math.random() * 9)], prac2: randomStarSeq(2)}
+      starPlanRef.current = plan
+    }
+    const MEMORY_SEQS = plan.levels
     // levels -1 and 0 are practice (one star, then two); real levels start at 1
-    const seq: number[] = memoryLevel === -1 ? [4] : memoryLevel === 0 ? [1, 7] : MEMORY_SEQS[Math.min(memoryLevel, MEMORY_SEQS.length) - 1]
+    const seq: number[] = memoryLevel === -1 ? plan.prac1 : memoryLevel === 0 ? plan.prac2 : MEMORY_SEQS[Math.min(memoryLevel, MEMORY_SEQS.length) - 1]
     setMemorySequence(seq)
     setMemoryUserSequence([])
     setMemoryPhase('showing')
@@ -1266,7 +1303,7 @@ function __McInner() {
                     <span key={i} className={`h-3.5 w-3.5 rounded-full ${i < Math.floor(cptTrialIndex / cptPlan.size) ? 'bg-amber-500' : 'bg-amber-200'}`} />
                   ))}
                 </div>
-                <p className="text-sm font-semibold text-[#475569]">Round {Math.floor(cptTrialIndex / cptPlan.size)} of {cptPlan.blocks} is done. Nice work so far!</p>
+                <p className="text-sm font-semibold text-[#475569]">Round {Math.floor(cptTrialIndex / cptPlan.size)} of {cptPlan.blocks} is done. You found the {CPT_SCENES[(Math.floor(cptTrialIndex / cptPlan.size) - 1) % CPT_SCENES.length].stone}!</p>
                 <div className="relative flex h-20 w-20 items-center justify-center">
                   <span className="cr-ring absolute inset-0 rounded-full bg-amber-300/60" style={{ animation: 'cr-breathe 6s ease-in-out infinite' }} />
                   <span className="relative text-xs font-semibold text-[#92400E]">Breathe</span>
@@ -1283,7 +1320,7 @@ function __McInner() {
             )}
             <div className="flex justify-between items-center mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
-                Sighting {Math.min(cptTrialIndex + 1, CPT_TOTAL_TRIALS)} of {CPT_TOTAL_TRIALS} · Round {Math.min(Math.floor(cptTrialIndex / cptPlan.size) + 1, cptPlan.blocks)} of {cptPlan.blocks}
+                Sighting {Math.min(cptTrialIndex + 1, CPT_TOTAL_TRIALS)} of {CPT_TOTAL_TRIALS} · Round {Math.min(Math.floor(cptTrialIndex / cptPlan.size) + 1, cptPlan.blocks)} of {cptPlan.blocks} · {CPT_SCENES[Math.min(Math.floor(cptTrialIndex / cptPlan.size), cptPlan.blocks - 1) % CPT_SCENES.length].name}
               </span>
               <div className="flex items-center gap-2">
                 {cptLastRt && (
@@ -1302,7 +1339,7 @@ function __McInner() {
 
             <div
               onPointerDown={handleCptTap}
-              className="relative mx-auto my-6 flex h-72 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 border-amber-300/80 bg-[#1E293B] transition-all hover:border-amber-400 active:scale-95 overflow-hidden"
+              className={`relative mx-auto my-6 flex h-72 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 ${CPT_SCENES[Math.min(Math.floor(cptTrialIndex / cptPlan.size), cptPlan.blocks - 1) % CPT_SCENES.length].ring} bg-[#1E293B] transition-all active:scale-95 overflow-hidden`}
             >
               <VortexBg round />
               {cptStimulus === 'target' && (
@@ -1511,7 +1548,7 @@ function __McInner() {
             <p className="text-base md:text-lg font-bold text-[#1F2937] mt-2">Now the real stars. Watch, then tap the same ones!</p>
             <div className="mt-6 flex flex-col items-center gap-3">
               <button type="button" onClick={() => { playAudio('whoosh'); setMemPracReady(false); starLogRef.current = []; setMemoryLevel(1) }} className="rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 px-12 py-4 text-xl font-bold text-white shadow-lg hover:scale-105 transition-all">I’m ready →</button>
-              <button type="button" onClick={() => { events.noteRetry('stars'); setMemPracReady(false); setMemoryLevel(-1); setMemRetry((n) => n + 1) }} className="text-sm font-bold text-sky-700 underline">Practice again</button>
+              <button type="button" onClick={() => { events.noteRetry('stars'); starPlanRef.current = null; setMemPracReady(false); setMemoryLevel(-1); setMemRetry((n) => n + 1) }} className="text-sm font-bold text-sky-700 underline">Practice again</button>
             </div>
           </div>
         )}
@@ -1913,7 +1950,7 @@ function __McInner() {
           </div>
         )}
       </div>
-      <CameraBadge status={cam.status} videoRef={cam.videoRef} onStop={cam.stop} />
+      <CameraBadge status={cam.status} videoRef={cam.videoRef} onStop={cam.stop} large={stage === 'camera_setup'} />
     </main>
   )
 }

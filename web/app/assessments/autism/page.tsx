@@ -1739,7 +1739,7 @@ function __McInner() {
           </div>
         )}
       </div>
-      <CameraBadge status={cam.status} videoRef={cam.videoRef} onStop={cam.stop} />
+      <CameraBadge status={cam.status} videoRef={cam.videoRef} onStop={cam.stop} large={stage === 'look_setup'} />
     </main>
   )
 }

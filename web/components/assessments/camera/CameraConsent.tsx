@@ -1,6 +1,16 @@
 'use client'
-import {useState} from 'react'
-import type {AttentionCamera} from './useAttentionCamera'
+import {useEffect, useState} from 'react'
+import type {AttentionCamera, CameraQuality} from './useAttentionCamera'
+
+const QUALITY_TIPS: Record<CameraQuality, {title: string; text: string; good?: boolean}> = {
+  searching: {title: 'Starting up.', text: 'Sit in front of the screen so the face is in the picture.'},
+  noface: {title: 'No face found.', text: 'Make sure the light is in front, not a window behind, and the whole face is in the picture.'},
+  far: {title: 'A little too far away.', text: 'Move closer to the screen.'},
+  close: {title: 'A little too close.', text: 'Move back a little so the whole face fits.'},
+  offcentre: {title: 'Not in the middle.', text: 'Move so the face is in the middle of the picture.'},
+  turned: {title: 'Looking away.', text: 'Look straight at the screen for a moment.'},
+  good: {title: 'Looking good.', text: 'Hold still for a moment.', good: true},
+}
 
 /**
  * Optional camera step, shown to the grown-up before the first game. The camera is off unless they agree here.
@@ -8,8 +18,47 @@ import type {AttentionCamera} from './useAttentionCamera'
  */
 export default function CameraConsent({cam, childName, onContinue, variant = 'attention'}: {cam: AttentionCamera; childName: string; onContinue: (cameraOn: boolean) => void; variant?: 'attention' | 'looking'}) {
   const [agreed, setAgreed] = useState(false)
+  const [checking, setChecking] = useState(false)
+  const [steady, setSteady] = useState(false)
   const name = childName.trim() || 'your child'
   const failed = cam.status === 'denied' || cam.status === 'error'
+
+  // the check passes after the face has been well placed for two seconds in a row
+  useEffect(() => {
+    if (!checking || cam.quality !== 'good') return
+    const id = setTimeout(() => setSteady(true), 2000)
+    return () => { clearTimeout(id); setSteady(false) }
+  }, [checking, cam.quality])
+
+  if (checking && cam.status === 'on') {
+    const tip = QUALITY_TIPS[cam.quality]
+    return (
+      <section aria-labelledby="camera-check-title" className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl">
+        <p className="text-xs font-bold uppercase tracking-wider text-teal-700">For the grown-up · camera check</p>
+        <h2 id="camera-check-title" className="font-patrick text-3xl text-[#0F172A] mt-1 mb-3">Let&apos;s check the camera can see {name}</h2>
+        <p className="text-sm text-[#334155] mb-4">Sit {name} in front of the screen where they will play, with the light in front of them. The small picture in the corner shows what the camera sees.</p>
+        <div role="status" aria-live="polite" className={`flex items-start gap-3 rounded-2xl border p-4 mb-5 text-sm ${steady ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : tip.good ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-amber-300 bg-amber-50 text-amber-900'}`}>
+          <span aria-hidden="true" className={`mt-1 h-3 w-3 shrink-0 rounded-full ${steady || tip.good ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+          <span><strong>{steady ? 'All set.' : tip.title}</strong> {steady ? 'The camera can see the face well.' : tip.text}</span>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => { cam.resetMeasures(); onContinue(true) }}
+            className={`rounded-full px-6 py-3 text-sm font-bold ${steady ? 'bg-teal-600 text-white' : 'border-2 border-slate-300 text-slate-700'}`}
+          >
+            {steady ? 'Looks good, start' : 'Start anyway'}
+          </button>
+          <button type="button" onClick={() => { cam.stop(); onContinue(false) }} className="rounded-full border-2 border-slate-300 px-6 py-3 text-sm font-bold text-slate-700">
+            Turn the camera off and play without it
+          </button>
+        </div>
+        {!steady && (
+          <p className="text-xs text-slate-600 mt-3">If you start anyway and the face is seen too little during play, the camera numbers are left out of the report instead of being shown.</p>
+        )}
+      </section>
+    )
+  }
 
   return (
     <section aria-labelledby="camera-consent-title" className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl">
@@ -48,7 +97,7 @@ export default function CameraConsent({cam, childName, onContinue, variant = 'at
         <button
           type="button"
           disabled={!agreed || cam.status === 'starting'}
-          onClick={async () => { if (await cam.start()) onContinue(true) }}
+          onClick={async () => { if (await cam.start()) setChecking(true) }}
           className="rounded-full bg-teal-600 px-6 py-3 text-sm font-bold text-white disabled:opacity-40"
         >
           {cam.status === 'starting' ? 'Starting the camera…' : 'Turn on the camera'}
@@ -65,7 +114,7 @@ export default function CameraConsent({cam, childName, onContinue, variant = 'at
  * The always-visible sign that the camera is on: a small mirrored picture with a Stop button. It also holds the video
  * element the face model reads from. It is mounted for the whole quest and hidden (not removed) while the camera is off.
  */
-export function CameraBadge({status, videoRef, onStop}: {status: AttentionCamera['status']; videoRef: AttentionCamera['videoRef']; onStop: () => void}) {
+export function CameraBadge({status, videoRef, onStop, large = false}: {status: AttentionCamera['status']; videoRef: AttentionCamera['videoRef']; onStop: () => void; large?: boolean}) {
   const live = status === 'on' || status === 'starting'
   return (
     <div
@@ -73,7 +122,7 @@ export function CameraBadge({status, videoRef, onStop}: {status: AttentionCamera
       style={live ? undefined : {opacity: 0, pointerEvents: 'none', width: 1, height: 1, overflow: 'hidden', padding: 0}}
       aria-hidden={!live}
     >
-      <video ref={videoRef} muted playsInline className="h-14 w-11 rounded-xl object-cover" style={{transform: 'scaleX(-1)'}} />
+      <video ref={videoRef} muted playsInline className={`rounded-xl object-cover ${large ? 'h-36 w-28' : 'h-14 w-11'}`} style={{transform: 'scaleX(-1)'}} />
       <div className="flex flex-col items-start">
         <span className="flex items-center gap-1 text-[11px] font-bold"><span className="h-2 w-2 rounded-full bg-red-500" />Camera on</span>
         <button type="button" onClick={onStop} className="text-[11px] underline">Stop camera</button>

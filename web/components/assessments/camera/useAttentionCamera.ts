@@ -1,6 +1,6 @@
 'use client'
 import {useCallback, useEffect, useRef, useState} from 'react'
-import {AttentionAccumulator, eyeHorizontal, eyesOff, headAngles, type Segment} from './attention-metrics'
+import {AttentionAccumulator, YAW_AWAY_DEG, eyeHorizontal, eyesOff, headAngles, type Segment} from './attention-metrics'
 import type {GazeSample} from './gaze-side'
 
 /**
@@ -12,6 +12,14 @@ import type {GazeSample} from './gaze-side'
  */
 
 export type CameraStatus = 'off' | 'starting' | 'on' | 'denied' | 'error'
+/** How well the child is placed in front of the camera, for the set-up check. Advice only: nothing here is recorded. */
+export type CameraQuality = 'searching' | 'noface' | 'far' | 'close' | 'offcentre' | 'turned' | 'good'
+// Rough placement limits, measured on the face's box as a share of the picture. First guesses, to be tuned on real devices.
+const FACE_MIN_W = 0.22
+const FACE_MAX_W = 0.7
+const CENTRE_X = 0.22
+const CENTRE_Y = 0.25
+const NOFACE_AFTER_SEC = 1.2
 
 const WASM_BASE = '/decor/mediapipe/wasm'
 const MODEL_URL = '/decor/mediapipe/face_landmarker.task'
@@ -28,6 +36,8 @@ type Landmarker = {
 
 export function useAttentionCamera() {
   const [status, setStatus] = useState<CameraStatus>('off')
+  const [quality, setQuality] = useState<CameraQuality>('searching')
+  const lastFaceT = useRef(0)
   const acc = useRef(new AttentionAccumulator())
   const videoEl = useRef<HTMLVideoElement | null>(null)
   const stream = useRef<MediaStream | null>(null)
@@ -46,6 +56,7 @@ export function useAttentionCamera() {
     try { landmarker.current?.close() } catch { /* already closed */ }
     landmarker.current = null
     setStatus((s) => (s === 'on' || s === 'starting' ? 'off' : s))
+    setQuality('searching')
   }, [])
 
   const start = useCallback(async (): Promise<boolean> => {
@@ -96,6 +107,7 @@ export function useAttentionCamera() {
         try { r = model.detectForVideo(v, performance.now()) } catch { return }
         const pts = r.faceLandmarks?.[0]
         if (!pts || pts.length === 0) {
+          if (t - lastFaceT.current > NOFACE_AFTER_SEC) setQuality('noface')
           acc.current.add({t, face: false})
           listeners.current.forEach((fn) => fn({t, face: false}))
           return
@@ -109,6 +121,17 @@ export function useAttentionCamera() {
         }
         const m = r.facialTransformationMatrixes?.[0]?.data
         const angles = m ? headAngles(m) : null
+        lastFaceT.current = t
+        const fw = maxX - minX
+        const fcx = (minX + maxX) / 2
+        const fcy = (minY + maxY) / 2
+        setQuality(
+          fw < FACE_MIN_W ? 'far'
+            : fw > FACE_MAX_W ? 'close'
+            : Math.abs(fcx - 0.5) > CENTRE_X || Math.abs(fcy - 0.5) > CENTRE_Y ? 'offcentre'
+            : Math.abs(angles?.yaw ?? 0) > YAW_AWAY_DEG ? 'turned'
+            : 'good',
+        )
         const scores: Record<string, number> = {}
         for (const c of r.faceBlendshapes?.[0]?.categories ?? []) scores[c.categoryName] = c.score
         listeners.current.forEach((fn) => fn({t, face: true, yaw: angles?.yaw, eyeH: eyeHorizontal(scores)}))
@@ -133,13 +156,15 @@ export function useAttentionCamera() {
 
   const setSegment = useCallback((s: Segment) => acc.current.setSegment(s), [])
   const telemetry = useCallback(() => acc.current.telemetry(), [])
+  /** Forget everything measured so far. Called when the set-up check ends, so the check itself is not counted. */
+  const resetMeasures = useCallback(() => { acc.current = new AttentionAccumulator() }, [])
   /** Per-frame readings for a game that needs them (the looking game). Returns the way to stop listening. */
   const subscribe = useCallback((fn: (f: GazeSample) => void) => {
     listeners.current.add(fn)
     return () => { listeners.current.delete(fn) }
   }, [])
 
-  return {status, start, stop, videoRef, setSegment, telemetry, subscribe}
+  return {status, quality, start, stop, videoRef, setSegment, telemetry, resetMeasures, subscribe}
 }
 
 export type AttentionCamera = ReturnType<typeof useAttentionCamera>

@@ -11,6 +11,13 @@
  */
 export const REPORT_REVIEWED = false
 
+/**
+ * Pilot switch: parents see the full report on the end screen even though no clinician has signed off yet.
+ * The "Draft for clinician review" banner stays on every report while REPORT_REVIEWED is false.
+ * Set this back to false to hide the report from parents again.
+ */
+export const REPORT_PILOT_VISIBLE = true
+
 export const REPORT_TEXT = {
   notDiagnosis:
     'This is not a diagnosis. One short play session cannot show whether a child has a learning or developmental difference. If you have concerns, please talk to a paediatrician, teacher or qualified clinician.',

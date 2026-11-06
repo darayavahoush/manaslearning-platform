@@ -2,7 +2,7 @@
 import {useEffect, useMemo, useState} from 'react'
 import ParentClinicianReport, {type ReportRecord} from './ParentClinicianReport'
 import {generateRoadmap} from '../roadmap/generate'
-import {REPORT_REVIEWED} from './library'
+import {REPORT_PILOT_VISIBLE, REPORT_REVIEWED} from './library'
 
 /**
  * The personalised report shown at the end of a quest, built from this child's own session record.
@@ -18,7 +18,7 @@ export default function EndReport({record, name}: {record: ReportRecord; name: s
   }, [])
   const roadmap = useMemo(() => generateRoadmap({record, focus: []}), [record])
 
-  if (!REPORT_REVIEWED && !teamPreview) {
+  if (!REPORT_REVIEWED && !REPORT_PILOT_VISIBLE && !teamPreview) {
     return (
       <section className="mx-auto mt-8 max-w-2xl rounded-3xl border-2 border-teal-300/40 bg-white/95 p-6 text-center shadow-xl">
         <p className="font-patrick text-2xl font-bold text-[#0F172A]">Your personalised report</p>

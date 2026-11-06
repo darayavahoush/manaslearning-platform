@@ -256,6 +256,55 @@ function ForestSpriteFaceSvg({emotion, className = 'w-24 h-24'}: {emotion: 'happ
   )
 }
 
+/** The fox cub: a different creature from the sprite options, so a child matches the FEELING and cannot match the picture. */
+function FoxCubFaceSvg({emotion, className = 'w-24 h-24'}: {emotion: 'happy' | 'sad' | 'surprised' | 'calm'; className?: string}) {
+  const fur = '#F97316'
+  const dark = '#9A3412'
+  const cream = '#FFEDD5'
+  const tilt = emotion === 'sad' ? 'rotate(-6 50 58)' : emotion === 'surprised' ? 'rotate(0 50 58)' : emotion === 'calm' ? 'rotate(3 50 58)' : 'rotate(-3 50 58)'
+  const earDrop = emotion === 'sad' ? 8 : 0
+  const earUp = emotion === 'surprised' ? -6 : 0
+  return (
+    <svg className={className} viewBox="0 0 100 100" fill="none" aria-hidden="true">
+      <g transform={tilt}>
+        <path d={`M16 ${44 + earDrop} L22 ${8 + earDrop + earUp} L44 ${26 + earDrop / 2}`} fill={fur} stroke={dark} strokeWidth="3" strokeLinejoin="round" />
+        <path d={`M84 ${44 + earDrop} L78 ${8 + earDrop + earUp} L56 ${26 + earDrop / 2}`} fill={fur} stroke={dark} strokeWidth="3" strokeLinejoin="round" />
+        <path d={`M23 ${36 + earDrop} L25 ${18 + earDrop + earUp} L36 ${28 + earDrop / 2}`} fill="#FDBA74" />
+        <path d={`M77 ${36 + earDrop} L75 ${18 + earDrop + earUp} L64 ${28 + earDrop / 2}`} fill="#FDBA74" />
+        <path d="M50 24 C74 24 90 40 90 58 C90 78 72 92 50 92 C28 92 10 78 10 58 C10 40 26 24 50 24 Z" fill={fur} stroke={dark} strokeWidth="3" />
+        <path d="M50 52 C66 52 84 60 80 74 C74 88 58 92 50 92 C42 92 26 88 20 74 C16 60 34 52 50 52 Z" fill={cream} />
+        <ellipse cx="50" cy="62" rx="5" ry="3.5" fill="#1F2937" />
+        {emotion === 'happy' && (<>
+          <path d="M28 46 Q34 38 40 46" stroke="#1F2937" strokeWidth="4" strokeLinecap="round" />
+          <path d="M60 46 Q66 38 72 46" stroke="#1F2937" strokeWidth="4" strokeLinecap="round" />
+          <path d="M36 70 Q50 86 64 70 Z" fill="#B91C1C" stroke="#1F2937" strokeWidth="3" strokeLinejoin="round" />
+          <circle cx="24" cy="60" r="5" fill="#FCA5A5" opacity="0.7" /><circle cx="76" cy="60" r="5" fill="#FCA5A5" opacity="0.7" />
+        </>)}
+        {emotion === 'sad' && (<>
+          <circle cx="34" cy="48" r="4.5" fill="#1F2937" /><circle cx="66" cy="48" r="4.5" fill="#1F2937" />
+          <circle cx="35.5" cy="46.5" r="1.6" fill="#FFFFFF" /><circle cx="67.5" cy="46.5" r="1.6" fill="#FFFFFF" />
+          <path d="M26 42 Q34 40 42 33" stroke="#1F2937" strokeWidth="3" strokeLinecap="round" />
+          <path d="M74 42 Q66 40 58 33" stroke="#1F2937" strokeWidth="3" strokeLinecap="round" />
+          <path d="M40 78 Q50 68 60 78" stroke="#1F2937" strokeWidth="4" strokeLinecap="round" />
+          <path d="M30 54 C30 54 35 61 30 66 C25 66 25 59 30 54 Z" fill="#60A5FA" />
+        </>)}
+        {emotion === 'surprised' && (<>
+          <circle cx="34" cy="46" r="8" fill="#FFFFFF" stroke="#1F2937" strokeWidth="3" /><circle cx="66" cy="46" r="8" fill="#FFFFFF" stroke="#1F2937" strokeWidth="3" />
+          <circle cx="34" cy="46" r="3.5" fill="#1F2937" /><circle cx="66" cy="46" r="3.5" fill="#1F2937" />
+          <path d="M26 31 Q34 24 42 31" stroke="#1F2937" strokeWidth="3" strokeLinecap="round" />
+          <path d="M58 31 Q66 24 74 31" stroke="#1F2937" strokeWidth="3" strokeLinecap="round" />
+          <ellipse cx="50" cy="78" rx="6" ry="8" fill="#7F1D1D" stroke="#1F2937" strokeWidth="3" />
+        </>)}
+        {emotion === 'calm' && (<>
+          <path d="M28 46 Q34 52 40 46" stroke="#1F2937" strokeWidth="4" strokeLinecap="round" />
+          <path d="M60 46 Q66 52 72 46" stroke="#1F2937" strokeWidth="4" strokeLinecap="round" />
+          <path d="M40 72 Q50 78 60 72" stroke="#1F2937" strokeWidth="3.5" strokeLinecap="round" />
+        </>)}
+      </g>
+    </svg>
+  )
+}
+
 // Child Superpower Grove Affinities
 const GROVE_AFFINITIES = [
   {name: 'Grove Harmonizer', Svg: LeafGlyphSvg, desc: 'Sensory Empathy & Nature Connection'},
@@ -885,9 +934,9 @@ function __McInner() {
     const t = TOM_PRACTICE[prac.i]
     const showHint = prac.tries >= 2
     return (
-      <PracticeFrame step={prac.i} total={TOM_PRACTICE.length} say="Tap the same face!" msg={prac.msg}>
+      <PracticeFrame step={prac.i} total={TOM_PRACTICE.length} say="Tap the sprite with the same feeling!" msg={prac.msg}>
         <div className="relative mx-auto my-4 flex h-44 w-44 items-center justify-center overflow-hidden rounded-full border-8 border-teal-300/80 bg-gradient-to-b from-[#064E3B] via-[#022C22] to-[#01140E] shadow-[0_0_40px_rgba(20,184,166,0.35)]">
-          <div className="animate-bounce"><ForestSpriteFaceSvg emotion={t.target} className="h-28 w-28" /></div>
+          <div className="animate-bounce"><FoxCubFaceSvg emotion={t.target} className="h-28 w-28" /></div>
         </div>
         <div className={`mx-auto grid max-w-lg gap-3 sm:gap-6 ${t.options.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
           {t.options.map((o) => (
@@ -1194,7 +1243,7 @@ function __McInner() {
                     Chapter 2: The Crystal Emotion Mirror
                   </span>
                   <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    The Forest Sprite’s Feelings Game
+                    The Fox Cub’s Feelings Game
                   </h2>
                 </div>
               </div>
@@ -1202,7 +1251,7 @@ function __McInner() {
 
             <div className="p-6 md:p-8 text-center">
               <p className="font-patrick text-2xl md:text-3xl font-bold text-teal-900 leading-snug mb-6 max-w-lg mx-auto">
-                The Sprite makes a face. Tap the same face!
+                The fox cub makes a face. Tap the sprite with the same feeling!
               </p>
 
               <div className="flex items-center justify-center gap-6 mb-8">
@@ -1227,7 +1276,7 @@ function __McInner() {
               <div className="text-center">
                 <button
                   type="button"
-                  onClick={() => beginPractice('tom', 'The Sprite makes a face. Tap the same face!')}
+                  onClick={() => beginPractice('tom', 'The fox cub makes a face. Tap the sprite with the same feeling!')}
                   className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-12 py-5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
                 >
                   Let's practice! ▶
@@ -1244,10 +1293,10 @@ function __McInner() {
               Before we go on
             </span>
             <div className="relative mx-auto my-6 flex h-40 w-40 items-center justify-center rounded-full border-8 border-teal-300/80 bg-gradient-to-b from-[#064E3B] via-[#022C22] to-[#01140E]">
-              <ForestSpriteFaceSvg emotion="sad" className="w-24 h-24" />
+              <FoxCubFaceSvg emotion="sad" className="w-24 h-24" />
             </div>
             <p className="font-patrick text-xl sm:text-2xl text-teal-900 font-bold mb-6">
-              The sprite looks sad. What would help?
+              The fox cub looks sad. What would help?
             </p>
             <div className="grid grid-cols-3 gap-3 sm:gap-6 max-w-lg mx-auto">
               {['A hug', 'A quiet corner', 'A story'].map((label, i) => (
@@ -1271,22 +1320,22 @@ function __McInner() {
                 Round {tomTrialIndex + 1} of {EMOTION_MIRROR_TRIALS.length}
               </span>
               <span className="text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
-                Match the Sprite's Feeling
+                Match the Fox Cub's Feeling
               </span>
             </div>
 
             {/* The Enchanted Mirror Frame with Sprite Face */}
             <div className="relative mx-auto my-6 flex h-48 w-48 sm:h-56 sm:w-56 items-center justify-center rounded-full border-8 border-teal-300/80 bg-gradient-to-b from-[#064E3B] via-[#022C22] to-[#01140E] shadow-[0_0_40px_rgba(20,184,166,0.35)] overflow-hidden">
               <div className="animate-bounce">
-                <ForestSpriteFaceSvg
+                <FoxCubFaceSvg
                   emotion={EMOTION_MIRROR_TRIALS[tomTrialIndex].target}
-                  className="w-28 h-28 sm:w-32 sm:h-32 drop-shadow-[0_0_20px_rgba(52,211,153,0.5)]"
+                  className="w-28 h-28 sm:w-32 sm:h-32 drop-shadow-[0_0_20px_rgba(251,146,60,0.5)]"
                 />
               </div>
             </div>
 
             <p className="font-patrick text-xl sm:text-2xl text-teal-900 font-bold mb-6">
-              Which emotion crystal feels like the Forest Sprite?
+              Which sprite face shows the same feeling as the fox cub?
             </p>
 
             {/* 3 Emotion Crystal Choice Buttons */}

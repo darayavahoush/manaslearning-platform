@@ -441,19 +441,31 @@ function bandFor(age: number): AgeBand {
 // Star patterns are drawn fresh for every session so a child never meets the same pattern twice. Each level keeps the length it
 // had before, every star is a different cell, and no three in a row sit on one line (which would make the pattern easier to chunk).
 const STAR_LINES = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]]
+// Consecutive stars should sit far apart: first try cells that do not touch at all (not even at a corner), then cells that
+// do not share an edge, and only then any cell, so a pattern is always found.
+function cellsTouch(a: number, b: number, diagonal: boolean): boolean {
+  const dr = Math.abs(Math.floor(a / 3) - Math.floor(b / 3))
+  const dc = Math.abs((a % 3) - (b % 3))
+  return diagonal ? Math.max(dr, dc) <= 1 : dr + dc === 1
+}
 function randomStarSeq(len: number, avoid: number[][] = []): number[] {
-  for (let tries = 0; tries < 300; tries++) {
-    const cells = [0, 1, 2, 3, 4, 5, 6, 7, 8]
-    for (let i = cells.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      ;[cells[i], cells[j]] = [cells[j], cells[i]]
+  for (let tier = 0; tier < 3; tier++) {
+    for (let tries = 0; tries < 400; tries++) {
+      const cells = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+      for (let i = cells.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[cells[i], cells[j]] = [cells[j], cells[i]]
+      }
+      const s = cells.slice(0, len)
+      let ok = true
+      for (let i = 1; i < len && ok; i++) {
+        if (tier === 0 && cellsTouch(s[i - 1], s[i], true)) ok = false
+        if (tier === 1 && cellsTouch(s[i - 1], s[i], false)) ok = false
+        if (i >= 2 && STAR_LINES.some((l) => l.includes(s[i - 2]) && l.includes(s[i - 1]) && l.includes(s[i]))) ok = false
+      }
+      if (ok && avoid.some((a) => a.join() === s.join())) ok = false
+      if (ok) return s
     }
-    const s = cells.slice(0, len)
-    const inLine = (i: number) => STAR_LINES.some((l) => l.includes(s[i - 2]) && l.includes(s[i - 1]) && l.includes(s[i]))
-    let ok = true
-    for (let i = 2; i < len && ok; i++) if (inLine(i)) ok = false
-    if (ok && avoid.some((a) => a.join() === s.join())) ok = false
-    if (ok) return s
   }
   return Array.from({length: len}, (_, i) => (i * 4) % 9)
 }
@@ -1572,7 +1584,7 @@ function __McInner() {
                 </p>
               </div>
             )}
-            <div className="mx-auto my-6 grid aspect-square grid-cols-3 gap-3 rounded-3xl bg-[#0F172A] p-4 shadow-2xl" style={{ width: '100%', maxWidth: band.grid }}>
+            <div className="mx-auto my-6 grid aspect-square grid-cols-3 gap-5 sm:gap-8 rounded-3xl bg-[#0F172A] p-5 sm:p-8 shadow-2xl" style={{ width: '100%', maxWidth: band.grid }}>
               {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((idx) => {
                 const isLit = memoryLitCell === idx || memoryTapCell === idx
                 return (
@@ -1582,7 +1594,7 @@ function __McInner() {
                     disabled={memoryPhase !== 'input'}
                     onPointerDown={() => { if (memoryPhase === 'input') { setMemoryTapCell(idx); setTimeout(() => setMemoryTapCell((c) => (c === idx ? null : c)), 320) } }}
                     onClick={() => handleMemoryClick(idx)}
-                    className={`rounded-2xl p-2 transition-all flex items-center justify-center ${
+                    className={`rounded-full p-3 sm:p-4 transition-all flex items-center justify-center ${
                       isLit
                         ? 'bg-amber-400 shadow-[0_0_20px_#F59E0B] scale-105'
                         : 'bg-slate-800/80 hover:bg-slate-700/80'

@@ -48,3 +48,6 @@ public/sounds/*
 !public/sounds/teacher_*.mp3
 public/videos/
 *.bak*
+
+# on-device face model files, fetched/copied by scripts/fetch-camera-assets.mjs
+public/decor/mediapipe/

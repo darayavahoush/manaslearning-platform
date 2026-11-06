@@ -90,6 +90,10 @@ const TELEMETRY_KEYS = [
   'ruleCheck', 'ruleCheckMs',
   // hold-still waits before the sunbird practice: waits, waits with an early tap, average time to tap after the chime
   'holdTries', 'holdEarly', 'holdRtMs',
+  // optional camera step (on-device head and eye direction): status 1 used / 0 low quality, seconds observed, % of time the face was seen,
+  // % of time turned away, look-away stretches of a second or more, head movement (% of face width per second), and the same per game
+  'camStatus', 'camSec', 'camTrackedPct', 'camAwayPct', 'camAwayEvents', 'camMovePct',
+  'camAwayPctSunbird', 'camAwayPctSteering', 'camAwayPctStars', 'camMoveSunbird', 'camMoveSteering', 'camMoveStars',
 ] as const
 
 function cleanTelemetry(input: unknown): Record<string, number | null> {

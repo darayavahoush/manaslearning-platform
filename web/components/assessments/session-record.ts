@@ -1,4 +1,5 @@
 import {wilson} from './profile-stats'
+import {MIN_OBSERVED_SEC, MIN_TRACKED_PCT} from './camera/attention-metrics'
 
 /**
  * Manas Profile: one structured, versioned record of a play session.
@@ -9,7 +10,7 @@ import {wilson} from './profile-stats'
  * this code; the record is built in the response and handed back to the caller.
  */
 
-export const RECORD_SCHEMA_VERSION = '1.11'
+export const RECORD_SCHEMA_VERSION = '1.12'
 
 export type Quest = 'adhd' | 'autism'
 export type AgeBand = '4-5' | '6-8' | '9-12' | '13-16'
@@ -92,7 +93,18 @@ export interface SessionRecord {
   showRounds?: ShowRound[]
   /** autism quest only: which rule the child named straight after the first shape card (record format 1.10 and later) */
   ruleCheck?: RuleCheck
+  /** adhd quest only: the optional camera step, on-device head and eye direction (record format 1.12 and later) */
+  camera?: CameraRecord
   limits: string[]
+}
+
+export interface CameraRecord {
+  /** used: the numbers are in `measures`; low_quality: the camera ran but the face was seen too little, so none are reported */
+  status: 'used' | 'low_quality'
+  /** seconds the camera was observing */
+  seconds: number
+  /** share of that time the face could be seen, in percent */
+  trackedPct: number
 }
 
 export interface HelpRound {
@@ -214,6 +226,7 @@ export function gameOf(key: string): string {
   if (/^feelings/.test(key)) return 'Feelings match'
   if (/^(light|sound|touch)Level|^(rampStop|adjust|shieldUses|designSec)/.test(key)) return 'Comfort choices'
   if (/^sort/.test(key)) return 'Sorting game'
+  if (/^cam/.test(key)) return 'Camera (optional)'
   if (/^(pause|retry)/.test(key)) return 'During the session'
   return 'Other'
 }
@@ -250,7 +263,41 @@ function adhdMeasures(t: Tele): Array<Measure | null> {
     proportion('prematureReleases', 'Early releases in the patience game', get(t, 'prematureReleases'), get(t, 'chargeTrials'),
       'Practice game for fun, not a validated task.'),
     ...eventMeasures(t, [['retrySunbird', 'sunbird game'], ['retrySteering', 'steering game'], ['retryStars', 'star-sequence game']]),
+    ...cameraMeasures(t),
   ]
+}
+
+/** The camera step is kept only when the face was seen for most of the time. These checks repeat the ones on the page, so the server never trusts the page. */
+export function cameraRecord(t: Tele): CameraRecord | null {
+  const status = get(t, 'camStatus')
+  const seconds = get(t, 'camSec')
+  const tracked = get(t, 'camTrackedPct')
+  if (status === null || seconds === null || tracked === null || tracked > 100) return null
+  const usable = status === 1 && seconds >= MIN_OBSERVED_SEC && tracked >= MIN_TRACKED_PCT
+  return {status: usable ? 'used' : 'low_quality', seconds: Math.round(seconds), trackedPct: Math.round(tracked)}
+}
+
+const CAM_NOTE = 'Read on the device from head and eye direction. It shows where the head and eyes pointed, not why.'
+const pct100 = (t: Tele, key: string): number | null => {
+  const v = get(t, key)
+  return v !== null && v <= 100 ? v : null
+}
+
+/** Camera rows (ADHD quest). Empty unless the camera step passed its quality check. */
+function cameraMeasures(t: Tele): Array<Measure | null> {
+  if (cameraRecord(t)?.status !== 'used') return []
+  const out: Array<Measure | null> = [
+    value('camTrackedPct', 'Share of camera time the face could be seen', get(t, 'camTrackedPct'), '%', null),
+    value('camAwayPct', 'Share of the time the head or eyes were turned away from the screen', pct100(t, 'camAwayPct'), '%', null, CAM_NOTE),
+    value('camAwayEvents', 'Times the head or eyes turned away for a second or more', get(t, 'camAwayEvents'), 'times', null, 'Glances shorter than a second are not counted.'),
+    value('camMovePct', 'Head movement (percent of face width per second)', get(t, 'camMovePct'), '% per second', null,
+      'Includes small camera noise even when the child sits still, so only compare it within one session.'),
+  ]
+  for (const [label, name] of [['Sunbird', 'sunbird game'], ['Steering', 'steering game'], ['Stars', 'star-sequence game']] as const) {
+    out.push(value(`camAwayPct${label}`, `Share of time turned away, ${name}`, pct100(t, `camAwayPct${label}`), '%', null))
+    out.push(value(`camMove${label}`, `Head movement, ${name} (percent of face width per second)`, get(t, `camMove${label}`), '% per second', null))
+  }
+  return out
 }
 
 /** Design the room: where each sense was said to be too much, slider moves, calm shield taps and time to save. */
@@ -541,9 +588,12 @@ export function buildSessionRecord(args: {
     ...(args.quest === 'autism' && helpRound(args.telemetry) ? {helpRound: helpRound(args.telemetry)!} : {}),
     ...(args.quest === 'autism' && showRounds(args.telemetry) ? {showRounds: showRounds(args.telemetry)!} : {}),
     ...(args.quest === 'autism' && ruleCheck(args.telemetry) ? {ruleCheck: ruleCheck(args.telemetry)!} : {}),
+    ...(args.quest === 'adhd' && cameraRecord(args.telemetry) ? {camera: cameraRecord(args.telemetry)!} : {}),
     ...(args.quest === 'adhd' && get(args.telemetry, 'starTone') !== null ? {starMode: get(args.telemetry, 'starTone') === 1 ? 'tones' as const : 'lights' as const} : {}),
     ...(args.quest === 'adhd' && get(args.telemetry, 'steerRocket') !== null ? {steeringSkin: get(args.telemetry, 'steerRocket') === 1 ? 'rocket' as const : 'arrows' as const} : {}),
-    limits: LIMITS,
+    limits: args.quest === 'adhd' && cameraRecord(args.telemetry)?.status === 'used'
+      ? [...LIMITS, 'Camera numbers come from head and eye direction read on the device. They do not show why a child looked away, they have not been checked against anything, and lighting, the camera angle and where the screen sits change them.']
+      : LIMITS,
   }
 }
 

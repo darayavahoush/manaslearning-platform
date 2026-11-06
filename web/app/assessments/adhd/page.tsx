@@ -6,6 +6,8 @@ import ParentCard, {type ParentAnswers} from '../../../components/assessments/Pa
 import SessionRecordDownload from '../../../components/assessments/SessionRecordDownload'
 import {captureEnvironment} from '../../../components/assessments/session-record'
 import {usePlayEvents} from '../../../components/assessments/play-events'
+import {useAttentionCamera} from '../../../components/assessments/camera/useAttentionCamera'
+import CameraConsent, {CameraBadge} from '../../../components/assessments/camera/CameraConsent'
 import {useState, useEffect, useRef, useMemo} from 'react'
 import Link from 'next/link'
 import KeeperFeedback from '../../../components/assessments/KeeperFeedback'
@@ -429,7 +431,7 @@ function bandFor(age: number): AgeBand {
 }
 
 function __McInner() {
-  const [stage, setStage] = useState<'welcome' | 'avatar' | 'cpt_story' | 'cpt_hold' | 'cpt_game' | 'flanker_story' | 'flanker_game' | 'memory_story' | 'memory_game' | 'situational_story' | 'situational_game' | 'trials' | 'parent_card' | 'agent_eval' | 'celebration'>('welcome')
+  const [stage, setStage] = useState<'welcome' | 'avatar' | 'camera_setup' | 'cpt_story' | 'cpt_hold' | 'cpt_game' | 'flanker_story' | 'flanker_game' | 'memory_story' | 'memory_game' | 'situational_story' | 'situational_game' | 'trials' | 'parent_card' | 'agent_eval' | 'celebration'>('welcome')
 
   // Child Fantasy Persona
   const [heroName, setHeroName] = useState('')
@@ -478,6 +480,17 @@ function __McInner() {
   const flankerLockRef = useRef(false)
   // practice rounds for the other games (never recorded)
   const events = usePlayEvents()
+  // optional camera step: off unless the grown-up agrees on the camera_setup screen; numbers only, no video leaves the device
+  const cam = useAttentionCamera()
+  const {setSegment: setCamSegment, stop: stopCam} = cam
+  useEffect(() => {
+    if (stage === 'cpt_hold' || stage === 'cpt_game') setCamSegment('sunbird')
+    else if (stage === 'flanker_game') setCamSegment('steering')
+    else if (stage === 'memory_game') setCamSegment('stars')
+    else setCamSegment('other')
+    // the camera is only needed during play: it stops before the parent card and the summary
+    if (stage === 'parent_card' || stage === 'agent_eval' || stage === 'celebration') stopCam()
+  }, [stage, setCamSegment, stopCam])
   const [cptPrac, setCptPrac] = useState<'off' | 'bird' | 'bird_ok' | 'moth' | 'moth_oops' | 'moth_ok' | 'ready'>('off')
   // hold-still waits before the sunbird practice: three fixed waits; taps during a wait are early responses
   const HOLD_WAITS_MS = [3500, 5000, 4200] as const
@@ -973,7 +986,9 @@ function __McInner() {
           ? Math.round(holdRts.filter((x): x is number => x !== null).reduce((a, b) => a + b, 0) / holdRts.filter((x): x is number => x !== null).length)
           : null,
         pauseCount: ev.pauseCount,
-        pausedSec: ev.pausedSec
+        pausedSec: ev.pausedSec,
+        // optional camera step: empty unless the camera was turned on
+        ...cam.telemetry()
       }
     }
 
@@ -1077,11 +1092,16 @@ function __McInner() {
                 consent={parentOk}
                 onConsent={setParentOk}
                 startLabel="Embark on Quest: Chapter 1 →"
-                onStart={() => { playAudio('chime'); setStage('cpt_story') }}
+                onStart={() => { playAudio('chime'); setStage('camera_setup') }}
                 onTick={() => playAudio('tap')}
               />
             </div>
           </div>
+        )}
+
+        {/* 1b. OPTIONAL CAMERA STEP (for the grown-up) */}
+        {stage === 'camera_setup' && (
+          <CameraConsent cam={cam} childName={heroName} onContinue={() => { playAudio('chime'); setStage('cpt_story') }} />
         )}
 
         {/* 2. CHAPTER 1 STORY: THE SUNBIRD AND THE MOTH (picture first) */}
@@ -1893,6 +1913,7 @@ function __McInner() {
           </div>
         )}
       </div>
+      <CameraBadge cam={cam} />
     </main>
   )
 }

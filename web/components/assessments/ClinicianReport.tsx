@@ -88,6 +88,7 @@ export const GAME_NOTE: Record<string, string> = {
   'Feelings match': 'Cartoon faces matched to the feeling shown.',
   'Comfort choices': 'Levels chosen in the room, and the level at which each sense was said to be too much. These are preferences and reactions from one session, not a test.',
   'Sorting game': 'Gems sorted by colour, then by shape after the rule changed.',
+  'Camera (optional)': 'Head and eye direction read on the device while the child played. No video is kept. It shows where the head and eyes pointed, not why, and it is not a validated measure.',
   'During the session': 'How the session went. These are not scores.',
 }
 

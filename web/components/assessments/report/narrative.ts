@@ -13,7 +13,7 @@ export interface GameStory {
   fewTrials: boolean
 }
 
-type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'starLevels'> & Partial<Pick<SessionRecord, 'parentCard' | 'helpRound' | 'steeringSkin' | 'starMode' | 'showRounds' | 'ruleCheck'>>
+type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'starLevels'> & Partial<Pick<SessionRecord, 'parentCard' | 'helpRound' | 'steeringSkin' | 'starMode' | 'showRounds' | 'ruleCheck' | 'camera'>>
 
 const find = (r: Rec, key: string): Measure | undefined => r.measures.find((x) => x.key === key)
 const prop = (r: Rec, key: string): ProportionMeasure | null => {
@@ -163,6 +163,27 @@ function parentAnswers(r: Rec): string[] {
   return out
 }
 
+/** The optional camera step. Describes where the head and eyes pointed; never says why, and never says a result is high or low. */
+function camera(r: Rec, who: string): string[] {
+  const c = r.camera
+  if (!c) return []
+  if (c.status === 'low_quality') {
+    return [`The camera was on for about ${c.seconds} seconds, but ${who.toLowerCase() === 'your child' ? 'your child' : who}'s face could be seen for only ${c.trackedPct}% of that time (lighting, the angle or the distance can cause this), so no camera numbers are shown.`]
+  }
+  const away = val(r, 'camAwayPct')
+  const events = val(r, 'camAwayEvents')
+  const move = val(r, 'camMovePct')
+  const out = [`The camera was on for about ${c.seconds} seconds, and the face could be seen for ${c.trackedPct}% of that time.`]
+  if (away) out.push(`The head or eyes were turned away from the screen for about ${Math.round(away.value)}% of the time${events ? `, in ${events.value === 0 ? 'no stretches' : events.value === 1 ? 'one stretch' : `${events.value} stretches`} of a second or more` : ''}.`)
+  const per = [['sunbird game', 'camAwayPctSunbird'], ['steering game', 'camAwayPctSteering'], ['star-sequence game', 'camAwayPctStars']]
+    .map(([label, key]) => [label, val(r, key)] as const)
+    .filter((x): x is readonly [string, ValueMeasure] => x[1] !== null)
+  if (per.length) out.push(`By game, the share of time turned away was ${per.map(([l, m]) => `${Math.round(m.value)}% in the ${l}`).join(', ')}.`)
+  if (move) out.push('Head movement was also measured. It includes small camera noise, so it is shown in the full figures for a clinician rather than as a number to compare.')
+  out.push('This shows where the head and eyes pointed, not why. Children look away to think, to rest, or because something else caught their eye.')
+  return out
+}
+
 function during(r: Rec): string[] {
   const out: string[] = [...parentAnswers(r)]
   const names: Record<string, string> = {
@@ -203,6 +224,8 @@ export function buildGameStories(record: Rec, name?: string): {stories: GameStor
     const fewTrials = record.measures.some((m) => m.game === game && m.kind === 'proportion' && m.wide)
     stories.push({game, lines, fewTrials})
   }
+  const cl = camera(record, who)
+  if (cl.length) stories.push({game: 'Camera (optional)', lines: cl, fewTrials: false})
   const dl = during(record)
   if (dl.length) stories.push({game: 'During the session', lines: dl, fewTrials: false})
   return {stories, missing}

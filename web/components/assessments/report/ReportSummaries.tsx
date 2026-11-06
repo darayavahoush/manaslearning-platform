@@ -6,6 +6,7 @@ import {GAME_NOTE} from '../ClinicianReport'
 import type {Measure} from '../session-record'
 import {buildGameStories} from './narrative'
 import {CLINICIAN_QUESTIONS, REPORT_TEXT} from './library'
+import HomePlan from '../plan/HomePlan'
 import {ClinicianSection, DraftBanner, ParentSection, type ReportRecord} from './ParentClinicianReport'
 
 /**
@@ -159,18 +160,19 @@ export function ClinicianSummary({record}: {record: ReportRecord}) {
 
 /** The end-of-quest report: parent summary and clinician summary as two separate views, with a print button for the one on screen. */
 export default function ReportTabs({record, name, roadmap}: {record: ReportRecord; name?: string; roadmap: Roadmap | null}) {
-  const [tab, setTab] = useState<'parent' | 'clinician'>('parent')
+  const [tab, setTab] = useState<'parent' | 'plan' | 'clinician'>('parent')
   const tabCls = (on: boolean) => `min-h-[44px] rounded-full px-5 text-sm font-bold transition-colors ${on ? 'bg-teal-700 text-white shadow' : 'border-2 border-teal-700 bg-white text-teal-800'}`
   return (
     <section className="mx-auto mt-8 max-w-3xl text-left" aria-label="Your personalised report">
       <style>{`@media print { body * { visibility: hidden !important } #report-print, #report-print * { visibility: visible !important } #report-print { position: absolute; left: 0; top: 0; width: 100% } .no-print { display: none !important } }`}</style>
       <div className="no-print flex flex-wrap items-center gap-2" role="tablist" aria-label="Choose a report">
         <button type="button" role="tab" aria-selected={tab === 'parent'} onClick={() => setTab('parent')} className={tabCls(tab === 'parent')}>For parents</button>
+        <button type="button" role="tab" aria-selected={tab === 'plan'} onClick={() => setTab('plan')} className={tabCls(tab === 'plan')}>4-week home plan</button>
         <button type="button" role="tab" aria-selected={tab === 'clinician'} onClick={() => setTab('clinician')} className={tabCls(tab === 'clinician')}>For the clinician</button>
         <button type="button" onClick={() => window.print()} className="ml-auto min-h-[44px] rounded-full border-2 border-slate-400 bg-white px-5 text-sm font-bold text-slate-700">Print or save as PDF</button>
       </div>
       <div id="report-print" className="mt-4" role="tabpanel">
-        {tab === 'parent' ? <ParentSummary record={record} name={name} roadmap={roadmap} /> : <ClinicianSummary record={record} />}
+        {tab === 'parent' ? <ParentSummary record={record} name={name} roadmap={roadmap} /> : tab === 'plan' ? <HomePlan quest={record.quest} name={name} /> : <ClinicianSummary record={record} />}
       </div>
     </section>
   )

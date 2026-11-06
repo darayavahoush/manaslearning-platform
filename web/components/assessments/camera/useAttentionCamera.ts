@@ -1,6 +1,7 @@
 'use client'
 import {useCallback, useEffect, useRef, useState} from 'react'
-import {AttentionAccumulator, eyesOff, headAngles, type Segment} from './attention-metrics'
+import {AttentionAccumulator, eyeHorizontal, eyesOff, headAngles, type Segment} from './attention-metrics'
+import type {GazeSample} from './gaze-side'
 
 /**
  * On-device head and eye direction, for the optional camera step.
@@ -33,6 +34,7 @@ export function useAttentionCamera() {
   const landmarker = useRef<Landmarker | null>(null)
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
   const lastVideoTime = useRef(-1)
+  const listeners = useRef(new Set<(f: GazeSample) => void>())
 
   const videoRef = useCallback((el: HTMLVideoElement | null) => { videoEl.current = el }, [])
 
@@ -93,7 +95,11 @@ export function useAttentionCamera() {
         let r: ReturnType<Landmarker['detectForVideo']>
         try { r = model.detectForVideo(v, performance.now()) } catch { return }
         const pts = r.faceLandmarks?.[0]
-        if (!pts || pts.length === 0) { acc.current.add({t, face: false}); return }
+        if (!pts || pts.length === 0) {
+          acc.current.add({t, face: false})
+          listeners.current.forEach((fn) => fn({t, face: false}))
+          return
+        }
         let minX = 1, maxX = 0, minY = 1, maxY = 0
         for (const p of pts) {
           if (p.x < minX) minX = p.x
@@ -105,6 +111,7 @@ export function useAttentionCamera() {
         const angles = m ? headAngles(m) : null
         const scores: Record<string, number> = {}
         for (const c of r.faceBlendshapes?.[0]?.categories ?? []) scores[c.categoryName] = c.score
+        listeners.current.forEach((fn) => fn({t, face: true, yaw: angles?.yaw, eyeH: eyeHorizontal(scores)}))
         acc.current.add({
           t, face: true,
           yaw: angles?.yaw, pitch: angles?.pitch,
@@ -126,8 +133,13 @@ export function useAttentionCamera() {
 
   const setSegment = useCallback((s: Segment) => acc.current.setSegment(s), [])
   const telemetry = useCallback(() => acc.current.telemetry(), [])
+  /** Per-frame readings for a game that needs them (the looking game). Returns the way to stop listening. */
+  const subscribe = useCallback((fn: (f: GazeSample) => void) => {
+    listeners.current.add(fn)
+    return () => { listeners.current.delete(fn) }
+  }, [])
 
-  return {status, start, stop, videoRef, setSegment, telemetry}
+  return {status, start, stop, videoRef, setSegment, telemetry, subscribe}
 }
 
 export type AttentionCamera = ReturnType<typeof useAttentionCamera>

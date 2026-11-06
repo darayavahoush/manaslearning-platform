@@ -203,10 +203,15 @@ export function headAngles(m: ArrayLike<number>): {yaw: number; pitch: number} |
   return {yaw: Math.atan2(r02, r22) * deg, pitch: Math.asin(Math.max(-1, Math.min(1, -r12))) * deg}
 }
 
+/** Sideways eye direction from the eye blendshape scores: positive towards the child's left, negative towards the right. */
+export function eyeHorizontal(scores: Record<string, number>): number {
+  const g = (k: string) => scores[k] ?? 0
+  return (g('eyeLookOutLeft') + g('eyeLookInRight') - g('eyeLookInLeft') - g('eyeLookOutRight')) / 2
+}
+
 /** Eyes strongly turned sideways (or up) from the eye blendshape scores. Looking down is expected at a screen and is ignored. */
 export function eyesOff(scores: Record<string, number>): boolean {
   const g = (k: string) => scores[k] ?? 0
-  const h = (g('eyeLookOutLeft') + g('eyeLookInRight') - g('eyeLookInLeft') - g('eyeLookOutRight')) / 2
   const up = (g('eyeLookUpLeft') + g('eyeLookUpRight')) / 2
-  return Math.abs(h) > 0.55 || up > 0.6
+  return Math.abs(eyeHorizontal(scores)) > 0.55 || up > 0.6
 }

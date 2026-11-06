@@ -13,7 +13,7 @@ export interface GameStory {
   fewTrials: boolean
 }
 
-type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'starLevels'> & Partial<Pick<SessionRecord, 'parentCard' | 'helpRound' | 'steeringSkin' | 'starMode' | 'showRounds' | 'ruleCheck' | 'camera'>>
+type Rec = Pick<SessionRecord, 'quest' | 'measures' | 'sortingCards' | 'gazeRounds' | 'feelingsRounds' | 'starLevels'> & Partial<Pick<SessionRecord, 'parentCard' | 'helpRound' | 'steeringSkin' | 'starMode' | 'showRounds' | 'ruleCheck' | 'camera' | 'looking'>>
 
 const find = (r: Rec, key: string): Measure | undefined => r.measures.find((x) => x.key === key)
 const prop = (r: Rec, key: string): ProportionMeasure | null => {
@@ -184,6 +184,27 @@ function camera(r: Rec, who: string): string[] {
   return out
 }
 
+/** The optional looking game (autism quest). Describes which side was looked at; never says why, and never says a result is high or low. */
+function looking(r: Rec, who: string): string[] {
+  const l = r.looking
+  if (!l) return []
+  if (l.status === 'not_calibrated') {
+    return [`The looking game was started, but the camera could not tell when ${who} looked left and when right (lighting, the angle or the distance can cause this), so the pictures were skipped and no numbers are shown.`]
+  }
+  if (l.status === 'low_quality') {
+    return [`In the looking game the camera could tell which side ${who} looked at for only ${l.valid} of the ${l.shown} pictures, which is too few to show numbers.`]
+  }
+  const social = val(r, 'lookSocialPct')
+  const right = val(r, 'lookRightPct')
+  const out = [`In the looking game two pictures sat side by side: a friendly cartoon face and some moving shapes, with the face on each side equally often. The camera could tell which side ${who} looked at for ${l.valid} of the ${l.shown} pictures.`]
+  if (social) out.push(`Of the time ${who} looked at one side or the other, about ${Math.round(social.value)}% was on the face and ${100 - Math.round(social.value)}% on the shapes.`)
+  if (right && (right.value >= 80 || right.value <= 20)) {
+    out.push(`Most of the looking was towards the ${right.value >= 80 ? 'right' : 'left'} side of the screen whichever picture was there, so these numbers say little about the pictures themselves.`)
+  }
+  out.push('Children differ a lot in what they like to watch, and the face and the shapes differ in movement and brightness too. This describes what was watched in this one short game, and nothing more.')
+  return out
+}
+
 function during(r: Rec): string[] {
   const out: string[] = [...parentAnswers(r)]
   const names: Record<string, string> = {
@@ -226,6 +247,8 @@ export function buildGameStories(record: Rec, name?: string): {stories: GameStor
   }
   const cl = camera(record, who)
   if (cl.length) stories.push({game: 'Camera (optional)', lines: cl, fewTrials: false})
+  const ll = looking(record, who)
+  if (ll.length) stories.push({game: 'Looking game (optional camera)', lines: ll, fewTrials: false})
   const dl = during(record)
   if (dl.length) stories.push({game: 'During the session', lines: dl, fewTrials: false})
   return {stories, missing}

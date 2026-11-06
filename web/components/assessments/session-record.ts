@@ -1,5 +1,6 @@
 import {wilson} from './profile-stats'
 import {MIN_OBSERVED_SEC, MIN_TRACKED_PCT} from './camera/attention-metrics'
+import {LOOK_SOCIAL_SIDES, MIN_VALID_TRIALS} from './camera/gaze-side'
 
 /**
  * Manas Profile: one structured, versioned record of a play session.
@@ -10,7 +11,7 @@ import {MIN_OBSERVED_SEC, MIN_TRACKED_PCT} from './camera/attention-metrics'
  * this code; the record is built in the response and handed back to the caller.
  */
 
-export const RECORD_SCHEMA_VERSION = '1.12'
+export const RECORD_SCHEMA_VERSION = '1.13'
 
 export type Quest = 'adhd' | 'autism'
 export type AgeBand = '4-5' | '6-8' | '9-12' | '13-16'
@@ -95,7 +96,17 @@ export interface SessionRecord {
   ruleCheck?: RuleCheck
   /** adhd quest only: the optional camera step, on-device head and eye direction (record format 1.12 and later) */
   camera?: CameraRecord
+  /** autism quest only: the optional looking game, left-or-right looking read on the device (record format 1.13 and later) */
+  looking?: LookingRecord
   limits: string[]
+}
+
+export interface LookingRecord {
+  /** used: the numbers are in `measures`; low_quality: too few trials could be read; not_calibrated: the camera could not tell left from right, so the trials were skipped */
+  status: 'used' | 'low_quality' | 'not_calibrated'
+  /** pictures shown, and pictures where the camera could tell which side was looked at */
+  shown: number
+  valid: number
 }
 
 export interface CameraRecord {
@@ -227,6 +238,7 @@ export function gameOf(key: string): string {
   if (/^(light|sound|touch)Level|^(rampStop|adjust|shieldUses|designSec)/.test(key)) return 'Comfort choices'
   if (/^sort/.test(key)) return 'Sorting game'
   if (/^cam/.test(key)) return 'Camera (optional)'
+  if (/^look/.test(key)) return 'Looking game (optional camera)'
   if (/^(pause|retry)/.test(key)) return 'During the session'
   return 'Other'
 }
@@ -339,7 +351,42 @@ function autismMeasures(t: Tele): Array<Measure | null> {
     value('ruleNamed', 'Named the rule straight after the change (1 = the new rule, 0 = the old one)', get(t, 'ruleCheck'), 'score', null,
       'One question, so this is a single answer, not a rate.'),
     ...eventMeasures(t, [['retryGaze', 'gaze game'], ['retryFeelings', 'feelings match'], ['retrySorting', 'sorting game']]),
+    ...lookingMeasures(t),
   ]
+}
+
+/** The looking game's result, re-checked here so the server never trusts the page. Null when the game was not played. */
+export function lookingRecord(t: Tele): LookingRecord | null {
+  const status = get(t, 'lookStatus')
+  const cal = get(t, 'lookCal')
+  if (status === null && cal === null) return null
+  if (cal === 0) return {status: 'not_calibrated', shown: 0, valid: 0}
+  const total = LOOK_SOCIAL_SIDES.length
+  const shown = Math.min(total, Math.max(0, Math.round(get(t, 'lookShown') ?? 0)))
+  const valid = Math.min(shown, Math.max(0, Math.round(get(t, 'lookTrials') ?? 0)))
+  const social = get(t, 'lookSocialPct')
+  const right = get(t, 'lookRightPct')
+  const ok = status === 1 && valid >= MIN_VALID_TRIALS && social !== null && social <= 100 && right !== null && right <= 100
+  return {status: ok ? 'used' : 'low_quality', shown, valid}
+}
+
+const LOOK_NOTE = 'Read on the device from eye and head direction after a left-right calibration. It shows which side was looked at, not why. The face and the shapes differ in more than being social (movement, brightness, shape), and there is no comparison group.'
+
+/** Looking-game rows (autism quest). Empty unless the game passed its quality checks. */
+function lookingMeasures(t: Tele): Array<Measure | null> {
+  const rec = lookingRecord(t)
+  if (rec?.status !== 'used') return []
+  const pct = (key: string) => { const v = get(t, key); return v !== null && v <= 100 ? v : null }
+  const out: Array<Measure | null> = [
+    value('lookTrials', `Pictures where the camera could tell which side was looked at (of ${rec.shown} shown)`, rec.valid, 'pictures', null),
+    value('lookSocialPct', 'Share of looking time that was on the cartoon face rather than the moving shapes', pct('lookSocialPct'), '%', null, LOOK_NOTE),
+    value('lookRightPct', 'Share of looking time on the right side of the screen, whichever picture was there', pct('lookRightPct'), '%', null,
+      'The face was on each side equally often. A share far from 50% means one side of the screen drew the eyes whatever was shown.'),
+  ]
+  LOOK_SOCIAL_SIDES.forEach((side, i) => {
+    out.push(value(`lookPct${i + 1}`, `Picture ${i + 1} (face on the ${side}): share of looking time on the face`, pct(`lookPct${i + 1}`), '%', null))
+  })
+  return out
 }
 
 const INSTRUMENTS: Record<Quest, {id: string; name: string}> = {
@@ -591,9 +638,14 @@ export function buildSessionRecord(args: {
     ...(args.quest === 'adhd' && cameraRecord(args.telemetry) ? {camera: cameraRecord(args.telemetry)!} : {}),
     ...(args.quest === 'adhd' && get(args.telemetry, 'starTone') !== null ? {starMode: get(args.telemetry, 'starTone') === 1 ? 'tones' as const : 'lights' as const} : {}),
     ...(args.quest === 'adhd' && get(args.telemetry, 'steerRocket') !== null ? {steeringSkin: get(args.telemetry, 'steerRocket') === 1 ? 'rocket' as const : 'arrows' as const} : {}),
-    limits: args.quest === 'adhd' && cameraRecord(args.telemetry)?.status === 'used'
-      ? [...LIMITS, 'Camera numbers come from head and eye direction read on the device. They do not show why a child looked away, they have not been checked against anything, and lighting, the camera angle and where the screen sits change them.']
-      : LIMITS,
+    ...(args.quest === 'autism' && lookingRecord(args.telemetry) ? {looking: lookingRecord(args.telemetry)!} : {}),
+    limits: [
+      ...LIMITS,
+      ...(args.quest === 'adhd' && cameraRecord(args.telemetry)?.status === 'used'
+        ? ['Camera numbers come from head and eye direction read on the device. They do not show why a child looked away, they have not been checked against anything, and lighting, the camera angle and where the screen sits change them.'] : []),
+      ...(args.quest === 'autism' && lookingRecord(args.telemetry)?.status === 'used'
+        ? ['The looking game reads which side of the screen was looked at from the camera, after a quick left-right calibration. It has not been checked against anything, a webcam cannot say which part of a picture was looked at, and the face and the shapes differ in movement and brightness as well as being social or not.'] : []),
+    ],
   }
 }
 

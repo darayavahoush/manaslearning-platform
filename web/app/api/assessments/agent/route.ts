@@ -94,6 +94,10 @@ const TELEMETRY_KEYS = [
   // % of time turned away, look-away stretches of a second or more, head movement (% of face width per second), and the same per game
   'camStatus', 'camSec', 'camTrackedPct', 'camAwayPct', 'camAwayEvents', 'camMovePct',
   'camAwayPctSunbird', 'camAwayPctSteering', 'camAwayPctStars', 'camMoveSunbird', 'camMoveSteering', 'camMoveStars',
+  // optional looking game, autism quest (camera, left-or-right looking): status 1 used / 0 not, calibrated 1 / 0, pictures shown, pictures that counted,
+  // % of looking time on the face, % of looking time on the right of the screen, and the face share per picture
+  'lookStatus', 'lookCal', 'lookShown', 'lookTrials', 'lookSocialPct', 'lookRightPct',
+  'lookPct1', 'lookPct2', 'lookPct3', 'lookPct4', 'lookPct5', 'lookPct6',
 ] as const
 
 function cleanTelemetry(input: unknown): Record<string, number | null> {

@@ -1913,7 +1913,7 @@ function __McInner() {
           </div>
         )}
       </div>
-      <CameraBadge cam={cam} />
+      <CameraBadge status={cam.status} videoRef={cam.videoRef} onStop={cam.stop} />
     </main>
   )
 }

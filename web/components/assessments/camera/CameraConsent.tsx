@@ -6,7 +6,7 @@ import type {AttentionCamera} from './useAttentionCamera'
  * Optional camera step, shown to the grown-up before the first game. The camera is off unless they agree here.
  * Playing without it changes nothing else in the quest.
  */
-export default function CameraConsent({cam, childName, onContinue}: {cam: AttentionCamera; childName: string; onContinue: () => void}) {
+export default function CameraConsent({cam, childName, onContinue, variant = 'attention'}: {cam: AttentionCamera; childName: string; onContinue: (cameraOn: boolean) => void; variant?: 'attention' | 'looking'}) {
   const [agreed, setAgreed] = useState(false)
   const name = childName.trim() || 'your child'
   const failed = cam.status === 'denied' || cam.status === 'error'
@@ -14,18 +14,21 @@ export default function CameraConsent({cam, childName, onContinue}: {cam: Attent
   return (
     <section aria-labelledby="camera-consent-title" className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl">
       <p className="text-xs font-bold uppercase tracking-wider text-teal-700">For the grown-up · optional</p>
-      <h2 id="camera-consent-title" className="font-patrick text-3xl text-[#0F172A] mt-1 mb-3">Let the camera notice where {name}&apos;s head is turned?</h2>
+      <h2 id="camera-consent-title" className="font-patrick text-3xl text-[#0F172A] mt-1 mb-3">
+        {variant === 'looking' ? <>Let the camera see which side {name} looks at in a short looking game?</> : <>Let the camera notice where {name}&apos;s head is turned?</>}
+      </h2>
       <p className="text-sm text-[#334155] mb-4">
-        If you turn this on, the camera watches which way {name}&apos;s head and eyes point during the games and how much the head moves.
-        The report then adds a few extra numbers, such as how long they looked away from the screen.
+        {variant === 'looking'
+          ? <>The game lasts about two minutes. {name} first looks at a star on the left and then on the right, so the camera learns what each side looks like. Then two pictures sit side by side for a few seconds each, a friendly cartoon face and some moving shapes, and the camera notes which side {name} looks at. The report adds a few numbers from this.</>
+          : <>If you turn this on, the camera watches which way {name}&apos;s head and eyes point during the games and how much the head moves. The report then adds a few extra numbers, such as how long they looked away from the screen.</>}
       </p>
 
       <ul className="text-sm text-[#334155] space-y-2 mb-5 list-disc pl-5">
         <li><strong>No video or photos are saved or sent.</strong> The camera picture is read on this device and thrown away straight away.</li>
         <li>Only a few totals leave the game, like &quot;looked away 6 times&quot;. They go into the summary with the other numbers.</li>
         <li>A small picture in the corner shows whenever the camera is on, with a Stop camera button.</li>
-        <li>It turns off by itself when the games end. Skipping it changes nothing else in the quest.</li>
-        <li>This describes where the head and eyes pointed. It cannot say why, and it is not a test of anything.</li>
+        <li>{variant === 'looking' ? 'It turns off by itself when the looking game ends.' : 'It turns off by itself when the games end.'} Skipping it changes nothing else in the quest.</li>
+        <li>{variant === 'looking' ? 'This describes which side of the screen was looked at. It cannot say why, and it is not a test of anything.' : 'This describes where the head and eyes pointed. It cannot say why, and it is not a test of anything.'}</li>
       </ul>
 
       <label className="flex items-start gap-3 text-sm text-slate-800 mb-5">
@@ -45,12 +48,12 @@ export default function CameraConsent({cam, childName, onContinue}: {cam: Attent
         <button
           type="button"
           disabled={!agreed || cam.status === 'starting'}
-          onClick={async () => { if (await cam.start()) onContinue() }}
+          onClick={async () => { if (await cam.start()) onContinue(true) }}
           className="rounded-full bg-teal-600 px-6 py-3 text-sm font-bold text-white disabled:opacity-40"
         >
           {cam.status === 'starting' ? 'Starting the camera…' : 'Turn on the camera'}
         </button>
-        <button type="button" onClick={onContinue} className="rounded-full border-2 border-slate-300 px-6 py-3 text-sm font-bold text-slate-700">
+        <button type="button" onClick={() => onContinue(false)} className="rounded-full border-2 border-slate-300 px-6 py-3 text-sm font-bold text-slate-700">
           {failed ? 'Continue without the camera' : 'No thanks, play without it'}
         </button>
       </div>
@@ -62,18 +65,18 @@ export default function CameraConsent({cam, childName, onContinue}: {cam: Attent
  * The always-visible sign that the camera is on: a small mirrored picture with a Stop button. It also holds the video
  * element the face model reads from. It is mounted for the whole quest and hidden (not removed) while the camera is off.
  */
-export function CameraBadge({cam}: {cam: AttentionCamera}) {
-  const live = cam.status === 'on' || cam.status === 'starting'
+export function CameraBadge({status, videoRef, onStop}: {status: AttentionCamera['status']; videoRef: AttentionCamera['videoRef']; onStop: () => void}) {
+  const live = status === 'on' || status === 'starting'
   return (
     <div
       className="fixed bottom-3 left-3 z-50 flex items-center gap-2 rounded-2xl bg-slate-900/85 p-1.5 pr-3 text-white shadow-lg"
       style={live ? undefined : {opacity: 0, pointerEvents: 'none', width: 1, height: 1, overflow: 'hidden', padding: 0}}
       aria-hidden={!live}
     >
-      <video ref={cam.videoRef} muted playsInline className="h-14 w-11 rounded-xl object-cover" style={{transform: 'scaleX(-1)'}} />
+      <video ref={videoRef} muted playsInline className="h-14 w-11 rounded-xl object-cover" style={{transform: 'scaleX(-1)'}} />
       <div className="flex flex-col items-start">
         <span className="flex items-center gap-1 text-[11px] font-bold"><span className="h-2 w-2 rounded-full bg-red-500" />Camera on</span>
-        <button type="button" onClick={cam.stop} className="text-[11px] underline">Stop camera</button>
+        <button type="button" onClick={onStop} className="text-[11px] underline">Stop camera</button>
       </div>
     </div>
   )

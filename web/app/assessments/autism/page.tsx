@@ -11,6 +11,9 @@ import {useState, useEffect, useRef, useMemo} from 'react'
 import Link from 'next/link'
 import KeeperFeedback from '../../../components/assessments/KeeperFeedback'
 import EndReport from '../../../components/assessments/report/EndReport'
+import {useAttentionCamera} from '../../../components/assessments/camera/useAttentionCamera'
+import CameraConsent, {CameraBadge} from '../../../components/assessments/camera/CameraConsent'
+import LookingGame from '../../../components/assessments/camera/LookingGame'
 import {QuestStyles, Fireflies, AmbientToggle, GazeGuide} from '../../../components/assessments/QuestFX'
 
 // Enchanted Web Audio synthesizer: Soothing glass harps, crystal bells, warm kalimbas, and royal fanfare
@@ -370,7 +373,7 @@ function HandArrow() {
 }
 
 function __McInner() {
-  const [stage, setStage] = useState<'welcome' | 'avatar' | 'ja_story' | 'ja_game' | 'tom_story' | 'tom_game' | 'sensory_story' | 'sensory_game' | 'ja_show' | 'dccs_story' | 'dccs_game' | 'parent_card' | 'agent_eval' | 'celebration'>('welcome')
+  const [stage, setStage] = useState<'welcome' | 'avatar' | 'look_setup' | 'look_game' | 'ja_story' | 'ja_game' | 'tom_story' | 'tom_game' | 'sensory_story' | 'sensory_game' | 'ja_show' | 'dccs_story' | 'dccs_game' | 'parent_card' | 'agent_eval' | 'celebration'>('welcome')
 
   // Child Fantasy Persona
   const [guardianName, setGuardianName] = useState('')
@@ -443,6 +446,9 @@ function __McInner() {
   const [dccsBins, setDccsBins] = useState<number[]>([])
   const dccsStartRef = useRef<number>(0)
   const events = usePlayEvents()
+  // optional looking game (camera): off unless the grown-up agrees on the look_setup screen; numbers only, no video leaves the device
+  const cam = useAttentionCamera()
+  const [lookTele, setLookTele] = useState<Record<string, number>>({})
   const DCCS_SWITCH_AT = 3 // index of the first card played under the shape rule
   const DCCS_WARN_SECONDS = 3 // the warning sign shows for this long before the rule changes
   const DCCS_CARDS: Array<{color: 'red' | 'blue'; shape: 'star' | 'circle'; targetColorMatch: number; targetShapeMatch: number}> = [
@@ -718,7 +724,9 @@ function __McInner() {
         retryFeelings: ev.retries.tom ?? 0,
         retrySorting: ev.retries.dccs ?? 0,
         pauseCount: ev.pauseCount,
-        pausedSec: ev.pausedSec
+        pausedSec: ev.pausedSec,
+        // optional looking game (camera): empty unless it was played
+        ...lookTele
       }
     }
 
@@ -737,6 +745,7 @@ function __McInner() {
     } catch (err) {
       console.error(err)
       setNotice('Something went wrong while writing the summary. Please try again.')
+      setLookTele({})
       setStage('welcome')
     }
   }
@@ -1003,7 +1012,7 @@ function __McInner() {
                 consent={parentOk}
                 onConsent={setParentOk}
                 startLabel="Enter the Whispering Groves: Chapter 1 →"
-                onStart={() => { playAudio('chime'); setStage('ja_story') }}
+                onStart={() => { playAudio('chime'); setStage('look_setup') }}
                 onTick={() => playAudio('tap')}
               />
             </div>
@@ -1011,6 +1020,22 @@ function __McInner() {
         )}
 
         {/* 2. CHAPTER 1 STORY: ARIA'S POTTERY VERANDA */}
+        {stage === 'look_setup' && (
+          <CameraConsent
+            cam={cam}
+            variant="looking"
+            childName={guardianName}
+            onContinue={(cameraOn) => { playAudio('chime'); setStage(cameraOn ? 'look_game' : 'ja_story') }}
+          />
+        )}
+        {stage === 'look_game' && (
+          <LookingGame
+            cam={cam}
+            name={guardianName.trim() || 'your child'}
+            onFinish={(tele) => { setLookTele(tele); cam.stop(); playAudio('chime'); setStage('ja_story') }}
+          />
+        )}
+
         {stage === 'ja_story' && prac?.g === 'ja' && renderJaPractice()}
         {stage === 'ja_story' && !prac && (
           <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
@@ -1714,6 +1739,7 @@ function __McInner() {
           </div>
         )}
       </div>
+      <CameraBadge status={cam.status} videoRef={cam.videoRef} onStop={cam.stop} />
     </main>
   )
 }

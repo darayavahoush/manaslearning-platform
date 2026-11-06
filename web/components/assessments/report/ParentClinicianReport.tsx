@@ -26,33 +26,19 @@ function groupByGame(ms: Measure[]): Array<[string, Measure[]]> {
   return [...list.filter(([g]) => g !== 'During the session'), ...list.filter(([g]) => g === 'During the session')]
 }
 
-export default function ParentClinicianReport({record, name, roadmap}: {record: ReportRecord; name?: string; roadmap: Roadmap | null}) {
-  const {stories, missing} = buildGameStories(record, name)
-  const games = groupByGame(record.measures)
-  const when = new Date(record.recordedAt)
-  const date = isNaN(when.getTime()) ? '' : when.toLocaleDateString('en-IN', {year: 'numeric', month: 'long', day: 'numeric'})
-  const env = record.environment
-
+export function DraftBanner() {
+  if (REPORT_REVIEWED) return null
   return (
-    <article className="space-y-8" aria-label="Parent and clinician report">
-      {!REPORT_REVIEWED && (
-        <p role="note" className="rounded-lg border border-amber-400 bg-amber-50 p-3 text-sm font-semibold text-amber-900">
-          Draft for clinician review. The wording in this report has not yet been checked by a clinician.
-        </p>
-      )}
+    <p role="note" className="rounded-lg border border-amber-400 bg-amber-50 p-3 text-sm font-semibold text-amber-900">
+      Draft for clinician review. The wording in this report has not yet been checked by a clinician.
+    </p>
+  )
+}
 
-      <header className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
-        <h1 className="text-2xl font-bold text-slate-900">Play session report</h1>
-        <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
-          <div><dt className="inline font-semibold">Activity: </dt><dd className="inline">{QUEST_NAME[record.quest]}</dd></div>
-          <div><dt className="inline font-semibold">Play name: </dt><dd className="inline">{name?.trim() || 'Not given'}</dd></div>
-          <div><dt className="inline font-semibold">Age: </dt><dd className="inline">{record.ageYears ?? 'Not given'}{record.ageBand ? ` (age band ${record.ageBand})` : ''}</dd></div>
-          <div><dt className="inline font-semibold">Date: </dt><dd className="inline">{date || 'Not recorded'}</dd></div>
-        </dl>
-        <p className="mt-3 text-sm font-semibold text-slate-800">{REPORT_TEXT.notDiagnosis}</p>
-      </header>
-
-      <section className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm" aria-label="For parents">
+export function ParentSection({record, name, roadmap}: {record: ReportRecord; name?: string; roadmap: Roadmap | null}) {
+  const {stories, missing} = buildGameStories(record, name)
+  return (
+    <section className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm" aria-label="For parents">
         <h2 className="text-xl font-bold text-teal-800">Part 1. For parents</h2>
         <p className="mt-1 text-sm text-slate-600">{REPORT_TEXT.parentIntro}</p>
 
@@ -72,9 +58,15 @@ export default function ParentClinicianReport({record, name, roadmap}: {record: 
 
         <h3 className="mt-6 text-base font-bold text-slate-900">{REPORT_TEXT.questionsTitle}</h3>
         <ul className="mt-1 list-disc pl-5 text-sm text-slate-800">{CLINICIAN_QUESTIONS.map((q) => <li key={q}>{q}</li>)}</ul>
-      </section>
+    </section>
+  )
+}
 
-      <section className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm" style={{pageBreakBefore: 'always'}} aria-label="For the clinician">
+export function ClinicianSection({record}: {record: ReportRecord}) {
+  const games = groupByGame(record.measures)
+  const env = record.environment
+  return (
+    <section className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm" style={{pageBreakBefore: 'always'}} aria-label="For the clinician">
         <h2 className="text-xl font-bold text-sky-800">Part 2. For the clinician</h2>
         <p className="mt-1 text-sm text-slate-600">{REPORT_TEXT.clinicianIntro}</p>
         <p className="mt-1 text-xs text-slate-500">{record.instrument.name} · version {record.instrument.version} · record format {record.schema}</p>
@@ -133,7 +125,29 @@ export default function ParentClinicianReport({record, name, roadmap}: {record: 
 
         <h3 className="mt-5 text-sm font-bold uppercase tracking-wide text-slate-500">Limits of this record</h3>
         <ul className="mt-1 list-disc pl-5 text-sm text-slate-700">{record.limits.map((l) => <li key={l}>{l}</li>)}</ul>
-      </section>
+    </section>
+  )
+}
+
+export default function ParentClinicianReport({record, name, roadmap}: {record: ReportRecord; name?: string; roadmap: Roadmap | null}) {
+  const when = new Date(record.recordedAt)
+  const date = isNaN(when.getTime()) ? '' : when.toLocaleDateString('en-IN', {year: 'numeric', month: 'long', day: 'numeric'})
+  return (
+    <article className="space-y-8" aria-label="Parent and clinician report">
+      <DraftBanner />
+      <header className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
+        <h1 className="text-2xl font-bold text-slate-900">Play session report</h1>
+        <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
+          <div><dt className="inline font-semibold">Activity: </dt><dd className="inline">{QUEST_NAME[record.quest]}</dd></div>
+          <div><dt className="inline font-semibold">Play name: </dt><dd className="inline">{name?.trim() || 'Not given'}</dd></div>
+          <div><dt className="inline font-semibold">Age: </dt><dd className="inline">{record.ageYears ?? 'Not given'}{record.ageBand ? ` (age band ${record.ageBand})` : ''}</dd></div>
+          <div><dt className="inline font-semibold">Date: </dt><dd className="inline">{date || 'Not recorded'}</dd></div>
+        </dl>
+        <p className="mt-3 text-sm font-semibold text-slate-800">{REPORT_TEXT.notDiagnosis}</p>
+      </header>
+
+      <ParentSection record={record} name={name} roadmap={roadmap} />
+      <ClinicianSection record={record} />
     </article>
   )
 }

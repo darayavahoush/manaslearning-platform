@@ -1,6 +1,7 @@
 'use client'
 import {useEffect, useMemo, useState} from 'react'
-import ParentClinicianReport, {type ReportRecord} from './ParentClinicianReport'
+import type {ReportRecord} from './ParentClinicianReport'
+import ReportTabs from './ReportSummaries'
 import {generateRoadmap} from '../roadmap/generate'
 import {REPORT_PILOT_VISIBLE, REPORT_REVIEWED} from './library'
 
@@ -28,5 +29,5 @@ export default function EndReport({record, name}: {record: ReportRecord; name: s
       </section>
     )
   }
-  return <ParentClinicianReport record={record} name={name} roadmap={roadmap} />
+  return <ReportTabs record={record} name={name} roadmap={roadmap} />
 }

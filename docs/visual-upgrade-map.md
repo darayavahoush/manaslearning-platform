@@ -1,0 +1,291 @@
+# Visual Upgrade & Measurement Map for Play-Based Child Assessments
+
+**Date**: November 2026  
+**Repository**: `web/` in `vaakbot`  
+**Target Environments**: Mobile Web (390×844 Android / iOS) & Desktop Web (1280×800)  
+**Safety & Compliance**: Sensory-Safe (no flash >2fps, no screen shake, gentle audio, prefers-reduced-motion support), Dyslexia-friendly typography, Locked Clinical Measurement (Rule A).
+
+---
+
+## 1. ADHD Quest: "Sunbird Valley" (`app/assessments/adhd`)
+
+### Game 1: Sunbird Sighting (CPT Go / No-Go Paradigm)
+- **Clinical Paradigm**: Conners Continuous Performance Test 3 (CPT-3) / Sustained Vigilance & Response Inhibition.
+- **Stimulus**:
+  - **Target (Go)**: Golden Sunbird (`SunbirdTarget`), shown inside a centered circular arena (`w-72 h-72` / 288px diameter). Size scaled by age band (`band.bird`):
+    - Age 4–5: 192px (`w-48 h-48`)
+    - Age 6–7: 160px (`w-40 h-40`)
+    - Age 8–11: 144px (`w-36 h-36`)
+    - Age 12+: 128px (`w-32 h-32`)
+  - **Non-Target Distractor (No-Go)**: Grey Shadow Moth (`MothDistractor`), size 128px (`w-32 h-32`), distinct shape and muted charcoal/grey palette.
+- **Stimulus Duration & Timing**:
+  - Inter-Stimulus Interval (ISI): Cycled from `CPT_WAITS = [850, 1200, 1600, 2050]` ms.
+  - Display Duration (`displayMs`):
+    - Age 4–5: 1500 ms
+    - Age 6–7: 680 ms
+    - Age 8–11: 540 ms
+    - Age 12+: 440 ms
+  - Response Window: `Math.max(1000, displayMs + 300)` ms.
+  - Trials: 20 trials (`CPT_ORDER`: 15 Targets [75%], 5 Non-Target Moths [25%]).
+- **Hit / Error Criteria**:
+  - **Hit**: Tap on Target inside circular arena within the response window and `RT >= 150ms`.
+  - **Omission Error**: Target shown, no tap recorded within response window.
+  - **Commission Error (False Alarm)**: Distractor (Moth) shown, tap recorded.
+  - **Anticipatory Tap**: Tap occurring before stimulus onset or with `RT < 150ms`.
+- **Telemetry Keys Fed**:
+  - `omissions` (`cptTargets` denominator)
+  - `commissions` (`cptNonTargets` denominator)
+  - `anticipatory` (`cptAnticipatory`, `cptTrials` denominator)
+  - `hrtMs` (Hit Reaction Time mean, `cptResponses` count)
+  - `rtvMs` (Reaction Time Variability / standard deviation)
+  - `rtFirstHalfMs` & `rtSecondHalfMs` (Block degradation / vigilance decrement)
+  - `retrySunbird` (Practice replay count)
+  - `camAwayPctSunbird`, `camMoveSunbird` (Optional camera tracking)
+
+### Game 2: Solar Chevrons / Flanker Steering
+- **Clinical Paradigm**: Eriksen Flanker Task / Selective Attention & Interference Control.
+- **Stimulus**:
+  - Horizontal array of 5 chevrons: 1 central target chevron flanked by 2 arrows on each side.
+  - Arrow sizes (`band.chev`): Age 4–5: 96px; Age 6–7: 64px; Age 8–11: 52px; Age 12+: 44px.
+  - Congruent: All 5 arrows point the same direction (`<<<<<` or `>>>>>`).
+  - Incongruent: 4 flanker arrows point in the opposite direction to center (`<<><<` or `>><>>`).
+  - Screen position: Centered row with Left/Right touch paddles below (min 48px touch targets, keyboard `ArrowLeft`/`ArrowRight` support).
+- **Stimulus Duration & Timing**:
+  - 12 trials (`FLANKER_ORDER`: 6 congruent, 6 incongruent).
+  - Stimulus remains visible until child responds.
+- **Hit / Error Criteria**:
+  - **Hit**: Child selects the direction matching the **central target arrow**.
+  - **Error**: Child selects the direction of the flanker arrows.
+- **Telemetry Keys Fed**:
+  - `flankerCongruent` (`flankerCongruentN` / `flankerCongruentTotal`)
+  - `flankerIncongruent` (`flankerIncongruentN` / `flankerIncongruentTotal`)
+  - `flankerCostMs` (Flanker Interference Cost = Incongruent RT − Congruent RT)
+  - `retrySteering` (Practice repeat count)
+  - `camAwayPctSteering`, `camMoveSteering`
+
+### Game 3: Astrolabe Memory Matrix (Star Sequence)
+- **Clinical Paradigm**: Corsi Block-Tapping Task / Visuospatial Working Memory Forward Span.
+- **Stimulus**:
+  - 3×3 grid of 9 celestial star nodes (`band.grid` 460–520px container).
+  - Circular star nodes with distinct celestial runes.
+- **Stimulus Duration & Timing**:
+  - Base sequence length: Age 4–5: 2 stars; Age 6–7: 3 stars; Age 8–11: 4 stars; Age 12+: 5 stars.
+  - Illumination duration (`band.litMs`): Age 4–5: 700ms; Age 6–7: 600ms; Age 8–11: 500ms; Age 12+: 450ms.
+  - Step interval pause (`band.stepMs`): Age 4–5: 1000ms; Age 6–7: 900ms; Age 8–11: 800ms; Age 12+: 700ms.
+  - Up to 3 sequence levels.
+- **Hit / Error Criteria**:
+  - **Hit**: Child reproduces the exact forward sequence by tapping stars in order.
+  - **Error**: Tap on out-of-order or incorrect star.
+- **Telemetry Keys Fed**:
+  - `workingMemorySpan` (Longest sequence correctly reproduced, in stars)
+  - `retryStars` (Practice replay count)
+  - `camAwayPctStars`, `camMoveStars`
+
+### Game 4: Sunstone Power Charge (Motor Inhibition)
+- **Clinical Paradigm**: Delay of Gratification / Continuous Motor Restraint & Delay Maintenance.
+- **Stimulus**:
+  - Centered circular Sunstone orb (176–208px diameter) with glowing energy meter ring (0% to 100%).
+- **Stimulus Duration & Timing**:
+  - 3 trials (`CHARGE_TRIALS`): Hold target durations of 2500ms, 3200ms, 4000ms.
+- **Hit / Error Criteria**:
+  - **Success**: Child maintains touch/click until the 100% threshold chime sounds.
+  - **Premature Release**: Child lifts pointer before 100% completion threshold.
+- **Telemetry Keys Fed**:
+  - `prematureReleases` (`chargeTrials` denominator = 3)
+  - `holdEarly` (`holdTries` denominator)
+  - `holdRtMs` (Average time to release after chime)
+
+---
+
+## 2. Autism Quest: "The Lantern Garden" (`app/assessments/autism`)
+
+### Game 1: Joint Attention Gaze & Pointing (`JA_TRIALS`)
+- **Clinical Paradigm**: Responsive Joint Attention (RJA) / Social Orienting & Gaze Cues.
+- **Stimulus**:
+  - Guide character "Aria" (top center): Clear gaze shifts (Left, Center, Right) and pointing arm gesture.
+  - 3 handcrafted ceramic vessels below: Left Veranda Urn, Center Lotus Amphora, Right Emerald Vessel.
+  - Vessels hit-box: Touch targets min 80×80px / 96×96px.
+- **Stimulus Duration & Timing**:
+  - 6 trials (`JA_TRIALS = [0, 5, 2, 1, 4, 3]`).
+  - Trials 0–3: Direct gaze / pointing.
+  - Trials 4–5: Hidden target (vessel partially behind a garden arch or pillar).
+  - Aria makes direct eye contact for 900ms, then turns head/gaze toward target vessel.
+- **Hit / Error Criteria**:
+  - **Hit**: Tapping vessel indicated by Aria's gaze/pointing direction (`matched = true`).
+  - **Error**: Tapping incorrect vessel.
+- **Telemetry Keys Fed**:
+  - `gazeMatches` (`jaCorrect` / `jaTrials`)
+  - `gazeMedianMs` (Latency from gaze cue to selection)
+  - `retryGaze` (Practice count)
+
+### Game 2: Reversed Joint Attention Turn (`ja_show`)
+- **Clinical Paradigm**: Initiating Joint Attention (IJA) / Shared Delight & Showing.
+- **Stimulus**:
+  - One of the three garden vessels gently glows with fireflies while Aria looks away.
+  - Child prompt: "Show Aria where the firefly landed!"
+- **Hit / Error Criteria**:
+  - Child initiates showing by tapping the glowing vessel.
+- **Telemetry Keys Fed**:
+  - `showBids` (Number of turns child initiated showing out of 2)
+  - `showMatches` (Tapped vessel matched the firefly sparkle target)
+
+### Game 3: Emotion Mirror & Theory of Mind (`EMOTION_MIRROR_TRIALS`)
+- **Clinical Paradigm**: Affect Recognition / Facial Emotion Decoding & Social Empathy.
+- **Stimulus**:
+  - Prompt Face: Fox Cub displaying 1 of 6 clear emotional expressions: Happy, Sad, Angry, Scared, Surprised, Calm.
+  - 3 emotional sprite choice cards below (80×80px minimum faces).
+  - Follow-up empathic soothing scenario ("What would help the sad fox?").
+- **Stimulus Duration & Timing**:
+  - 4 scored matching rounds + 1 comfort follow-up round.
+- **Hit / Error Criteria**:
+  - **Hit**: Selecting sprite that matches the fox cub's expressed feeling.
+  - **Error**: Mismatched emotion selection.
+- **Telemetry Keys Fed**:
+  - `feelingsMatches` (`feelingsCorrect` / `feelingsTrials`)
+  - `helpRound` (Qualitative choice of comfort item: warm blanket, chamomile tea, quiet nook)
+  - `retryFeelings` (Practice count)
+
+### Game 4: Sensory Sanctuary Calibration Haven
+- **Clinical Paradigm**: Sensory Profile / Modulation & Sensory Threshold Assessment.
+- **Stimulus**:
+  - Sensory ramps across 3 modalities:
+    1. Visual: Light brightness slider (0% to 100%).
+    2. Auditory: Monsoon rain / chime sound volume (0% to 100%).
+    3. Tactile: Weighted cushion pressure (0% to 100%).
+  - Step duration: `ROOM_STEP_MS = 1200ms` per step.
+  - Interactive room decoration items (calm lighting, floor rugs, quiet plants).
+- **Hit / Error Criteria**:
+  - Child taps "Just Right" or "Stop" when the stimulus reaches maximum comfort threshold.
+  - Non-evaluative: preference measurement rather than correct/incorrect test.
+- **Telemetry Keys Fed**:
+  - `lightLevel`, `soundLevel`, `touchLevel` (Comfort ratings 0–10)
+  - `rampStopLight`, `rampStopSound`, `rampStopTexture` (Step at which child stopped ramp)
+  - `adjustLight`, `adjustSound`, `adjustTexture` (Number of adjustments made)
+  - `shieldUses` (Times calm shield was tapped)
+  - `designSec` (Total time spent in sanctuary)
+
+### Game 5: Dimensional Change Card Sort (DCCS)
+- **Clinical Paradigm**: Executive Function / Cognitive Flexibility & Rule Switching.
+- **Stimulus**:
+  - 2 destination sorting boxes: Red Star Box (left), Blue Circle Box (right).
+  - Cards combining Color (Red / Blue) and Shape (Star / Circle).
+  - Pre-switch rule: "Sort by Color".
+  - Post-switch rule: "Sort by Shape" at trial index 3 (`DCCS_SWITCH_AT = 3`).
+  - Advance warning: 3-second gentle visual/audio notice (`DCCS_WARN_SECONDS = 3`).
+  - Total trials: 6 cards (`DCCS_CARDS`).
+- **Hit / Error Criteria**:
+  - **Pre-switch Hit**: Card sorted according to Color.
+  - **Post-switch Hit**: Card sorted according to Shape.
+  - **Perseverative Error**: Post-switch card sorted according to obsolete Color rule.
+- **Telemetry Keys Fed**:
+  - `sortCount` (Total cards sorted)
+  - `sortMedianMs` (Median time per card)
+  - `sortPre` (`sortPreCorrect` / `sortPreTotal`)
+  - `sortPost` (`sortPostCorrect` / `sortPostTotal`)
+  - `ruleNamed` (Rule identification score: 1 if correctly named Shape, 0 if Color)
+  - `retrySorting` (Practice count)
+
+---
+
+## 3. Dyslexia Quest: "The Whispering Library" (`app/assessments/dyslexia`)
+
+### Game 1: Echo Cave (Rhyme Judgment)
+- **Clinical Paradigm**: Phonological Awareness / Rhyme Detection.
+- **Stimulus**:
+  - Spoken target word played via TTS (`speak(target)`).
+  - 2 spoken choice options on identical illustrated book lecterns / lanterns.
+  - 1 practice trial + 12 scored trials (`RHYME`).
+- **Hit / Error Criteria**:
+  - **Hit**: Selecting choice that rhymes with prompt.
+  - **Error**: Selecting non-rhyming distractor.
+- **Telemetry Keys Fed**:
+  - `rhymeMatches` (`rhymeCorrect` / `rhymeTrials`)
+  - `rhymeMedianMs` (Median reaction time)
+  - `rhymeReplays` (Audio replay count)
+
+### Game 2: Sound Stones (Initial Sound / Alliteration)
+- **Clinical Paradigm**: Phonemic Isolation & Onset Sound Segmentation.
+- **Stimulus**:
+  - Spoken prompt word played via TTS.
+  - 2 identical choice book/lantern cards.
+  - 1 practice trial + 12 scored trials (`FIRST`).
+- **Hit / Error Criteria**:
+  - **Hit**: Selecting choice sharing initial phoneme.
+  - **Error**: Selecting distractor with different initial phoneme.
+- **Telemetry Keys Fed**:
+  - `firstSoundMatches` (`firstSoundCorrect` / `firstSoundTrials`)
+  - `firstSoundMedianMs` (Median reaction time)
+  - `firstSoundReplays` (Audio replay count)
+
+### Game 3: Mirror Moths (Letter Orientation Discrimination: b, d, p, q)
+- **Clinical Paradigm**: Orthographic-Spatial Processing / Mirror Reversal Discrimination.
+- **Stimulus**:
+  - Target reference letter shown in plain, high-legibility sans-serif font (e.g. `b`).
+  - 4×3 grid of 12 letter tiles (4 identical targets, 8 mirror/rotation look-alikes like `d`, `p`, `q`).
+  - 4 rounds (`LET`).
+- **Hit / Error Criteria**:
+  - **Hit**: Correct target letter tiles tapped (`letterHits`).
+  - **Lookalike False Tap**: Tapping distractor (`letterFalse`).
+  - **Mirror False Tap**: Specific confusion on mirror pair (b vs d, p vs q) (`letterMirrorFalse`).
+  - **Miss**: Target tile omitted before tapping "Done" (`letterMissed`).
+- **Telemetry Keys Fed**:
+  - `letterFound` (`letterHits` / `letterPossible`)
+  - `letterLookalikeTaps` (`letterFalse` / `letterDistractors`)
+  - `letterMirrorTaps` (`letterMirrorFalse` / `letterFalse`)
+  - `retryLetters` (Practice repeat count)
+
+### Game 4: Echo Steps (Sound Span / Syllable Memory)
+- **Clinical Paradigm**: Phonological Loop Capacity / Verbal Working Memory.
+- **Stimulus**:
+  - 4 syllable sound stones (`bah`, `dee`, `moe`, `koo`).
+  - Sequences ranging from 2 to 5 syllables.
+  - Audio sequence played with 700ms onset and 250ms inter-syllable pause.
+- **Hit / Error Criteria**:
+  - **Hit**: Reproducing the exact sound sequence in forward order.
+  - **Error**: Incorrect sequence order. 2 consecutive misses at a given span terminates the task.
+- **Telemetry Keys Fed**:
+  - `soundSpanPassed` (`soundSpanPassed` / `soundSpanAttempts`)
+  - `soundSpanLongest` (Maximum span successfully recalled)
+
+### Game 5: Lantern Words (Lexical Decision / Word Identification)
+- **Clinical Paradigm**: Orthographic Lexicon Retrieval / Word vs. Pseudoword Discrimination.
+- **Stimulus**:
+  - Single word shown in plain, high-contrast typography on a plain, calm card.
+  - Mixture of real words and phonologically plausible pseudowords (e.g. "flirp").
+  - 12 trials (`WordCheck`). Two response options: "Real word" vs "Made-up word".
+- **Hit / Error Criteria**:
+  - **Hit**: Correctly identifying whether word is Real or Made-up.
+  - **Error**: False acceptance or rejection.
+- **Telemetry Keys Fed**:
+  - `wordCheckReal` (`wordRealCorrect` / `wordRealTotal`)
+  - `wordCheckMadeUp` (`wordMadeCorrect` / `wordMadeTotal`)
+  - `wordCheckMedianMs` (Classification latency)
+
+### Game 6: Spell Stones (Orthographic Choice)
+- **Clinical Paradigm**: Orthographic Spelling Discrimination.
+- **Stimulus**:
+  - Spoken word played via TTS.
+  - 2 printed spelling choices (correct spelling vs phonetically plausible foil e.g. "night" vs "nite").
+  - 1 practice trial + 8 scored trials (`SPELL`).
+- **Hit / Error Criteria**:
+  - **Hit**: Selecting correct standard orthographic spelling.
+  - **Error**: Selecting phonetically plausible foil.
+- **Telemetry Keys Fed**:
+  - `spellingCorrect` (`spellCorrect` / `spellTrials`)
+  - `spellingMedianMs` (Selection latency)
+
+---
+
+## 4. Visual Upgrade & Immutability Verification (Before / After Log)
+
+| Quest / Game | Visual & Sensory Changes | Immutability Confirmation (Rule A) |
+|---|---|---|
+| **ADHD: Sunbird Valley** (CPT, Flanker, Corsi, Sunstone) | Storybook gouache dawn palette, animated wings inside hit-box only after stimulus appearance, calm static arena background during trials, non-flash star pulse, progress trail with sunbird avatar. | Zero changes to `CPT_WAITS`, `displayMs`, `CPT_WINDOW_MS`, `FLANKER_ORDER`, star sequence delays, target hold times, hit-box dimensions, or scoring formulas. |
+| **Autism: The Lantern Garden** (Gaze, Show, Emotion, Sensory, DCCS) | Hand-painted Aria guide with unambiguous 3-way gaze/pointing, 6 expressive fox cub emotional facial sprites (80px+), handcrafted ceramic vessels, rich cozy sensory sanctuary room with drag items, calm rule-change transition. | Exact trial sequence (`JA_TRIALS`, `EMOTION_MIRROR_TRIALS`, `DCCS_CARDS`), `DCCS_SWITCH_AT=3`, `ROOM_STEP_MS=1200ms`, camera tracker integrity, and telemetry fields preserved 100%. |
+| **Dyslexia: The Whispering Library** (Rhyme, Sound, Mirror, Span, Words, Spell) | Whispering library enchanted hall, Pip the owl mascot (4 poses), glowing book lectern choices, clean sans-serif typography for all task words/letters (no distracting backdrop behind text), teen focus mode intact. | Speech audio delays, tile layout geometry (4×3 grid), mirror confusion matrix keys (`letterMirrorFalse`), syllable span thresholds, and word sets untouched. |
+
+---
+
+## 5. Instrument Versioning
+- **Previous `INSTRUMENT_VERSION`**: `2026.11.9`
+- **Updated `INSTRUMENT_VERSION`**: `2026.11.10` (Bumping version in `web/components/assessments/version.ts` and `session-record.ts` to cleanly separate all upgraded visual sessions from historical data).

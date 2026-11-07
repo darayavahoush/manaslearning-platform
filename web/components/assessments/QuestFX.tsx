@@ -10,7 +10,16 @@ export function QuestStyles() {
 .qd-fly{position:absolute;width:6px;height:6px;border-radius:50%;animation:qd-fly 7s ease-in-out infinite}
 @keyframes qd-blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.08)}}
 .qd-blink{animation:qd-blink 5s infinite;transform-origin:100px 92px}
-@media (prefers-reduced-motion:reduce){.qd-stage,.qd-fly,.qd-blink{animation:none!important}.qd-gz,.qd-gz *{transition:none!important}}
+@keyframes sunbird-wing{0%,100%{transform:scaleY(1)}50%{transform:scaleY(0.92) translateY(2px)}}
+.sunbird-wing-anim{animation:sunbird-wing 0.8s ease-in-out infinite;transform-origin:center 60%}
+@keyframes star-pulse-soft{0%,100%{transform:scale(1);filter:drop-shadow(0 0 6px rgba(251,191,36,0.5))}50%{transform:scale(1.05);filter:drop-shadow(0 0 14px rgba(251,191,36,0.85))}}
+.star-pulse{animation:star-pulse-soft 1.6s ease-in-out infinite}
+@keyframes gentle-nod{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+.gentle-nod-anim{animation:gentle-nod 0.4s ease-out 1}
+@media (prefers-reduced-motion:reduce){
+  .qd-stage,.qd-fly,.qd-blink,.sunbird-wing-anim,.star-pulse,.gentle-nod-anim{animation:none!important}
+  .qd-gz,.qd-gz *{transition:none!important}
+}
 `}</style>
   );
 }
@@ -26,25 +35,58 @@ export function Fireflies({ color = "#FDE68A" }: { color?: string }) {
 }
 
 // Soft ambient pad + wind. Off by default, starts only after a tap, very quiet.
-export function AmbientToggle({ mood }: { mood: "groves" | "citadel" }) {
+export function AmbientToggle({ mood }: { mood: "groves" | "citadel" | "adhd" | "autism" | "dyslexia" }) {
   const [on, setOn] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const ref = useRef<{ ctx: AudioContext; master: GainNode } | null>(null);
 
+  const questPath = mood === "adhd" ? "/quests/adhd/audio/ambience.mp3" :
+                    mood === "autism" || mood === "groves" ? "/quests/autism/audio/ambience.mp3" :
+                    mood === "dyslexia" ? "/quests/dyslexia/audio/ambience.mp3" :
+                    "/quests/adhd/audio/ambience.mp3";
+
   const stop = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
     const r = ref.current; if (!r) return;
-    r.master.gain.setTargetAtTime(0, r.ctx.currentTime, 0.25);
-    setTimeout(() => r.ctx.close().catch(() => {}), 1200);
+    try {
+      r.master.gain.setTargetAtTime(0, r.ctx.currentTime, 0.25);
+      setTimeout(() => r.ctx.close().catch(() => {}), 800);
+    } catch {}
     ref.current = null;
   };
   useEffect(() => stop, []);
 
   const start = () => {
+    // Try HTML5 audio with gentle volume first
+    try {
+      const a = new Audio(questPath);
+      a.loop = true;
+      a.volume = 0.18;
+      const p = a.play();
+      if (p !== undefined) {
+        p.then(() => {
+          audioRef.current = a;
+        }).catch(() => {
+          startWebAudioFallback();
+        });
+      } else {
+        audioRef.current = a;
+      }
+    } catch {
+      startWebAudioFallback();
+    }
+  };
+
+  const startWebAudioFallback = () => {
     const AC = window.AudioContext || (window as any).webkitAudioContext;
     if (!AC) return;
     const ctx: AudioContext = new AC();
     const master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
-    master.gain.setTargetAtTime(0.05, ctx.currentTime, 1.2);
-    const notes = mood === "groves" ? [110, 164.8, 277.2] : [146.8, 220, 370];
+    master.gain.setTargetAtTime(0.04, ctx.currentTime, 1.2);
+    const notes = mood === "groves" || mood === "autism" ? [110, 164.8, 277.2] : [146.8, 220, 370];
     notes.forEach((f, i) => {
       const o = ctx.createOscillator(); o.type = "sine"; o.frequency.value = f;
       const g = ctx.createGain(); g.gain.value = 0.3 / (i + 1);
@@ -52,12 +94,6 @@ export function AmbientToggle({ mood }: { mood: "groves" | "citadel" }) {
       const lg = ctx.createGain(); lg.gain.value = 0.12 / (i + 1);
       lfo.connect(lg); lg.connect(g.gain); o.connect(g); g.connect(master); o.start(); lfo.start();
     });
-    const len = ctx.sampleRate * 2, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
-    let last = 0; for (let i = 0; i < len; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3; }
-    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
-    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 420;
-    const ng = ctx.createGain(); ng.gain.value = 0.35;
-    src.connect(lp); lp.connect(ng); ng.connect(master); src.start();
     ref.current = { ctx, master };
   };
 

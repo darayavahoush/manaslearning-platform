@@ -37,78 +37,25 @@ function playTone(hz: number) {
   } catch { /* audio is optional */ }
 }
 
-// Enchanted Web Audio synthesizer: Harmonic marimba, crystal bells, celestial glass, and royal fanfare
+// Gentle, sensory-safe audio playback with fallbacks
 function playAudio(type: 'hit' | 'chime' | 'miss' | 'tap' | 'fanfare' | 'star' | 'whoosh') {
   if (typeof window === 'undefined') return
   try {
-    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
-    if (!AudioCtx) return
-    const ctx = new AudioCtx()
-    if (ctx.state === 'suspended') ctx.resume().catch(() => {})
-    const now = ctx.currentTime
-
-    if (type === 'hit') {
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.type = 'triangle'
-      osc.frequency.setValueAtTime(523.25, now)
-      osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.09)
-      gain.gain.setValueAtTime(0.09, now)
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16)
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.start(now)
-      osc.stop(now + 0.18)
-    } else if (type === 'star') {
-      const notes = [523.25, 587.33, 659.25, 783.99, 880]
-      const f = notes[Math.floor(Math.random() * notes.length)]
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.type = 'sine'
-      osc.frequency.setValueAtTime(f, now)
-      gain.gain.setValueAtTime(0.08, now)
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35)
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.start(now)
-      osc.stop(now + 0.38)
-    } else if (type === 'fanfare') {
-      const chords = [523.25, 659.25, 783.99, 1046.5, 1318.5]
-      chords.forEach((freq, idx) => {
-        const osc = ctx.createOscillator()
-        const gain = ctx.createGain()
-        osc.type = 'triangle'
-        osc.frequency.setValueAtTime(freq, now + idx * 0.08)
-        gain.gain.setValueAtTime(0.08, now + idx * 0.08)
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.45)
-        osc.connect(gain)
-        gain.connect(ctx.destination)
-        osc.start(now + idx * 0.08)
-        osc.stop(now + idx * 0.08 + 0.5)
-      })
-    } else if (type === 'miss') {
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.type = 'sine'
-      osc.frequency.setValueAtTime(260, now)
-      osc.frequency.linearRampToValueAtTime(180, now + 0.15)
-      gain.gain.setValueAtTime(0.05, now)
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18)
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.start(now)
-      osc.stop(now + 0.2)
-    } else {
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.type = 'sine'
-      osc.frequency.setValueAtTime(440, now)
-      gain.gain.setValueAtTime(0.04, now)
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05)
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.start(now)
-      osc.stop(now + 0.06)
+    const audioMap: Record<string, string> = {
+      hit: '/quests/adhd/audio/correct.mp3',
+      chime: '/quests/adhd/audio/correct.mp3',
+      star: '/quests/adhd/audio/correct.mp3',
+      tap: '/quests/adhd/audio/tap.mp3',
+      whoosh: '/quests/adhd/audio/tap.mp3',
+      miss: '/quests/adhd/audio/try_again.mp3',
+      fanfare: '/quests/adhd/audio/complete.mp3',
+    }
+    const src = audioMap[type]
+    if (src) {
+      const snd = new Audio(src)
+      snd.volume = 0.2
+      snd.play().catch(() => {})
+      return
     }
   } catch {}
 }
@@ -193,34 +140,33 @@ const CPT_SCENES = [
 // Arrow game: centre arrow direction (L/R) and whether the side arrows match (C) or conflict (I).
 const FLANKER_ORDER = ['LC', 'RI', 'RC', 'LC', 'LI', 'RC', 'RI', 'LC', 'RC', 'LI', 'LC', 'RI']
 
-// Flat, hand-built target and distractor. Same size, no glow, no motion, so only the shape tells them apart.
+// Sunbird Valley target and distractor sprites with strictly locked hit-box dimensions.
+// Wings flutter gently in CSS only AFTER appearance, strictly inside the hit-box.
 function SunbirdTarget({className = 'w-28 h-28'}: {className?: string}) {
   return (
-    <svg role="img" aria-label="Sunbird" viewBox="-8 -4 136 128" className={className}>
-      <path d="M30 66 L6 56 L10 68 L3 78 L14 78 L9 90 L36 78 Z" fill="#C8671F" />
-      <ellipse cx="60" cy="66" rx="28" ry="19" transform="rotate(-12 60 66)" fill="#F0BE4D" />
-      <path d="M44 66 C48 42 74 36 86 54 C74 66 58 72 44 66 Z" fill="#E08A2E" />
-      <circle cx="88" cy="46" r="14" fill="#F0BE4D" />
-      <path d="M80 36 L79 24 L86 32 L91 21 L94 34 Z" fill="#E08A2E" />
-      <path d="M99 44 L114 50 L99 55 Z" fill="#C8671F" />
-      <circle cx="91" cy="44" r="2.6" fill="#2B2118" />
-      <path d="M56 84 L54 96 M66 84 L68 96" stroke="#C8671F" strokeWidth="3" strokeLinecap="round" />
-    </svg>
+    <div className={`relative flex items-center justify-center ${className}`}>
+      <img
+        src="/quests/adhd/sunbird.webp"
+        alt="Golden Sunbird"
+        className="w-full h-full object-contain pointer-events-none sunbird-wing-anim select-none"
+        width={192}
+        height={192}
+      />
+    </div>
   )
 }
 
 function MothDistractor({className = 'w-28 h-28'}: {className?: string}) {
   return (
-    <svg role="img" aria-label="Moth" viewBox="-8 -4 136 128" className={className}>
-      <path d="M60 56 L8 40 C4 58 14 76 44 76 Z" fill="#B7AFCB" />
-      <path d="M60 56 L112 40 C116 58 106 76 76 76 Z" fill="#B7AFCB" />
-      <path d="M60 64 L22 84 C26 98 44 100 58 86 Z" fill="#8C84A8" />
-      <path d="M60 64 L98 84 C94 98 76 100 62 86 Z" fill="#8C84A8" />
-      <path d="M24 50 L14 46 M30 58 L18 56 M96 50 L106 46 M90 58 L102 56" stroke="#8C84A8" strokeWidth="2" strokeLinecap="round" />
-      <ellipse cx="60" cy="66" rx="7.5" ry="26" fill="#554C73" />
-      <circle cx="60" cy="38" r="7" fill="#554C73" />
-      <path d="M56 33 C50 24 44 20 36 20 M64 33 C70 24 76 20 84 20" stroke="#D5CFE3" strokeWidth="2.6" fill="none" strokeLinecap="round" />
-    </svg>
+    <div className={`relative flex items-center justify-center ${className}`}>
+      <img
+        src="/quests/adhd/shadow_moth.webp"
+        alt="Shadow Moth"
+        className="w-full h-full object-contain pointer-events-none select-none"
+        width={192}
+        height={192}
+      />
+    </div>
   )
 }
 
@@ -391,21 +337,15 @@ function VortexBg({round = false}: {round?: boolean}) {
 
 function StarlightNodeSvg({isLit}: {isLit: boolean}) {
   return (
-    <svg viewBox="0 0 60 60" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {isLit && (
-        <>
-          <circle cx="30" cy="30" r="26" fill="#FDE68A" fillOpacity="0.25" className="animate-ping"/>
-          <circle cx="30" cy="30" r="20" fill="#F59E0B" fillOpacity="0.3"/>
-        </>
-      )}
-      <path
-        d="M 30 10 L 35 25 L 50 30 L 35 35 L 30 50 L 25 35 L 10 30 L 25 25 Z"
-        fill={isLit ? '#F59E0B' : '#CBD5E1'}
-        stroke={isLit ? '#D97706' : '#94A3B8'}
-        strokeWidth="1.5"
+    <div className={`relative w-full h-full flex items-center justify-center ${isLit ? 'star-pulse' : ''}`}>
+      <img
+        src={isLit ? "/quests/adhd/star_node_lit.webp" : "/quests/adhd/star_node.webp"}
+        alt={isLit ? "Lit Star" : "Star"}
+        className="w-full h-full object-contain pointer-events-none select-none transition-all duration-300"
+        width={120}
+        height={120}
       />
-      <circle cx="30" cy="30" r="4" fill={isLit ? '#FFFFFF' : '#64748B'}/>
-    </svg>
+    </div>
   )
 }
 
@@ -468,6 +408,70 @@ function randomStarSeq(len: number, avoid: number[][] = []): number[] {
     }
   }
   return Array.from({length: len}, (_, i) => (i * 4) % 9)
+}
+
+function SunbirdProgressTrail({stage}: {stage: string}) {
+  const steps = [
+    {id: 'cpt', label: 'Sunbird Meadow', stages: ['cpt_story', 'cpt_hold', 'cpt_game']},
+    {id: 'flanker', label: 'Canopy Trail', stages: ['flanker_story', 'flanker_game']},
+    {id: 'memory', label: 'Starlit Terrace', stages: ['memory_story', 'memory_game']},
+    {id: 'charge', label: 'Sunstone Courtyard', stages: ['situational_story', 'situational_game']},
+  ]
+  const activeIdx = steps.findIndex(s => s.stages.includes(stage))
+  if (activeIdx === -1 && stage !== 'celebration') return null
+  const currentStep = activeIdx === -1 ? 4 : activeIdx
+
+  return (
+    <div className="mb-6 rounded-2xl bg-white/90 backdrop-blur-md p-3.5 border border-amber-200/80 shadow-md max-w-xl mx-auto select-none">
+      <div className="flex items-center justify-between relative px-4">
+        <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1.5 bg-amber-100 rounded-full z-0 overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-500 rounded-full"
+            style={{width: `${Math.min(100, (currentStep / 3) * 100)}%`}}
+          />
+        </div>
+        {steps.map((st, i) => {
+          const isDone = i < currentStep
+          const isCurrent = i === currentStep
+          return (
+            <div key={st.id} className="relative z-10 flex flex-col items-center">
+              <div
+                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+                  isDone
+                    ? 'bg-amber-500 text-white shadow-md'
+                    : isCurrent
+                    ? 'bg-amber-400 ring-4 ring-amber-200 shadow-md'
+                    : 'bg-white border-2 border-amber-200 text-amber-600'
+                }`}
+              >
+                {isDone ? (
+                  <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                ) : isCurrent ? (
+                  <img src="/quests/adhd/guide_chirp.webp" alt="You are here" className="w-6 h-6 object-contain pointer-events-none" />
+                ) : (
+                  <span className="text-xs font-bold text-amber-700">{i + 1}</span>
+                )}
+              </div>
+              <span className={`text-[11px] font-bold mt-1 hidden sm:block ${isCurrent ? 'text-amber-950 font-black' : 'text-slate-600'}`}>
+                {st.label}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function GuideChirpNote({text}: {text: string}) {
+  return (
+    <div className="my-4 flex items-center gap-3.5 rounded-2xl bg-amber-50/95 border-2 border-amber-200/90 p-4 shadow-sm max-w-lg mx-auto">
+      <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="w-14 h-14 object-contain shrink-0 drop-shadow-sm" />
+      <p className="text-sm font-semibold text-amber-950 leading-relaxed text-left">{text}</p>
+    </div>
+  )
 }
 
 function __McInner() {
@@ -1060,43 +1064,50 @@ function __McInner() {
     }
   }
 
+  const adhdBgImage = 
+    (stage === 'welcome' || stage === 'avatar' || stage === 'camera_setup') ? '/quests/adhd/welcome.webp' :
+    (stage === 'cpt_story' || stage === 'cpt_hold' || stage === 'cpt_game') ? '/quests/adhd/bg_sunbird.webp' :
+    (stage === 'flanker_story' || stage === 'flanker_game') ? '/quests/adhd/bg_flanker.webp' :
+    (stage === 'memory_story' || stage === 'memory_game') ? '/quests/adhd/bg_memory.webp' :
+    (stage === 'situational_story' || stage === 'situational_game') ? '/quests/adhd/bg_charge.webp' :
+    '/quests/adhd/celebration.webp';
+  const isParallaxStage = stage === 'welcome' || stage === 'celebration';
+
   return (
     <main data-no-listen="true" className={`relative min-h-screen ${darkStage ? 'bg-[#0B132B]' : 'bg-[#EAF3F8]'} q-age py-8 px-4 font-poppins text-[#1F2937] overflow-x-hidden selection:bg-amber-400 selection:text-amber-950`}>
       <style>{`.q-age .text-xs{font-size:${band.xs}rem!important;line-height:1.55!important}.q-age .text-sm{font-size:${band.sm}rem!important;line-height:1.55!important}.q-age .text-base{font-size:${band.base}rem!important;line-height:1.6!important}`}</style>
-      {/* Immersive Fantasy Sky Citadel Celestial Backdrop */}
+      {/* Immersive Sunbird Valley Storybook Backdrop */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
         <QuestStyles />
         <Fireflies color={darkStage ? '#FDE68A' : '#D97706'} />
-        {/* Full-bleed citadel illustration with ambient atmospheric blur */}
         <img
-          src="/decor/itw/quest-sky-citadel-banner.webp"
-          alt="Sky Citadel Panorama"
-          className="w-full h-full object-cover object-center opacity-30 filter blur-[2px] scale-105"
+          src={adhdBgImage}
+          alt=""
+          aria-hidden="true"
+          className={`w-full h-full object-cover object-center transition-opacity duration-700 ${
+            isParallaxStage ? 'scale-105' : 'scale-100'
+          }`}
         />
-        {/* Enchanted celestial overlays & radial starlight glows */}
-        <div className={`absolute inset-0 bg-gradient-to-b ${darkStage ? 'from-[#0B132B]/75 via-[#1C2541]/70 to-[#0B132B]/90' : 'from-[#F4F9FC]/80 via-[#E4EFF6]/75 to-[#EAF3F8]/90'}`} />
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[55rem] h-[30rem] rounded-full bg-gradient-to-b from-amber-400/20 via-orange-500/10 to-transparent blur-3xl pointer-events-none" />
-        <div className="absolute top-1/3 -left-32 w-96 h-96 rounded-full bg-cyan-400/15 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-10 -right-32 w-96 h-96 rounded-full bg-amber-300/15 blur-3xl pointer-events-none" />
-        {/* Floating starlight constellation specks */}
-        <div className={`absolute inset-0 opacity-40 ${darkStage ? 'bg-[radial-gradient(#FDE68A_1px,transparent_1px)]' : 'bg-[radial-gradient(#9DB9D1_1px,transparent_1px)]'} [background-size:32px_32px]`} />
+        {/* Calm translucent tint to guarantee high contrast */}
+        <div className={`absolute inset-0 ${darkStage ? 'bg-[#0B132B]/80' : 'bg-[#FFFDF7]/65'} backdrop-blur-[1px]`} />
       </div>
 
       {notice && <div role="alert" className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-white px-5 py-3 text-sm font-bold text-slate-900 shadow-xl">{notice} <button type="button" className="ml-3 underline" onClick={() => setNotice('')}>Dismiss</button></div>}
-      <AmbientToggle mood="citadel" />
+      <AmbientToggle mood="adhd" />
       <div key={stage} className="mx-auto max-w-4xl relative z-10 qd-stage">
         {/* Navigation & Realm Indicator */}
-        <div className={`mb-6 flex items-center justify-between text-xs ${darkStage ? '' : '[&_*]:text-[#1F2937]'}`}>
+        <div className={`mb-4 flex items-center justify-between text-xs ${darkStage ? '' : '[&_*]:text-[#1F2937]'}`}>
           <Link href="/gamified-assessments" prefetch={false} className="font-bold text-amber-300 hover:text-amber-200 hover:underline flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-amber-300/30 shadow-sm">
             ← Gamified Quests
           </Link>
           <div className="flex items-center gap-2">
             <span className="rounded-full bg-black/40 backdrop-blur-md px-3.5 py-1.5 font-bold text-amber-200 border border-amber-400/40 shadow-sm">
-              Play-Based Attention Quest • Not a Diagnosis
+              Sunbird Valley • Play-Based Attention Quest
             </span>
           </div>
         </div>
 
+        <SunbirdProgressTrail stage={stage} />
         <ReadAloud age={heroAge} stage={stage} />
         {/* 1. WELCOME SCREEN: FANTASY HERO REALM */}
         {stage === 'welcome' && (
@@ -1104,20 +1115,20 @@ function __McInner() {
             {/* Storybook Hero Panorama */}
             <div className="relative h-64 md:h-84 w-full overflow-hidden bg-gradient-to-tr from-[#FEF3C7] to-[#DCFCE7]">
               <img
-                src="/decor/itw/quest-sky-citadel-banner.webp"
-                alt="Floating Sky Citadel of Aethelgard"
+                src="/quests/adhd/welcome.webp"
+                alt="Sunbird Valley Dawn"
                 className="h-full w-full object-cover object-center"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent flex items-end p-6 md:p-8">
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full bg-amber-400/20 backdrop-blur-md px-3.5 py-1 text-xs font-bold text-amber-200 border border-amber-300/30 mb-2">
-                    ★ The Chronicles of the Sunbird • Chapter Quest
+                    ★ Sunbird Valley Quest • Guardians of the Golden Dawn
                   </div>
                   <h1 className="font-patrick text-3xl sm:text-4xl md:text-5xl text-white font-bold leading-tight drop-shadow-md">
-                    The Sky Citadel of Aethelgard
+                    Sunbird Valley Quest
                   </h1>
                   <p className="text-xs sm:text-sm text-white/90 max-w-2xl mt-1">
-                    Join Milo the Owl on a high-flying adventure above the clouds. Test your reflexes, navigate starry meteor storms, and unlock your mind’s natural superpowers.
+                    Join Guide Chirp on a sunlit adventure across Sunbird Valley. Watch the dawn skies, steer through forest trails, and harmonize the starlight stones.
                   </p>
                 </div>
               </div>
@@ -1169,6 +1180,7 @@ function __McInner() {
             </div>
 
             <div className="p-6 md:p-8 text-center">
+              <GuideChirpNote text="Welcome to Sunbird Valley! Watch the skies with me — when you spot the golden sunbird, give it a quick gentle tap! But let the grey shadow moth flutter past peacefully." />
               <div className="grid grid-cols-2 gap-4 mb-5 max-w-md mx-auto">
                 <div className="rounded-2xl bg-amber-50 border-2 border-amber-300 p-4">
                   <div className="mx-auto h-16 w-16"><SunbirdTarget className="h-full w-full" /></div>
@@ -1254,7 +1266,7 @@ function __McInner() {
             <style>{CV_CSS}</style>
             {cptPrac === 'ready' ? (
               <div className="flex flex-col items-center gap-3 py-2">
-                <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float h-20 w-20" />
+                <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float h-20 w-20 object-contain" />
                 <p className="font-patrick text-3xl text-amber-800 font-bold">Great job!</p>
                 <div className="my-2 flex items-center justify-center gap-6">
                   <div className="text-center">
@@ -1396,8 +1408,9 @@ function __McInner() {
               </div>
             </div>
             <div className="p-6 md:p-8 text-center">
+              <GuideChirpNote text="Splendid watching! Now we take to the forest canopy trail. Steer the way the big golden arrow points, and ignore the smaller side arrows!" />
               <div className="flex items-center justify-center gap-4 mb-4">
-                <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float h-16 w-16" />
+                <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float h-16 w-16 object-contain" />
                 <p className="text-left text-base md:text-lg font-bold text-[#1F2937] max-w-xs">Tap the way the big golden arrow points!</p>
               </div>
               <button
@@ -1425,7 +1438,7 @@ function __McInner() {
         {stage === 'flanker_game' && flankerPhase === 'ready' && (
           <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-8 md:p-10 shadow-2xl text-center select-none">
             <style>{CV_CSS}</style>
-            <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float mx-auto h-24 w-24" />
+            <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float mx-auto h-24 w-24 object-contain" />
             <p className="font-patrick text-3xl text-amber-800 font-bold mt-3">Great job!</p>
             <p className="text-base md:text-lg font-bold text-[#1F2937] mt-2">Now the real game. Look at the big golden arrow!</p>
             <div className="mt-6 flex flex-col items-center gap-3">
@@ -1510,23 +1523,24 @@ function __McInner() {
           <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
             <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#1E1B4B]">
               <img
-                src="/decor/itw/quest-sky-citadel-banner.webp"
-                alt="Astrolabe Observatory"
-                className="h-full w-full object-cover object-center opacity-85"
+                src="/quests/adhd/bg_memory.webp"
+                alt="Starlit Valley Terrace"
+                className="h-full w-full object-cover object-center"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end p-6">
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-purple-300 bg-white/10 px-3 py-1 rounded-full">
-                    Chapter 3: The Starlight Astrolabe
+                    Chapter 3: The Starlight Terrace
                   </span>
                   <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    Harmonizing the Constellation Nodes
+                    Harmonizing the Starlight Stones
                   </h2>
                 </div>
               </div>
             </div>
 
             <div className="p-6 md:p-8">
+              <GuideChirpNote text="Look up at the starlit terrace! The ancient constellation stars light up in harmony. Watch the pattern closely, then tap them in the exact same order!" />
               <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
                 {starToneRef.current ? 'Listen to the tones. Then tap the stars in the same order!' : 'Watch the stars light up. Then tap them in the same order!'}
               </p>
@@ -1555,7 +1569,7 @@ function __McInner() {
         {stage === 'memory_game' && memPracReady && (
           <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-8 md:p-10 shadow-2xl text-center select-none">
             <style>{CV_CSS}</style>
-            <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float mx-auto h-24 w-24" />
+            <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float mx-auto h-24 w-24 object-contain" />
             <p className="font-patrick text-3xl text-amber-800 font-bold mt-3">Great job!</p>
             <p className="text-base md:text-lg font-bold text-[#1F2937] mt-2">Now the real stars. Watch, then tap the same ones!</p>
             <div className="mt-6 flex flex-col items-center gap-3">
@@ -1613,23 +1627,24 @@ function __McInner() {
           <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
             <div className="relative h-60 md:h-72 w-full overflow-hidden bg-gradient-to-tr from-[#FEF3C7] to-[#DCFCE7]">
               <img
-                src="/decor/itw/quest-sky-citadel-banner.webp"
-                alt="Sunstone Sanctuary"
+                src="/quests/adhd/bg_charge.webp"
+                alt="Sunstone Temple Courtyard"
                 className="h-full w-full object-cover object-center"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end p-6">
                 <div>
                   <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-white/10 px-3 py-1 rounded-full">
-                    Chapter 4: The Solar Sunstone Sanctuary
+                    Chapter 4: The Sunstone Courtyard
                   </span>
                   <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    The Sacred Sun-Power Charging Game
+                    The Sacred Sunstone Power Charge
                   </h2>
                 </div>
               </div>
             </div>
 
             <div className="p-6 md:p-8 text-center">
+              <GuideChirpNote text="You have reached the ancient Sunstone Courtyard. Gently press and hold the crystal until the golden bell chimes! Keep holding steady." />
               <p className="text-sm md:text-base text-[#1E293B] font-medium leading-relaxed mb-6 max-w-lg mx-auto">
                 Press and <strong>HOLD</strong> the glowing stone. Do not let go until it chimes!
               </p>
@@ -1670,7 +1685,7 @@ function __McInner() {
             {chargePrac && (
               <div className="mb-2 flex items-center justify-center gap-3">
                 <style>{CV_CSS}</style>
-                <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float h-14 w-14" />
+                <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float h-14 w-14 object-contain" />
                 <p className="text-left text-base md:text-lg font-bold text-[#1F2937] max-w-xs">Press and HOLD the glowing stone. Do not let go until it chimes!</p>
               </div>
             )}
@@ -1711,12 +1726,12 @@ function __McInner() {
               >
                 {chargeStatusText === 'success' ? (
                   <div className="flex flex-col items-center animate-bounce text-white">
-                    <AstrolabeCrystalSvg className="w-16 h-16 drop-shadow-md" />
+                    <img src="/quests/adhd/sunstone_orb.webp" alt="Sunstone Charged" className="w-20 h-20 drop-shadow-md object-contain" />
                     <span className="font-patrick text-xl font-bold mt-1">Charged!</span>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center pointer-events-none">
-                    <AstrolabeCrystalSvg className={`w-16 h-16 sm:w-20 sm:h-20 ${isCharging ? 'text-white animate-spin' : 'text-amber-500'}`} />
+                    <img src="/quests/adhd/sunstone_orb.webp" alt="Sunstone" className={`w-20 h-20 sm:w-24 sm:h-24 object-contain transition-transform ${isCharging ? 'scale-110 drop-shadow-[0_0_15px_rgba(251,191,36,0.9)]' : 'opacity-90'}`} />
                     <span className={`text-xs sm:text-sm font-black uppercase tracking-wider mt-2 ${isCharging ? 'text-white' : 'text-amber-900'}`}>
                       {isCharging ? `${chargeProgress}% HOLD!` : 'PRESS & HOLD'}
                     </span>
@@ -1774,14 +1789,23 @@ function __McInner() {
         {stage === 'celebration' && agentResult && (
           <div className="space-y-8">
             {/* Child Fantasy Award Certificate */}
-            <div className="rounded-3xl border-4 border-amber-300 bg-gradient-to-b from-[#FFFDF8] via-white to-[#FEF3C7] p-8 md:p-12 shadow-2xl text-center relative overflow-hidden">
-              <div className="max-w-xl mx-auto">
+            <div className="rounded-3xl border-4 border-amber-300 bg-gradient-to-b from-[#FFFDF8] via-white to-[#FEF3C7] shadow-2xl text-center relative overflow-hidden">
+              <div className="relative h-48 sm:h-64 w-full overflow-hidden">
+                <img
+                  src="/quests/adhd/celebration.webp"
+                  alt="Sunbird Valley Dawn Celebration"
+                  className="w-full h-full object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent flex items-end justify-center p-6">
+                  <h1 className="font-patrick text-3xl sm:text-5xl text-white font-bold drop-shadow-md">
+                    {agentResult.superpowers.realmTitle}
+                  </h1>
+                </div>
+              </div>
+              <div className="p-6 md:p-10 max-w-xl mx-auto">
                 <span className="text-xs font-bold uppercase tracking-widest text-[#B45309] block mb-2">
-                  Celestial Sky Realm • Official Honor
+                  Sunbird Valley • Official Quest Certificate
                 </span>
-                <h1 className="font-patrick text-4xl sm:text-5xl text-[#78350F] font-bold mb-3">
-                  {agentResult.superpowers.realmTitle}
-                </h1>
                 <div className="inline-block rounded-full bg-amber-500 text-white font-bold text-xs uppercase px-4 py-1.5 shadow-sm mb-6">
                   {agentResult.superpowers.crestBadge}
                 </div>

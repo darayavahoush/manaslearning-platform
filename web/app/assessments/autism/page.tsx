@@ -421,6 +421,13 @@ function HandArrow() {
 function __McInner() {
   const [stage, setStage] = useState<'welcome' | 'avatar' | 'look_setup' | 'look_game' | 'ja_story' | 'ja_game' | 'tom_story' | 'tom_game' | 'sensory_story' | 'sensory_game' | 'ja_show' | 'dccs_story' | 'dccs_game' | 'parent_card' | 'agent_eval' | 'celebration'>('welcome')
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const q = new URLSearchParams(window.location.search).get('stage')
+      if (q) setStage(q as any)
+    }
+  }, [])
+
   // Child Fantasy Persona
   const [guardianName, setGuardianName] = useState('')
   const [guardianAge, setGuardianAge] = useState(7)

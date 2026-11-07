@@ -144,103 +144,14 @@ def create_autism_art():
         d.arc([236, 260, 276, 285], start=20, end=160, fill=(138, 75, 58, 255), width=3)
         im.save(f"{dest}/aria_gaze_{gaze}.webp", "WEBP", quality=90)
     
-    # 3. Fox Cub Feeling Sprites (6 emotions, 512x512 transparent)
-    emotions = ["happy", "sad", "angry", "scared", "surprised", "calm"]
-    for emo in emotions:
-        im = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
-        d = ImageDraw.Draw(im)
-        # Background soft circular card
-        d.ellipse([56, 56, 456, 456], fill=(254, 243, 199, 180), outline=(245, 158, 11, 220), width=6)
-        # Fox ears
-        d.polygon([(140, 160), (180, 60), (230, 140)], fill=(234, 88, 12, 255), outline=(180, 83, 9, 255), width=5)
-        d.polygon([(160, 140), (180, 80), (210, 130)], fill=(254, 215, 170, 255))
-        d.polygon([(372, 160), (332, 60), (282, 140)], fill=(234, 88, 12, 255), outline=(180, 83, 9, 255), width=5)
-        d.polygon([(352, 140), (332, 80), (302, 130)], fill=(254, 215, 170, 255))
-        # Fox head
-        d.ellipse([140, 120, 372, 360], fill=(234, 88, 12, 255), outline=(180, 83, 9, 255), width=6)
-        # White cheek muzzles
-        d.polygon([(140, 250), (256, 350), (190, 360)], fill=(255, 255, 255, 255))
-        d.polygon([(372, 250), (256, 350), (322, 360)], fill=(255, 255, 255, 255))
-        # Nose
-        d.polygon([(240, 280), (272, 280), (256, 298)], fill=(30, 41, 59, 255))
-        
-        # Expressive Facial Features by Emotion
-        if emo == "happy":
-            # Smiling crescent eyes
-            d.arc([190, 190, 230, 230], start=190, end=350, fill=(30, 41, 59, 255), width=6)
-            d.arc([282, 190, 322, 230], start=190, end=350, fill=(30, 41, 59, 255), width=6)
-            d.arc([236, 295, 276, 330], start=20, end=160, fill=(180, 83, 9, 255), width=5)
-        elif emo == "sad":
-            # Downturned gentle eyes and sad mouth
-            d.ellipse([195, 205, 225, 235], fill=(30, 41, 59, 255))
-            d.ellipse([287, 205, 317, 235], fill=(30, 41, 59, 255))
-            d.line([(185, 195), (230, 205)], fill=(30, 41, 59, 255), width=4) # slanted brows
-            d.line([(327, 195), (282, 205)], fill=(30, 41, 59, 255), width=4)
-            d.arc([236, 315, 276, 345], start=200, end=340, fill=(180, 83, 9, 255), width=5)
-        elif emo == "angry":
-            # Determined furrowed brows (friendly, non-threatening)
-            d.ellipse([195, 205, 225, 235], fill=(30, 41, 59, 255))
-            d.ellipse([287, 205, 317, 235], fill=(30, 41, 59, 255))
-            d.line([(185, 195), (235, 212)], fill=(30, 41, 59, 255), width=5)
-            d.line([(327, 195), (277, 212)], fill=(30, 41, 59, 255), width=5)
-            d.line([(240, 320), (272, 320)], fill=(180, 83, 9, 255), width=5) # firm mouth
-        elif emo == "scared":
-            # Wide alert eyes
-            d.ellipse([185, 195, 235, 245], fill=(255, 255, 255, 255), outline=(30, 41, 59, 255), width=3)
-            d.ellipse([200, 210, 220, 230], fill=(30, 41, 59, 255))
-            d.ellipse([277, 195, 327, 245], fill=(255, 255, 255, 255), outline=(30, 41, 59, 255), width=3)
-            d.ellipse([292, 210, 312, 230], fill=(30, 41, 59, 255))
-            d.ellipse([246, 310, 266, 330], fill=(180, 83, 9, 255)) # small open 'o'
-        elif emo == "surprised":
-            # High curved brows, round open mouth
-            d.arc([185, 175, 235, 205], start=190, end=350, fill=(30, 41, 59, 255), width=5)
-            d.arc([277, 175, 327, 205], start=190, end=350, fill=(30, 41, 59, 255), width=5)
-            d.ellipse([195, 205, 225, 235], fill=(30, 41, 59, 255))
-            d.ellipse([287, 205, 317, 235], fill=(30, 41, 59, 255))
-            d.ellipse([242, 305, 270, 335], fill=(180, 83, 9, 255))
-        elif emo == "calm":
-            # Gentle relaxed closed eyes with peaceful smile
-            d.arc([190, 205, 230, 235], start=20, end=160, fill=(30, 41, 59, 255), width=5)
-            d.arc([282, 205, 322, 235], start=20, end=160, fill=(30, 41, 59, 255), width=5)
-            d.arc([240, 295, 272, 325], start=20, end=160, fill=(180, 83, 9, 255), width=4)
-            
-        im.save(f"{dest}/fox_{emo}.webp", "WEBP", quality=90)
-        
-    # 4. Three Artisan Vessels (512x512 transparent)
-    # A. Terracotta Veranda Urn (Sand / terracotta with floral carvings)
-    v_ver = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
-    dv = ImageDraw.Draw(v_ver)
-    dv.ellipse([180, 100, 332, 140], fill=(217, 119, 6, 255), outline=(254, 243, 199, 255), width=6)
-    dv.rectangle([216, 120, 296, 170], fill=(180, 83, 9, 255), outline=(254, 215, 170, 255), width=4)
-    dv.ellipse([120, 160, 392, 420], fill=(217, 119, 6, 255), outline=(254, 243, 199, 255), width=8)
-    dv.ellipse([160, 400, 352, 440], fill=(146, 64, 14, 255))
-    dv.arc([160, 260, 352, 320], start=20, end=160, fill=(254, 243, 199, 255), width=6)
-    v_ver.save(f"{dest}/vessel_veranda.webp", "WEBP", quality=90)
-    
-    # B. Lotus Amphora (Pale lotus ceramic with brass handles)
-    v_lot = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
-    dv2 = ImageDraw.Draw(v_lot)
-    dv2.ellipse([190, 80, 322, 120], fill=(245, 158, 11, 255), outline=(254, 243, 199, 255), width=5)
-    dv2.rectangle([226, 100, 286, 180], fill=(217, 119, 6, 255))
-    # Lotus petals bulb
-    dv2.ellipse([130, 170, 382, 430], fill=(241, 245, 249, 255), outline=(203, 213, 225, 255), width=8)
-    # Painted pink lotus petals
-    for offset in [-60, 0, 60]:
-        dv2.polygon([(256 + offset, 420), (226 + offset, 280), (286 + offset, 280)], fill=(244, 114, 182, 200))
-    # Brass side handles
-    dv2.arc([80, 190, 160, 310], start=90, end=270, fill=(245, 158, 11, 255), width=10)
-    dv2.arc([352, 190, 432, 310], start=270, end=90, fill=(245, 158, 11, 255), width=10)
-    v_lot.save(f"{dest}/vessel_lotus.webp", "WEBP", quality=90)
-    
-    # C. Glazed Emerald Vessel
-    v_eme = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
-    dv3 = ImageDraw.Draw(v_eme)
-    dv3.ellipse([190, 110, 322, 150], fill=(6, 95, 70, 255), outline=(167, 243, 208, 255), width=6)
-    dv3.ellipse([110, 140, 402, 430], fill=(5, 150, 105, 255), outline=(167, 243, 208, 255), width=8)
-    # Glassy glaze highlight
-    dv3.arc([140, 170, 240, 370], start=120, end=240, fill=(209, 250, 229, 220), width=12)
-    v_eme.save(f"{dest}/vessel_emerald.webp", "WEBP", quality=90)
-    print("Autism art generated successfully.")
+    # 3. Fox Cub Feeling Sprites & 4. Three Artisan Vessels
+    # Generated with rigorous psychometric calibration via generate_fixed_autism_art.py
+    from generate_fixed_autism_art import generate_fox_faces, generate_vessels
+    for emo, im in generate_fox_faces().items():
+        im.save(f"{dest}/fox_{emo}.webp", "WEBP", quality=95)
+    for name, im in generate_vessels().items():
+        im.save(f"{dest}/vessel_{name}.webp", "WEBP", quality=95)
+    print("Autism art (fox faces + vessels) generated successfully.")
 
 def create_dyslexia_art():
     dest = os.path.join(DEST_ROOT, "dyslexia")

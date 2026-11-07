@@ -307,8 +307,41 @@
   - Audio: Looping library hush ambience and soft chimes from `/quests/dyslexia/audio/`.
 - **Rule A Confirmation**: 100% locked. `RHYME`, `FIRST`, `LET`, `LAYOUT`, `SYL`, `SEQS`, `WORDS`, `SPELL`, timing delays, and all telemetry keys remain completely untouched.
 
+### Autism Quest Stimulus Art Rigorous Redraw (Fox Faces & Ceramic Vessels)
+- **Clinical Motivation**:
+  - In the Feelings Game, the fox face is the measured stimulus: if faces are ambiguous or fail to scale down to 80px, the clinical score measures artistic ambiguity rather than facial affect decoding.
+  - In the Joint Attention Gaze Game, the child selects the vessel indicated by Aria's gaze: if any vessel is more salient, brighter, or features a more complex silhouette, the score measures visual preference rather than joint attention orienting.
+- **Part 1: Fox Emotion Faces Redraw**:
+  - **Shared Base**: All 6 expressions share the identical head shape, warm fox orange fur (`#DE5C1E`), darker warm outline (`#8C320A`), ear attachment base, and warm gouache card circle (`#FFF8ED`, border `#E2C6A0`).
+  - **Muzzle & Mouth Geometry**: Prominent ivory-white muzzle (`#FFFDF8`) meeting under the button nose; mouth placed centrally on the muzzle completely clear of the lower chest ruff (which sits strictly below y=1520).
+  - **Stroke Weight**: Brows and mouth drawn at 36–44px at 2048 (9–11px on 512px canvas), strictly exceeding the 8px minimum requirement for crisp readability at 80px.
+  - **Unmistakable Emotion Cues**:
+    - `happy`: Wide round open eyes with glossy highlights, relaxed arched brows, wide open D-smile showing tongue, raised rosy cheeks.
+    - `calm`: Eyes half-closed with soft peaceful lids, horizontal level relaxed brows, gentle closed smile, neutral perky ears.
+    - `sad`: Brows slope UP toward middle (`/ \`), eyes looking down, pronounced downturned frown arc, drooping ears, single blue teardrop on cheek.
+    - `angry`: Brows slope DOWN toward middle in a sharp V (`\ /`), narrowed eyelids with fierce pupils, tight flat/downturned grimace line, ears pushed back (no red color change).
+    - `scared`: Wide fear eyes with small constricted dot pupils, brows raised and pulled together toward center, wide horizontal tense mouth, ears flat back, single blue sweat drop on temple.
+    - `surprised`: Wide eyes with large open pupils, high curved brows far apart, small round vertical "O" mouth, tall straight-up ears.
+  - **Verification**: Shuffled blind test of unlabeled 80px faces resulted in 6/6 (100%) accurate identifications.
+- **Part 2: Ceramic Vessels Redraw & Numeric Matching**:
+  - **Shared Silhouette**: All three vessels share one single silhouette (round-bellied urn with tapered neck, flared rim, two firmly attached ear handles, pedestal foot, and soft contact shadow attached directly to the base).
+  - **Symmetric Abstract Bands**: Veranda features 3 clean relief stripes; Lotus features an abstract symmetric leaf garland; Emerald features a symmetric geometric dot band. No faces, no smile curves, no teeth-like triangles, no sparkles.
+  - **Empirical Measurement Table**:
+
+| Vessel Asset | Opaque Area (px) | Bounding Box `(x0, y0, x1, y1)` | Bounding Box Size `(w × h)` | Opaque Centroid `(cx, cy)` | Mean Luminance `(0–255)` |
+|---|---|---|---|---|---|
+| `vessel_veranda.webp` | 58,508 | `(84, 120, 427, 395)` | `344 × 276` px | `(255.6, 256.1)` | 109.42 |
+| `vessel_lotus.webp` | 58,508 | `(84, 120, 427, 395)` | `344 × 276` px | `(255.6, 256.1)` | 109.72 |
+| `vessel_emerald.webp` | 58,508 | `(84, 120, 427, 395)` | `344 × 276` px | `(255.6, 256.1)` | 109.29 |
+
+  - **Compliance Results**:
+    - **Opaque Area Spread**: `0.00%` difference (Requirement: `< 3.00%`) → **PASS**
+    - **Mean Luminance Spread**: `0.43` points difference (Requirement: `< 8.00` points) → **PASS**
+    - **Bounding Box Match**: Identical `344 × 276` px across all three → **PASS**
+    - **Opaque Centroid**: Centered at `(255.6, 256.1)`, precisely on the 512×512 canvas center `(256, 256)` → **PASS**
+
 ---
 
 ## 5. Instrument Versioning
-- **Previous `INSTRUMENT_VERSION`**: `2026.11.9`
-- **Updated `INSTRUMENT_VERSION`**: `2026.11.10` (Bumping version in `web/components/assessments/version.ts` and `session-record.ts` to cleanly separate all upgraded visual sessions from historical data).
+- **Previous `INSTRUMENT_VERSION`**: `2026.11.11`
+- **Updated `INSTRUMENT_VERSION`**: `2026.11.12` (Bumping version in `web/components/assessments/version.ts` because the stimulus art for the feelings and joint attention games changed).

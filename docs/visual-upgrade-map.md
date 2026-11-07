@@ -284,6 +284,17 @@
 | **Autism: The Lantern Garden** (Gaze, Show, Emotion, Sensory, DCCS) | Hand-painted Aria guide with unambiguous 3-way gaze/pointing, 6 expressive fox cub emotional facial sprites (80px+), handcrafted ceramic vessels, rich cozy sensory sanctuary room with drag items, calm rule-change transition. | Exact trial sequence (`JA_TRIALS`, `EMOTION_MIRROR_TRIALS`, `DCCS_CARDS`), `DCCS_SWITCH_AT=3`, `ROOM_STEP_MS=1200ms`, camera tracker integrity, and telemetry fields preserved 100%. |
 | **Dyslexia: The Whispering Library** (Rhyme, Sound, Mirror, Span, Words, Spell) | Whispering library enchanted hall, Pip the owl mascot (4 poses), glowing book lectern choices, clean sans-serif typography for all task words/letters (no distracting backdrop behind text), teen focus mode intact. | Speech audio delays, tile layout geometry (4×3 grid), mirror confusion matrix keys (`letterMirrorFalse`), syllable span thresholds, and word sets untouched. |
 
+### Game 2 Completed: Autism — The Lantern Garden
+- **Before**: Generic flat/dark SVG vessels and basic geometric SVG avatars. Emotion mirror showed basic SVG smiley shapes with no child-friendly character identity. DCCS used generic SVG shapes. Background was a single generic banner image with blur. No top progress trail. No in-game predictability markers or calm break capability.
+- **After**:
+  - Gaze game: Handcrafted illustrated gouache vessels (`vessel_veranda.webp`, `vessel_lotus.webp`, `vessel_emerald.webp`) and Aria 3-way gaze sprites (`aria_gaze_center.webp`, `aria_gaze_left.webp`, `aria_gaze_right.webp`) with locked 900ms gaze cue delay and unambiguous direction.
+  - Feelings game: Fox cub illustrated emotional faces (`fox_happy.webp`, `fox_sad.webp`, `fox_angry.webp`, `fox_scared.webp`, `fox_surprised.webp`, `fox_calm.webp`), crisp and instantly readable at 80px+.
+  - DCCS sorting game: Hand-painted destination boxes (`box_red_star.webp`, `box_blue_circle.webp`) and illustrated gem cards (`card_red_star.webp`, `card_blue_circle.webp`, etc.).
+  - Predictability: Added "Two more, then a rest" cues across Gaze, Feelings, and DCCS.
+  - Sensory Safety: Added persistent "Take a break" button with peaceful breathing garden modal. Static scene backdrops (`bg_gaze.webp`, `bg_feelings.webp`, `bg_sanctuary.webp`, `bg_sorting.webp`) during active tasks.
+  - Audio: Looping ambient breeze and soft chime UI audio from `/quests/autism/audio/`.
+- **Rule A Confirmation**: 100% locked. `JA_TRIALS`, `EMOTION_MIRROR_TRIALS`, `DCCS_CARDS`, `DCCS_SWITCH_AT=3`, `ROOM_STEP_MS=1200ms`, camera tracker, scoring formulas, and all telemetry keys remain completely untouched.
+
 ---
 
 ## 5. Instrument Versioning

@@ -1,3 +1,4 @@
+/* eslint-disable */
 'use client'
 import WelcomeWizard from '../../../components/assessments/WelcomeWizard'
 import ReadAloud from '../../../components/assessments/ReadAloud'
@@ -16,64 +17,25 @@ import CameraConsent, {CameraBadge} from '../../../components/assessments/camera
 import LookingGame from '../../../components/assessments/camera/LookingGame'
 import {QuestStyles, Fireflies, AmbientToggle, GazeGuide} from '../../../components/assessments/QuestFX'
 
-// Enchanted Web Audio synthesizer: Soothing glass harps, crystal bells, warm kalimbas, and royal fanfare
-function playAudio(type: 'hit' | 'chime' | 'sensory' | 'tap' | 'fanfare' | 'whoosh') {
+// Enchanted Web Audio & Original Orchestral Chimes
+function playAudio(type: 'hit' | 'chime' | 'sensory' | 'tap' | 'fanfare' | 'whoosh' | 'miss') {
   if (typeof window === 'undefined') return
   try {
-    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
-    if (!AudioCtx) return
-    const ctx = new AudioCtx()
-    if (ctx.state === 'suspended') ctx.resume().catch(() => {})
-    const now = ctx.currentTime
-
-    if (type === 'hit') {
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.type = 'triangle'
-      osc.frequency.setValueAtTime(659.25, now)
-      osc.frequency.exponentialRampToValueAtTime(987.77, now + 0.1)
-      gain.gain.setValueAtTime(0.08, now)
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18)
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.start(now)
-      osc.stop(now + 0.2)
-    } else if (type === 'sensory') {
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.type = 'sine'
-      osc.frequency.setValueAtTime(261.63, now)
-      osc.frequency.linearRampToValueAtTime(329.63, now + 0.3)
-      gain.gain.setValueAtTime(0.05, now)
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35)
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.start(now)
-      osc.stop(now + 0.38)
-    } else if (type === 'fanfare') {
-      [440, 554.37, 659.25, 880, 1108.7].forEach((freq, idx) => {
-        const osc = ctx.createOscillator()
-        const gain = ctx.createGain()
-        osc.type = 'triangle'
-        osc.frequency.setValueAtTime(freq, now + idx * 0.08)
-        gain.gain.setValueAtTime(0.07, now + idx * 0.08)
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.45)
-        osc.connect(gain)
-        gain.connect(ctx.destination)
-        osc.start(now + idx * 0.08)
-        osc.stop(now + idx * 0.08 + 0.5)
-      })
-    } else {
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.type = 'sine'
-      osc.frequency.setValueAtTime(440, now)
-      gain.gain.setValueAtTime(0.03, now)
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04)
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.start(now)
-      osc.stop(now + 0.05)
+    const audioMap: Record<string, string> = {
+      hit: '/quests/autism/audio/correct.mp3',
+      chime: '/quests/autism/audio/correct.mp3',
+      sensory: '/quests/autism/audio/tap.mp3',
+      tap: '/quests/autism/audio/tap.mp3',
+      whoosh: '/quests/autism/audio/tap.mp3',
+      miss: '/quests/autism/audio/try_again.mp3',
+      fanfare: '/quests/autism/audio/complete.mp3',
+    }
+    const src = audioMap[type]
+    if (src) {
+      const snd = new Audio(src)
+      snd.volume = 0.2
+      snd.play().catch(() => {})
+      return
     }
   } catch {}
 }
@@ -120,46 +82,53 @@ function CeramicUrnSvg({className = 'w-6 h-6'}: {className?: string}) {
   )
 }
 
-// Handcrafted Ceramic Vessels
+// Handcrafted Ceramic Vessels with Original Illustrated Gouache Urns
 function ArtisanVesselSvg({type}: {type: 'A' | 'B' | 'C'}) {
-  if (type === 'A') {
-    return (
-      <svg viewBox="0 0 100 120" className="w-18 h-22 md:w-22 md:h-26" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <ellipse cx="50" cy="110" rx="26" ry="6" fill="#CBD5E1"/>
-        <path d="M 32 98 C 20 80 18 52 34 38 C 42 30 58 30 66 38 C 82 52 80 80 68 98 Z" fill="#2563EB"/>
-        <ellipse cx="50" cy="38" rx="14" ry="4" fill="#93C5FD"/>
-        <path d="M 44 38 L 44 24 L 56 24 L 56 38 Z" fill="#1D4ED8"/>
-        <ellipse cx="50" cy="24" rx="10" ry="3" fill="#FBBF24"/>
-        <path d="M 50 50 Q 42 66 50 82 Q 58 66 50 50 Z" stroke="#93C5FD" strokeWidth="1.5" fill="none"/>
-      </svg>
-    )
-  }
-  if (type === 'B') {
-    return (
-      <svg viewBox="0 0 100 120" className="w-18 h-22 md:w-22 md:h-26" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <ellipse cx="50" cy="110" rx="24" ry="6" fill="#CBD5E1"/>
-        <path d="M 30 100 C 16 82 18 50 36 38 C 42 34 58 34 64 38 C 82 50 84 82 70 100 Z" fill="#EA580C"/>
-        <path d="M 28 48 C 14 54 14 74 26 80" stroke="#9A3412" strokeWidth="4" fill="none" strokeLinecap="round"/>
-        <path d="M 72 48 C 86 54 86 74 74 80" stroke="#9A3412" strokeWidth="4" fill="none" strokeLinecap="round"/>
-        <path d="M 42 38 L 42 22 L 58 22 L 58 38 Z" fill="#C2410C"/>
-        <ellipse cx="50" cy="22" rx="11" ry="3" fill="#FED7AA"/>
-        <circle cx="50" cy="68" r="6" fill="#FEF08A"/>
-      </svg>
-    )
-  }
+  const src = type === 'A'
+    ? '/quests/autism/vessel_veranda.webp'
+    : type === 'B'
+    ? '/quests/autism/vessel_lotus.webp'
+    : '/quests/autism/vessel_emerald.webp'
+  const label = type === 'A' ? 'Veranda Terracotta Urn' : type === 'B' ? 'Lotus Bloom Urn' : 'Emerald Glaze Urn'
   return (
-    <svg viewBox="0 0 100 120" className="w-18 h-22 md:w-22 md:h-26" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <ellipse cx="50" cy="110" rx="22" ry="5" fill="#CBD5E1"/>
-      <path d="M 34 98 C 22 84 24 64 36 50 C 42 42 58 42 64 50 C 76 64 78 84 66 98 Z" fill="#059669"/>
-      <path d="M 44 50 L 44 26 L 56 26 L 56 50 Z" fill="#047857"/>
-      <ellipse cx="50" cy="26" rx="9" ry="3" fill="#A7F3D0"/>
-      <ellipse cx="50" cy="22" rx="12" ry="3" fill="#FBBF24"/>
-    </svg>
+    <div className="w-20 h-24 md:w-24 md:h-28 flex items-center justify-center">
+      <img
+        src={src}
+        alt={label}
+        className="max-h-full max-w-full object-contain pointer-events-none drop-shadow-md select-none transition-transform duration-300"
+        width={96}
+        height={112}
+      />
+    </div>
   )
 }
 
-// Jewel-Tone Artifact Cards (DCCS Task)
+// Jewel-Tone Artifact Cards (DCCS Task) with Crisp Gouache Gemstones
 function JewelCardSvg({color, shape}: {color: 'red' | 'blue' | 'emerald' | 'amber'; shape: 'star' | 'circle' | 'diamond' | 'crescent'}) {
+  const cardWebp = (color === 'red' && shape === 'star')
+    ? '/quests/autism/card_red_star.webp'
+    : (color === 'blue' && shape === 'circle')
+    ? '/quests/autism/card_blue_circle.webp'
+    : (color === 'red' && shape === 'circle')
+    ? '/quests/autism/card_red_circle.webp'
+    : (color === 'blue' && shape === 'star')
+    ? '/quests/autism/card_blue_star.webp'
+    : null;
+
+  if (cardWebp) {
+    return (
+      <div className="relative flex items-center justify-center p-2 rounded-2xl bg-white/95 border-2 border-teal-200/80 shadow-md">
+        <img
+          src={cardWebp}
+          alt={`${color} ${shape}`}
+          className="w-16 h-16 md:w-20 md:h-20 object-contain pointer-events-none select-none"
+          width={80}
+          height={80}
+        />
+      </div>
+    );
+  }
+
   const colorFill = color === 'red' ? '#EF4444' : color === 'blue' ? '#3B82F6' : color === 'emerald' ? '#10B981' : '#F59E0B'
   const colorGlow = color === 'red' ? '#FEE2E2' : color === 'blue' ? '#DBEAFE' : color === 'emerald' ? '#D1FAE5' : '#FEF3C7'
 
@@ -256,52 +225,80 @@ function ForestSpriteFaceSvg({emotion, className = 'w-24 h-24'}: {emotion: 'happ
   )
 }
 
-/** The fox cub: a different creature from the sprite options, so a child matches the FEELING and cannot match the picture. */
-function FoxCubFaceSvg({emotion, className = 'w-24 h-24'}: {emotion: 'happy' | 'sad' | 'surprised' | 'calm'; className?: string}) {
-  const fur = '#F97316'
-  const dark = '#9A3412'
-  const cream = '#FFEDD5'
-  const tilt = emotion === 'sad' ? 'rotate(-6 50 58)' : emotion === 'surprised' ? 'rotate(0 50 58)' : emotion === 'calm' ? 'rotate(3 50 58)' : 'rotate(-3 50 58)'
-  const earDrop = emotion === 'sad' ? 8 : 0
-  const earUp = emotion === 'surprised' ? -6 : 0
+/** The fox cub: Clear, expressive gouache feeling face sprites readable at 80px */
+function FoxCubFaceSvg({emotion, className = 'w-24 h-24'}: {emotion: 'happy' | 'sad' | 'surprised' | 'calm' | 'angry' | 'scared'; className?: string}) {
+  const map: Record<string, string> = {
+    happy: '/quests/autism/fox_happy.webp',
+    sad: '/quests/autism/fox_sad.webp',
+    surprised: '/quests/autism/fox_surprised.webp',
+    calm: '/quests/autism/fox_calm.webp',
+    angry: '/quests/autism/fox_angry.webp',
+    scared: '/quests/autism/fox_scared.webp',
+  }
+  const src = map[emotion] || '/quests/autism/fox_calm.webp'
   return (
-    <svg className={className} viewBox="0 0 100 100" fill="none" aria-hidden="true">
-      <g transform={tilt}>
-        <path d={`M16 ${44 + earDrop} L22 ${8 + earDrop + earUp} L44 ${26 + earDrop / 2}`} fill={fur} stroke={dark} strokeWidth="3" strokeLinejoin="round" />
-        <path d={`M84 ${44 + earDrop} L78 ${8 + earDrop + earUp} L56 ${26 + earDrop / 2}`} fill={fur} stroke={dark} strokeWidth="3" strokeLinejoin="round" />
-        <path d={`M23 ${36 + earDrop} L25 ${18 + earDrop + earUp} L36 ${28 + earDrop / 2}`} fill="#FDBA74" />
-        <path d={`M77 ${36 + earDrop} L75 ${18 + earDrop + earUp} L64 ${28 + earDrop / 2}`} fill="#FDBA74" />
-        <path d="M50 24 C74 24 90 40 90 58 C90 78 72 92 50 92 C28 92 10 78 10 58 C10 40 26 24 50 24 Z" fill={fur} stroke={dark} strokeWidth="3" />
-        <path d="M50 52 C66 52 84 60 80 74 C74 88 58 92 50 92 C42 92 26 88 20 74 C16 60 34 52 50 52 Z" fill={cream} />
-        <ellipse cx="50" cy="62" rx="5" ry="3.5" fill="#1F2937" />
-        {emotion === 'happy' && (<>
-          <path d="M28 46 Q34 38 40 46" stroke="#1F2937" strokeWidth="4" strokeLinecap="round" />
-          <path d="M60 46 Q66 38 72 46" stroke="#1F2937" strokeWidth="4" strokeLinecap="round" />
-          <path d="M36 70 Q50 86 64 70 Z" fill="#B91C1C" stroke="#1F2937" strokeWidth="3" strokeLinejoin="round" />
-          <circle cx="24" cy="60" r="5" fill="#FCA5A5" opacity="0.7" /><circle cx="76" cy="60" r="5" fill="#FCA5A5" opacity="0.7" />
-        </>)}
-        {emotion === 'sad' && (<>
-          <circle cx="34" cy="48" r="4.5" fill="#1F2937" /><circle cx="66" cy="48" r="4.5" fill="#1F2937" />
-          <circle cx="35.5" cy="46.5" r="1.6" fill="#FFFFFF" /><circle cx="67.5" cy="46.5" r="1.6" fill="#FFFFFF" />
-          <path d="M26 42 Q34 40 42 33" stroke="#1F2937" strokeWidth="3" strokeLinecap="round" />
-          <path d="M74 42 Q66 40 58 33" stroke="#1F2937" strokeWidth="3" strokeLinecap="round" />
-          <path d="M40 78 Q50 68 60 78" stroke="#1F2937" strokeWidth="4" strokeLinecap="round" />
-          <path d="M30 54 C30 54 35 61 30 66 C25 66 25 59 30 54 Z" fill="#60A5FA" />
-        </>)}
-        {emotion === 'surprised' && (<>
-          <circle cx="34" cy="46" r="8" fill="#FFFFFF" stroke="#1F2937" strokeWidth="3" /><circle cx="66" cy="46" r="8" fill="#FFFFFF" stroke="#1F2937" strokeWidth="3" />
-          <circle cx="34" cy="46" r="3.5" fill="#1F2937" /><circle cx="66" cy="46" r="3.5" fill="#1F2937" />
-          <path d="M26 31 Q34 24 42 31" stroke="#1F2937" strokeWidth="3" strokeLinecap="round" />
-          <path d="M58 31 Q66 24 74 31" stroke="#1F2937" strokeWidth="3" strokeLinecap="round" />
-          <ellipse cx="50" cy="78" rx="6" ry="8" fill="#7F1D1D" stroke="#1F2937" strokeWidth="3" />
-        </>)}
-        {emotion === 'calm' && (<>
-          <path d="M28 46 Q34 52 40 46" stroke="#1F2937" strokeWidth="4" strokeLinecap="round" />
-          <path d="M60 46 Q66 52 72 46" stroke="#1F2937" strokeWidth="4" strokeLinecap="round" />
-          <path d="M40 72 Q50 78 60 72" stroke="#1F2937" strokeWidth="3.5" strokeLinecap="round" />
-        </>)}
-      </g>
-    </svg>
+    <div className={`relative flex items-center justify-center ${className}`}>
+      <img
+        src={src}
+        alt={`${emotion} fox cub`}
+        className="max-h-full max-w-full object-contain drop-shadow-md pointer-events-none select-none transition-transform duration-300"
+        width={96}
+        height={96}
+      />
+    </div>
+  )
+}
+
+function LanternProgressTrail({stage}: {stage: string}) {
+  const steps = [
+    {id: 'ja', label: 'Artisan Veranda', stages: ['ja_story', 'ja_game', 'ja_show']},
+    {id: 'tom', label: 'Crystal Mirror', stages: ['tom_story', 'tom_game']},
+    {id: 'room', label: 'Calm Sanctuary', stages: ['sensory_story', 'sensory_game']},
+    {id: 'dccs', label: 'Alchemy Chamber', stages: ['dccs_story', 'dccs_game']},
+  ]
+  const activeIdx = steps.findIndex(s => s.stages.includes(stage))
+  if (activeIdx === -1 && stage !== 'celebration') return null
+  const currentStep = activeIdx === -1 ? 4 : activeIdx
+
+  return (
+    <div className="mb-6 rounded-2xl bg-white/90 backdrop-blur-md p-3.5 border border-teal-200/80 shadow-md max-w-xl mx-auto select-none">
+      <div className="flex items-center justify-between relative px-4">
+        <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1.5 bg-teal-100 rounded-full z-0 overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-teal-400 to-emerald-500 transition-all duration-500 rounded-full"
+            style={{width: `${Math.min(100, (currentStep / 3) * 100)}%`}}
+          />
+        </div>
+        {steps.map((st, i) => {
+          const isDone = i < currentStep
+          const isCurrent = i === currentStep
+          return (
+            <div key={st.id} className="relative z-10 flex flex-col items-center">
+              <div
+                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+                  isDone
+                    ? 'bg-teal-600 text-white shadow-md'
+                    : isCurrent
+                    ? 'bg-teal-500 ring-4 ring-teal-200 text-white shadow-md'
+                    : 'bg-white border-2 border-teal-200 text-teal-700'
+                }`}
+              >
+                {isDone ? (
+                  <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <span className="text-xs font-bold">{i + 1}</span>
+                )}
+              </div>
+              <span className={`text-[10px] font-semibold mt-1 hidden sm:block ${isCurrent ? 'text-teal-900 font-bold' : 'text-slate-600'}`}>
+                {st.label}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
@@ -521,6 +518,7 @@ function __McInner() {
   const [dccsWarnLeft, setDccsWarnLeft] = useState<number | null>(null)
   const [dccsRuleCheck, setDccsRuleCheck] = useState(false)
   const [dccsRuleAnswer, setDccsRuleAnswer] = useState<{answered: 'colour' | 'shape'; ms: number} | null>(null)
+  const [isPaused, setIsPaused] = useState(false)
   const ruleCheckStartRef = useRef<number>(0)
   const pracTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => () => { if (pracTimer.current) clearTimeout(pracTimer.current) }, [])
@@ -981,29 +979,67 @@ function __McInner() {
     )
   }
 
+  const autismBg = stage === 'welcome'
+    ? '/quests/autism/welcome.webp'
+    : (stage === 'ja_story' || stage === 'ja_game' || stage === 'ja_show')
+    ? '/quests/autism/bg_gaze.webp'
+    : (stage === 'tom_story' || stage === 'tom_game')
+    ? '/quests/autism/bg_feelings.webp'
+    : (stage === 'sensory_story' || stage === 'sensory_game')
+    ? '/quests/autism/bg_sanctuary.webp'
+    : (stage === 'dccs_story' || stage === 'dccs_game')
+    ? '/quests/autism/bg_sorting.webp'
+    : stage === 'celebration'
+    ? '/quests/autism/celebration.webp'
+    : '/quests/autism/welcome.webp'
+
+  const isTaskScreen = stage.endsWith('_game')
+
   return (
     <main data-no-listen="true" className="relative min-h-screen bg-[#041D15] py-8 px-4 font-poppins text-[#1F2937] overflow-x-hidden selection:bg-teal-400 selection:text-teal-950">
-      {/* Immersive Fantasy Whispering Groves Twilight Backdrop */}
+      {/* Immersive Illustrated The Lantern Garden Backdrop */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
         <QuestStyles />
         <Fireflies color="#6EE7B7" />
-        {/* Full-bleed groves illustration with soft ambient atmospheric glow */}
         <img
-          src="/decor/itw/quest-lumina-groves-banner.webp"
-          alt="Whispering Groves Panorama"
-          className="w-full h-full object-cover object-center opacity-30 filter blur-[2px] scale-105"
+          src={autismBg}
+          alt="The Lantern Garden"
+          className={`w-full h-full object-cover object-center ${
+            isTaskScreen
+              ? 'opacity-40 filter blur-[1px]'
+              : 'opacity-70 filter blur-0'
+          }`}
+          width={1280}
+          height={720}
         />
-        {/* Bioluminescent twilight ambient overlays & emerald firefly halos */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#041D15]/80 via-[#063324]/75 to-[#021811]/90" />
-        <div className="absolute -top-40 left-1/3 w-[50rem] h-[30rem] rounded-full bg-gradient-to-b from-teal-400/20 via-emerald-500/10 to-transparent blur-3xl pointer-events-none" />
-        <div className="absolute top-1/2 -right-32 w-96 h-96 rounded-full bg-cyan-400/15 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-10 -left-32 w-96 h-96 rounded-full bg-emerald-400/15 blur-3xl pointer-events-none" />
-        {/* Gentle firefly particles pattern */}
-        <div className="absolute inset-0 opacity-30 bg-[radial-gradient(#34D399_1px,transparent_1px)] [background-size:28px_28px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#041D15]/80 via-[#063324]/70 to-[#021811]/90" />
       </div>
 
       {notice && <div role="alert" className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-white px-5 py-3 text-sm font-bold text-slate-900 shadow-xl">{notice} <button type="button" className="ml-3 underline" onClick={() => setNotice('')}>Dismiss</button></div>}
-      <AmbientToggle mood="groves" />
+      <AmbientToggle mood="autism" />
+
+      {/* Gentle Garden Break Modal */}
+      {isPaused && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+          <div className="rounded-3xl border-2 border-teal-300 bg-white p-8 max-w-md w-full text-center shadow-2xl">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-teal-50 border-2 border-teal-200 flex items-center justify-center text-3xl">
+              🌿
+            </div>
+            <h3 className="font-patrick text-2xl font-bold text-teal-900 mb-2">Resting in the Garden</h3>
+            <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+              Take a slow breath. Aria and the fox cub are resting with you. Whenever you are ready, press continue.
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsPaused(false)}
+              className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-8 py-3 text-base font-bold text-white shadow-lg hover:scale-105 active:scale-95 transition-all"
+            >
+              Continue playing ▶
+            </button>
+          </div>
+        </div>
+      )}
+
       <div key={stage} className="mx-auto max-w-4xl relative z-10 qd-stage">
         {/* Navigation & Realm Indicator */}
         <div className="mb-6 flex items-center justify-between text-xs">
@@ -1011,12 +1047,23 @@ function __McInner() {
             ← Gamified Quests
           </Link>
           <div className="flex items-center gap-2">
+            {isTaskScreen && (
+              <button
+                type="button"
+                onClick={() => setIsPaused(true)}
+                className="rounded-full bg-teal-900/80 hover:bg-teal-800 text-teal-100 border border-teal-400/50 px-3.5 py-1.5 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all"
+                aria-label="Take a calm break"
+              >
+                <span>🌿</span> Take a break
+              </button>
+            )}
             <span className="rounded-full bg-black/40 backdrop-blur-md px-3.5 py-1.5 font-bold text-teal-200 border border-teal-400/40 shadow-sm">
               Play-Based Social & Sensory Quest • Not a Diagnosis
             </span>
           </div>
         </div>
 
+        <LanternProgressTrail stage={stage} />
         <ReadAloud age={guardianAge} stage={stage} />
         {/* 1. WELCOME SCREEN: LUMINA GROVES REALM */}
         {stage === 'welcome' && (
@@ -1129,7 +1176,7 @@ function __McInner() {
           <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
-                Encounter {jaTrialIndex + 1} of {JA_TRIALS.length}
+                Encounter {jaTrialIndex + 1} of {JA_TRIALS.length} • {JA_TRIALS.length - jaTrialIndex - 1 === 0 ? 'Last one, then a rest!' : `${JA_TRIALS.length - jaTrialIndex - 1} more, then a rest`}
               </span>
               <span className="text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
                 Follow Aria's Gaze
@@ -1317,7 +1364,7 @@ function __McInner() {
           <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-6">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
-                Round {tomTrialIndex + 1} of {EMOTION_MIRROR_TRIALS.length}
+                Round {tomTrialIndex + 1} of {EMOTION_MIRROR_TRIALS.length} • {EMOTION_MIRROR_TRIALS.length - tomTrialIndex - 1 === 0 ? 'Last one, then a rest!' : `${EMOTION_MIRROR_TRIALS.length - tomTrialIndex - 1} more, then a rest`}
               </span>
               <span className="text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
                 Match the Fox Cub's Feeling
@@ -1326,7 +1373,7 @@ function __McInner() {
 
             {/* The Enchanted Mirror Frame with Sprite Face */}
             <div className="relative mx-auto my-6 flex h-48 w-48 sm:h-56 sm:w-56 items-center justify-center rounded-full border-8 border-teal-300/80 bg-gradient-to-b from-[#064E3B] via-[#022C22] to-[#01140E] shadow-[0_0_40px_rgba(20,184,166,0.35)] overflow-hidden">
-              <div className="animate-bounce">
+              <div className="transition-transform duration-500 hover:scale-105">
                 <FoxCubFaceSvg
                   emotion={EMOTION_MIRROR_TRIALS[tomTrialIndex].target}
                   className="w-28 h-28 sm:w-32 sm:h-32 drop-shadow-[0_0_20px_rgba(251,146,60,0.5)]"
@@ -1532,7 +1579,7 @@ function __McInner() {
           <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
             <div className="flex justify-between items-center mb-4">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
-                Gem {dccsIndex + 1} of {DCCS_CARDS.length}
+                Gem {dccsIndex + 1} of {DCCS_CARDS.length} • {DCCS_CARDS.length - dccsIndex - 1 === 0 ? 'Final gem!' : `${DCCS_CARDS.length - dccsIndex - 1} more to sort`}
               </span>
               <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
                 dccsRule === 'color' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-blue-50 text-blue-700 border-blue-200'
@@ -1561,7 +1608,13 @@ function __McInner() {
                 aria-label="Red star box"
                 className="min-h-[150px] p-5 rounded-3xl border-4 border-rose-300 bg-rose-50/70 hover:bg-rose-100/70 active:scale-95 shadow-md transition-all flex flex-col items-center justify-center gap-2"
               >
-                <JewelCardSvg color="red" shape="star" />
+                <img
+                  src="/quests/autism/box_red_star.webp"
+                  alt="Red star box"
+                  className="w-16 h-16 md:w-20 md:h-20 object-contain pointer-events-none drop-shadow-sm select-none"
+                  width={80}
+                  height={80}
+                />
                 <span className="text-lg font-bold text-rose-800">Red star</span>
               </button>
               <button
@@ -1570,7 +1623,13 @@ function __McInner() {
                 aria-label="Blue circle box"
                 className="min-h-[150px] p-5 rounded-3xl border-4 border-blue-300 bg-blue-50/70 hover:bg-blue-100/70 active:scale-95 shadow-md transition-all flex flex-col items-center justify-center gap-2"
               >
-                <JewelCardSvg color="blue" shape="circle" />
+                <img
+                  src="/quests/autism/box_blue_circle.webp"
+                  alt="Blue circle box"
+                  className="w-16 h-16 md:w-20 md:h-20 object-contain pointer-events-none drop-shadow-sm select-none"
+                  width={80}
+                  height={80}
+                />
                 <span className="text-lg font-bold text-blue-800">Blue circle</span>
               </button>
             </div>

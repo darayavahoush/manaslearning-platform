@@ -105,42 +105,36 @@ export function AmbientToggle({ mood }: { mood: "groves" | "citadel" | "adhd" | 
   );
 }
 
-// Aria: eyes, head and arm actually move. Starts with eye contact, then shifts gaze (and points) toward the target.
+// Aria: Clear gaze and pointing direction sprites. Starts with eye contact, then shifts gaze & points toward target.
 export function GazeGuide({ gaze, isPointing, onCue }: { gaze: "left" | "center" | "right"; isPointing: boolean; onCue: () => void }) {
   const [cue, setCue] = useState(false);
   const cb = useRef(onCue); cb.current = onCue;
   useEffect(() => { const t = setTimeout(() => { setCue(true); cb.current(); }, 900); return () => clearTimeout(t); }, []);
-  const s = gaze === "left" ? -1 : gaze === "right" ? 1 : 0;
-  const ease = "transform .55s cubic-bezier(.3,.7,.2,1)";
-  const pupil = { transform: `translate(${cue ? s * 5.5 : 0}px,${cue ? 2.8 : 0}px)`, transition: ease } as React.CSSProperties;
-  const head = { transform: `translate(${cue ? s * 5 : 0}px,0) rotate(${cue ? s * 5 : 0}deg)`, transformOrigin: "100px 130px", transition: ease } as React.CSSProperties;
-  const arm = gaze === "left" ? { d: "M58 162 Q30 175 24 208", hx: 24, hy: 208 } : gaze === "right" ? { d: "M142 162 Q170 175 176 208", hx: 176, hy: 208 } : { d: "M142 162 Q130 190 106 214", hx: 106, hy: 214 };
+
+  const spriteSrc = !cue
+    ? "/quests/autism/aria_gaze_center.webp"
+    : gaze === "left"
+    ? "/quests/autism/aria_gaze_left.webp"
+    : gaze === "right"
+    ? "/quests/autism/aria_gaze_right.webp"
+    : "/quests/autism/aria_gaze_center.webp";
+
+  const ariaLabel = cue
+    ? (gaze === "left" ? "Aria is looking and pointing to the left" : gaze === "right" ? "Aria is looking and pointing to the right" : "Aria is looking at the middle vessel")
+    : "Aria is looking at you";
+
   return (
     <div className="qd-gz flex flex-col items-center">
-      <svg viewBox="0 0 200 230" className="h-48 w-44 md:h-56 md:w-52" role="img" aria-label={cue ? "Aria is looking toward one of the vessels" : "Aria is looking at you"}>
-        <circle cx="100" cy="110" r="92" fill="#CCFBF1" opacity=".55" />
-        <path d="M30 230 C30 176 60 150 100 150 C140 150 170 176 170 230Z" fill="#0F766E" />
-        <polygon points="100,164 108,176 100,192 92,176" fill="#FBBF24" />
-        <rect x="90" y="132" width="20" height="24" rx="8" fill="#E8B98F" />
-        <path d={arm.d} fill="none" stroke="#E8B98F" strokeWidth="9" strokeLinecap="round" pathLength={1} strokeDasharray={1} strokeDashoffset={cue && isPointing ? 0 : 1} style={{ transition: "stroke-dashoffset .6s ease" }} />
-        <circle cx={arm.hx} cy={arm.hy} r="7" fill="#E8B98F" style={{ opacity: cue && isPointing ? 1 : 0, transition: "opacity .3s .35s" }} />
-        <g style={head}>
-          <circle cx="56" cy="98" r="7" fill="#E8B98F" /><circle cx="144" cy="98" r="7" fill="#E8B98F" />
-          <ellipse cx="100" cy="94" rx="44" ry="50" fill="#EDC4A0" />
-          <path d="M54 90 C48 38 152 38 146 90 C140 66 120 56 100 56 C80 56 60 66 54 90Z" fill="#3B2A20" />
-          <path d="M70 76 Q80 71 90 75M110 75 Q120 71 130 76" stroke="#3B2A20" strokeWidth="3" strokeLinecap="round" fill="none" />
-          <g className="qd-blink">
-            <ellipse cx="80" cy="92" rx="11" ry="8" fill="#fff" /><ellipse cx="120" cy="92" rx="11" ry="8" fill="#fff" />
-            <g style={pupil}>
-              <circle cx="80" cy="92" r="5.2" fill="#2B1D05" /><circle cx="120" cy="92" r="5.2" fill="#2B1D05" />
-              <circle cx="81.8" cy="90.2" r="1.6" fill="#fff" /><circle cx="121.8" cy="90.2" r="1.6" fill="#fff" />
-            </g>
-          </g>
-          <circle cx="70" cy="108" r="6" fill="#F9A8A8" opacity=".5" /><circle cx="130" cy="108" r="6" fill="#F9A8A8" opacity=".5" />
-          <path d="M88 118 Q100 128 112 118" stroke="#8A4B3A" strokeWidth="3" strokeLinecap="round" fill="none" />
-        </g>
-      </svg>
-      <span className="mt-1 rounded-full border border-teal-200 bg-white/95 px-3 py-1 text-xs font-bold text-teal-900 shadow-sm" aria-live="polite">
+      <div className="h-48 w-44 md:h-56 md:w-52 flex items-center justify-center relative">
+        <img
+          src={spriteSrc}
+          alt={ariaLabel}
+          className="h-full w-full object-contain pointer-events-none select-none transition-all duration-300 drop-shadow-md"
+          width={208}
+          height={224}
+        />
+      </div>
+      <span className="mt-2 rounded-full border border-teal-200 bg-white/95 px-3.5 py-1 text-xs font-bold text-teal-900 shadow-sm" aria-live="polite">
         {cue ? "Where is Aria looking?" : "Aria is looking at you..."}
       </span>
     </div>

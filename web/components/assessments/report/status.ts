@@ -249,6 +249,16 @@ export function buildChildStatus(record: ReportRecord & {parentCard?: {tired: st
       text: `No results were recorded for ${missing.join(', ')}, so nothing can be said about those yet.`, evidence: 'Not played or not enough data.'})
   }
 
+  // reading quest: word check and spelling are optional, so a missing one is a gap in the picture, not a result
+  if (record.quest === 'dyslexia') {
+    const skipped = [['Word check (optional)', 'Word check'], ['Spelling game (optional)', 'Spelling game']].filter(([g]) => !present.has(g)).map(([, n]) => n)
+    if (skipped.length) {
+      investigate.push({band: 'investigate', quest: 'dyslexia', group: 'reading', area: 'Optional games not played',
+        text: `${skipped.join(' and ')} ${skipped.length > 1 ? 'were' : 'was'} not played. They are optional, so nothing is wrong, but reading and spelling are only partly covered. Playing ${skipped.length > 1 ? 'them' : 'it'} on another day would give a fuller picture.`,
+        evidence: 'Optional games, not played.'})
+    }
+  }
+
   const byBand = (a: StatusItem, b: StatusItem) => BAND_ORDER[a.band] - BAND_ORDER[b.band]
   strengths.sort(byBand); support.sort(byBand); investigate.sort(byBand)
 
@@ -256,7 +266,7 @@ export function buildChildStatus(record: ReportRecord & {parentCard?: {tired: st
   const parts: string[] = []
   if (strengths.length) parts.push(`${pick(strengths)} went well`)
   if (support.length) parts.push(`${pick(support)} may need support`)
-  const investigateGames = investigate.filter((x) => !['An interrupted session', 'Understanding the instructions', 'A tired child', 'Not like usual', 'Not enjoying the play', 'Games with no results'].includes(x.area))
+  const investigateGames = investigate.filter((x) => !['An interrupted session', 'Understanding the instructions', 'A tired child', 'Not like usual', 'Not enjoying the play', 'Games with no results', 'Optional games not played'].includes(x.area))
   if (investigateGames.length) parts.push(`${investigateGames.length === 1 ? 'one area needs' : `${investigateGames.length} areas need`} a closer look`)
   const headline = parts.length
     ? `In this session, ${parts.join('; ')}.`

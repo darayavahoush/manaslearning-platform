@@ -25,31 +25,45 @@ const SCREENERS: Screener[] = [
 const QUESTS = [
   {
     id: 'adhd',
-    kicker: 'Attention & Motor Inhibition Quest',
-    title: 'Manas FocusTrack™ ADHD Quest',
-    img: '/decor/itw/quest-sky-citadel-banner.webp',
-    alt: 'Sky Citadel quest',
+    kicker: 'Attention & Focus Quest',
+    title: 'Sunbird Valley ADHD Quest',
+    img: '/quests/adhd/welcome.webp',
+    alt: 'Sunbird Valley quest',
     glow: '#E3B873',
     accent: '#7E5320',
     btn: 'linear-gradient(90deg,#F2DDB0,#E8C98A)',
     href: '/assessments/adhd',
-    cta: 'Start Sky Citadel ADHD Quest →',
-    chips: ['100% Gameplay', 'No Reading Questions', 'Sunbird Spotting (CPT-3)', 'Steering (Flanker)', 'Astrolabe Memory', 'Sunstone Charge'],
-    blurb: 'Chronicles of the Sunbird: Sky Citadel. An aerial expedition where children spot the celestial sunbird, navigate crosswinds, recall star sequences, and charge the ancient Sunstone with steady hands. 100% tactile gameplay with zero text questionnaires.'
+    cta: 'Start Sunbird Valley Quest →',
+    chips: ['100% Gameplay', 'No Reading Questions', 'Sunbird Spotting (CPT-3)', 'Steering (Flanker)', 'Star Astrolabe', 'Sunstone Charge'],
+    blurb: 'Chronicles of the Sunbird: Sunbird Valley. Join Guide Chirp across dawn meadows. Tap when the sunbird swoops, steer past shadow moths, recall celestial star sequences, and charge the ancient Sunstone with steady hands. Pure visual play.'
   },
   {
     id: 'autism',
     kicker: 'Social & Sensory Comfort Quest',
-    title: 'Manas PRISM™ Autism Quest',
-    img: '/decor/itw/quest-lumina-groves-banner.webp',
-    alt: 'Whispering Groves quest',
+    title: 'The Lantern Garden Autism Quest',
+    img: '/quests/autism/welcome.webp',
+    alt: 'The Lantern Garden quest',
     glow: '#8DBFB3',
     accent: '#34665D',
     btn: 'linear-gradient(90deg,#C4E0D6,#A8D0C3)',
     href: '/assessments/autism',
-    cta: 'Start Lumina Groves Autism Quest →',
-    chips: ['100% Gameplay', 'No Reading Questions', 'Sanctuary Urn Gaze', 'Sprite Emotion Mirror', 'Sensory Haven Sliders', 'Sacred Totem Sort'],
-    blurb: 'Whispering Groves of Lumina: Crystal Lantern Quest. Follow a gentle guide\'s gaze to find hidden urns, match the enchanted Sprite\'s expressions in the crystal mirror, calibrate comfortable light/sound levels, and sort magical potions by changing rules. Pure visual and sensory play.'
+    cta: 'Start Lantern Garden Quest →',
+    chips: ['100% Gameplay', 'No Reading Questions', 'Aria Gaze Urns', 'Fox Cub Emotion Mirror', 'Sensory Haven', 'Potion Gem Sort'],
+    blurb: 'The Lantern Garden: Crystal Lantern Quest. Follow Aria’s gaze to uncover terracotta vessels, mirror the playful fox cub’s feelings, calibrate cozy sensory illumination and sound, and sort magical gems by changing rules. Calm and predictable.'
+  },
+  {
+    id: 'dyslexia',
+    kicker: 'Reading & Phonology Quest',
+    title: 'The Whispering Library Dyslexia Quest',
+    img: '/quests/dyslexia/welcome.webp',
+    alt: 'The Whispering Library quest',
+    glow: '#9DC3AE',
+    accent: '#2D5E4A',
+    btn: 'linear-gradient(90deg,#C8E6D5,#A5D6BC)',
+    href: '/assessments/dyslexia',
+    cta: 'Start Whispering Library Quest →',
+    chips: ['100% Audio & Visual', 'Pip the Owl Guide', 'Echo Cave Rhymes', 'Singing Stones', 'Mirror Moths (b/d/p/q)', 'Word Reading'],
+    blurb: 'The Whispering Library. Join Pip the Story-Keeper through glowing book nooks. Listen to rhyming echoes, tap singing river stones in sequence, catch mirrored letter moths, and check words on plain, calm pages. Zero trick questions.'
   },
 ]
 
@@ -178,7 +192,7 @@ export default function GamifiedAssessmentsPage() {
             </div>
             <span className="self-start rounded-full bg-[#D9A66B]/15 border border-[#D9A66B]/40 px-3.5 py-1 text-xs font-bold text-[#8A5526]">Pure Visual & Tactile Play • Zero Text Dilemmas</span>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {QUESTS.map((q, i) => (
               <div key={q.id} data-reveal className="hb-rv" style={{ transitionDelay: `${i * 120}ms` }}>
                 <Tilt className="group relative overflow-hidden rounded-3xl bg-[#FFFCF6] shadow-xl h-full flex flex-col" style={{ boxShadow: `0 18px 44px -24px ${q.glow}aa`, border: `1.5px solid ${q.glow}77` }}>

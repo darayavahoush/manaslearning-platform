@@ -4,7 +4,7 @@ import type {Roadmap} from '../roadmap/generate'
 import {TEXT as ROADMAP_TEXT} from '../roadmap/library'
 import {GAME_NOTE} from '../ClinicianReport'
 import type {Measure} from '../session-record'
-import {buildChildStatus, type Band, type StatusItem} from './status'
+import {buildChildStatus, GROUP_INTRO, GROUP_TITLE, type Band, type SkillGroup, type StatusItem} from './status'
 import {CLINICIAN_QUESTIONS, REPORT_TEXT, STATUS_RULES} from './library'
 import HomePlan from '../plan/HomePlan'
 import {ClinicianSection, DraftBanner, ParentSection, type ReportRecord} from './ParentClinicianReport'
@@ -63,9 +63,31 @@ export function ParentSummary({record, name, roadmap}: {record: ReportRecord; na
         <p className="mt-3 rounded-lg bg-slate-50 p-3 text-sm font-semibold text-slate-800">{REPORT_TEXT.notDiagnosis}</p>
 
         <p className="mt-4 text-base font-semibold text-slate-900">{status.headline}</p>
-        <StatusList band="strength" items={status.strengths} />
-        <StatusList band="support" items={status.support} />
-        <StatusList band="investigate" items={status.investigate} />
+        {record.quest === 'dyslexia' ? (
+          <>
+            {(['sounds', 'reading'] as SkillGroup[]).map((g) => (
+              <div key={g} className="mt-6">
+                <h3 className="text-xl font-bold text-slate-900">{GROUP_TITLE[g]}</h3>
+                <p className="text-sm text-slate-600">{GROUP_INTRO[g]}</p>
+                <StatusList band="strength" items={status.strengths.filter((x) => x.group === g)} />
+                <StatusList band="support" items={status.support.filter((x) => x.group === g)} />
+                <StatusList band="investigate" items={status.investigate.filter((x) => x.group === g)} />
+              </div>
+            ))}
+            {status.investigate.some((x) => !x.group) && (
+              <div className="mt-6">
+                <h3 className="text-xl font-bold text-slate-900">About this session</h3>
+                <StatusList band="investigate" items={status.investigate.filter((x) => !x.group)} />
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <StatusList band="strength" items={status.strengths} />
+            <StatusList band="support" items={status.support} />
+            <StatusList band="investigate" items={status.investigate} />
+          </>
+        )}
         <p className="mt-3 text-xs text-slate-600">{REPORT_TEXT.statusHow}</p>
 
         <h3 className="mt-5 text-lg font-bold text-teal-800">What this does not tell us</h3>
@@ -144,7 +166,7 @@ export function ClinicianSummary({record}: {record: ReportRecord}) {
             <tbody>
               {childStatus.audit.map((a) => (
                 <tr key={a.area} className="break-inside-avoid border-b border-slate-200 align-top">
-                  <td className="py-1 pr-3 font-semibold">{a.area}</td>
+                  <td className="py-1 pr-3 font-semibold">{a.area}{a.group ? <span className="block text-xs font-normal text-slate-500">{GROUP_TITLE[a.group]}</span> : null}</td>
                   <td className="py-1 pr-3">{a.band === 'strength' ? 'Went well' : a.band === 'support' ? 'May need support' : a.band === 'investigate' ? 'Closer look' : 'Not read'}<span className="block text-xs text-slate-500">{a.reason}</span></td>
                   <td className="py-1">{a.figure}</td>
                 </tr>

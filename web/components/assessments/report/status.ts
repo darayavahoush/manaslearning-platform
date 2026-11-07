@@ -19,9 +19,22 @@ import {STATUS_RULES} from './library'
 
 export type Band = 'strength' | 'support' | 'investigate'
 
+/** The reading quest is shown in two halves: hearing sounds in words, and working with letters and written words. */
+export type SkillGroup = 'sounds' | 'reading'
+export const GROUP_TITLE: Record<SkillGroup, string> = {
+  sounds: 'Sounds in words',
+  reading: 'Letters, reading and spelling',
+}
+export const GROUP_INTRO: Record<SkillGroup, string> = {
+  sounds: 'Hearing and playing with the sounds inside spoken words, with no letters to read.',
+  reading: 'Telling letters apart and working with written words.',
+}
+
 export interface StatusItem {
   band: Band
   quest: string
+  /** reading quest only: which half of the picture this belongs to. Items about the session itself have none. */
+  group?: SkillGroup
   area: string
   /** one plain sentence for the parent */
   text: string
@@ -36,13 +49,14 @@ export interface ChildStatus {
   /** one or two plain sentences that say where the child is, in this session */
   headline: string
   /** every skill that was read, for the clinician's audit table */
-  audit: Array<{area: string; band: Band | 'not read'; figure: string; reason: string}>
+  audit: Array<{area: string; group?: SkillGroup; band: Band | 'not read'; figure: string; reason: string}>
 }
 
 interface Skill {
   key: string
   quest: ReportRecord['quest']
   area: string
+  group?: SkillGroup
   /** high: more matches is better. low: this counts mistakes, so fewer is better. */
   good: 'high' | 'low'
   /** the share a child would get by guessing alone, when that is knowable */
@@ -84,28 +98,28 @@ const SKILLS: Skill[] = [
     strong: 'Switched to the new sorting rule and kept getting it right.', needs: 'Found it hard to switch to the new sorting rule.',
     evidence: (k, n) => `${k} of ${n} gems in the right box after the change`},
   // reading quest
-  {key: 'rhymeMatches', quest: 'dyslexia', area: 'Hearing which words rhyme', good: 'high', chance: 0.5,
+  {key: 'rhymeMatches', quest: 'dyslexia', group: 'sounds', area: 'Hearing which words rhyme', good: 'high', chance: 0.5,
     strong: 'Heard which words rhyme with ease.', needs: 'Found it hard to tell which words rhyme.',
     evidence: (k, n) => `${k} of ${n} rhymes matched`},
-  {key: 'firstSoundMatches', quest: 'dyslexia', area: 'Hearing the first sound of a word', good: 'high', chance: 0.5,
+  {key: 'firstSoundMatches', quest: 'dyslexia', group: 'sounds', area: 'Hearing the first sound of a word', good: 'high', chance: 0.5,
     strong: 'Heard the first sound of words reliably.', needs: 'Found it hard to hear which words start with the same sound.',
     evidence: (k, n) => `${k} of ${n} first sounds matched`},
-  {key: 'letterFound', quest: 'dyslexia', area: 'Finding the right letter among look-alikes', good: 'high',
+  {key: 'letterFound', quest: 'dyslexia', group: 'reading', area: 'Finding the right letter among look-alikes', good: 'high',
     strong: 'Found the matching letter among b, d, p and q.', needs: 'Missed many of the matching letters among b, d, p and q.',
     evidence: (k, n) => `${k} of ${n} matching letters found`},
-  {key: 'letterLookalikeTaps', quest: 'dyslexia', area: 'Not tapping the look-alike letters', good: 'low',
+  {key: 'letterLookalikeTaps', quest: 'dyslexia', group: 'reading', area: 'Not tapping the look-alike letters', good: 'low',
     strong: 'Rarely tapped a look-alike letter by mistake.', needs: 'Tapped look-alike letters by mistake quite often.',
     evidence: (k, n) => `Left ${k} of ${n} look-alike letters alone`},
-  {key: 'soundSpanPassed', quest: 'dyslexia', area: 'Holding sounds in order', good: 'high',
+  {key: 'soundSpanPassed', quest: 'dyslexia', group: 'sounds', area: 'Holding sounds in order', good: 'high',
     strong: 'Repeated the made-up sounds back in the right order.', needs: 'Found it hard to repeat the made-up sounds in the right order.',
     evidence: (k, n) => `${k} of ${n} sound sequences repeated`},
-  {key: 'wordCheckReal', quest: 'dyslexia', area: 'Recognising real words', good: 'high', chance: 0.5,
+  {key: 'wordCheckReal', quest: 'dyslexia', group: 'reading', area: 'Recognising real words', good: 'high', chance: 0.5,
     strong: 'Recognised real words quickly and correctly.', needs: 'Called some real words made up.',
     evidence: (k, n) => `${k} of ${n} real words accepted`},
-  {key: 'wordCheckMadeUp', quest: 'dyslexia', area: 'Sounding out made-up words', good: 'high', chance: 0.5,
+  {key: 'wordCheckMadeUp', quest: 'dyslexia', group: 'reading', area: 'Sounding out made-up words', good: 'high', chance: 0.5,
     strong: 'Spotted the made-up words, which means sounding them out.', needs: 'Often took made-up words for real ones.',
     evidence: (k, n) => `${k} of ${n} made-up words spotted`},
-  {key: 'spellingCorrect', quest: 'dyslexia', area: 'Choosing the right spelling', good: 'high', chance: 0.5,
+  {key: 'spellingCorrect', quest: 'dyslexia', group: 'reading', area: 'Choosing the right spelling', good: 'high', chance: 0.5,
     strong: 'Chose the correct spelling most of the time.', needs: 'Often chose a spelling that sounds right but is not.',
     evidence: (k, n) => `${k} of ${n} spellings correct`},
 ]
@@ -148,9 +162,9 @@ export function buildChildStatus(record: ReportRecord & {parentCard?: {tired: st
 
   for (const s of SKILLS.filter((x) => x.quest === record.quest)) {
     const m = proportionOf(ms, s.key)
-    if (!m) { audit.push({area: s.area, band: 'not read', figure: 'No result recorded', reason: 'Not played or not enough data.'}); continue }
+    if (!m) { audit.push({area: s.area, group: s.group, band: 'not read', figure: 'No result recorded', reason: 'Not played or not enough data.'}); continue }
     if (m.n < STATUS_RULES.minRounds) {
-      audit.push({area: s.area, band: 'not read', figure: `${m.k} of ${m.n}`, reason: `Only ${m.n} rounds, too few to read.`})
+      audit.push({area: s.area, group: s.group, band: 'not read', figure: `${m.k} of ${m.n}`, reason: `Only ${m.n} rounds, too few to read.`})
       continue
     }
     // for a mistakes measure turn the counts around, so k is always the number done well
@@ -159,10 +173,10 @@ export function buildChildStatus(record: ReportRecord & {parentCard?: {tired: st
     const lo = s.good === 'low' ? 1 - m.hi : m.lo
     const hi = s.good === 'low' ? 1 - m.lo : m.hi
     const figure = `${s.evidence(k, m.n, m)} (${interval(lo, hi)})`
-    audit.push({area: s.area, band: r.band, figure, reason: r.why})
+    audit.push({area: s.area, group: s.group, band: r.band, figure, reason: r.why})
     const nearGuess = s.chance !== undefined && lo <= s.chance && r.band !== 'strength'
     const item: StatusItem = {
-      band: r.band, quest: record.quest, area: s.area,
+      band: r.band, quest: record.quest, group: s.group, area: s.area,
       text: r.band === 'strength' ? s.strong : r.band === 'support' ? s.needs : `The session cannot say yet. ${r.why}`,
       evidence: `${figure}${nearGuess ? `. Guessing alone would give about ${pc(s.chance as number)}` : ''}.`,
     }

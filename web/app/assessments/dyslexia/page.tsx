@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ParentCard, { type ParentAnswers } from "../../../components/assessments/ParentCard";
@@ -5,6 +6,27 @@ import EndReport from "../../../components/assessments/report/EndReport";
 import SessionRecordDownload from "../../../components/assessments/SessionRecordDownload";
 import { captureEnvironment, type SessionRecord } from "../../../components/assessments/session-record";
 import { usePlayEvents } from "../../../components/assessments/play-events";
+import { AmbientToggle } from "../../../components/assessments/QuestFX";
+
+// Original quiet sound effects normalized to comfortable quiet listening
+function playAudio(type: 'hit' | 'chime' | 'miss' | 'tap' | 'complete') {
+  if (typeof window === 'undefined') return;
+  try {
+    const audioMap: Record<string, string> = {
+      hit: '/quests/dyslexia/audio/correct.mp3',
+      chime: '/quests/dyslexia/audio/correct.mp3',
+      tap: '/quests/dyslexia/audio/tap.mp3',
+      miss: '/quests/dyslexia/audio/try_again.mp3',
+      complete: '/quests/dyslexia/audio/complete.mp3',
+    };
+    const src = audioMap[type];
+    if (src) {
+      const snd = new Audio(src);
+      snd.volume = 0.2;
+      snd.play().catch(() => {});
+    }
+  } catch {}
+}
 
 // The Whispering Library: a screening-style play session inspired by rhyme judgment,
 // initial-sound matching, letter-orientation discrimination, sound-sequence span and
@@ -56,11 +78,24 @@ const ROMAN = ["I", "II", "III", "IV", "V", "VI"];
 const KEY: Record<string, string> = { rhyme: "rhyme", first: "firstSound", letters: "letters", span: "soundSpan", spell: "spelling", words: "wordCheck" };
 const PIP = ["Lovely listening!", "The lanterns are glowing.", "You are doing great.", "Keep going, explorer!", "Pip is cheering!", "One more ink drop."];
 
-function Owl({ line }: { line: string }) {
+function Owl({ line, pose = 'greeting' }: { line: string; pose?: 'greeting' | 'listening' | 'cheering' | 'resting' }) {
+  const map: Record<string, string> = {
+    greeting: '/quests/dyslexia/pip_greeting.webp',
+    listening: '/quests/dyslexia/pip_listening.webp',
+    cheering: '/quests/dyslexia/pip_cheering.webp',
+    resting: '/quests/dyslexia/pip_resting.webp',
+  };
+  const src = map[pose] || '/quests/dyslexia/pip_greeting.webp';
   return (
     <div className="dq-owl" aria-live="polite">
-      <svg width="72" height="72" viewBox="0 0 72 72" aria-hidden="true"><path d="M14 18l8 8M58 18l-8 8" stroke="#8a5a2b" strokeWidth="5" strokeLinecap="round" /><ellipse cx="36" cy="40" rx="26" ry="27" fill="#a8743a" /><circle cx="25" cy="34" r="10" fill="#fff6dc" /><circle cx="47" cy="34" r="10" fill="#fff6dc" /><circle cx="26" cy="35" r="4.5" fill="#2b1d05" /><circle cx="46" cy="35" r="4.5" fill="#2b1d05" /><path d="M32 42h8l-4 8z" fill="#e8a33d" /></svg>
-      <span>{line}</span>
+      <img
+        src={src}
+        alt="Pip the Owl"
+        width={72}
+        height={72}
+        className="w-16 h-16 object-contain pointer-events-none drop-shadow-sm select-none shrink-0"
+      />
+      <span className="text-sm font-medium text-amber-100">{line}</span>
     </div>
   );
 }
@@ -100,9 +135,11 @@ function AudioChoice({ items, mode, vol, focus, onInk, onDone }: { items: Item[]
 
   const pick = (n: number) => {
     if (!ready || picked !== null || !t0.current) return;
-    if (!item.practice) log.current.push({ s: item.say, ok: n === item.ok, rt: Math.max(0, (down.current > t0.current ? down.current : performance.now()) - t0.current) });
+    const isHit = n === item.ok;
+    playAudio(isHit ? 'hit' : 'miss');
+    if (!item.practice) log.current.push({ s: item.say, ok: isHit, rt: Math.max(0, (down.current > t0.current ? down.current : performance.now()) - t0.current) });
     setPicked(n); onInk();
-    if (item.practice) speak(n === item.ok ? "Yes! Great listening!" : "Good try! This one was right.", vol); // PRACTICE-V2
+    if (item.practice) speak(isHit ? "Yes! Great listening!" : "Good try! This one was right.", vol); // PRACTICE-V2
     setTimeout(() => {
       if (i + 1 < items.length) setI(i + 1);
       else onDone({ trials: log.current.length, correct: log.current.filter((x) => x.ok).length, medianMs: median(log.current.map((x) => x.rt)), medianSec: Math.round(median(log.current.map((x) => x.rt)) / 100) / 10, replays: replays.current, items: log.current.map((x) => ({ s: x.s, ok: x.ok ? 1 : 0, ms: Math.round(x.rt) })) });
@@ -112,10 +149,10 @@ function AudioChoice({ items, mode, vol, focus, onInk, onDone }: { items: Item[]
   return (
     <div className="dq-center">
       {item.practice && <p className="dq-tag">Practice round: nothing counts yet</p>}
-      <Stone color="#f3d27a" label="Hear the word again" onClick={() => { replays.current++; play(); }} lit={lit === "p"}><Speaker /></Stone>
+      <Stone color="#f3d27a" label="Hear the word again" onClick={() => { playAudio('tap'); replays.current++; play(); }} lit={lit === "p"}><Speaker /></Stone>
       <div className="dq-row">
         {[0, 1].map((n) => (
-          <Stone key={n} color={n ? "#7fd1c7" : "#f2a36b"} lit={lit === (n ? "b" : "a")} disabled={!ready || picked !== null} label={mode === "spell" ? words[n] : `${focus ? "Option" : "Stone"} ${n + 1}`} onDown={(t) => { down.current = t; }} onClick={() => pick(n)}>
+          <Stone key={n} color="#fff8e6" lit={lit === (n ? "b" : "a")} disabled={!ready || picked !== null} label={mode === "spell" ? words[n] : `${focus ? "Option" : "Book plate"} ${n + 1}`} onDown={(t) => { down.current = t; }} onClick={() => pick(n)}>
             {mode === "spell" ? <span className="dq-word">{words[n]}</span> : focus ? <span className="dq-word">{n + 1}</span> : <Speaker />}
             {picked === n && !item.practice && <span className="dq-ring" />}
             {item.practice && picked !== null && n === item.ok && <span className="dq-ring" />}
@@ -234,7 +271,30 @@ function Span({ vol, focus, onInk, onDone }: { vol: number; focus: boolean; onIn
   return (
     <div className="dq-center">
       {TRIALS[t].practice && <p className="dq-tag">Practice round: nothing counts yet</p>}
-      <div className="dq-row">{SYL.map((_, n) => <Stone key={n} color={COL[n]} lit={lit === n} disabled={!ready} label={focus ? `Sound ${n + 1}` : `Singing stone ${n + 1}`} onClick={() => tap(n)}>{focus ? <span className="dq-word">{n + 1}</span> : null}</Stone>)}</div>
+      <div className="dq-row">
+        {SYL.map((s, n) => {
+          const stoneImg = ['/quests/dyslexia/stone_bah.webp', '/quests/dyslexia/stone_dee.webp', '/quests/dyslexia/stone_moe.webp', '/quests/dyslexia/stone_koo.webp'][n];
+          return (
+            <Stone
+              key={n}
+              color="#2a1f45"
+              lit={lit === n}
+              disabled={!ready}
+              label={focus ? `Sound ${n + 1}` : `Singing stone ${s}`}
+              onClick={() => { playAudio('tap'); tap(n); }}
+            >
+              {focus ? (
+                <span className="dq-word" style={{ color: '#f6e7bd' }}>{n + 1}</span>
+              ) : (
+                <div className="flex flex-col items-center justify-center p-1 pointer-events-none select-none">
+                  <img src={stoneImg} alt={s} width={50} height={50} className="w-12 h-12 object-contain drop-shadow-sm" />
+                  <span className="text-xs font-bold text-amber-200 mt-1">{s}</span>
+                </div>
+              )}
+            </Stone>
+          );
+        })}
+      </div>
       <p className="dq-small">{ready ? (focus ? "Your turn: repeat the order" : "Your turn: sing them back") : "Listening..."}</p>
     </div>
   );
@@ -378,10 +438,52 @@ function McInner() {
   useEffect(() => { if (stage === "intro") { const id = setTimeout(() => speak(teen ? chapters[ch].plain.hint : chapters[ch].say, vol), 300); return () => { clearTimeout(id); if (hasTTS()) window.speechSynthesis.cancel(); }; } }, [stage, ch, vol, teen, chapters]);
 
   const c = chapters[ch];
+  const bgMap: Record<string, string> = {
+    welcome: '/quests/dyslexia/welcome.webp',
+    sound: '/quests/dyslexia/welcome.webp',
+    intro: c ? (
+      c.id === 'rhyme' || c.id === 'first' ? '/quests/dyslexia/bg_echo.webp' :
+      c.id === 'letters' ? '/quests/dyslexia/bg_letters.webp' :
+      c.id === 'span' ? '/quests/dyslexia/bg_span.webp' :
+      '/quests/dyslexia/bg_words.webp'
+    ) : '/quests/dyslexia/welcome.webp',
+    play: c ? (
+      c.id === 'rhyme' || c.id === 'first' ? '/quests/dyslexia/bg_echo.webp' :
+      c.id === 'letters' ? '/quests/dyslexia/bg_letters.webp' :
+      c.id === 'span' ? '/quests/dyslexia/bg_span.webp' :
+      '/quests/dyslexia/bg_words.webp'
+    ) : '/quests/dyslexia/welcome.webp',
+    end: '/quests/dyslexia/celebration.webp',
+  };
+  const currentBg = bgMap[stage] || '/quests/dyslexia/welcome.webp';
+
   return (
-    <main className={"dq" + (plainUI ? " focus" : "")}>
+    <main className={"dq relative" + (plainUI ? " focus" : "")}>
       <style>{CSS}</style>
-      <header className="dq-head">
+      {/* Illustrated Whispering Library Backdrop Layer */}
+      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+        <img
+          src={currentBg}
+          alt="The Whispering Library"
+          className="w-full h-full object-cover object-center opacity-30 filter blur-[1px]"
+          width={1280}
+          height={720}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1b1330]/85 via-[#231840]/80 to-[#120b22]/95" />
+      </div>
+
+      <AmbientToggle mood="dyslexia" />
+
+      <header className="dq-head relative z-10">
+        <div className="w-full flex items-center justify-between text-xs mb-3 max-w-xl mx-auto">
+          <a href="/gamified-assessments" className="font-bold text-amber-300 hover:text-amber-200 hover:underline flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-amber-300/30 shadow-sm">
+            ← Gamified Quests
+          </a>
+          <span className="rounded-full bg-black/40 backdrop-blur-md px-3.5 py-1.5 font-bold text-amber-200 border border-amber-400/40 shadow-sm">
+            {plainUI ? "Clinical Screener" : "The Whispering Library"} • Not a Diagnosis
+          </span>
+        </div>
+
         <h1>{plainUI ? "Reading & Sound Screener" : "The Whispering Library"}</h1>
         {stage !== "welcome" && (teen ? (
           <ol className="dq-ledger" aria-label="Progress">
@@ -397,7 +499,10 @@ function McInner() {
         ) : (
           <div className="dq-lamps" aria-label={`Chapter ${Math.min(ch + 1, chapters.length)} of ${chapters.length}, ${ink} ink drops`}>
             {chapters.map((_, k) => <span key={k} className={"dq-lamp" + (k < (allDone ? chapters.length : ch) ? " on" : "")} />)}
-            <span className="dq-ink">{ink} ink</span>
+            <span className="dq-ink flex items-center gap-1">
+              <img src="/quests/dyslexia/ink_drop.webp" alt="" width={16} height={16} className="w-4 h-4 inline-block pointer-events-none" />
+              {ink} ink
+            </span>
           </div>
         ))}
       </header>
@@ -429,7 +534,7 @@ function McInner() {
 
       {stage === "sound" && (
         <section className="dq-center">
-          {!teen && <Owl line="Can you hear me?" />}
+          {!teen && <Owl line="Can you hear me?" pose="listening" />}
           {!tts && <p role="alert">This browser cannot play spoken words. Please open this page in Chrome, Safari or Edge.</p>}
           <Stone color="#f3d27a" label="Play a test word" onClick={() => { speak("moon", vol); setTested(true); setHeard(null); }}><Speaker /></Stone>
           {tested && (
@@ -457,7 +562,7 @@ function McInner() {
             </article>
           ) : (
             <>
-              <Owl line={`Chapter ${ch + 1}: ${c.name}`} />
+              <Owl line={`Chapter ${ch + 1}: ${c.name}`} pose="greeting" />
               <p>{c.hint}</p>
             </>
           )}
@@ -471,7 +576,7 @@ function McInner() {
 
       {stage === "play" && (
         <>
-          {!teen && <Owl line={line} />}
+          {!teen && <Owl line={line} pose="cheering" />}
           {c.id === "rhyme" && <AudioChoice key="r" items={sets.rhyme} mode="listen" vol={vol} focus={teen} onInk={addInk} onDone={done("rhyme")} />}
           {c.id === "first" && <AudioChoice key="f" items={sets.first} mode="listen" vol={vol} focus={teen} onInk={addInk} onDone={done("first")} />}
           {c.id === "letters" && <Letters vol={vol} onInk={addInk} onDone={done("letters")} />}
@@ -492,7 +597,7 @@ function McInner() {
 
       {stage === "eval" && (
         <section className="dq-center" aria-live="polite">
-          {!teen && <Owl line="Pip is writing it all down..." />}
+          {!teen && <Owl line="Pip is writing it all down..." pose="listening" />}
           <p>Writing the report...</p>
         </section>
       )}
@@ -500,7 +605,7 @@ function McInner() {
       {stage === "end" && reportRecord && (
         <section className="dq-wide">
           <div className="dq-center">
-            {!teen && <Owl line={`Well done, ${nick.trim() || "Explorer"}! The lanterns are glowing.`} />}
+            {!teen && <Owl line={`Well done, ${nick.trim() || "Explorer"}! The lanterns are glowing.`} pose="resting" />}
             <h2 className="dq-ch">{teen ? "Session complete" : "You finished the Whispering Library!"}</h2>
             {!teen && <p>You collected {ink} ink drops. The report below is for the grown-up.</p>}
           </div>

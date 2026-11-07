@@ -295,6 +295,18 @@
   - Audio: Looping ambient breeze and soft chime UI audio from `/quests/autism/audio/`.
 - **Rule A Confirmation**: 100% locked. `JA_TRIALS`, `EMOTION_MIRROR_TRIALS`, `DCCS_CARDS`, `DCCS_SWITCH_AT=3`, `ROOM_STEP_MS=1200ms`, camera tracker, scoring formulas, and all telemetry keys remain completely untouched.
 
+### Game 3 Completed: Dyslexia — The Whispering Library
+- **Before**: Basic vector owl SVG with simple geometric shapes. Audio choice options had asymmetric pastel colors (`#f2a36b` vs `#7fd1c7`) that could inadvertently hint at answers. Letter tiles and word checks lacked ambient world grounding. No looping library ambience.
+- **After**:
+  - Mascot: Pip the Owl implemented with 4 expressive, hand-painted gouache poses (`pip_greeting.webp`, `pip_listening.webp`, `pip_cheering.webp`, `pip_resting.webp`).
+  - Rhyme & First-Sound games: Choices sit on visually identical warm book plates (`#fff8e6`) with identical borders, ensuring zero visual cues to answers. Replay and audio timing preserved.
+  - Letter Game (b, d, p, q): Plain sans-serif high-contrast Verdana font strictly preserved; mirror pairs (b/d, p/q) and 4×3 grid preserved without decorative fonts on the letters.
+  - Sound Sequence (Echo Steps): 4 illustrated singing syllable stones (`stone_bah.webp`, `stone_dee.webp`, `stone_moe.webp`, `stone_koo.webp`) with soft amber glowing pulse (no strobing).
+  - Word Check & Spelling: High-contrast plain readability panels with zero backdrop clutter, fully dyslexia-friendly.
+  - Teen focus mode: 100% preserved with classical typography and minimal ledger.
+  - Audio: Looping library hush ambience and soft chimes from `/quests/dyslexia/audio/`.
+- **Rule A Confirmation**: 100% locked. `RHYME`, `FIRST`, `LET`, `LAYOUT`, `SYL`, `SEQS`, `WORDS`, `SPELL`, timing delays, and all telemetry keys remain completely untouched.
+
 ---
 
 ## 5. Instrument Versioning

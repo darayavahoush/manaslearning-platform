@@ -11,7 +11,8 @@ export function QuestStyles() {
 @keyframes qd-blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.08)}}
 .qd-blink{animation:qd-blink 5s infinite;transform-origin:100px 92px}
 @keyframes sunbird-wing{0%,100%{transform:scaleY(1)}50%{transform:scaleY(0.92) translateY(2px)}}
-.sunbird-wing-anim{animation:sunbird-wing 0.8s ease-in-out infinite;transform-origin:center 60%}
+/* The sunbird is the measured target and the shadow moth is the distractor. Motion on only one of them would make it easier to notice, so neither moves. */
+.sunbird-wing-anim{animation:none;transform-origin:center 60%}
 @keyframes star-pulse-soft{0%,100%{transform:scale(1);filter:drop-shadow(0 0 6px rgba(251,191,36,0.5))}50%{transform:scale(1.05);filter:drop-shadow(0 0 14px rgba(251,191,36,0.85))}}
 .star-pulse{animation:star-pulse-soft 1.6s ease-in-out infinite}
 @keyframes gentle-nod{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}

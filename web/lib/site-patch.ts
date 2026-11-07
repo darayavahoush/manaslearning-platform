@@ -1,7 +1,7 @@
 // Small script injected into the proxied live pages (before Milo).
 // 1) Links/buttons that belong to THIS app are opened with a normal page load, because the live site's own
 //    client-side router cannot navigate into our app (different build) and fails silently.
-// 2) Adds a "Book a Consultation" item to the live header menu.
+// 2) Adds a "Book a Consultation" item to the live header menu. (Gamified Quests is in the live Assessments dropdown.)
 export const SITE_PATCH = '<script>' + String.raw`
 (function () {
   var OWN = ['/consult', '/milo', '/experience', '/confirm', '/team', '/pay', '/gamified-assessments'];
@@ -70,36 +70,10 @@ export const SITE_PATCH = '<script>' + String.raw`
         }
       }
     }
-    // The live site's own Assessments dropdown may already offer Gamified Quests. If so, do not add a second menu item,
-    // and remove one we added earlier.
-    var ownGq = false;
-    ul.querySelectorAll('a').forEach(function (x) {
-      if (!x.closest('[data-gq]') && /gamified quests/i.test(x.textContent || '')) ownGq = true;
-    });
-    if (ownGq) {
-      var oldGq = ul.querySelector('[data-gq]');
-      if (oldGq && oldGq.parentNode) oldGq.parentNode.removeChild(oldGq);
-    } else if (!ul.querySelector('[data-gq]')) {
-      var items2 = ul.querySelectorAll(':scope > li');
-      var assessLi = null;
-      for (var j = 0; j < items2.length; j++) if (/assessments/i.test(items2[j].textContent)) assessLi = items2[j];
-      if (assessLi && assessLi.parentNode) {
-        var gqLi = assessLi.cloneNode(true);
-        gqLi.setAttribute('data-gq', '1');
-        var gqA = gqLi.querySelector('a');
-        if (gqA) {
-          gqA.setAttribute('href', '/gamified-assessments');
-          var w2 = document.createTreeWalker(gqA, NodeFilter.SHOW_TEXT), n2, last2 = null;
-          while ((n2 = w2.nextNode())) if (n2.nodeValue.trim()) last2 = n2;
-          if (last2) {
-            last2.nodeValue = 'Gamified Quests';
-            gqLi.style.opacity = '1'; gqLi.style.transform = 'none';
-            gqLi.querySelectorAll('[style]').forEach(function (s) { s.style.opacity = '1'; s.style.transform = 'none'; });
-            assessLi.parentNode.insertBefore(gqLi, assessLi.nextSibling);
-          }
-        }
-      }
-    }
+    // The live site's own Assessments dropdown now offers Gamified Quests. That link only exists in the page while the
+    // dropdown is open, so it cannot be detected at load, and adding a copy of the Assessments item here made a second
+    // "Assessments" appear and disappear as the dropdown opened and closed. Never add one, and remove any left over.
+    ul.querySelectorAll('[data-gq]').forEach(function (x) { if (x.parentNode) x.parentNode.removeChild(x); });
   }
 
   function addQuestBanner() {

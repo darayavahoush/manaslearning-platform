@@ -106,6 +106,28 @@ export function AmbientToggle({ mood }: { mood: "groves" | "citadel" | "adhd" | 
   );
 }
 
+export function VerandaRailingSvg({ className = "w-full h-full" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 360 40" className={className} preserveAspectRatio="none" aria-hidden="true">
+      {/* Top carved stone rail */}
+      <rect x="0" y="0" width="360" height="10" rx="3" fill="#C49A6C" stroke="#7A4C25" strokeWidth="1.5" />
+      <rect x="2" y="2" width="356" height="2.5" fill="#EAD7B8" opacity="0.6" />
+      {/* Lower stone molding */}
+      <rect x="0" y="32" width="360" height="8" rx="2" fill="#A27343" stroke="#5E3516" strokeWidth="1.5" />
+      {/* Pillar posts */}
+      <rect x="8" y="10" width="14" height="22" fill="#B28757" stroke="#6E3E1A" strokeWidth="1" />
+      <rect x="173" y="10" width="14" height="22" fill="#B28757" stroke="#6E3E1A" strokeWidth="1" />
+      <rect x="338" y="10" width="14" height="22" fill="#B28757" stroke="#6E3E1A" strokeWidth="1" />
+      {/* Left jali panel with carved arch windows */}
+      <rect x="22" y="10" width="151" height="22" fill="#DFCCA8" stroke="#8C5E32" strokeWidth="1" />
+      <path d="M34 32 V20 C34 15 44 15 44 20 V32 M56 32 V20 C56 15 66 15 66 20 V32 M78 32 V20 C78 15 88 15 88 20 V32 M100 32 V20 C100 15 110 15 110 20 V32 M122 32 V20 C122 15 132 15 132 20 V32 M144 32 V20 C144 15 154 15 154 20 V32 M160 32 V20 C160 15 168 15 168 20 V32" stroke="#6E3E1A" strokeWidth="1.5" fill="#4A280F" opacity="0.4" />
+      {/* Right jali panel with carved arch windows */}
+      <rect x="187" y="10" width="151" height="22" fill="#DFCCA8" stroke="#8C5E32" strokeWidth="1" />
+      <path d="M199 32 V20 C199 15 209 15 209 20 V32 M221 32 V20 C221 15 231 15 231 20 V32 M243 32 V20 C243 15 253 15 253 20 V32 M265 32 V20 C265 15 275 15 275 20 V32 M287 32 V20 C287 15 297 15 297 20 V32 M309 32 V20 C309 15 319 15 319 20 V32 M325 32 V20 C325 15 333 15 333 20 V32" stroke="#6E3E1A" strokeWidth="1.5" fill="#4A280F" opacity="0.4" />
+    </svg>
+  );
+}
+
 // Aria: Clear gaze and pointing direction sprites. Starts with eye contact, then shifts gaze & points toward target.
 export function GazeGuide({ gaze, onCue }: { gaze: "left" | "center" | "right"; isPointing?: boolean; onCue: () => void }) {
   const [cue, setCue] = useState(false);
@@ -131,8 +153,9 @@ export function GazeGuide({ gaze, onCue }: { gaze: "left" | "center" | "right"; 
     : "Aria is looking at you";
 
   return (
-    <div className="qd-gz flex flex-col items-center">
-      <div className="h-44 w-44 sm:h-52 sm:w-52 flex items-center justify-center relative">
+    <div className="qd-gz relative flex flex-col items-center">
+      {/* Aria Character standing behind veranda terrace balustrade */}
+      <div className="h-44 w-44 sm:h-52 sm:w-52 flex items-center justify-center relative z-0">
         <img
           src={spriteSrc}
           alt={ariaLabel}
@@ -140,6 +163,10 @@ export function GazeGuide({ gaze, onCue }: { gaze: "left" | "center" | "right"; 
           width={208}
           height={208}
         />
+      </div>
+      {/* Sandstone Terrace Balustrade Railing overlapping Aria's waist */}
+      <div className="-mt-11 sm:-mt-13 relative z-10 w-72 sm:w-96 h-12 sm:h-14 pointer-events-none drop-shadow-lg">
+        <VerandaRailingSvg />
       </div>
       <span className="sr-only" aria-live="polite">
         {cue ? "Where is Aria looking?" : "Aria is looking at you..."}

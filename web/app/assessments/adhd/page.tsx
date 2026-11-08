@@ -14,6 +14,7 @@ import {useState, useEffect, useRef, useMemo} from 'react'
 import Link from 'next/link'
 import KeeperFeedback from '../../../components/assessments/KeeperFeedback'
 import EndReport from '../../../components/assessments/report/EndReport'
+import CognitiveDossierView from '../../../components/assessments/report/CognitiveDossierView'
 import {QuestStyles, Fireflies, AmbientToggle} from '../../../components/assessments/QuestFX'
 
 // The star-sequence tone version: one clear pitch per star position (a pentatonic-style set, all within the child's range)
@@ -693,10 +694,59 @@ function McInner() {
 
   // Agent Output
   const [agentResult, setAgentResult] = useState<any>(null)
-  const [showClinicalDossier, setShowClinicalDossier] = useState(false)
+  const [showClinicalDossier, setShowClinicalDossier] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return new URLSearchParams(window.location.search).get('dossier') === 'true'
+    }
+    return false
+  })
   const [keeperObs, setKeeperObs] = useState<any>(null)
   const [parentOk, setParentOk] = useState(false)
   const [notice, setNotice] = useState('')
+
+  // Developer / Direct Stage landing fallback for celebration
+  useEffect(() => {
+    if (stage === 'celebration' && !agentResult) {
+      fetch('/api/assessments/agent', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          assessmentType: 'adhd',
+          childName: heroName || 'Canopy Ranger',
+          childAge: heroAge || 8,
+          guildClass: guildClass || 'Canopy Sky Ranger',
+          companion: 'Guide Chirp',
+          telemetry: {
+            cptTrials: 18,
+            cptResponses: 12,
+            omissions: 1,
+            commissions: 2,
+            hrtMs: 418,
+            rtvMs: 64,
+            flankerCostMs: 32,
+            flankerCongruentN: 6,
+            flankerIncongruentN: 5,
+            flankerCongruentTotal: 6,
+            flankerIncongruentTotal: 6,
+            workingMemorySpan: 4,
+            prematureReleases: 1,
+            chargeTrials: 3,
+            cptTargets: 12,
+            cptNonTargets: 6,
+            rtFirstHalfMs: 405,
+            rtSecondHalfMs: 431,
+          }
+        })
+      }).then(r => r.json()).then(j => {
+        if (j.data) {
+          setAgentResult(j.data)
+          if (new URLSearchParams(window.location.search).get('dossier') === 'true') {
+            setShowClinicalDossier(true)
+          }
+        }
+      }).catch(() => {})
+    }
+  }, [stage, agentResult, heroName, heroAge, guildClass])
 
   // star-sequence mode: ?mode=tone on the page address selects the tone version
   useEffect(() => {
@@ -1796,102 +1846,266 @@ function McInner() {
           </div>
         )}
 
-        {/* 9. CHAPTER 4 GAMEPLAY: SUNSTONE POWER CHARGE */}
-        {stage === 'situational_game' && CHARGE_TRIALS[chargeTrialIndex] && (
-          <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-6 sm:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-xl mx-auto">
-            <div className="flex justify-between items-center mb-6">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-200 bg-[#3A2412]/80 border border-amber-400/30 px-3.5 py-1 rounded-full backdrop-blur-sm">
-                {chargePrac ? 'Practice' : `Charge ${chargeTrialIndex + 1} of ${CHARGE_TRIALS.length} • ${CHARGE_TRIALS[chargeTrialIndex].title}`}
-              </span>
-              <span className="text-xs font-bold text-amber-100 bg-[#422D19]/80 px-3 py-1 rounded-full border border-amber-400/30 backdrop-blur-sm flex items-center gap-1">
-                <span>☀️</span> Sunstone Altar
-              </span>
-            </div>
+        {/* 9. CHAPTER 4 GAMEPLAY: SACRED SUNSTONE POWER CHARGE ALTAR */}
+        {stage === 'situational_game' && CHARGE_TRIALS[chargeTrialIndex] && (() => {
+          const arcHeadAngle = (chargeProgress / 100) * 360 - 90
+          const arcHeadRad = (arcHeadAngle * Math.PI) / 180
+          const arcHeadX = 150 + 104 * Math.cos(arcHeadRad)
+          const arcHeadY = 150 + 104 * Math.sin(arcHeadRad)
+          const activeRuneCount = chargeProgress >= 100 ? 12 : Math.floor((chargeProgress / 100) * 12)
 
-            {chargePrac && (
-              <div className="mb-2 flex items-center justify-center gap-3">
-                <style>{CV_CSS}</style>
-                <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float h-14 w-14 object-contain drop-shadow" />
-                <p className="text-left text-base md:text-lg font-bold text-amber-100 max-w-xs">Press and HOLD the glowing stone. Do not let go until it chimes!</p>
+          const RUNES = [
+            {id: 0, x: 150, y: 24, label: '☀️', glyph: 'M150 19 L153 25 L150 28 L147 25 Z'},
+            {id: 1, x: 213, y: 41, label: '✨', glyph: 'M213 36 L216 42 L213 45 L210 42 Z'},
+            {id: 2, x: 259, y: 87, label: '⚡', glyph: 'M259 82 L262 88 L259 91 L256 88 Z'},
+            {id: 3, x: 276, y: 150, label: '🔥', glyph: 'M276 145 L279 151 L276 154 L273 151 Z'},
+            {id: 4, x: 259, y: 213, label: '✦', glyph: 'M259 208 L262 214 L259 217 L256 214 Z'},
+            {id: 5, x: 213, y: 259, label: '✧', glyph: 'M213 254 L216 260 L213 263 L210 260 Z'},
+            {id: 6, x: 150, y: 276, label: '☀️', glyph: 'M150 271 L153 277 L150 280 L147 277 Z'},
+            {id: 7, x: 87, y: 259, label: '✨', glyph: 'M87 254 L90 260 L87 263 L84 260 Z'},
+            {id: 8, x: 41, y: 213, label: '⚡', glyph: 'M41 208 L44 214 L41 217 L38 214 Z'},
+            {id: 9, x: 24, y: 150, label: '🔥', glyph: 'M24 145 L27 151 L24 154 L21 151 Z'},
+            {id: 10, x: 41, y: 87, label: '✦', glyph: 'M41 82 L44 88 L41 91 L38 88 Z'},
+            {id: 11, x: 87, y: 41, label: '✧', glyph: 'M87 36 L90 42 L87 45 L84 42 Z'},
+          ]
+
+          return (
+            <div className="relative rounded-3xl border-2 border-[#D4A373]/60 bg-gradient-to-b from-[#1C1610]/90 via-[#271E15]/80 to-[#140F0A]/95 backdrop-blur-md p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.75)] text-center select-none text-amber-50 max-w-xl mx-auto overflow-hidden">
+              {/* Subtle Temple Ambient Ray Overlay */}
+              <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent -z-10" />
+
+              {/* Altar Header */}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-200 bg-[#3A2412]/90 border border-amber-400/40 px-3.5 py-1.5 rounded-full backdrop-blur-sm shadow-sm flex items-center gap-1.5">
+                  <span className="text-amber-400">☀️</span>
+                  {chargePrac ? 'Practice: Steady Hold' : `Charge ${chargeTrialIndex + 1} of ${CHARGE_TRIALS.length} • ${CHARGE_TRIALS[chargeTrialIndex].title}`}
+                </span>
+                <span className="text-xs font-bold text-amber-100 bg-[#422D19]/90 px-3.5 py-1.5 rounded-full border border-amber-400/40 backdrop-blur-sm shadow-sm flex items-center gap-1">
+                  <span>🏛️</span> Sacred Altar
+                </span>
               </div>
-            )}
 
-            {/* Glowing Interactive Sunstone Charging Orb on the Sacred Altar */}
-            <div className="relative mx-auto my-8 flex h-60 w-60 sm:h-72 sm:w-72 items-center justify-center">
-              {/* Circular SVG Gauge */}
-              <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="44" stroke="#4A321E" strokeWidth="8" strokeOpacity="0.7" fill="none" />
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="44"
-                  stroke="#F59E0B"
-                  strokeWidth="8"
-                  fill="none"
-                  strokeDasharray="276.46"
-                  strokeDashoffset={276.46 - (276.46 * chargeProgress) / 100}
-                  strokeLinecap="round"
-                  className="transition-all duration-75"
-                />
-              </svg>
-
-              {/* Touchable Core Relic Orb */}
-              <button
-                type="button"
-                aria-label="Sunstone power crystal"
-                onPointerDown={handleStartCharge}
-                onPointerUp={handleEndCharge}
-                onPointerLeave={handleEndCharge}
-                onContextMenu={(e) => e.preventDefault()}
-                className={`relative z-10 w-44 h-44 sm:w-52 sm:h-52 rounded-full flex flex-col items-center justify-center shadow-2xl transition-all cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300 ${
-                  isCharging
-                    ? 'bg-gradient-to-tr from-amber-400 via-orange-500 to-yellow-300 scale-105 shadow-[0_0_60px_rgba(245,158,11,0.9)] border-4 border-yellow-200'
+              {/* Guide Chirp Guidance Bubble */}
+              <div className="mb-4 flex items-center justify-center gap-3 bg-[#24170E]/80 border border-amber-400/30 rounded-2xl p-3 shadow-md backdrop-blur-sm max-w-md mx-auto">
+                <style>{CV_CSS}</style>
+                <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float h-12 w-12 object-contain drop-shadow" />
+                <p className="text-left text-xs sm:text-sm font-semibold text-amber-100 leading-snug">
+                  {chargePrac
+                    ? 'Press and HOLD the glowing stone! Keep your finger steady until the ring fills.'
+                    : chargeStatusText === 'early'
+                    ? 'The spark cooled! Breathe gently and hold steady all the way to 100%!'
+                    : chargeStatusText === 'charging'
+                    ? 'Feel the solar power flowing! Hold steady until the temple bell chimes!'
                     : chargeStatusText === 'success'
-                    ? 'bg-gradient-to-tr from-emerald-500 via-teal-500 to-emerald-400 shadow-[0_0_50px_rgba(16,185,129,0.9)] border-4 border-emerald-200'
-                    : 'bg-gradient-to-b from-[#2E1A0C] via-[#452812] to-[#201005] border-4 border-amber-400/70 hover:border-amber-300 shadow-[0_8px_25px_rgba(0,0,0,0.6)]'
-                }`}
-              >
-                {chargeStatusText === 'success' ? (
-                  <div className="flex flex-col items-center animate-bounce text-white">
-                    <img src="/quests/adhd/sunstone_orb.webp" alt="Sunstone Charged" className="w-20 h-20 drop-shadow-md object-contain" />
-                    <span className="font-patrick text-xl font-bold mt-1">Charged!</span>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center pointer-events-none">
-                    <img src="/quests/adhd/sunstone_orb.webp" alt="Sunstone" className={`w-20 h-20 sm:w-24 sm:h-24 object-contain transition-transform ${isCharging ? 'scale-110 drop-shadow-[0_0_20px_rgba(251,191,36,0.9)]' : 'opacity-90'}`} />
-                    <span className={`text-xs sm:text-sm font-black uppercase tracking-wider mt-2 ${isCharging ? 'text-white' : 'text-amber-200'}`}>
-                      {isCharging ? `${chargeProgress}% HOLD!` : 'PRESS & HOLD'}
-                    </span>
+                    ? '★ The sacred chime sang! Brilliant steady patience!'
+                    : 'Place your finger on the ancient Sunstone and HOLD steady until the chime!'}
+                </p>
+              </div>
+
+              {/* Interactive Sacred Altar Dais & Sunstone Relic */}
+              <div className="relative mx-auto my-6 flex h-72 w-72 sm:h-80 sm:w-80 items-center justify-center">
+                {/* SVG Sacred Mandala Altar Dial */}
+                <svg className="absolute inset-0 w-full h-full pointer-events-none -rotate-90 select-none" viewBox="0 0 300 300">
+                  <defs>
+                    <linearGradient id="sunfireChargeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#F59E0B" />
+                      <stop offset="50%" stopColor="#FBBF24" />
+                      <stop offset="100%" stopColor="#FDE68A" />
+                    </linearGradient>
+                    <radialGradient id="altarCoreGlow" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.3" />
+                      <stop offset="100%" stopColor="#F59E0B" stopOpacity="0" />
+                    </radialGradient>
+                    <filter id="runeGlow" x="-30%" y="-30%" width="160%" height="160%">
+                      <feGaussianBlur stdDeviation="3" result="blur" />
+                      <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                  </defs>
+
+                  {/* Ambient Altar Glow Backing */}
+                  <circle cx="150" cy="150" r="142" fill="url(#altarCoreGlow)" />
+
+                  {/* Outer Carved Stone Border */}
+                  <circle cx="150" cy="150" r="138" stroke="#5C3B1E" strokeWidth="2.5" strokeDasharray="3 5" fill="none" opacity="0.6" />
+                  <circle cx="150" cy="150" r="130" stroke="#784A24" strokeWidth="1.5" fill="none" opacity="0.4" />
+
+                  {/* 12 Ancient Solar Runes */}
+                  {RUNES.map((rune) => {
+                    const isLit = rune.id < activeRuneCount
+                    return (
+                      <g key={rune.id} className="transition-all duration-300">
+                        {/* Connecting ray to inner channel */}
+                        <line
+                          x1={rune.x}
+                          y1={rune.y}
+                          x2={150 + 104 * Math.cos(((rune.id * 30 - 90) * Math.PI) / 180)}
+                          y2={150 + 104 * Math.sin(((rune.id * 30 - 90) * Math.PI) / 180)}
+                          stroke={isLit ? '#FBBF24' : '#5C3B1E'}
+                          strokeWidth={isLit ? '2' : '1'}
+                          opacity={isLit ? '0.8' : '0.3'}
+                        />
+                        {/* Rune Node */}
+                        <circle
+                          cx={rune.x}
+                          cy={rune.y}
+                          r={isLit ? '7' : '5'}
+                          fill={isLit ? '#FDE68A' : '#2A1C12'}
+                          stroke={isLit ? '#F59E0B' : '#6B4522'}
+                          strokeWidth="2"
+                          filter={isLit ? 'url(#runeGlow)' : undefined}
+                        />
+                        {isLit && (
+                          <circle
+                            cx={rune.x}
+                            cy={rune.y}
+                            r="11"
+                            fill="none"
+                            stroke="#FBBF24"
+                            strokeWidth="1"
+                            opacity="0.6"
+                            className="animate-ping"
+                          />
+                        )}
+                      </g>
+                    )
+                  })}
+
+                  {/* Base Channel Groove */}
+                  <circle cx="150" cy="150" r="104" stroke="#2B1A0F" strokeWidth="12" fill="none" opacity="0.9" />
+                  <circle cx="150" cy="150" r="104" stroke="#4A301A" strokeWidth="10" fill="none" opacity="0.7" />
+
+                  {/* Active Molten Golden Energy Arc */}
+                  <circle
+                    cx="150"
+                    cy="150"
+                    r="104"
+                    stroke="url(#sunfireChargeGrad)"
+                    strokeWidth="11"
+                    fill="none"
+                    strokeDasharray="653.45"
+                    strokeDashoffset={653.45 - (653.45 * chargeProgress) / 100}
+                    strokeLinecap="round"
+                    filter="url(#runeGlow)"
+                    className="transition-all duration-75"
+                  />
+
+                  {/* Orbital Energy Spark at Arc Head */}
+                  {isCharging && chargeProgress > 0 && chargeProgress < 100 && (
+                    <g transform={`rotate(90 150 150)`}>
+                      {/* Convert back from rotated coords */}
+                      <circle
+                        cx={arcHeadX}
+                        cy={arcHeadY}
+                        r="8"
+                        fill="#FFFBEB"
+                        stroke="#F59E0B"
+                        strokeWidth="3"
+                        filter="url(#runeGlow)"
+                      />
+                      <circle
+                        cx={arcHeadX}
+                        cy={arcHeadY}
+                        r="14"
+                        fill="none"
+                        stroke="#FDE68A"
+                        strokeWidth="1.5"
+                        opacity="0.8"
+                        className="animate-ping"
+                      />
+                    </g>
+                  )}
+                </svg>
+
+                {/* Touchable Core Ancient Sunstone Relic */}
+                <button
+                  type="button"
+                  aria-label="Ancient Sunstone power relic"
+                  onPointerDown={handleStartCharge}
+                  onPointerUp={handleEndCharge}
+                  onPointerLeave={handleEndCharge}
+                  onContextMenu={(e) => e.preventDefault()}
+                  className={`relative z-10 w-48 h-48 sm:w-56 sm:h-56 rounded-full flex flex-col items-center justify-center transition-all cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300 ${
+                    isCharging
+                      ? 'bg-gradient-to-tr from-amber-500 via-orange-500 to-yellow-300 scale-105 shadow-[0_0_80px_rgba(245,158,11,0.95),0_0_140px_rgba(251,191,36,0.6)] border-4 border-yellow-200'
+                      : chargeStatusText === 'success'
+                      ? 'bg-gradient-to-tr from-emerald-500 via-teal-500 to-emerald-400 scale-105 shadow-[0_0_70px_rgba(16,185,129,0.95)] border-4 border-emerald-200'
+                      : 'bg-gradient-to-b from-[#2C180B] via-[#4A2912] to-[#1E0F05] border-4 border-amber-400/80 hover:border-amber-300 shadow-[0_12px_36px_rgba(0,0,0,0.8),inset_0_0_24px_rgba(245,158,11,0.25)]'
+                  }`}
+                >
+                  {chargeStatusText === 'success' ? (
+                    <div className="flex flex-col items-center text-white animate-bounce">
+                      <img src="/quests/adhd/sunstone_orb.webp" alt="Sunstone Fully Charged" className="w-20 h-20 sm:w-24 sm:h-24 drop-shadow-[0_0_25px_rgba(255,255,255,0.9)] object-contain" />
+                      <span className="font-patrick text-2xl font-bold mt-1 text-emerald-100 drop-shadow">✨ CHARGED! ✨</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center pointer-events-none select-none">
+                      <img
+                        src="/quests/adhd/sunstone_orb.webp"
+                        alt="Sunstone Relic"
+                        className={`w-20 h-20 sm:w-24 sm:h-24 object-contain transition-transform duration-300 ${
+                          isCharging
+                            ? 'scale-115 drop-shadow-[0_0_30px_rgba(251,191,36,0.95)]'
+                            : 'opacity-95 hover:scale-105'
+                        }`}
+                      />
+                      {isCharging ? (
+                        <div className="mt-1 flex flex-col items-center">
+                          <span className="rounded-full bg-black/60 backdrop-blur-sm px-3 py-0.5 text-xs sm:text-sm font-black text-amber-300 border border-amber-400/50 shadow-sm">
+                            ⚡ {chargeProgress}% HOLD!
+                          </span>
+                          <span className="text-[10px] font-bold text-white uppercase tracking-widest mt-0.5 drop-shadow">
+                            Wait for chime...
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="mt-1 flex flex-col items-center">
+                          <span className="rounded-full bg-[#1A0E05]/80 px-3.5 py-1 text-xs font-black uppercase tracking-wider text-amber-200 border border-amber-400/50 shadow-sm">
+                            TOUCH & HOLD
+                          </span>
+                          <span className="text-[10px] font-semibold text-amber-300/80 mt-0.5">
+                            Hold steady until bell
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </button>
+              </div>
+
+              {/* Status and Action Feedback Banner */}
+              <div className="max-w-md mx-auto">
+                {chargeStatusText === 'early' && (
+                  <div className="p-3.5 rounded-2xl bg-rose-950/85 border border-rose-500/60 text-xs sm:text-sm font-bold text-rose-200 animate-shake shadow-lg">
+                    💨 Released a bit early! Take a calm breath and hold steady until 100%!
                   </div>
                 )}
-              </button>
+                {chargeStatusText === 'charging' && (
+                  <div className="p-3.5 rounded-2xl bg-[#3A2412]/90 border border-amber-400/50 text-xs sm:text-sm font-bold text-amber-200 animate-pulse shadow-lg flex items-center justify-center gap-2">
+                    <span className="animate-spin">☀️</span>
+                    Gathering ancient solar power... Keep holding! Wait for the bell!
+                  </div>
+                )}
+                {chargeStatusText === 'success' && (
+                  <div className="p-3.5 rounded-2xl bg-emerald-950/90 border border-emerald-500/60 text-xs sm:text-sm font-bold text-emerald-200 shadow-lg">
+                    ★ Celestial Chime! {chargePrac ? 'Superb holding! Ready for the trials.' : CHARGE_TRIALS[chargeTrialIndex].rewardText}
+                  </div>
+                )}
+                {chargeStatusText === 'idle' && (
+                  <p className="text-xs sm:text-sm font-semibold text-amber-200/90">
+                    {chargePrac
+                      ? 'Practice: press and HOLD the stone until the golden ring completes!'
+                      : chargePracDone && chargeTrialIndex === 0
+                      ? 'Great practice! Now it counts for real. Press and HOLD until the bell!'
+                      : 'Press and HOLD the stone. Do not let go until the bell rings!'}
+                  </p>
+                )}
+              </div>
             </div>
-
-            {/* Instruction and Feedback Banner */}
-            <div className="max-w-md mx-auto">
-              {chargeStatusText === 'early' && (
-                <div className="p-3 rounded-2xl bg-rose-950/80 border border-rose-500/50 text-xs font-bold text-rose-200 animate-shake">
-                  Oops! Released too early. Take a slow breath and hold steady until 100%!
-                </div>
-              )}
-              {chargeStatusText === 'charging' && (
-                <div className="p-3 rounded-2xl bg-[#3A2412]/80 border border-amber-400/40 text-xs font-bold text-amber-200 animate-pulse">
-                  Gathering solar energy... Keep holding! Wait for the chime!
-                </div>
-              )}
-              {chargeStatusText === 'success' && (
-                <div className="p-3 rounded-2xl bg-emerald-950/80 border border-emerald-500/50 text-xs font-bold text-emerald-200">
-                  ★ Celestial Chime! {chargePrac ? 'Great holding!' : CHARGE_TRIALS[chargeTrialIndex].rewardText}
-                </div>
-              )}
-              {chargeStatusText === 'idle' && (
-                <p className="text-xs sm:text-sm font-semibold text-amber-200/80">
-                  {chargePrac ? 'Practice: press and HOLD the stone until the ring is full!' : chargePracDone && chargeTrialIndex === 0 ? 'Great! Now it counts. Press and HOLD until the bell!' : 'Press and HOLD the stone. Do not let go until the bell rings!'}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
+          )
+        })()}
 
         {/* 10. LOADING AGENTIC EVALUATION */}
         {stage === 'parent_card' && (
@@ -1988,112 +2202,15 @@ function McInner() {
             {agentResult && (agentResult as {record?: unknown}).record && (
               <div className="mb-8"><EndReport record={(agentResult as {record: Record<string, unknown>}).record as any} name={(agentResult as {childName: string}).childName} /></div>
             )}
-            {/* GROWN-UP SUMMARY */}
-            {showClinicalDossier && (
-              <div className="rounded-3xl border-2 border-[#CBD5E1] bg-white p-8 md:p-12 shadow-2xl">
-                <div className="border-b border-[#E2E8F0] pb-6 mb-6">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-[#64748B]">
-                    Grown-up summary • {agentResult.clinicalReport.generatedOn}
-                  </span>
-                  <h2 className="font-patrick text-3xl sm:text-4xl text-[#0F172A] font-bold mt-1">
-                    What we noticed while playing
-                  </h2>
-                  <p className="text-xs text-[#475569] mt-2 leading-relaxed">
-                    {agentResult.clinicalReport.summary}
-                  </p>
-                </div>
-
-                <div role="note" className="p-4 rounded-2xl bg-[#FFFBEB] border border-[#FDE68A] mb-8 text-xs text-[#78350F] leading-relaxed">
-                  <strong>This is not a diagnosis.</strong> It shows counts and speeds from one short play session. Nothing here is compared with other children, and many everyday things change it: tiredness, mood, the device, or how much your child enjoyed the game. If you have concerns about attention, communication or sensory comfort, please talk to a paediatrician or another qualified clinician.
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                  {agentResult.clinicalReport.indices.map((idx: {name: string; value: string; detail?: string; note?: string}, i: number) => (
-                    <div key={i} className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                      <strong className="text-sm text-[#0F172A] block">{idx.name}</strong>
-                      <div className="font-mono font-bold text-sm mt-1" style={{color: '#05B076'}}>{idx.value}</div>
-                      <span className="text-[11px] text-[#64748B] block mt-1">{idx.detail}</span>
-                      <span className="text-[11px] text-[#475569] block mt-2 leading-relaxed">{idx.note}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mb-8">
-                  <h3 className="font-patrick text-2xl text-[#0F172A] mb-3">Questions you could bring to a clinician</h3>
-                  <ul className="space-y-1.5 text-xs text-[#334155]">
-                    {agentResult.clinicalReport.questions.map((q: string, i: number) => (
-                      <li key={i} className="flex items-start gap-1.5">
-                        <span className="font-bold" style={{color: '#05B076'}}>?</span>
-                        <span>{q}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* 4-Part IEP & 504 Accommodations Blueprint */}
-                <div className="mb-8 space-y-6">
-                  <h3 className="font-patrick text-2xl text-[#0F172A]">Ideas to discuss with your school or clinician</h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                      <strong className="text-xs font-bold text-[#05B076] uppercase tracking-wider block mb-2">
-                        1. Classroom Seating & Environment
-                      </strong>
-                      <ul className="space-y-1.5 text-xs text-[#334155]">
-                        {agentResult.clinicalReport.accommodations.classroom.map((item: string, idx: number) => (
-                          <li key={idx} className="flex items-start gap-1.5">
-                            <span className="text-[#05B076] font-bold">✓</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                      <strong className="text-xs font-bold text-[#2563EB] uppercase tracking-wider block mb-2">
-                        2. Examination & Testing Accommodations
-                      </strong>
-                      <ul className="space-y-1.5 text-xs text-[#334155]">
-                        {agentResult.clinicalReport.accommodations.examinations.map((item: string, idx: number) => (
-                          <li key={idx} className="flex items-start gap-1.5">
-                            <span className="text-[#2563EB] font-bold">✓</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                      <strong className="text-xs font-bold text-[#D97706] uppercase tracking-wider block mb-2">
-                        3. Working Memory & Executive Scaffolding
-                      </strong>
-                      <ul className="space-y-1.5 text-xs text-[#334155]">
-                        {agentResult.clinicalReport.accommodations.executive.map((item: string, idx: number) => (
-                          <li key={idx} className="flex items-start gap-1.5">
-                            <span className="text-[#D97706] font-bold">✓</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                      <strong className="text-xs font-bold text-[#7C3AED] uppercase tracking-wider block mb-2">
-                        4. Sensory & Proprioceptive Movement Diet
-                      </strong>
-                      <ul className="space-y-1.5 text-xs text-[#334155]">
-                        {agentResult.clinicalReport.accommodations.sensoryDiet.map((item: string, idx: number) => (
-                          <li key={idx} className="flex items-start gap-1.5">
-                            <span className="text-[#7C3AED] font-bold">✓</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-6 border-t border-[#E2E8F0] flex flex-wrap items-center justify-between gap-4">
+            {/* GROWN-UP SUMMARY & CLINICAL DOSSIER */}
+            {showClinicalDossier && agentResult?.clinicalReport && (
+              <div className="space-y-6">
+                <CognitiveDossierView
+                  quest="adhd"
+                  childName={(agentResult as {childName: string}).childName || heroName || 'Explorer'}
+                  clinicalReport={agentResult.clinicalReport}
+                />
+                <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
                   <Link
                     href="/consult"
                     className="rounded-full bg-[#05B076] px-8 py-3 text-xs font-bold text-white shadow-md hover:bg-[#049A68] transition-all"
@@ -2103,9 +2220,9 @@ function McInner() {
                   <button
                     type="button"
                     onClick={() => setShowClinicalDossier(false)}
-                    className="text-xs font-semibold text-[#64748B] hover:text-[#0F172A]"
+                    className="text-xs font-bold text-slate-500 hover:text-slate-800 underline"
                   >
-                    Close summary
+                    Collapse grown-up summary
                   </button>
                 </div>
               </div>

@@ -13,6 +13,7 @@ import {useState, useEffect, useRef, useMemo} from 'react'
 import Link from 'next/link'
 import KeeperFeedback from '../../../components/assessments/KeeperFeedback'
 import EndReport from '../../../components/assessments/report/EndReport'
+import CognitiveDossierView from '../../../components/assessments/report/CognitiveDossierView'
 import {useAttentionCamera} from '../../../components/assessments/camera/useAttentionCamera'
 import CameraConsent, {CameraBadge} from '../../../components/assessments/camera/CameraConsent'
 import LookingGame from '../../../components/assessments/camera/LookingGame'
@@ -1801,112 +1802,15 @@ function __McInner() {
             {agentResult && (agentResult as {record?: unknown}).record && (
               <div className="mb-8"><EndReport record={(agentResult as {record: any}).record} name={(agentResult as {childName: string}).childName} /></div>
             )}
-            {/* GROWN-UP SUMMARY */}
-            {showClinicalDossier && (
-              <div className="rounded-3xl border-2 border-[#CBD5E1] bg-white p-8 md:p-12 shadow-2xl">
-                <div className="border-b border-[#E2E8F0] pb-6 mb-6">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-[#64748B]">
-                    Grown-up summary • {agentResult.clinicalReport.generatedOn}
-                  </span>
-                  <h2 className="font-patrick text-3xl sm:text-4xl text-[#0F172A] font-bold mt-1">
-                    What we noticed while playing
-                  </h2>
-                  <p className="text-xs text-[#475569] mt-2 leading-relaxed">
-                    {agentResult.clinicalReport.summary}
-                  </p>
-                </div>
-
-                <div role="note" className="p-4 rounded-2xl bg-[#FFFBEB] border border-[#FDE68A] mb-8 text-xs text-[#78350F] leading-relaxed">
-                  <strong>This is not a diagnosis.</strong> It shows counts and speeds from one short play session. Nothing here is compared with other children, and many everyday things change it: tiredness, mood, the device, or how much your child enjoyed the game. If you have concerns about attention, communication or sensory comfort, please talk to a paediatrician or another qualified clinician.
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                  {agentResult.clinicalReport.indices.map((idx: any, i: number) => (
-                    <div key={i} className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                      <strong className="text-sm text-[#0F172A] block">{idx.name}</strong>
-                      <div className="font-mono font-bold text-sm mt-1" style={{color: '#0D9488'}}>{idx.value}</div>
-                      <span className="text-[11px] text-[#64748B] block mt-1">{idx.detail}</span>
-                      <span className="text-[11px] text-[#475569] block mt-2 leading-relaxed">{idx.note}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mb-8">
-                  <h3 className="font-patrick text-2xl text-[#0F172A] mb-3">Questions you could bring to a clinician</h3>
-                  <ul className="space-y-1.5 text-xs text-[#334155]">
-                    {agentResult.clinicalReport.questions.map((q: string, i: number) => (
-                      <li key={i} className="flex items-start gap-1.5">
-                        <span className="font-bold" style={{color: '#0D9488'}}>?</span>
-                        <span>{q}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Individualized Sensory Diet & Accommodations Blueprint */}
-                <div className="mb-8 space-y-6">
-                  <h3 className="font-patrick text-2xl text-[#0F172A]">Ideas to discuss with your school or clinician</h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                      <strong className="text-xs font-bold text-[#0D9488] uppercase tracking-wider block mb-2">
-                        1. Visual Schedules & Predictability
-                      </strong>
-                      <ul className="space-y-1.5 text-xs text-[#334155]">
-                        {agentResult.clinicalReport.accommodations.classroom.map((item: string, idx: number) => (
-                          <li key={idx} className="flex items-start gap-1.5">
-                            <span className="text-[#0D9488] font-bold">✓</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                      <strong className="text-xs font-bold text-[#2563EB] uppercase tracking-wider block mb-2">
-                        2. Communication & Literal Clarity
-                      </strong>
-                      <ul className="space-y-1.5 text-xs text-[#334155]">
-                        {agentResult.clinicalReport.accommodations.examinations.map((item: string, idx: number) => (
-                          <li key={idx} className="flex items-start gap-1.5">
-                            <span className="text-[#2563EB] font-bold">✓</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                      <strong className="text-xs font-bold text-[#D97706] uppercase tracking-wider block mb-2">
-                        3. Special Interest Scaffolding
-                      </strong>
-                      <ul className="space-y-1.5 text-xs text-[#334155]">
-                        {agentResult.clinicalReport.accommodations.executive.map((item: string, idx: number) => (
-                          <li key={idx} className="flex items-start gap-1.5">
-                            <span className="text-[#D97706] font-bold">✓</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
-                      <strong className="text-xs font-bold text-[#7C3AED] uppercase tracking-wider block mb-2">
-                        4. Sensory Diet & De-Escalation Sanctuary
-                      </strong>
-                      <ul className="space-y-1.5 text-xs text-[#334155]">
-                        {agentResult.clinicalReport.accommodations.sensoryDiet.map((item: string, idx: number) => (
-                          <li key={idx} className="flex items-start gap-1.5">
-                            <span className="text-[#7C3AED] font-bold">✓</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-6 border-t border-[#E2E8F0] flex flex-wrap items-center justify-between gap-4">
+            {/* GROWN-UP SUMMARY & CLINICAL DOSSIER */}
+            {showClinicalDossier && agentResult?.clinicalReport && (
+              <div className="space-y-6">
+                <CognitiveDossierView
+                  quest="autism"
+                  childName={(agentResult as {childName: string}).childName || guardianName || 'Explorer'}
+                  clinicalReport={agentResult.clinicalReport}
+                />
+                <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
                   <Link
                     href="/consult"
                     className="rounded-full bg-[#0D9488] px-8 py-3 text-xs font-bold text-white shadow-md hover:bg-[#0F766E] transition-all"
@@ -1916,9 +1820,9 @@ function __McInner() {
                   <button
                     type="button"
                     onClick={() => setShowClinicalDossier(false)}
-                    className="text-xs font-semibold text-[#64748B] hover:text-[#0F172A]"
+                    className="text-xs font-bold text-slate-500 hover:text-slate-800 underline"
                   >
-                    Close summary
+                    Collapse grown-up summary
                   </button>
                 </div>
               </div>

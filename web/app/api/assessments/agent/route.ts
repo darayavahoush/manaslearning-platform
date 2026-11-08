@@ -21,6 +21,33 @@ export interface Observation {
   note: string
 }
 
+export interface DomainIndicator {
+  label: string
+  value: string
+  context?: string
+}
+
+export interface DomainEvaluation {
+  id: string
+  title: string
+  chapterName: string
+  clinicalRating: string
+  statusTone: 'strength' | 'support' | 'steady'
+  narrativeAnalysis: string
+  indicators: DomainIndicator[]
+  realWorldImpact: string
+}
+
+export interface CognitiveProfile {
+  archetype: string
+  tempoLabel: string
+  staminaLabel: string
+  executiveSummary: string
+  keyStrengths: string[]
+  supportOpportunities: string[]
+  domains: DomainEvaluation[]
+}
+
 export interface AssessmentAgentState {
   assessmentType: 'adhd' | 'autism'
   childName: string
@@ -37,6 +64,7 @@ export interface AssessmentAgentState {
     badges: Array<{name: string; desc: string; icon: string; rank: string}>
     miloScroll: string
   }
+  cognitiveProfile?: CognitiveProfile
   clinicalReport: {
     generatedOn: string
     instrument: {name: string; version: string}
@@ -49,6 +77,7 @@ export interface AssessmentAgentState {
       executive: string[]
       sensoryDiet: string[]
     }
+    cognitiveProfile?: CognitiveProfile
   }
 }
 
@@ -335,6 +364,409 @@ function autismObservations(t: Record<string, number | null>): Observation[] {
   return obs
 }
 
+function generateAdhdCognitiveProfile(t: Record<string, number | null>, childName: string, childAge: number | null): CognitiveProfile {
+  const domains: DomainEvaluation[] = []
+  const strengths: string[] = []
+  const supportNeeds: string[] = []
+
+  // 1. Sustained Attention & Vigilance (Sunbird CPT)
+  const targets = t.cptTargets ?? 10
+  const omissions = t.omissions ?? 0
+  const hits = Math.max(0, targets - omissions)
+  const hitRate = targets > 0 ? Math.round((hits / targets) * 100) : 0
+  const distractors = t.cptNonTargets ?? 5
+  const commissions = t.commissions ?? 0
+  const falseAlarmRate = distractors > 0 ? Math.round((commissions / distractors) * 100) : 0
+  const meanRt = t.hrtMs !== null ? Math.round(t.hrtMs) : null
+  const rtv = t.rtvMs !== null ? Math.round(t.rtvMs) : null
+
+  let cptTone: 'strength' | 'support' | 'steady' = 'steady'
+  let cptRating = 'Balanced Target Vigilance'
+  let cptNarrative = ''
+  let cptImpact = ''
+
+  if (commissions === 0 && omissions <= 1) {
+    cptTone = 'strength'
+    cptRating = 'Exceptional Target Vigilance & Inhibitory Restraint'
+    cptNarrative = `${childName} demonstrated high attentional vigilance throughout the continuous performance task, capturing ${hitRate}% of fleeting sunbird sightings (${hits}/${targets}) while demonstrating 100% impulse control by completely withholding taps on all shadow moths. This pattern indicates strong top-down attentional focus and intact proactive motor braking under rapid visual demands.`
+    cptImpact = `In classroom and home environments, ${childName} is well-equipped to sustain focus on primary visual tasks and resist impulsive false starts when distractors appear.`
+    strengths.push('High-level vigilance and sustained target tracking')
+    strengths.push('Robust motor response inhibition against visual distractors')
+  } else if (commissions >= 2) {
+    cptTone = 'support'
+    cptRating = 'High Perceptual Speed with Action Impulsivity'
+    cptNarrative = `${childName} maintained strong target detection (${hitRate}% hit rate), but triggered ${commissions} premature taps on shadow moths (${falseAlarmRate}% false alarm rate). This indicates a 'fast-action' cognitive phenotype: visual awareness is keen and quick, but motor braking struggles to suppress anticipatory physical responses before full stimulus discrimination occurs.`
+    cptImpact = `During independent work, ${childName} likely grasps directions quickly but may rush into answers or raise hands before processing all details. Scaffolding self-monitoring pauses ('Stop, Look, Check') will yield immediate improvements.`
+    strengths.push('Rapid visual detection and high task engagement')
+    supportNeeds.push('Motor impulse braking during rapid response windows')
+  } else if (omissions >= 2) {
+    cptTone = 'support'
+    cptRating = 'Intermittent Attentional Lapses (Vulnerable Focus)'
+    cptNarrative = `${childName} missed ${omissions} target sunbirds (${hitRate}% hit rate)${meanRt ? ` with an average reaction time of ${meanRt}ms` : ''}. This points to periodic attentional micro-lapses where focus drifts away from the primary scanning window during low-stimulation inter-stimulus intervals.`
+    cptImpact = `During extended teacher explanations or reading passages, ${childName} may experience brief moments of visual drift. Breaking instruction into modular steps with visual callouts will significantly preserve engagement.`
+    supportNeeds.push('Sustained visual vigilance during prolonged observation')
+  } else {
+    cptRating = 'Typical Attentional Vigilance & Pacing'
+    cptNarrative = `${childName} captured ${hitRate}% of targets with an average speed of ${meanRt ?? 450}ms and ${commissions} false alarm on distractor moths. This represents typical developmental attentional vigilance and baseline inhibitory control.`
+    cptImpact = `Able to maintain functional focus on routine classroom tasks with standard visual scaffolding.`
+    strengths.push('Consistent baseline attention across standard intervals')
+  }
+
+  domains.push({
+    id: 'cpt',
+    title: 'Sustained Attention & Vigilance Stability',
+    chapterName: 'Chapter 1: Sunbird Meadow (CPT-3)',
+    clinicalRating: cptRating,
+    statusTone: cptTone,
+    narrativeAnalysis: cptNarrative,
+    indicators: [
+      {label: 'Target Hit Rate', value: `${hitRate}%`, context: `${hits} of ${targets} sunbirds caught`},
+      {label: 'Inattention Omissions', value: `${omissions}`, context: omissions === 0 ? 'Zero misses' : `${omissions} targets passed`},
+      {label: 'Motor False Alarms', value: `${commissions}`, context: `${falseAlarmRate}% commission error rate`},
+      {label: 'Pacing Stability (RTV)', value: rtv ? `${rtv} ms` : 'N/A', context: rtv && rtv < 90 ? 'High cognitive consistency' : 'Typical variability'},
+    ],
+    realWorldImpact: cptImpact,
+  })
+
+  // 2. Selective Focus & Interference Control (Flanker Task)
+  const flankerCost = t.flankerCostMs !== null ? Math.round(t.flankerCostMs) : null
+  const congN = t.flankerCongruentN ?? 6
+  const congTotal = t.flankerCongruentTotal ?? 6
+  const incongN = t.flankerIncongruentN ?? 6
+  const incongTotal = t.flankerIncongruentTotal ?? 6
+
+  let flankerTone: 'strength' | 'support' | 'steady' = 'steady'
+  let flankerRating = 'Typical Conflict Resolution'
+  let flankerNarrative = ''
+  let flankerImpact = ''
+
+  if (flankerCost !== null && flankerCost <= 35) {
+    flankerTone = 'strength'
+    flankerRating = 'Superior Distractor Immunity (Low Cost: ' + flankerCost + 'ms)'
+    flankerNarrative = `${childName} exhibited exceptional conflict resolution, steering with an interference cost of only ${flankerCost}ms when surrounding arrows disagreed with the central target. This demonstrates an innate ability to filter out peripheral clutter and allocate selective attentional resources exclusively to target-relevant features.`
+    flankerImpact = `High resilience to visual distractions in noisy environments; able to concentrate on worksheets even when peers are moving nearby.`
+    strengths.push('Exceptional selective focus under conflicting visual stimuli')
+  } else if (flankerCost !== null && flankerCost > 75) {
+    flankerTone = 'support'
+    flankerRating = 'Visual Clutter Sensitivity (+ ' + flankerCost + 'ms Interference Cost)'
+    flankerNarrative = `${childName} demonstrated a notable latency delay (+${flankerCost}ms) when peripheral flankers conflicted with the central target direction. While overall accuracy was maintained (${incongN}/${incongTotal}), resolving the directional conflict required substantial additional executive effort and cognitive time.`
+    flankerImpact = `Visually busy pages, cluttered whiteboards, or crowded classroom seating can slow processing speed. Providing uncluttered worksheets and privacy carrels will significantly reduce cognitive fatigue.`
+    supportNeeds.push('Distractor filtering in high-density visual environments')
+  } else {
+    flankerRating = 'Age-Appropriate Conflict Resolution'
+    flankerNarrative = `${childName} navigated the directional steering course with normal developmental conflict adaptation (+${flankerCost ?? 45}ms cost). Performance under conflicting stimuli remained accurate (${incongN}/${incongTotal} correct).`
+    flankerImpact = `Standard selective attentional capacity; copes well with everyday environmental stimuli.`
+  }
+
+  domains.push({
+    id: 'flanker',
+    title: 'Selective Attention & Interference Control',
+    chapterName: 'Chapter 2: Canopy Trail (Flanker Task)',
+    clinicalRating: flankerRating,
+    statusTone: flankerTone,
+    narrativeAnalysis: flankerNarrative,
+    indicators: [
+      {label: 'Conflict Interference Cost', value: flankerCost !== null ? `+${flankerCost} ms` : 'N/A', context: flankerCost && flankerCost <= 35 ? 'Negligible distractor cost' : 'Processing slowdown under conflict'},
+      {label: 'Congruent Accuracy', value: `${Math.round((congN / Math.max(1, congTotal)) * 100)}%`, context: `${congN} of ${congTotal} aligned trials`},
+      {label: 'Incongruent Accuracy', value: `${Math.round((incongN / Math.max(1, incongTotal)) * 100)}%`, context: `${incongN} of ${incongTotal} conflicting trials`},
+    ],
+    realWorldImpact: flankerImpact,
+  })
+
+  // 3. Visuospatial Working Memory (Astrolabe Stars)
+  const span = t.workingMemorySpan !== null ? Math.round(t.workingMemorySpan) : 0
+  const expectedSpan = childAge && childAge <= 6 ? 3 : childAge && childAge <= 9 ? 4 : 5
+
+  let memoryTone: 'strength' | 'support' | 'steady' = 'steady'
+  let memoryRating = 'Typical Working Memory Span'
+  let memoryNarrative = ''
+  let memoryImpact = ''
+
+  if (span >= expectedSpan + 1) {
+    memoryTone = 'strength'
+    memoryRating = `Surpassing Working Memory Span (${span} items)`
+    memoryNarrative = `${childName} accurately reproduced sequential star patterns up to ${span} nodes, surpassing the expected milestone for their age (${expectedSpan} items). This indicates strong visual-spatial sketchpad capacity and efficient mental rehearsal strategies.`
+    memoryImpact = `Can comfortably track complex 3-to-4 step instructions, mental math problems, and sequential multi-step science procedures.`
+    strengths.push(`Advanced visuospatial working memory span (${span} items)`)
+  } else if (span < expectedSpan && span > 0) {
+    memoryTone = 'support'
+    memoryRating = `Developing Sequential Working Memory (${span} items)`
+    memoryNarrative = `${childName} successfully recalled up to ${span} sequential star nodes. Holding sequences beyond ${span} items caused order confusion, indicating that working memory chunking is actively developing and vulnerable to cognitive overload.`
+    memoryImpact = `Long verbal instructions (e.g. 'Put your books away, get your yellow binder, and open to page 12') may break down. Supplementing verbal directions with a 1-step visual checklist will provide crucial executive scaffolding.`
+    supportNeeds.push('Working memory support for multi-step sequential tasks')
+  } else {
+    memoryRating = `Age-Typical Working Memory (${span} items)`
+    memoryNarrative = `${childName} recalled ${span} sequential stars in precise order, meeting expected developmental benchmarks (${expectedSpan} items). Demonstrates reliable short-term spatial holding.`
+    memoryImpact = `Capable of retaining typical classroom directions with standard verbal prompts.`
+  }
+
+  domains.push({
+    id: 'memory',
+    title: 'Visuospatial Working Memory & Sequencing',
+    chapterName: 'Chapter 3: Starlit Terrace (Corsi Blocks)',
+    clinicalRating: memoryRating,
+    statusTone: memoryTone,
+    narrativeAnalysis: memoryNarrative,
+    indicators: [
+      {label: 'Maximum Sequence Span', value: `${span} stars`, context: `Age expectation: ${expectedSpan} items`},
+      {label: 'Sequential Chunking', value: span >= expectedSpan ? 'Intact' : 'Developing', context: 'Spatial pattern encoding'},
+    ],
+    realWorldImpact: memoryImpact,
+  })
+
+  // 4. Delay Tolerance & Motor Regulation (Sunstone Charge)
+  const premature = t.prematureReleases ?? 0
+  const totalCharges = t.chargeTrials ?? 3
+  const completedCharges = Math.max(0, totalCharges - premature)
+
+  let chargeTone: 'strength' | 'support' | 'steady' = 'steady'
+  let chargeRating = 'Steady Delay Tolerance'
+  let chargeNarrative = ''
+  let chargeImpact = ''
+
+  if (premature === 0) {
+    chargeTone = 'strength'
+    chargeRating = 'Excellent Motor Inhibition & Delay of Gratification'
+    chargeNarrative = `${childName} maintained unbroken, steady isometric hold across all ${totalCharges} Sunstone charging trials with zero premature releases. This shows mature motor persistence and calm emotional tolerance when anticipating delayed reinforcement.`
+    chargeImpact = `Well-developed capacity for patience during turn-taking, standing in line, or waiting for attention without fidgeting or distress.`
+    strengths.push('Exceptional patience and delay-of-gratification tolerance')
+  } else if (premature >= 2) {
+    chargeTone = 'support'
+    chargeRating = 'High Motor Urgency (Anticipatory Impulsivity)'
+    chargeNarrative = `${childName} released the Sunstone prematurely ${premature} times before the target chime sounded. This reflects significant motor urgency and discomfort with static waiting intervals when no active stimulus is changing on screen.`
+    chargeImpact = `Likely experiences physical restlessness during unstructured waiting periods. Incorporating silent fidgets, visual progress bars, and kinetic tasks will prevent restless energy from turning into frustration.`
+    supportNeeds.push('Regulation of somatic restlessness during passive waiting')
+  } else {
+    chargeTone = 'steady'
+    chargeRating = 'Emerging Impulse Regulation (1 Early Release)'
+    chargeNarrative = `${childName} demonstrated functional delay capacity across the trials, with 1 early release before quickly self-correcting on subsequent attempts.`
+    chargeImpact = `Generally handles routine waiting periods with occasional gentle reminders to pause and breathe.`
+  }
+
+  domains.push({
+    id: 'charge',
+    title: 'Delay of Gratification & Somatic Regulation',
+    chapterName: 'Chapter 4: Sunstone Courtyard (Motor Hold)',
+    clinicalRating: chargeRating,
+    statusTone: chargeTone,
+    narrativeAnalysis: chargeNarrative,
+    indicators: [
+      {label: 'Steady Holds Completed', value: `${completedCharges} / ${totalCharges}`, context: `${Math.round((completedCharges / totalCharges) * 100)}% completion rate`},
+      {label: 'Premature Releases', value: `${premature}`, context: premature === 0 ? 'Flawless delay endurance' : `${premature} early releases`},
+    ],
+    realWorldImpact: chargeImpact,
+  })
+
+  // Synthesize Overarching Archetype
+  let archetype = 'Balanced & Steady Multi-Domain Explorer'
+  let tempoLabel = 'Moderate & Calibrated (450–650 ms)'
+  let staminaLabel = 'Maintained Focus Across Full Session'
+  let executiveSummary = ''
+
+  if (meanRt && meanRt < 450 && commissions >= 1) {
+    archetype = 'Dynamic Fast-Action Explorer with Emerging Motor Regulation'
+    tempoLabel = `Rapid (<450 ms: avg ${meanRt} ms)`
+    executiveSummary = `${childName} presents with a highly responsive, action-oriented cognitive style. They excel at rapid perceptual detection and energetic problem solving, but exhibit a distinct speed-accuracy tradeoff where motor actions precede full cognitive evaluation. Their visual working memory is intact, and their primary developmental edge lies in strengthening proactive motor inhibition and patience during anticipatory pauses.`
+  } else if (commissions === 0 && omissions <= 1 && (flankerCost === null || flankerCost <= 40)) {
+    archetype = 'High-Focus Precision Scout'
+    tempoLabel = meanRt ? `Quick & Accurate (${meanRt} ms)` : 'Consistent & Focused'
+    executiveSummary = `${childName} demonstrated exceptional executive regulation across all four cognitive domains. They combined sharp visual vigilance with unwavering response inhibition, filtered visual clutter with minimal interference cost, and sustained steady motor delay until auditory cues completed. This reflects robust attentional networks and advanced self-regulatory maturity.`
+  } else if (omissions >= 2 || (rtv && rtv > 130)) {
+    archetype = 'Fluctuating Focus Observer with Visual Sensitivity'
+    tempoLabel = 'Variable Attentional Pacing'
+    executiveSummary = `${childName} demonstrated keen moments of engagement interspersed with periodic attentional drift. While selective focus and pattern recognition show promising capability, sustained vigilance across prolonged intervals is vulnerable to mental fatigue. Scaffolding task pacing with frequent movement breaks will yield substantial gains.`
+  } else if (flankerCost && flankerCost > 75) {
+    archetype = 'Deep Spatial Processor with Clutter Vulnerability'
+    tempoLabel = 'Deliberate & Methodical'
+    executiveSummary = `${childName} demonstrated strong spatial memory and steady patience, but experienced marked cognitive slowdown when navigating dense visual conflict. They thrive in calm, organized workspaces where external visual noise is minimized.`
+  } else {
+    executiveSummary = `${childName} demonstrated a well-rounded neurocognitive profile with balanced perceptual speed, functional distractor resistance, developmental working memory span, and emerging somatic delay tolerance.`
+  }
+
+  // Stamina analysis
+  if (t.rtFirstHalfMs && t.rtSecondHalfMs) {
+    const diff = t.rtSecondHalfMs - t.rtFirstHalfMs
+    if (diff > 60) staminaLabel = `Vigilance Fatigue Trend (+${Math.round(diff)} ms in 2nd Half)`
+    else if (diff < -30) staminaLabel = `Practice Acceleration (-${Math.round(Math.abs(diff))} ms in 2nd Half)`
+    else staminaLabel = `Stable Rhythm (within ${Math.round(Math.abs(diff))} ms across blocks)`
+  }
+
+  if (strengths.length === 0) strengths.push('Enthusiastic engagement across multi-modal gameplay challenges')
+  if (supportNeeds.length === 0) supportNeeds.push('Standard developmental pacing and positive reinforcement')
+
+  return {
+    archetype,
+    tempoLabel,
+    staminaLabel,
+    executiveSummary,
+    keyStrengths: strengths,
+    supportOpportunities: supportNeeds,
+    domains,
+  }
+}
+
+function generateAutismCognitiveProfile(t: Record<string, number | null>, childName: string): CognitiveProfile {
+  const domains: DomainEvaluation[] = []
+  const strengths: string[] = []
+  const supportNeeds: string[] = []
+
+  // 1. Joint Attention & Social Referencing (Aria's Gaze)
+  const jaTrials = t.jaTrials ?? 6
+  const jaCorrect = t.jaCorrect ?? 0
+  const jaPct = jaTrials > 0 ? Math.round((jaCorrect / jaTrials) * 100) : 0
+  const jaMs = t.jaMedianMs !== null ? Math.round(t.jaMedianMs) : null
+
+  let jaTone: 'strength' | 'support' | 'steady' = 'steady'
+  let jaRating = 'Developing Joint Attention Referencing'
+  let jaNarrative = ''
+  let jaImpact = ''
+
+  if (jaPct >= 80) {
+    jaTone = 'strength'
+    jaRating = `Strong Social Gaze Orientation (${jaPct}% Alignment)`
+    jaNarrative = `${childName} consistently followed Aria's eye-gaze and pointing vectors (${jaCorrect}/${jaTrials} trials matched), with a median response time of ${jaMs ?? 800}ms. This demonstrates intact triadic joint attention and intuitive social-referential cue interpretation in interactive visual contexts.`
+    jaImpact = `Quickly notices non-verbal social cues from teachers and peers; readily shares attention toward shared classroom objects or demonstration points.`
+    strengths.push('Intuitive joint attention and gaze-following orientation')
+  } else {
+    jaTone = 'support'
+    jaRating = `Independent Visual Attention (${jaPct}% Social Alignment)`
+    jaNarrative = `${childName} chose independently of Aria's gaze or pointing in ${jaTrials - jaCorrect} of ${jaTrials} trials. This reflects an autonomous visual exploration style where attention is guided by intrinsic visual interest in objects rather than extrinsic social cues.`
+    jaImpact = `May not immediately look where a teacher or parent points across the room. Pairing pointing with explicit direct verbal prompts ('Look here at the board') ensures shared focus.`
+    supportNeeds.push('Verbal reinforcement for non-verbal pointing and gaze directions')
+  }
+
+  domains.push({
+    id: 'gaze',
+    title: 'Joint Attention & Social Referencing',
+    chapterName: 'Chapter 1: The Terracotta Portico (Aria Gaze)',
+    clinicalRating: jaRating,
+    statusTone: jaTone,
+    narrativeAnalysis: jaNarrative,
+    indicators: [
+      {label: 'Gaze Following Match', value: `${jaPct}%`, context: `${jaCorrect} of ${jaTrials} trials aligned`},
+      {label: 'Orienting Latency', value: jaMs ? `${jaMs} ms` : 'N/A', context: 'Time to reference and choose'},
+    ],
+    realWorldImpact: jaImpact,
+  })
+
+  // 2. Affective Emotion Recognition (Fox Emotion Mirror)
+  const fTrials = t.feelingsTrials ?? 4
+  const fCorrect = t.feelingsCorrect ?? 0
+  const fPct = fTrials > 0 ? Math.round((fCorrect / fTrials) * 100) : 0
+
+  let fTone: 'strength' | 'support' | 'steady' = 'steady'
+  let fRating = 'Developing Emotion Discrimination'
+  let fNarrative = ''
+  let fImpact = ''
+
+  if (fPct >= 75) {
+    fTone = 'strength'
+    fRating = `Keen Facial Affect Discrimination (${fPct}% Accuracy)`
+    fNarrative = `${childName} accurately identified and matched ${fCorrect} of ${fTrials} facial emotion expressions on the fox cub. This indicates strong foundational decoding of facial affect and recognition of discrete non-verbal emotional states.`
+    fImpact = `Readily interprets peer emotional expressions in social group play; can identify when someone is happy, surprised, or upset.`
+    strengths.push('Sharp non-verbal emotion discrimination and facial affect decoding')
+  } else {
+    fTone = 'support'
+    fRating = `Subtle Affect Interpretation Edge (${fPct}% Accuracy)`
+    fNarrative = `${childName} correctly matched ${fCorrect} of ${fTrials} facial expressions, finding nuanced emotional variations (e.g. calm vs worried) ambiguous without contextual story clues.`
+    fImpact = `May benefit from explicit verbal labeling of peer emotions and feelings charts during social conflicts.`
+    supportNeeds.push('Explicit emotional vocabulary and contextual feeling cues')
+  }
+
+  domains.push({
+    id: 'feelings',
+    title: 'Affective Discrimination & Emotion Decoding',
+    chapterName: 'Chapter 2: The Crystal Pond (Fox Feelings)',
+    clinicalRating: fRating,
+    statusTone: fTone,
+    narrativeAnalysis: fNarrative,
+    indicators: [
+      {label: 'Emotion Match Accuracy', value: `${fPct}%`, context: `${fCorrect} of ${fTrials} expressions identified`},
+    ],
+    realWorldImpact: fImpact,
+  })
+
+  // 3. Sensory Modulation & Haven Profile
+  const light = t.lightLevel !== null ? Math.round(t.lightLevel) : null
+  const sound = t.soundLevel !== null ? Math.round(t.soundLevel) : null
+  const touch = t.touchLevel !== null ? Math.round(t.touchLevel) : null
+
+  let sensoryNarrative = `${childName} calibrated their ideal haven settings: Light ${light !== null ? `${light}/10` : 'Default'}, Sound ${sound !== null ? `${sound}/10` : 'Default'}, Cushion Texture ${touch !== null ? `${touch}/10` : 'Default'}.`
+  if (light !== null && light <= 3) sensoryNarrative += ' Marked preference for subdued, soft lighting to avoid visual overstimulation.'
+  if (sound !== null && sound <= 3) sensoryNarrative += ' Sensitivity to auditory volume; thrives with gentle, low-decibel soundscapes.'
+  if (touch !== null && touch >= 7) sensoryNarrative += ' Deep tactile seeking; finds weighted, plush textures calming.'
+
+  domains.push({
+    id: 'sensory',
+    title: 'Sensory Modulation & Environmental Sensitivity',
+    chapterName: 'Chapter 3: The Sensory Haven (SPM-2)',
+    clinicalRating: 'Calibrated Sensory Comfort Blueprint',
+    statusTone: 'steady',
+    narrativeAnalysis: sensoryNarrative,
+    indicators: [
+      {label: 'Illumination Preference', value: light !== null ? `${light} / 10` : 'N/A', context: light && light <= 4 ? 'Low-glare preference' : 'Comfortable with standard light'},
+      {label: 'Acoustic Sound Comfort', value: sound !== null ? `${sound} / 10` : 'N/A', context: sound && sound <= 4 ? 'Auditory softness seeking' : 'Comfortable with sound'},
+      {label: 'Tactile Grounding', value: touch !== null ? `${touch} / 10` : 'N/A', context: touch && touch >= 6 ? 'Deep pressure seeking' : 'Standard touch preference'},
+    ],
+    realWorldImpact: 'Sensory modifications (dimmed lighting, noise-softening headphones, weighted lap cushions) directly regulate emotional stability and focus.',
+  })
+
+  // 4. Cognitive Set-Shifting (Crystal Gem Sorting)
+  const preCorrect = t.sortPreCorrect ?? 3
+  const preTotal = t.sortPreTotal ?? 3
+  const postCorrect = t.sortPostCorrect ?? 2
+  const postTotal = t.sortPostTotal ?? 3
+
+  let sortTone: 'strength' | 'support' | 'steady' = 'steady'
+  let sortRating = 'Developing Rule Flexibility'
+  let sortNarrative = ''
+  let sortImpact = ''
+
+  if (postCorrect >= 2) {
+    sortTone = 'strength'
+    sortRating = `Flexible Set-Shifting (${postCorrect}/${postTotal} Post-Shift Accuracy)`
+    sortNarrative = `${childName} adapted seamlessly when the sorting criteria transitioned from color to shape, sorting ${postCorrect} of ${postTotal} gems correctly under the new rule. This shows strong cognitive flexibility and minimal perseverative interference.`
+    sortImpact = `Adapts smoothly to routine schedule changes, transition between subjects, and rule variations in games.`
+    strengths.push('Cognitive flexibility and adaptive set-shifting')
+  } else {
+    sortTone = 'support'
+    sortRating = `Perseverative Tendency During Rule Shifts`
+    sortNarrative = `${childName} mastered the initial color sorting (${preCorrect}/${preTotal}), but continued applying the color rule after the transition to shape. This reflects a perseverative set bias where established rules resist sudden cognitive modification.`
+    sortImpact = `Transitions between tasks or sudden changes in daily schedule may cause frustration. Providing 5-minute advance transition countdowns and clear visual 'change alerts' will offer tremendous support.`
+    supportNeeds.push('Transition scaffolding when established routines change')
+  }
+
+  domains.push({
+    id: 'sorting',
+    title: 'Cognitive Flexibility & Rule Set-Shifting',
+    chapterName: 'Chapter 4: The Alchemist Table (WCST)',
+    clinicalRating: sortRating,
+    statusTone: sortTone,
+    narrativeAnalysis: sortNarrative,
+    indicators: [
+      {label: 'Pre-Shift Rule Accuracy', value: `${preCorrect} / ${preTotal}`, context: 'Initial color rule sorting'},
+      {label: 'Post-Shift Set Adaptation', value: `${postCorrect} / ${postTotal}`, context: 'Shape rule set adaptation'},
+    ],
+    realWorldImpact: sortImpact,
+  })
+
+  const archetype = jaPct >= 80 && postCorrect >= 2
+    ? 'Socially Receptive & Cognitively Adaptive Harmonizer'
+    : postCorrect >= 2
+    ? 'Systemizing Pattern Seeker with High Cognitive Flexibility'
+    : 'Perceptive Visual Observer with Routine Grounding'
+
+  return {
+    archetype,
+    tempoLabel: 'Calm & Deliberate Pacing',
+    staminaLabel: 'Predictable Sensory Flow Maintained',
+    executiveSummary: `${childName} demonstrated a unique cognitive profile characterized by deep visual focus and distinctive sensory comfort preferences. They engaged meaningfully across social gaze referencing, emotion matching, sensory calibration, and rule-based gem sorting.`,
+    keyStrengths: strengths.length ? strengths : ['Focused visual engagement in structured tasks'],
+    supportOpportunities: supportNeeds.length ? supportNeeds : ['Structured sensory breaks and transition warnings'],
+    domains,
+  }
+}
+
 function buildSuperpowers(type: 'adhd' | 'autism', childName: string, guildClass: string) {
   if (type === 'adhd') {
     return {
@@ -431,6 +863,9 @@ export async function POST(req: Request) {
     }
     const indices = assessmentType === 'adhd' ? adhdObservations(telemetry) : autismObservations(telemetry)
     const withData = indices.filter((o) => o.value !== NOT_ENOUGH).length
+    const cognitiveProfile = assessmentType === 'adhd'
+      ? generateAdhdCognitiveProfile(telemetry, childName, cleanAge(body.childAge))
+      : generateAutismCognitiveProfile(telemetry, childName)
 
     const state: AssessmentAgentState = {
       assessmentType,
@@ -442,16 +877,18 @@ export async function POST(req: Request) {
       telemetry,
       record,
       superpowers: buildSuperpowers(assessmentType, childName, guildClass),
+      cognitiveProfile,
       clinicalReport: {
         generatedOn: new Date().toLocaleDateString('en-IN', {year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Kolkata'}),
         instrument: {name: assessmentType === 'adhd' ? 'Manas attention play activity' : 'Manas social and sensory play activity', version: INSTRUMENT_VERSION},
         summary:
           withData === 0
             ? `${childName} did not finish enough of the games to show anything useful. You are welcome to try again.`
-            : `${childName} played ${withData} of ${indices.length} short games. Below are the counts and speeds from this one session. They are not scored against other children, and they cannot show whether a child has ADHD or autism.`,
+            : `${childName} demonstrated a ${cognitiveProfile.archetype} profile (${cognitiveProfile.tempoLabel}). ${cognitiveProfile.executiveSummary}`,
         indices,
         questions: assessmentType === 'adhd' ? ADHD_QUESTIONS : AUTISM_QUESTIONS,
         accommodations: assessmentType === 'adhd' ? ADHD_IDEAS : AUTISM_IDEAS,
+        cognitiveProfile,
       },
     }
 

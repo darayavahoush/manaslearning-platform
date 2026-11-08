@@ -34,8 +34,13 @@ const QUESTS = [
     btn: 'linear-gradient(90deg,#F2DDB0,#E8C98A)',
     href: '/assessments/adhd',
     cta: 'Start Sunbird Valley Quest →',
-    chips: ['100% Gameplay', 'No Reading Questions', 'Sunbird Spotting (CPT-3)', 'Steering (Flanker)', 'Star Astrolabe', 'Sunstone Charge'],
-    blurb: 'Chronicles of the Sunbird: Sunbird Valley. Join Guide Chirp across dawn meadows. Tap when the sunbird swoops, steer past shadow moths, recall celestial star sequences, and charge the ancient Sunstone with steady hands. Pure visual play.'
+    tagline: 'Soar across dawn meadows, steer past tricky winds, and charge the sacred Sunstone with steady hands!',
+    adventures: [
+      {icon: '☀️', label: 'Spot Sunbirds'},
+      {icon: '🧭', label: 'Forest Steering'},
+      {icon: '✨', label: 'Star Astrolabe'},
+      {icon: '🔥', label: 'Sunstone Charge'},
+    ],
   },
   {
     id: 'autism',
@@ -48,8 +53,13 @@ const QUESTS = [
     btn: 'linear-gradient(90deg,#C4E0D6,#A8D0C3)',
     href: '/assessments/autism',
     cta: 'Start Lantern Garden Quest →',
-    chips: ['100% Gameplay', 'No Reading Questions', 'Aria Gaze Urns', 'Fox Cub Emotion Mirror', 'Sensory Haven', 'Potion Gem Sort'],
-    blurb: 'The Lantern Garden: Crystal Lantern Quest. Follow Aria’s gaze to uncover terracotta vessels, mirror the playful fox cub’s feelings, calibrate cozy sensory illumination and sound, and sort magical gems by changing rules. Calm and predictable.'
+    tagline: 'Follow Aria through lantern gardens, mirror the friendly fox cub, and create your coziest sanctuary!',
+    adventures: [
+      {icon: '🏺', label: "Aria's Gaze"},
+      {icon: '🦊', label: 'Fox Emotions'},
+      {icon: '🌿', label: 'Cozy Haven'},
+      {icon: '🔮', label: 'Gem Sorting'},
+    ],
   },
   {
     id: 'dyslexia',
@@ -62,8 +72,13 @@ const QUESTS = [
     btn: 'linear-gradient(90deg,#C8E6D5,#A5D6BC)',
     href: '/assessments/dyslexia',
     cta: 'Start Whispering Library Quest →',
-    chips: ['100% Audio & Visual', 'Pip the Owl Guide', 'Echo Cave Rhymes', 'Singing Stones', 'Mirror Moths (b/d/p/q)', 'Word Reading'],
-    blurb: 'The Whispering Library. Join Pip the Story-Keeper through glowing book nooks. Listen to rhyming echoes, tap singing river stones in sequence, catch mirrored letter moths, and check words on plain, calm pages. Zero trick questions.'
+    tagline: 'Explore glowing library nooks with Pip the Owl, catch rhyming echoes, and unlock magical story stones!',
+    adventures: [
+      {icon: '🦉', label: "Pip's Rhymes"},
+      {icon: '🎵', label: 'River Stones'},
+      {icon: '🦋', label: 'Letter Moths'},
+      {icon: '📖', label: 'Story Words'},
+    ],
   },
 ]
 
@@ -207,10 +222,31 @@ export default function GamifiedAssessmentsPage() {
                   </div>
                   <div className="flex flex-1 flex-col justify-between p-7">
                     <div>
-                      <div className="mb-4 flex flex-wrap gap-2">
-                        {q.chips.map((c) => <span key={c} className="rounded-full px-3 py-1 text-xs font-semibold" style={{ background: `${q.glow}1f`, color: q.accent }}>{c}</span>)}
+                      <div className="mb-3 flex items-center gap-1.5">
+                        <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold" style={{ background: `${q.glow}25`, color: q.accent }}>
+                          <span>🎮</span> 100% Gameplay • No Reading Required
+                        </span>
                       </div>
-                      <p className="text-sm leading-relaxed text-[#5A5247]">{q.blurb}</p>
+
+                      {/* 4 Mini Adventure Badges */}
+                      <div className="my-4 grid grid-cols-2 gap-2">
+                        {q.adventures.map((adv) => (
+                          <div
+                            key={adv.label}
+                            className="flex items-center gap-1.5 rounded-xl border px-2.5 py-2 text-[11px] sm:text-xs font-bold transition-all shadow-sm"
+                            style={{
+                              background: '#FFFDF9',
+                              borderColor: `${q.glow}66`,
+                              color: '#2D2821',
+                            }}
+                          >
+                            <span className="text-sm shrink-0">{adv.icon}</span>
+                            <span className="leading-tight">{adv.label}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <p className="text-sm font-medium leading-relaxed text-[#5A5247]">{q.tagline}</p>
                     </div>
                     <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#EFE7D6] pt-5">
                       <div><span className="text-2xl font-bold text-[#2F2A24]">₹799</span><span className="ml-2 text-xs text-[#6F665A]">/ $15 USD (Interactive quest & clinical report)</span></div>

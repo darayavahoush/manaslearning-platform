@@ -415,4 +415,59 @@
 - **Rule A Confirmation**:
   - 100% locked clinical parameters: stimulus presentation durations, ISI delays (`CPT_WAITS`), block trial sequences (`CPT_ORDER`), hit/omission/commission recording, reaction time precision (`HRT`, `RTV`), hit-boxes, and telemetry keys remain strictly identical.
 
+---
+
+## 8. ADHD Chapter 4: Sacred Sunstone Altar Immersion
+- **Problem Resolved**:
+  - Game 4 (Sunstone Power Charge / Motor Inhibition) previously rendered inside an oversized flat white card with a generic circular button and dry text label ("PRESS & HOLD"), feeling like a sterile web form.
+- **Visual Overhaul (Presentation Only)**:
+  - **Ancient Sun Temple Courtyard Altar (`SunstoneAltarArena`)**:
+    - Replaced the generic card with a carved stone dais canopy framed against the Sunstone Courtyard at dawn (`bg_charge.webp`).
+    - **Concentric Solar Mandala Dial**: Rendered an intricate SVG dial with 12 ancient sacred solar runes positioned at $30^\circ$ increments around the circumference. As charge accumulates from 0% to 100%, each rune ignites in golden amber with glowing connection rays.
+    - **Dual-Layer Energy Channel & Orbital Spark**: An etched bronze channel with a molten golden energy arc that sweeps clockwise, accompanied by a dynamic orbital fire particle at the head of the arc.
+    - **Sacred Sunstone Relic**: Positioned in the heart of the altar dais. When held, it pulses with warm solar flares (`shadow-[0_0_80px_rgba(245,158,11,0.95)]`), displays an active `⚡ ${chargeProgress}% HOLD!` HUD, and unleashes an emerald-gold supernova fanfare upon completion.
+    - **Empathetic Guide Chirp**: Perches alongside the altar with supportive, kid-friendly coaching ("Breathe steady, brave explorer! Hold until the sacred bell chimes!").
+- **Rule A Confirmation**:
+  - Hold durations (1500ms practice, 2500ms, 3200ms, 4000ms), early release thresholds, telemetry keys (`prematureReleases`, `chargeTrials`, `holdEarly`, `holdRtMs`), and hit-box dimensions remain 100% preserved.
+
+---
+
+## 9. De-Worded Kid-Friendly Quest Hub Cards (`/gamified-assessments`)
+- **Problem Resolved**:
+  - The quest selection cards on `/gamified-assessments` contained 5-line dense clinical text blocks and technical abbreviations (CPT-3, Flanker), overwhelming young children and parents.
+- **Visual Overhaul (Presentation Only)**:
+  - **Mini-Adventure Badges**: Replaced dense text with 4 clean, colorful visual chips with vibrant emojis for each quest:
+    - *Sunbird Valley*: `☀️ Spot Sunbirds`, `🧭 Forest Steering`, `✨ Star Astrolabe`, `🔥 Sunstone Charge`
+    - *The Lantern Garden*: `🏺 Aria's Gaze`, `🦊 Fox Emotions`, `🌿 Cozy Haven`, `🔮 Gem Sorting`
+    - *The Whispering Library*: `🦉 Pip's Rhymes`, `🎵 River Stones`, `🦋 Letter Moths`, `📖 Story Words`
+  - **Punchy 1-Line Taglines**: Simplified descriptions into a single inviting adventure pitch written at a child's reading level.
+  - **Feature Pill**: Added prominent `🎮 100% Gameplay • No Reading Required` badge.
+- **Rule A Confirmation**:
+  - No changes to links, pricing, target age ranges, or quest routing.
+
+---
+
+## 10. Comprehensive Clinical Cognitive & Neurodevelopmental Analysis Engine
+- **Problem Resolved**:
+  - The end-of-assessment screen previously returned raw numerical statistics (e.g., "Missed 2 of 10", "RT: 418ms", "Cost: 32ms"), failing to provide parents and clinicians with a holistic, meaningful interpretation of the child's neurodivergent profile.
+- **Clinical & Analytical Overhaul**:
+  - **Multi-Node Neurodevelopmental Profiling Engine (`route.ts`)**:
+    - Synthesizes telemetry across all 4 chapters into an **Executive Attentional Phenotype** (e.g. *Dynamic Fast-Action Explorer with Emerging Motor Regulation*, *High-Focus Precision Scout*, *Fluctuating Focus Observer with Visual Sensitivity*).
+    - Analyzes **Cognitive Tempo & Pacing** (Mean Hit RT, RT Variability as attentional micro-lapses) and **Stamina Trends** (Block 1 vs Block 2 vigilance decrement).
+    - Performs deep clinical evaluations across 4 core domains:
+      1. *Sustained Attention & Vigilance*: Omission errors (attentional drift) vs. Commission errors (action impulsivity on shadow moths).
+      2. *Selective Attention & Conflict Resolution*: Flanker interference cost ($\Delta\text{RT}$) and peripheral distractor shielding.
+      3. *Visuospatial Working Memory*: Forward sequence span compared against age-normative developmental milestones.
+      4. *Motor Delay Inhibition*: Isometric hold persistence, anticipatory urge regulation, and delayed gratification.
+  - **Dedicated Clinical Dossier View (`CognitiveDossierView.tsx`)**:
+    - Replaces raw stats with an elegant pediatric dossier featuring:
+      - Attentional Archetype Banner with pacing & stamina badges.
+      - Core Cognitive Strengths (green) & Growth/Scaffolding Opportunities (amber).
+      - 4 Chapter Deep-Dive Cards with metric indicator chips and real-world classroom/home implications.
+      - 4-Pillar Actionable Accommodations Blueprint (Classroom Seating, Testing Accommodations, Working Memory Routines, Sensory Regulation).
+      - Prepared discussion questions for pediatrician and teacher appointments.
+- **Rule A Confirmation**:
+  - Pure presentation and interpretive synthesis. All raw telemetry keys and session record schemas remain 100% intact.
+
+
 

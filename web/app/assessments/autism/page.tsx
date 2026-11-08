@@ -1012,7 +1012,7 @@ function __McInner() {
     : '/quests/autism/welcome.webp'
 
   const isTaskScreen = stage.endsWith('_game')
-  const isWideStage = ['look_game', 'ja_game', 'ja_show', 'feelings_game', 'room_game', 'dccs_game', 'end'].includes(stage)
+  const isWideStage = ['look_game', 'ja_game', 'ja_show', 'feelings_game', 'sensory_story', 'dccs_game', 'end'].includes(stage)
 
   return (
     <main data-no-listen="true" className="relative min-h-screen py-8 px-4 font-poppins text-[#1F2937] overflow-x-hidden selection:bg-teal-400 selection:text-teal-950">
@@ -1488,75 +1488,199 @@ function __McInner() {
           </div>
         )}
 
-        {/* 6. CHAPTER 3: SENSORY SANCTUARY CALIBRATION */}
+        {/* 6. CHAPTER 3: SENSORY SANCTUARY CALIBRATION & HAVEN DESIGN */}
         {stage === 'sensory_story' && (
-          <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
-            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#064E3B]">
+          <div className="relative rounded-3xl border-2 border-teal-400/50 bg-[#0A1612]/95 backdrop-blur-md overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.7)] text-teal-50 max-w-4xl lg:max-w-5xl mx-auto w-full">
+            {/* Grand Treehouse Sanctuary Interactive Viewport */}
+            <div className="relative h-72 sm:h-84 md:h-[400px] w-full overflow-hidden select-none bg-[#051A13]">
+              {/* High-res Treehouse Sanctuary Canvas with Live Brightness & Contrast */}
               <img
                 src="/decor/itw/quest-sanctuary-haven.webp"
                 alt="Sensory Sanctuary Haven"
-                className="h-full w-full object-cover object-center transition-[filter] duration-1000 ease-linear"
-                style={{filter: roomFilter}}
+                className="h-full w-full object-cover object-center transition-[filter] duration-700 ease-out"
+                style={{filter: `brightness(${0.45 + (liveLight / 10) * 0.95}) contrast(${0.9 + (liveLight / 10) * 0.25})`}}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent flex items-end p-6">
-                <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-teal-300 bg-white/10 px-3 py-1 rounded-full">
-                    Chapter 3: The Sensory Sanctuary
-                  </span>
-                  <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    Design Your Restorative Haven
-                  </h2>
-                </div>
+
+              {/* Dynamic Sunbeam Ray Overlay (illuminates with liveLight) */}
+              <div
+                className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_70%_25%,rgba(254,240,138,0.45)_0%,rgba(251,191,36,0.18)_50%,transparent_80%)] transition-opacity duration-700"
+                style={{opacity: Math.max(0, (liveLight - 2) / 8)}}
+              />
+
+              {/* Dynamic Rain Overlay (active when roomDim === 1 or liveSound > 2) */}
+              {(roomDim === 1 || liveSound > 2) && (
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_40%,rgba(255,255,255,0.15)_48%,transparent_52%)] animate-pulse opacity-70" />
+              )}
+
+              {/* Ambient Twilight Vignette at Base */}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0A1612] via-[#0A1612]/35 to-transparent" />
+
+              {/* Floating Chapter Badge & Status Pill */}
+              <div className="absolute top-4 inset-x-4 flex items-center justify-between pointer-events-none z-10">
+                <span className="rounded-full bg-black/60 backdrop-blur-md border border-teal-300/40 px-3.5 py-1 text-xs font-bold text-teal-200 shadow-md">
+                  Chapter 3 • Restorative Sensory Haven
+                </span>
+                <span className="rounded-full bg-black/60 backdrop-blur-md border border-amber-300/40 px-3.5 py-1 text-xs font-bold text-amber-200 shadow-md flex items-center gap-1.5">
+                  <span>{roomDim === 0 ? '☀️' : roomDim === 1 ? '🌧️' : '🪶'}</span>
+                  <span>{roomPhase === 'ramp' ? (roomDim === 0 ? 'Visual Light Threshold' : roomDim === 1 ? 'Auditory Sound Threshold' : 'Tactile Comfort Threshold') : 'Custom Haven Studio'}</span>
+                </span>
+              </div>
+
+              {/* Sanctuary Headline on Banner */}
+              <div className="absolute bottom-4 inset-x-6 text-left pointer-events-none z-10">
+                <h2 className="font-patrick text-3xl sm:text-4xl text-white font-bold drop-shadow-md">
+                  Design Your Restorative Haven
+                </h2>
+                <p className="text-xs sm:text-sm text-teal-100/90 max-w-xl drop-shadow">
+                  A calming sanctuary tailored to your child&apos;s exact comfort for lighting, rain sound, and cushion weight.
+                </p>
               </div>
             </div>
 
-            <div className="p-6 md:p-8">
+            {/* Interactive Sensory Control Deck */}
+            <div className="p-6 sm:p-8 bg-gradient-to-b from-[#0A1612] via-[#0E201A] to-[#081410] border-t border-teal-400/30">
+              {/* PHASE 1: INTRO */}
               {roomPhase === 'intro' && (
-                <div className="text-center">
-                  <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-2 max-w-xl mx-auto">
-                    Step inside the treehouse sanctuary. We will turn up the light, the soft rain and the cushion weight slowly, one at a time. Tap &quot;That&apos;s too much&quot; as soon as it is enough. Then you design the room yourself.
-                  </p>
-                  <p className="text-xs text-slate-500 mb-6">Turn the device volume down before you start.</p>
-                  <button
-                    type="button"
-                    onClick={startRoom}
-                    className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-12 py-5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
-                  >
-                    Step inside ▶
-                  </button>
-                </div>
-              )}
-
-              {roomPhase === 'ramp' && (
-                <div className="max-w-md mx-auto text-center">
-                  <p className="text-sm font-bold text-slate-700 mb-3" aria-live="polite">
-                    Now the {ROOM_DIM_NAMES[roomDim]} is rising, one step at a time
-                  </p>
-                  <div className="flex gap-1 justify-center mb-6" aria-label={`Level ${roomLevel} of 10`}>
-                    {Array.from({length: ROOM_TOP}, (_, i) => (
-                      <span key={i} className={`h-4 w-6 rounded ${i < roomLevel ? 'bg-teal-500' : 'bg-slate-200'}`} />
-                    ))}
+                <div className="max-w-xl mx-auto text-center py-2">
+                  <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl border-2 border-teal-400/50 bg-[#142C23] p-1 shadow-lg">
+                    <img src="/quests/autism/aria_gaze_center.webp" alt="Aria" className="h-full w-full object-cover rounded-xl" />
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => finishRampDim(roomLevel)}
-                    className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-4 text-xl font-bold text-white shadow-lg hover:scale-105 active:scale-95 transition-all"
-                  >
-                    That&apos;s too much
-                  </button>
+                  <h3 className="font-patrick text-2xl sm:text-3xl text-amber-200 font-bold mb-2">
+                    Welcome to the Treehouse Sanctuary!
+                  </h3>
+                  <p className="text-sm text-teal-100/90 leading-relaxed mb-6">
+                    Every explorer feels cozy with different light, sounds, and soft cushions. First, we will gently turn up the light, soft rain, and cushion weight one by one. Whenever it feels like enough, tap <strong>&quot;That&apos;s too much&quot;</strong>. Then you get to design your own dream haven!
+                  </p>
+                  <div className="flex flex-wrap justify-center items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={startRoom}
+                      className="rounded-full bg-gradient-to-r from-teal-500 via-teal-600 to-emerald-600 px-10 py-4 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
+                    >
+                      Step Inside Sanctuary ▶
+                    </button>
+                  </div>
                 </div>
               )}
 
+              {/* PHASE 2: SENSORY THRESHOLD RAMP */}
+              {roomPhase === 'ramp' && (
+                <div className="max-w-xl mx-auto text-center">
+                  {/* Guide Aria Guidance Box */}
+                  <div className="mb-4 flex items-center justify-center gap-3 bg-[#0B1A14]/90 border border-teal-400/30 rounded-2xl p-3 px-4 shadow-md backdrop-blur-sm text-left">
+                    <img
+                      src="/quests/autism/aria_gaze_center.webp"
+                      alt="Aria Guidance"
+                      className="h-12 w-12 rounded-xl object-cover border border-teal-300/40 shrink-0"
+                    />
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-teal-300 block">
+                        Aria, Grove Guide
+                      </span>
+                      <p className="font-patrick text-lg sm:text-xl text-amber-100 font-bold leading-tight" aria-live="polite">
+                        {roomDim === 0
+                          ? 'Watch the treehouse brighten slowly. Tap the button as soon as it feels too bright!'
+                          : roomDim === 1
+                          ? 'Listen to the rain outside the windows. Tap the button as soon as it feels too loud!'
+                          : 'Feel the weight of the cushions. Tap the button as soon as it feels too heavy!'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 10-Step Luminous Crystal Sensory Gauge */}
+                  <div className="my-5 flex items-center justify-center gap-1.5 sm:gap-2.5">
+                    {Array.from({length: ROOM_TOP}, (_, i) => {
+                      const isLit = i < roomLevel
+                      const isCurrent = i === roomLevel - 1
+                      return (
+                        <div
+                          key={i}
+                          className={`relative h-11 w-7 sm:h-13 sm:w-9 rounded-xl flex items-center justify-center transition-all duration-300 border ${
+                            isCurrent
+                              ? 'border-amber-300 bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 scale-110 shadow-[0_0_22px_rgba(251,191,36,0.95)] ring-2 ring-amber-200'
+                              : isLit
+                              ? 'border-teal-300/80 bg-gradient-to-b from-teal-400 to-emerald-500 shadow-md'
+                              : 'border-teal-900/40 bg-black/40 opacity-40'
+                          }`}
+                        >
+                          <span className={`text-xs font-bold ${isCurrent ? 'text-amber-950 font-extrabold' : isLit ? 'text-teal-950' : 'text-slate-400'}`}>
+                            {i + 1}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {/* Real-Time Sensory Intensity Readout */}
+                  <div className="inline-flex items-center gap-2 rounded-full bg-black/60 border border-teal-400/30 px-4 py-1.5 text-xs sm:text-sm font-bold text-amber-200 mb-6 backdrop-blur-sm shadow-sm">
+                    <span>{roomDim === 0 ? '☀️' : roomDim === 1 ? '🌧️' : '🪶'}</span>
+                    <span>
+                      {roomDim === 0
+                        ? roomLevel <= 3
+                          ? `Level ${roomLevel} of 10 • Dim Candlelight Glow`
+                          : roomLevel <= 6
+                          ? `Level ${roomLevel} of 10 • Warm Natural Sunlight`
+                          : `Level ${roomLevel} of 10 • Bright Sunbeam Daylight`
+                        : roomDim === 1
+                        ? roomLevel <= 3
+                          ? `Level ${roomLevel} of 10 • Whispering Forest Drizzle`
+                          : roomLevel <= 6
+                          ? `Level ${roomLevel} of 10 • Steady Window Rain & Windchimes`
+                          : `Level ${roomLevel} of 10 • Lively Rushing Waterfall`
+                        : roomLevel <= 3
+                        ? `Level ${roomLevel} of 10 • Light Silk Feather Pillows`
+                        : roomLevel <= 6
+                        ? `Level ${roomLevel} of 10 • Plush Woven Bench Cushions`
+                        : `Level ${roomLevel} of 10 • Deep Weighted Sanctuary Blanket`}
+                    </span>
+                  </div>
+
+                  {/* Tactile Comfort Button */}
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playAudio('tap')
+                        finishRampDim(roomLevel)
+                      }}
+                      className="group relative mx-auto flex items-center justify-center gap-3 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 px-10 sm:px-14 py-4 sm:py-5 text-xl sm:text-2xl font-extrabold text-white shadow-[0_12px_32px_rgba(245,158,11,0.55)] border-2 border-amber-300/80 hover:scale-105 active:scale-95 transition-all cursor-pointer ring-4 ring-amber-400/20"
+                    >
+                      <span className="text-2xl sm:text-3xl transition-transform group-hover:scale-110">✋</span>
+                      <span>That&apos;s Too Much!</span>
+                    </button>
+                    <p className="mt-3 text-xs text-teal-200/70">
+                      Tap as soon as it feels uncomfortable · Or let it rise if you feel completely cozy
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* PHASE 3: SENSORY HAVEN STUDIO DESIGN */}
               {roomPhase === 'design' && (
                 <>
-                  <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
-                    Now make it yours. Tune the light, the soft rain and the cushion weight, or tap the calm shield to make everything softest at once.
-                  </p>
-                  <div className="space-y-6 max-w-md mx-auto mb-6">
-                    <div>
-                      <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
-                        <span>Lighting Level</span>
-                        <span>{sensoryLight === null ? 'Slide to choose' : sensoryLight <= 3 ? 'Dim Warm Glow' : sensoryLight <= 7 ? 'Soft Natural Sunlight' : 'Bright Daylight'}</span>
+                  <div className="text-center mb-6">
+                    <span className="inline-block rounded-full bg-teal-400/20 border border-teal-300/40 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-teal-200 mb-1">
+                      ✨ Sensory Haven Studio
+                    </span>
+                    <h3 className="font-patrick text-3xl sm:text-4xl text-amber-200 font-bold">
+                      Make The Sanctuary Yours
+                    </h3>
+                    <p className="text-xs sm:text-sm text-teal-100/90 max-w-lg mx-auto mt-1">
+                      Tune your cozy lighting, rain soundscape, and cushion weight until the room feels just right.
+                    </p>
+                  </div>
+
+                  {/* 3 Interactive Tactile Sliders */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    {/* 1. Light Card */}
+                    <div className="rounded-2xl border border-teal-400/30 bg-[#0D241C]/80 p-4 shadow-md backdrop-blur-sm text-left">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold uppercase text-amber-200 flex items-center gap-1.5">
+                          <span>☀️</span> Light Level
+                        </span>
+                        <span className="text-xs font-bold text-teal-200">
+                          {sensoryLight === null ? 'Default (5)' : `${sensoryLight} / 10`}
+                        </span>
                       </div>
                       <input
                         type="range"
@@ -1564,15 +1688,28 @@ function __McInner() {
                         max="10"
                         value={sensoryLight ?? 5}
                         onChange={(e) => { setSensoryLight(Number(e.target.value)); bumpAdjust('light') }}
-                        onPointerDown={(e) => { if (sensoryLight === null) setSensoryLight(Number((e.currentTarget as HTMLInputElement).value)) }}
-                        className={`w-full accent-teal-600 ${sensoryLight === null ? 'opacity-50' : ''}`}
+                        className="w-full accent-amber-400 cursor-pointer"
                       />
+                      <span className="block mt-2 text-[11px] font-semibold text-teal-100/80">
+                        {sensoryLight === null || sensoryLight === 5
+                          ? 'Soft Natural Sunlight'
+                          : sensoryLight <= 3
+                          ? '🕯️ Cozy Candlelight Glow'
+                          : sensoryLight <= 7
+                          ? '☀️ Soft Forest Light'
+                          : '⚡ Bright Daylight Sunbeam'}
+                      </span>
                     </div>
 
-                    <div>
-                      <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
-                        <span>Soundscape (Rain & Wind Chimes)</span>
-                        <span>{sensorySound === null ? 'Slide to choose' : sensorySound <= 3 ? 'Whisper Quiet' : sensorySound <= 7 ? 'Gentle Forest Rain' : 'Lively Waterfall'}</span>
+                    {/* 2. Sound Card */}
+                    <div className="rounded-2xl border border-teal-400/30 bg-[#0D241C]/80 p-4 shadow-md backdrop-blur-sm text-left">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold uppercase text-amber-200 flex items-center gap-1.5">
+                          <span>🌧️</span> Rain Sound
+                        </span>
+                        <span className="text-xs font-bold text-teal-200">
+                          {sensorySound === null ? 'Default (5)' : `${sensorySound} / 10`}
+                        </span>
                       </div>
                       <input
                         type="range"
@@ -1580,15 +1717,28 @@ function __McInner() {
                         max="10"
                         value={sensorySound ?? 5}
                         onChange={(e) => { setSensorySound(Number(e.target.value)); bumpAdjust('sound') }}
-                        onPointerDown={(e) => { if (sensorySound === null) setSensorySound(Number((e.currentTarget as HTMLInputElement).value)) }}
-                        className={`w-full accent-teal-600 ${sensorySound === null ? 'opacity-50' : ''}`}
+                        className="w-full accent-teal-400 cursor-pointer"
                       />
+                      <span className="block mt-2 text-[11px] font-semibold text-teal-100/80">
+                        {sensorySound === null || sensorySound === 5
+                          ? 'Gentle Forest Rain'
+                          : sensorySound <= 3
+                          ? '💧 Whisper Soft Drizzle'
+                          : sensorySound <= 7
+                          ? '🌧️ Window Rain & Chimes'
+                          : '⛈️ Lively Rushing Torrent'}
+                      </span>
                     </div>
 
-                    <div>
-                      <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
-                        <span>Cushion & Blanket Comfort</span>
-                        <span>{sensoryTouch === null ? 'Slide to choose' : sensoryTouch <= 4 ? 'Light Feather Pillows' : 'Soothing Weighted Blanket'}</span>
+                    {/* 3. Texture Card */}
+                    <div className="rounded-2xl border border-teal-400/30 bg-[#0D241C]/80 p-4 shadow-md backdrop-blur-sm text-left">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold uppercase text-amber-200 flex items-center gap-1.5">
+                          <span>🪶</span> Cushion Weight
+                        </span>
+                        <span className="text-xs font-bold text-teal-200">
+                          {sensoryTouch === null ? 'Default (5)' : `${sensoryTouch} / 10`}
+                        </span>
                       </div>
                       <input
                         type="range"
@@ -1596,22 +1746,56 @@ function __McInner() {
                         max="10"
                         value={sensoryTouch ?? 5}
                         onChange={(e) => { setSensoryTouch(Number(e.target.value)); bumpAdjust('texture') }}
-                        onPointerDown={(e) => { if (sensoryTouch === null) setSensoryTouch(Number((e.currentTarget as HTMLInputElement).value)) }}
-                        className={`w-full accent-teal-600 ${sensoryTouch === null ? 'opacity-50' : ''}`}
+                        className="w-full accent-emerald-400 cursor-pointer"
                       />
+                      <span className="block mt-2 text-[11px] font-semibold text-teal-100/80">
+                        {sensoryTouch === null || sensoryTouch === 5
+                          ? 'Plush Bench Cushions'
+                          : sensoryTouch <= 4
+                          ? '🪶 Light Feather Pillows'
+                          : '🛏️ Soothing Weighted Blanket'}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="text-center mb-6">
+                  {/* Preset Sanctuary Moods */}
+                  <div className="mb-6 flex flex-wrap justify-center items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playAudio('whoosh')
+                        setSensoryLight(2)
+                        setSensorySound(2)
+                        setSensoryTouch(8)
+                        bumpAdjust('light')
+                      }}
+                      className="rounded-full border border-teal-400/40 bg-[#122A21] px-4 py-2 text-xs font-bold text-teal-200 hover:border-amber-300 hover:text-white transition-all shadow-sm flex items-center gap-1.5"
+                    >
+                      <span>🌙</span> Twilight Cocoon (Dim & Weighted)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playAudio('whoosh')
+                        setSensoryLight(6)
+                        setSensorySound(5)
+                        setSensoryTouch(4)
+                        bumpAdjust('light')
+                      }}
+                      className="rounded-full border border-teal-400/40 bg-[#122A21] px-4 py-2 text-xs font-bold text-teal-200 hover:border-amber-300 hover:text-white transition-all shadow-sm flex items-center gap-1.5"
+                    >
+                      <span>🌿</span> Sunlit Forest Veranda
+                    </button>
                     <button
                       type="button"
                       onClick={shieldRoom}
-                      className="rounded-full border-2 border-teal-600 bg-white px-6 py-3 text-sm font-bold text-teal-800 hover:bg-teal-50 active:scale-95 transition-all"
+                      className="rounded-full border-2 border-emerald-400 bg-gradient-to-r from-emerald-600 to-teal-700 px-5 py-2 text-xs font-bold text-white shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
                     >
-                      Calm shield: make it all softest
+                      <span>🛡️</span> Calm Shield: Softest Everything
                     </button>
                   </div>
 
+                  {/* Complete & Advance to Final Chapter */}
                   <div className="text-center">
                     <button
                       type="button"
@@ -1624,9 +1808,9 @@ function __McInner() {
                         setStage('dccs_story')
                         sayIt('Put the gem in the box with the same color!')
                       }}
-                      className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-12 py-5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
+                      className="rounded-full bg-gradient-to-r from-teal-500 via-teal-600 to-emerald-600 px-12 py-5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
                     >
-                      Save and play the last game ▶
+                      Save Sanctuary & Play Final Game ▶
                     </button>
                   </div>
                 </>

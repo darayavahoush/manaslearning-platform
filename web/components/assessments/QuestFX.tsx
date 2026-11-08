@@ -82,7 +82,7 @@ export function AmbientToggle({ mood }: { mood: "groves" | "citadel" | "adhd" | 
   };
 
   const startWebAudioFallback = () => {
-    const AC = window.AudioContext || (window as any).webkitAudioContext;
+    const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AC) return;
     const ctx: AudioContext = new AC();
     const master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
@@ -99,7 +99,7 @@ export function AmbientToggle({ mood }: { mood: "groves" | "citadel" | "adhd" | 
   };
 
   return (
-    <button type="button" aria-pressed={on} onClick={() => { on ? stop() : start(); setOn(!on); }}
+    <button type="button" aria-pressed={on} onClick={() => { if (on) { stop(); } else { start(); } setOn(!on); }}
       className="fixed bottom-4 left-4 z-50 min-h-[44px] rounded-full border border-white/40 bg-black/60 px-4 text-xs font-bold text-white backdrop-blur-md hover:bg-black/75 focus-visible:outline focus-visible:outline-4 focus-visible:outline-white">
       {on ? "Ambient sound: on" : "Ambient sound: off"}
     </button>
@@ -107,10 +107,16 @@ export function AmbientToggle({ mood }: { mood: "groves" | "citadel" | "adhd" | 
 }
 
 // Aria: Clear gaze and pointing direction sprites. Starts with eye contact, then shifts gaze & points toward target.
-export function GazeGuide({ gaze, isPointing, onCue }: { gaze: "left" | "center" | "right"; isPointing: boolean; onCue: () => void }) {
+export function GazeGuide({ gaze, onCue }: { gaze: "left" | "center" | "right"; isPointing?: boolean; onCue: () => void }) {
   const [cue, setCue] = useState(false);
-  const cb = useRef(onCue); cb.current = onCue;
-  useEffect(() => { const t = setTimeout(() => { setCue(true); cb.current(); }, 900); return () => clearTimeout(t); }, []);
+  const cb = useRef(onCue);
+  useEffect(() => {
+    cb.current = onCue;
+  }, [onCue]);
+  useEffect(() => {
+    const t = setTimeout(() => { setCue(true); cb.current(); }, 900);
+    return () => clearTimeout(t);
+  }, []);
 
   const spriteSrc = !cue
     ? "/quests/autism/aria_gaze_center.webp"
@@ -126,16 +132,16 @@ export function GazeGuide({ gaze, isPointing, onCue }: { gaze: "left" | "center"
 
   return (
     <div className="qd-gz flex flex-col items-center">
-      <div className="h-48 w-44 md:h-56 md:w-52 flex items-center justify-center relative">
+      <div className="h-44 w-44 sm:h-52 sm:w-52 flex items-center justify-center relative">
         <img
           src={spriteSrc}
           alt={ariaLabel}
           className="h-full w-full object-contain pointer-events-none select-none transition-all duration-300 drop-shadow-md"
           width={208}
-          height={224}
+          height={208}
         />
       </div>
-      <span className="mt-2 rounded-full border border-teal-200 bg-white/95 px-3.5 py-1 text-xs font-bold text-teal-900 shadow-sm" aria-live="polite">
+      <span className="sr-only" aria-live="polite">
         {cue ? "Where is Aria looking?" : "Aria is looking at you..."}
       </span>
     </div>

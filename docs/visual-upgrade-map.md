@@ -340,8 +340,22 @@
     - **Bounding Box Match**: Identical `344 × 276` px across all three → **PASS**
     - **Opaque Centroid**: Centered at `(255.6, 256.1)`, precisely on the 512×512 canvas center `(256, 256)` → **PASS**
 
+### Autism Quest Visual Cohesion & Immersion Upgrade (Gaze & Emotion Mirror Games)
+- **Problem Resolved**:
+  - Assets previously appeared broken when Next.js reverse proxy lacked `/quests/*` in `web/proxy.ts` (fixed in commit `a793193`).
+  - Screen previously appeared as a stark white form/MCQ quiz box, obscuring the lush Indian courtyard and trellis gazebo environment behind a `-z-10` CSS stacking context.
+  - Previous placeholder Aria was an untextured silhouette; vessel choices were small inside oversized cards; question text was duplicated.
+- **Visual Overhaul (Presentation Only)**:
+  - **Aria Character Illustration**: Hand-painted watercolor alchemist child character (`aria_gaze_center.webp`, `aria_gaze_left.webp`, `aria_gaze_right.webp`) in Indian teal and gold attire with a distinct bun, clear gaze orienting, and a natural pointing arm with articulated fingers.
+  - **Ceramic Urn Daises**: Replaced sterile MCQ buttons with tactile garden pedestals (`bg-white/10 border border-white/20 hover:bg-amber-400/15 hover:border-amber-300/60 transition-all`), scaling vessels up to fill 80% height with subtle dark brass nameplates.
+  - **Fox Cub Emotion Mirror**: Centered the high-clarity fox cub in a warm golden sunburst enchanted mirror frame (`border-4 border-amber-300/90 shadow-[0_0_40px_rgba(251,191,36,0.35)]`).
+  - **Garden Spirit Companions**: Choice sprites rendered as gentle porcelain garden spirits (`choice_happy.webp`, `choice_calm.webp`, `choice_sad.webp`, `choice_angry.webp`, `choice_scared.webp`, `choice_surprised.webp`) with single neutral ivory body tone (`#FCF6EE`) and sprout crest, differing strictly in facial expression so children cannot color-match.
+  - **Translucent Pergola HUD**: Transformed `ja_game`, `ja_show`, and `tom_game` containers from opaque white `bg-white/85` exam cards into atmospheric translucent garden pavilions (`rounded-3xl border border-white/30 bg-gradient-to-b from-[#021811]/75 via-[#041D15]/60 to-[#021811]/80 backdrop-blur-md p-5 sm:p-7 shadow-2xl text-white`), allowing `bg_gaze.webp` (Indian courtyard) and `bg_feelings.webp` (trellis gazebo) to envelop the entire screen.
+- **Rule A Confirmation**:
+  - All trial arrays (`JA_TRIALS`, `EMOTION_MIRROR_TRIALS`, `SHOW_TARGETS`), 900ms gaze cue delay, scoring logic, hit-boxes, and telemetry keys are 100% locked and unchanged.
+
 ---
 
 ## 5. Instrument Versioning
 - **Previous `INSTRUMENT_VERSION`**: `2026.11.11`
-- **Updated `INSTRUMENT_VERSION`**: `2026.11.12` (Bumping version in `web/components/assessments/version.ts` because the stimulus art for the feelings and joint attention games changed).
+- **Updated `INSTRUMENT_VERSION`**: `2026.11.13` (Bumped version in `web/components/assessments/version.ts` due to stimulus art and visual framing upgrades in Autism Quest).

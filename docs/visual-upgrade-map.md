@@ -469,5 +469,20 @@
 - **Rule A Confirmation**:
   - Pure presentation and interpretive synthesis. All raw telemetry keys and session record schemas remain 100% intact.
 
+---
+
+## 11. High-Fidelity Storybook Golden Sunbird, Shadow Moth, and Guide Chirp Redraw
+- **Problem Resolved**:
+  - The previous sunbird asset in `web/public/quests/adhd/sunbird.webp` and distractor in `shadow_moth.webp` were rudimentary geometric drawings generated via basic PIL polygons/ellipses (straight triangle wings, circular head, oval body, cyan rhombuses). They looked like elementary clipart, creating a jarring mismatch against the rich watercolor storybook aesthetic of Sunbird Valley.
+- **Visual Overhaul (Presentation Only)**:
+  - **The Golden Sunbird (`sunbird.webp`)**: Redrawn as a breathtaking children's fantasy watercolor illustration. Features magnificent outspread feathered wings with golden-saffron plumage and shimmering emerald-cyan wingtips, a noble feathered crest, warm specular eye, slender curved nectar beak, and long graceful flowing tail plumes. Cleanly isolated with soft antialiased edges on transparent canvas.
+  - **The Shadow Moth (`shadow_moth.webp`)**: Redrawn as a whimsical, gentle twilight moth with soft velvety indigo/slate-lavender watercolor textures, silvery crescent moon eye-spots, and feathery antennae. Friendly, calm, non-threatening, and mathematically matched in opaque pixel area (within 7% of the sunbird) to ensure psychometric CPT-3 validity without visual size bias.
+  - **Guide Chirp (`guide_chirp.webp`)**: Redrawn as an adorable, plump golden sunbird chick with warm amber feathers, bright friendly eyes, and a cheerful smiling beak joyfully waving one wing.
+  - **Full ADHD Quest Mascot Cohesion**: Replaced remaining instances of the default owl mascot (`milo-owl.webp`) in Chapter 1 practice, rest break, Chapter 2 steering, and Chapter 3 astrolabe with Guide Chirp, giving Sunbird Valley a consistent companion.
+  - **Reproducible Pipeline (`scripts/build_full_quest_art.py`)**: Integrated `extract_transparent_sprite` with edge-aware distance transform, signed distance antialiasing, and defringing to guarantee clean sprite cutouts directly from master high-res artwork.
+- **Rule A Confirmation**:
+  - Hit-box dimensions (`band.bird`, responsive per age band, min >= 44px), presentation durations, stimulus timing, scoring formulas, and CPT telemetry keys (`omissions`, `commissions`, `hrtMs`, `rtvMs`) are 100% preserved.
+
+
 
 

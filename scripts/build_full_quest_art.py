@@ -1,6 +1,8 @@
 import os
 import glob
+import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageOps
+from scipy import ndimage
 
 ARTIFACTS_DIR = "/Users/ananyasridhar/.gemini/antigravity/brain/08217f75-b151-4457-9d59-806b38e64437"
 DEST_ROOT = "/Users/ananyasridhar/work/vaakbot/web/public/quests"
@@ -10,6 +12,52 @@ def convert_bg(src_path, dest_path, size=(1280, 720), quality=82):
     im = ImageOps.fit(im, size, Image.Resampling.LANCZOS)
     im.save(dest_path, "WEBP", quality=quality)
     print(f"Saved background: {dest_path} {size}")
+
+def extract_transparent_sprite(img_path, out_path, bg_thresh=242, edge_radius=1.5, target_box=(440, 440)):
+    im = Image.open(img_path).convert("RGB")
+    arr = np.array(im, dtype=np.float32)
+    max_val = np.max(arr, axis=2)
+    min_val = np.min(arr, axis=2)
+    diff = max_val - min_val
+    is_white = (min_val >= bg_thresh) & (diff < 15)
+
+    h, w = is_white.shape
+    border_mask = np.zeros((h, w), dtype=bool)
+    border_mask[0, :] = True
+    border_mask[-1, :] = True
+    border_mask[:, 0] = True
+    border_mask[:, -1] = True
+
+    labeled, num_features = ndimage.label(is_white)
+    border_labels = np.unique(labeled[border_mask])
+    border_labels = border_labels[border_labels > 0]
+    bg_mask = np.isin(labeled, border_labels)
+    fg_mask = ~bg_mask
+    fg_mask = ndimage.binary_fill_holes(fg_mask)
+
+    dist_inside = ndimage.distance_transform_edt(fg_mask)
+    dist_outside = ndimage.distance_transform_edt(~fg_mask)
+    signed_dist = dist_inside - dist_outside
+    alpha = np.clip((signed_dist + edge_radius) / (2.0 * edge_radius), 0.0, 1.0)
+
+    fg_rgb = arr.copy()
+    edge_zone = (alpha > 0.05) & (alpha < 0.98)
+    for c in range(3):
+        channel = fg_rgb[:, :, c]
+        unmixed = (channel[edge_zone] - (1.0 - alpha[edge_zone]) * 255.0) / np.maximum(alpha[edge_zone], 0.1)
+        fg_rgb[edge_zone, c] = np.clip(unmixed, 0, 255)
+
+    out_arr = np.dstack([fg_rgb.astype(np.uint8), (alpha * 255).astype(np.uint8)])
+    out_im = Image.fromarray(out_arr, mode="RGBA")
+    bbox = out_im.getbbox()
+    cropped = out_im.crop(bbox)
+
+    canvas = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
+    cropped.thumbnail(target_box, Image.Resampling.LANCZOS)
+    offset = ((512 - cropped.width) // 2, (512 - cropped.height) // 2)
+    canvas.paste(cropped, offset, cropped)
+    canvas.save(out_path, "WEBP", quality=95)
+    print(f"Extracted transparent sprite: {out_path}")
 
 def create_adhd_art():
     dest = os.path.join(DEST_ROOT, "adhd")
@@ -26,65 +74,23 @@ def create_adhd_art():
     convert_bg(f"{ARTIFACTS_DIR}/welcome_1794023332538.jpg", f"{dest}/share.webp", size=(1200, 630))
     convert_bg(f"{ARTIFACTS_DIR}/welcome_1794023332538.jpg", f"{dest}/icon.webp", size=(256, 256))
     
-    # 2. Golden Sunbird Target Sprite (512x512 transparent)
-    sb = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
-    d = ImageDraw.Draw(sb)
-    # Warm amber glow aura
-    for r in range(230, 160, -10):
-        d.ellipse([256 - r, 256 - r, 256 + r, 256 + r], fill=(251, 191, 36, int(35 * (1 - (r - 160) / 70))))
-    # Wings spread: left wing and right wing (feathers)
-    left_wing = [(256, 260), (160, 220), (70, 150), (90, 200), (120, 250), (170, 290), (256, 310)]
-    right_wing = [(256, 260), (352, 220), (442, 150), (422, 200), (392, 250), (342, 290), (256, 310)]
-    d.polygon(left_wing, fill=(245, 158, 11, 245), outline=(254, 240, 138, 255), width=5)
-    d.polygon(right_wing, fill=(245, 158, 11, 245), outline=(254, 240, 138, 255), width=5)
-    # Emerald shoulder accents
-    d.polygon([(256, 260), (180, 230), (140, 270), (256, 300)], fill=(16, 185, 129, 230), outline=(209, 250, 229, 255), width=3)
-    d.polygon([(256, 260), (332, 230), (372, 270), (256, 300)], fill=(16, 185, 129, 230), outline=(209, 250, 229, 255), width=3)
-    # Body and head
-    d.ellipse([200, 200, 312, 360], fill=(217, 119, 6, 255), outline=(254, 243, 199, 255), width=6)
-    d.ellipse([216, 130, 296, 220], fill=(245, 158, 11, 255), outline=(254, 243, 199, 255), width=6)
-    # Curved sunbird beak (slender nectar feeder)
-    d.polygon([(256, 175), (285, 180), (360, 210), (280, 190)], fill=(180, 83, 9, 255))
-    # Eye: bright and friendly
-    d.ellipse([265, 155, 282, 172], fill=(255, 255, 255, 255))
-    d.ellipse([271, 159, 280, 168], fill=(30, 41, 59, 255))
-    d.ellipse([276, 161, 279, 164], fill=(255, 255, 255, 255))
-    # Tail feathers
-    tail = [(256, 350), (230, 440), (256, 460), (282, 440)]
-    d.polygon(tail, fill=(13, 148, 136, 240), outline=(204, 251, 241, 255), width=4)
-    sb.save(f"{dest}/sunbird.webp", "WEBP", quality=90)
+    # 2. Golden Sunbird Target Sprite (Storybook watercolor)
+    extract_transparent_sprite(
+        f"{ARTIFACTS_DIR}/golden_sunbird_sprite_1794123158418.jpg",
+        f"{dest}/sunbird.webp"
+    )
     
-    # 3. Grey Shadow Moth Distractor (512x512 transparent)
-    sm = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
-    dm = ImageDraw.Draw(sm)
-    # Velvety charcoal moth with distinct rounded silhouette
-    left_moth_wing = [(256, 260), (140, 200), (80, 270), (120, 370), (200, 350), (256, 320)]
-    right_moth_wing = [(256, 260), (372, 200), (432, 270), (392, 370), (312, 350), (256, 320)]
-    dm.polygon(left_moth_wing, fill=(71, 85, 105, 230), outline=(148, 163, 184, 255), width=5)
-    dm.polygon(right_moth_wing, fill=(71, 85, 105, 230), outline=(148, 163, 184, 255), width=5)
-    # Wing spot circles (dusty silver eye spots)
-    dm.ellipse([140, 260, 180, 300], fill=(51, 65, 85, 255), outline=(203, 213, 225, 200), width=3)
-    dm.ellipse([332, 260, 372, 300], fill=(51, 65, 85, 255), outline=(203, 213, 225, 200), width=3)
-    # Moth fuzzy body
-    dm.ellipse([230, 200, 282, 360], fill=(51, 65, 85, 255), outline=(148, 163, 184, 255), width=5)
-    dm.ellipse([236, 170, 276, 215], fill=(71, 85, 105, 255), outline=(148, 163, 184, 255), width=4)
-    # Feathery curved antennae
-    dm.arc([160, 100, 250, 180], start=180, end=330, fill=(203, 213, 225, 255), width=4)
-    dm.arc([262, 100, 352, 180], start=210, end=360, fill=(203, 213, 225, 255), width=4)
-    sm.save(f"{dest}/shadow_moth.webp", "WEBP", quality=90)
+    # 3. Shadow Moth Distractor (Storybook watercolor)
+    extract_transparent_sprite(
+        f"{ARTIFACTS_DIR}/shadow_moth_sprite_1794123208163.jpg",
+        f"{dest}/shadow_moth.webp"
+    )
     
-    # 4. Guide Chirp (512x512 transparent)
-    gc = Image.new("RGBA", (512, 512), (0, 0, 0, 0))
-    dgc = ImageDraw.Draw(gc)
-    # Friendly little robin guide
-    dgc.ellipse([200, 180, 312, 340], fill=(180, 83, 9, 255), outline=(254, 243, 199, 255), width=5)
-    dgc.ellipse([216, 220, 296, 320], fill=(249, 115, 22, 255))
-    dgc.ellipse([216, 120, 296, 200], fill=(120, 53, 15, 255), outline=(254, 243, 199, 255), width=4)
-    dgc.polygon([(280, 155), (330, 165), (280, 175)], fill=(245, 158, 11, 255))
-    dgc.ellipse([255, 142, 272, 159], fill=(255, 255, 255, 255))
-    dgc.ellipse([261, 147, 270, 156], fill=(30, 41, 59, 255))
-    dgc.ellipse([266, 149, 269, 152], fill=(255, 255, 255, 255))
-    gc.save(f"{dest}/guide_chirp.webp", "WEBP", quality=90)
+    # 4. Guide Chirp (Storybook watercolor companion)
+    extract_transparent_sprite(
+        f"{ARTIFACTS_DIR}/guide_chirp_sprite_1794123240570.jpg",
+        f"{dest}/guide_chirp.webp"
+    )
     print("ADHD art generated successfully.")
 
 def create_autism_art():

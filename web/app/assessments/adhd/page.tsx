@@ -1466,7 +1466,7 @@ function McInner() {
               <>
                 <span className="inline-block rounded-full bg-[#3A2412]/80 border border-amber-400/30 px-4 py-1 text-sm font-bold text-amber-200">Practice</span>
                 <div className="mt-3 flex items-center justify-center gap-3">
-                  <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float h-14 w-14" />
+                  <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float h-14 w-14 object-contain drop-shadow" />
                   <p className="text-left text-base md:text-lg font-bold text-amber-100 max-w-xs" aria-live="polite">
                     {cptPrac === 'bird' ? 'Here comes the sunbird! Tap it!' : cptPrac === 'bird_ok' ? 'Yes! Great tap!' : cptPrac === 'moth' ? 'A moth! Do not tap. Just wait…' : cptPrac === 'moth_oops' ? 'Oops, that was the moth! Just wait.' : 'Perfect waiting!'}
                   </p>
@@ -1498,7 +1498,7 @@ function McInner() {
             {cptResting && (
               <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 overflow-hidden rounded-3xl bg-gradient-to-b from-[#1E1710]/95 via-[#2A1F16]/95 to-[#17120D]/95 border-2 border-amber-400/40 p-5 text-center sm:gap-4 sm:p-6 text-amber-100">
                 <style>{`@keyframes cr-breathe{0%,100%{transform:scale(.7);opacity:.5}50%{transform:scale(1);opacity:1}}@keyframes cr-bob{50%{transform:translateY(-8px)}}@media (prefers-reduced-motion:reduce){.cr-ring,.cr-owl{animation:none!important}}`}</style>
-                <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cr-owl h-20 w-20" style={{ animation: 'cr-bob 3.2s ease-in-out infinite' }} />
+                <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cr-owl h-20 w-20 object-contain drop-shadow" style={{ animation: 'cr-bob 3.2s ease-in-out infinite' }} />
                 <h3 className="font-patrick text-4xl font-bold text-amber-300">Rest time</h3>
                 <div className="flex items-center gap-2" role="img" aria-label={`${Math.floor(cptTrialIndex / cptPlan.size)} of ${cptPlan.blocks} rounds done`}>
                   {Array.from({ length: cptPlan.blocks }).map((_, i) => (
@@ -1632,7 +1632,7 @@ function McInner() {
 
             {flankerPhase !== 'real' && (
               <div className="mb-3 flex items-center justify-center gap-3">
-                <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float h-14 w-14" />
+                <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float h-14 w-14 object-contain drop-shadow" />
                 <p className="text-left text-base md:text-lg font-bold text-amber-100 max-w-xs">
                   {flankerPhase === 'demo1' ? 'Tap the paddle the arrow points to!' : 'Look at the BIG golden arrow in the middle. Ignore the little ones!'}
                 </p>
@@ -1765,7 +1765,7 @@ function McInner() {
 
             {memoryLevel < 1 && (
               <div className="mb-2 flex items-center justify-center gap-3">
-                <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float h-14 w-14" />
+                <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float h-14 w-14 object-contain drop-shadow" />
                 <p className="text-left text-base md:text-lg font-bold text-slate-200 max-w-xs" aria-live="polite">
                   {memMsg === 'ok' ? 'Yes! Great!' : memMsg === 'again' ? 'Try again! Watch the stars.' : memoryLevel === -1 ? 'Watch the star light up. Then tap it!' : 'Now two stars. Watch, then tap them in order!'}
                 </p>

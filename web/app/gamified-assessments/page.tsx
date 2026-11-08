@@ -25,59 +25,59 @@ const SCREENERS: Screener[] = [
 const QUESTS = [
   {
     id: 'adhd',
-    kicker: 'Attention & Focus Quest',
-    title: 'Sunbird Valley ADHD Quest',
+    kicker: 'Attention & Executive Focus Screener',
+    title: 'Sunbird Valley ADHD Screener',
     img: '/quests/adhd/welcome.webp',
-    alt: 'Sunbird Valley quest',
+    alt: 'Sunbird Valley ADHD screener',
     glow: '#E3B873',
     accent: '#7E5320',
     btn: 'linear-gradient(90deg,#F2DDB0,#E8C98A)',
     href: '/assessments/adhd',
-    cta: 'Start Sunbird Valley Quest →',
-    tagline: 'Soar across dawn meadows, steer past tricky winds, and charge the sacred Sunstone with steady hands!',
+    cta: 'Start ADHD Screener Quest →',
+    tagline: 'Measures sustained vigilance over time, selective distractor resistance, spatial memory span, and motor patience. Reveals how your child sustains attention during schoolwork and filters classroom distractions.',
     adventures: [
-      {icon: '☀️', label: 'Spot Sunbirds'},
-      {icon: '🧭', label: 'Forest Steering'},
-      {icon: '✨', label: 'Star Astrolabe'},
-      {icon: '🔥', label: 'Sunstone Charge'},
+      {icon: '🎯', label: 'Vigilance (CPT-3)', desc: 'Sustained visual focus'},
+      {icon: '🧭', label: 'Inhibition (Flanker)', desc: 'Distractor filtering'},
+      {icon: '✨', label: 'Working Memory (Corsi)', desc: 'Spatial recall span'},
+      {icon: '⏱️', label: 'Motor Delay', desc: 'Impulse patience'},
     ],
   },
   {
     id: 'autism',
-    kicker: 'Social & Sensory Comfort Quest',
-    title: 'The Lantern Garden Autism Quest',
+    kicker: 'Social & Sensory Comfort Screener',
+    title: 'The Lantern Garden Autism Screener',
     img: '/quests/autism/welcome.webp',
-    alt: 'The Lantern Garden quest',
+    alt: 'The Lantern Garden autism screener',
     glow: '#8DBFB3',
     accent: '#34665D',
     btn: 'linear-gradient(90deg,#C4E0D6,#A8D0C3)',
     href: '/assessments/autism',
-    cta: 'Start Lantern Garden Quest →',
-    tagline: 'Follow Aria through lantern gardens, mirror the friendly fox cub, and create your coziest sanctuary!',
+    cta: 'Start Autism Screener Quest →',
+    tagline: 'Evaluates non-verbal social gaze orienting, facial emotion recognition, sound & light sensory comfort thresholds, and cognitive rule-switching flexibility. Helps parents understand social reciprocity and sensory sensitivities.',
     adventures: [
-      {icon: '🏺', label: "Aria's Gaze"},
-      {icon: '🦊', label: 'Fox Emotions'},
-      {icon: '🌿', label: 'Cozy Haven'},
-      {icon: '🔮', label: 'Gem Sorting'},
+      {icon: '👀', label: 'Joint Attention', desc: 'Social gaze tracking'},
+      {icon: '😊', label: 'Affect Recognition', desc: 'Emotion expression cues'},
+      {icon: '🎧', label: 'Sensory Thresholds', desc: 'Light & sound comfort'},
+      {icon: '🔄', label: 'Set-Shifting (DCCS)', desc: 'Cognitive flexibility'},
     ],
   },
   {
     id: 'dyslexia',
-    kicker: 'Reading & Phonology Quest',
-    title: 'The Whispering Library Dyslexia Quest',
+    kicker: 'Reading & Phonology Screener',
+    title: 'The Whispering Library Dyslexia Screener',
     img: '/quests/dyslexia/welcome.webp',
-    alt: 'The Whispering Library quest',
+    alt: 'The Whispering Library dyslexia screener',
     glow: '#9DC3AE',
     accent: '#2D5E4A',
     btn: 'linear-gradient(90deg,#C8E6D5,#A5D6BC)',
     href: '/assessments/dyslexia',
-    cta: 'Start Whispering Library Quest →',
-    tagline: 'Explore glowing library nooks with Pip the Owl, catch rhyming echoes, and unlock magical story stones!',
+    cta: 'Start Dyslexia Screener Quest →',
+    tagline: 'Assesses phonological rhyme detection, initial sound segmentation, letter mirror-reversal (b/d/p/q orientation), and auditory sequence working memory. Pinpoints exact reading readiness and early phonics support needs.',
     adventures: [
-      {icon: '🦉', label: "Pip's Rhymes"},
-      {icon: '🎵', label: 'River Stones'},
-      {icon: '🦋', label: 'Letter Moths'},
-      {icon: '📖', label: 'Story Words'},
+      {icon: '👂', label: 'Rhyme Awareness', desc: 'Auditory sound matching'},
+      {icon: '🔤', label: 'Initial Phonemes', desc: 'Sound segmentation'},
+      {icon: '🦋', label: 'Mirror Letters', desc: 'b/d/p/q orientation'},
+      {icon: '📚', label: 'Syllable Memory', desc: 'Phonological working span'},
     ],
   },
 ]
@@ -222,31 +222,39 @@ export default function GamifiedAssessmentsPage() {
                   </div>
                   <div className="flex flex-1 flex-col justify-between p-7">
                     <div>
-                      <div className="mb-3 flex items-center gap-1.5">
+                      <div className="mb-3 flex items-center justify-between gap-1.5 flex-wrap">
                         <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold" style={{ background: `${q.glow}25`, color: q.accent }}>
-                          <span>🎮</span> 100% Gameplay • No Reading Required
+                          <span>🎮</span> 100% Whimsical Play for Kids
+                        </span>
+                        <span className="text-[11px] font-bold text-[#6F665A]">
+                          Clinical Dossier for Parents
                         </span>
                       </div>
 
-                      {/* 4 Mini Adventure Badges */}
-                      <div className="my-4 grid grid-cols-2 gap-2">
+                      {/* 4 Clinical Measure Badges */}
+                      <div className="my-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {q.adventures.map((adv) => (
                           <div
                             key={adv.label}
-                            className="flex items-center gap-1.5 rounded-xl border px-2.5 py-2 text-[11px] sm:text-xs font-bold transition-all shadow-sm"
+                            className="flex flex-col justify-center rounded-xl border px-3 py-2 text-left transition-all shadow-sm"
                             style={{
                               background: '#FFFDF9',
                               borderColor: `${q.glow}66`,
                               color: '#2D2821',
                             }}
                           >
-                            <span className="text-sm shrink-0">{adv.icon}</span>
-                            <span className="leading-tight">{adv.label}</span>
+                            <div className="flex items-center gap-1.5 text-xs font-bold">
+                              <span className="text-sm shrink-0">{adv.icon}</span>
+                              <span className="leading-tight">{adv.label}</span>
+                            </div>
+                            <span className="mt-0.5 text-[10px] text-[#6F665A] font-medium leading-tight pl-5">
+                              {adv.desc}
+                            </span>
                           </div>
                         ))}
                       </div>
 
-                      <p className="text-sm font-medium leading-relaxed text-[#5A5247]">{q.tagline}</p>
+                      <p className="text-xs sm:text-sm font-medium leading-relaxed text-[#5A5247]">{q.tagline}</p>
                     </div>
                     <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#EFE7D6] pt-5">
                       <div><span className="text-2xl font-bold text-[#2F2A24]">₹799</span><span className="ml-2 text-xs text-[#6F665A]">/ $15 USD (Interactive quest & clinical report)</span></div>

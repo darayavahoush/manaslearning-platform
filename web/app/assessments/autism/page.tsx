@@ -1012,6 +1012,7 @@ function __McInner() {
     : '/quests/autism/welcome.webp'
 
   const isTaskScreen = stage.endsWith('_game')
+  const isWideStage = ['ja_game', 'ja_show', 'feelings_game', 'room_game', 'dccs_game', 'end'].includes(stage)
 
   return (
     <main data-no-listen="true" className="relative min-h-screen py-8 px-4 font-poppins text-[#1F2937] overflow-x-hidden selection:bg-teal-400 selection:text-teal-950">
@@ -1054,7 +1055,7 @@ function __McInner() {
         </div>
       )}
 
-      <div key={stage} className="mx-auto max-w-4xl relative z-10 qd-stage">
+      <div key={stage} className={`mx-auto ${isWideStage ? 'max-w-5xl lg:max-w-6xl w-full px-2 sm:px-4' : 'max-w-4xl'} relative z-10 qd-stage`}>
         {/* Navigation & Realm Indicator */}
         <div className="mb-6 flex items-center justify-between text-xs">
           <Link href="/gamified-assessments" prefetch={false} className="font-bold text-teal-300 hover:text-teal-200 hover:underline flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-teal-300/30 shadow-sm">
@@ -1187,7 +1188,7 @@ function __McInner() {
 
         {/* 3. CHAPTER 1 GAMEPLAY: JOINT ATTENTION */}
         {stage === 'ja_game' && JA_TRIALS[jaTrialIndex] && (
-          <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#14120E]/50 via-[#1D1914]/40 to-[#120F0C]/60 backdrop-blur-md p-5 sm:p-7 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none max-w-xl mx-auto text-white">
+          <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#14120E]/50 via-[#1D1914]/40 to-[#120F0C]/60 backdrop-blur-md p-5 sm:p-7 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none max-w-4xl lg:max-w-5xl mx-auto w-full text-white">
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-bold uppercase tracking-wider text-amber-200 bg-[#3A2412]/80 border border-amber-400/30 px-3.5 py-1 rounded-full backdrop-blur-sm">
                 Encounter {jaTrialIndex + 1} of {JA_TRIALS.length} • {JA_TRIALS.length - jaTrialIndex - 1 === 0 ? 'Last one, then a rest!' : `${JA_TRIALS.length - jaTrialIndex - 1} more, then a rest`}
@@ -1259,7 +1260,7 @@ function __McInner() {
 
         {/* 4. CHAPTER 2 STORY: THE EMOTION MIRROR */}
         {stage === 'ja_show' && (
-          <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#14120E]/50 via-[#1D1914]/40 to-[#120F0C]/60 backdrop-blur-md p-5 sm:p-7 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none max-w-xl mx-auto text-white">
+          <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#14120E]/50 via-[#1D1914]/40 to-[#120F0C]/60 backdrop-blur-md p-5 sm:p-7 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none max-w-4xl lg:max-w-5xl mx-auto w-full text-white">
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-bold uppercase tracking-wider text-amber-200 bg-[#3A2412]/80 border border-amber-400/30 px-3.5 py-1 rounded-full backdrop-blur-sm">
                 Your turn {showRound + 1} of {SHOW_TARGETS.length}
@@ -1388,7 +1389,7 @@ function __McInner() {
 
         {/* 5. CHAPTER 2 GAMEPLAY: EMOTION MIRROR */}
         {stage === 'tom_game' && helpPending && (
-          <div className="rounded-3xl border border-emerald-400/30 bg-gradient-to-b from-[#0A1F16]/50 via-[#081811]/40 to-[#04100B]/60 backdrop-blur-md p-5 sm:p-7 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none max-w-xl mx-auto text-white">
+          <div className="rounded-3xl border border-emerald-400/30 bg-gradient-to-b from-[#0A1F16]/50 via-[#081811]/40 to-[#04100B]/60 backdrop-blur-md p-5 sm:p-7 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none max-w-4xl lg:max-w-5xl mx-auto w-full text-white">
             <span className="text-xs font-bold uppercase tracking-wider text-amber-200/90 bg-[#162D1F]/80 border border-amber-300/30 px-3.5 py-1 rounded-full backdrop-blur-sm">
               🌿 Garden of Empathy
             </span>
@@ -1424,7 +1425,7 @@ function __McInner() {
         )}
 
         {stage === 'tom_game' && !helpPending && EMOTION_MIRROR_TRIALS[tomTrialIndex] && (
-          <div className="rounded-3xl border border-emerald-400/30 bg-gradient-to-b from-[#0A1F16]/50 via-[#081811]/40 to-[#04100B]/60 backdrop-blur-md p-5 sm:p-7 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none max-w-xl mx-auto text-white">
+          <div className="rounded-3xl border border-emerald-400/30 bg-gradient-to-b from-[#0A1F16]/50 via-[#081811]/40 to-[#04100B]/60 backdrop-blur-md p-5 sm:p-7 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none max-w-4xl lg:max-w-5xl mx-auto w-full text-white">
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-bold uppercase tracking-wider text-amber-200/90 bg-[#162D1F]/80 border border-amber-300/30 px-3.5 py-1 rounded-full backdrop-blur-sm">
                 Round {tomTrialIndex + 1} of {EMOTION_MIRROR_TRIALS.length} • {EMOTION_MIRROR_TRIALS.length - tomTrialIndex - 1 === 0 ? 'Last one, then a rest!' : `${EMOTION_MIRROR_TRIALS.length - tomTrialIndex - 1} more, then a rest`}

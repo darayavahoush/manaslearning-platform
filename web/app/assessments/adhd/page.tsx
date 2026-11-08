@@ -355,7 +355,7 @@ function SunbirdSkyArena({
           onTap()
         }
       }}
-      className={`group relative mx-auto my-3 flex h-64 sm:h-76 md:h-[330px] w-full max-w-xl cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border-4 ${
+      className={`group relative mx-auto my-4 flex h-[440px] sm:h-[500px] md:h-[580px] lg:h-[640px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border-4 ${
         scene ? scene.ring : 'border-[#D4A373]'
       } shadow-[0_20px_50px_rgba(0,0,0,0.65)] select-none transition-all active:scale-[0.99] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-400`}
     >
@@ -483,10 +483,10 @@ const CHARGE_TRIALS = [
 // child-interface and span research. They are not clinical norms.
 type AgeBand = { id: string; xs: number; sm: number; base: number; chev: string; bird: string; grid: number; seqs: number[][]; stepMs: number; litMs: number }
 const AGE_BANDS: AgeBand[] = [
-  { id: '4-5', xs: 1.15, sm: 1.25, base: 1.4, chev: 'w-12 h-12 sm:w-24 sm:h-24', bird: 'w-40 h-40 sm:w-48 sm:h-48', grid: 520, seqs: [[1, 5], [3, 0, 6], [8, 4, 1, 6]], stepMs: 1000, litMs: 700 },
-  { id: '6-8', xs: 1.05, sm: 1.15, base: 1.3, chev: 'w-12 h-12 sm:w-20 sm:h-20', bird: 'w-36 h-36 sm:w-44 sm:h-44', grid: 500, seqs: [[1, 5, 7], [3, 0, 6, 2], [8, 4, 1, 6, 3]], stepMs: 900, litMs: 600 },
-  { id: '9-12', xs: 0.95, sm: 1.05, base: 1.15, chev: 'w-11 h-11 sm:w-16 sm:h-16', bird: 'w-32 h-32 sm:w-40 sm:h-40', grid: 480, seqs: [[4, 0, 7, 2], [1, 6, 3, 8, 5], [7, 2, 5, 0, 8, 3]], stepMs: 800, litMs: 520 },
-  { id: '13-16', xs: 0.9, sm: 1, base: 1.1, chev: 'w-11 h-11 sm:w-16 sm:h-16', bird: 'w-32 h-32 sm:w-36 sm:h-36', grid: 460, seqs: [[2, 6, 1, 8, 4], [5, 0, 7, 3, 6, 1], [8, 3, 0, 5, 2, 7, 4]], stepMs: 700, litMs: 450 },
+  { id: '4-5', xs: 1.15, sm: 1.25, base: 1.4, chev: 'w-14 h-14 sm:w-24 sm:h-24', bird: 'w-44 h-44 sm:w-56 sm:h-56', grid: 560, seqs: [[1, 5], [3, 0, 6], [8, 4, 1, 6]], stepMs: 1000, litMs: 700 },
+  { id: '6-8', xs: 1.05, sm: 1.15, base: 1.3, chev: 'w-14 h-14 sm:w-20 sm:h-20', bird: 'w-40 h-40 sm:w-52 sm:h-52', grid: 540, seqs: [[1, 5, 7], [3, 0, 6, 2], [8, 4, 1, 6, 3]], stepMs: 900, litMs: 600 },
+  { id: '9-12', xs: 0.95, sm: 1.05, base: 1.15, chev: 'w-12 h-12 sm:w-18 sm:h-18', bird: 'w-36 h-36 sm:w-48 sm:h-48', grid: 520, seqs: [[4, 0, 7, 2], [1, 6, 3, 8, 5], [7, 2, 5, 0, 8, 3]], stepMs: 800, litMs: 520 },
+  { id: '13-16', xs: 0.9, sm: 1, base: 1.1, chev: 'w-12 h-12 sm:w-18 sm:h-18', bird: 'w-36 h-36 sm:w-44 sm:h-44', grid: 500, seqs: [[2, 6, 1, 8, 4], [5, 0, 7, 3, 6, 1], [8, 3, 0, 5, 2, 7, 4]], stepMs: 700, litMs: 450 },
 ]
 function bandFor(age: number): AgeBand {
   return age <= 5 ? AGE_BANDS[0] : age <= 8 ? AGE_BANDS[1] : age <= 12 ? AGE_BANDS[2] : AGE_BANDS[3]
@@ -608,6 +608,7 @@ function McInner() {
   const band = bandFor(heroAge)
   // the last two games (star memory and Sunstone charge) use the dark night-sky look
   const darkStage = stage === 'memory_story' || stage === 'memory_game' || stage === 'situational_story' || stage === 'situational_game'
+  const isWideStage = ['cpt_hold', 'cpt_game', 'cpt_prep', 'cpt_break', 'flanker_intro', 'flanker_prac', 'flanker_game', 'memory_intro', 'memory_prac', 'memory_game', 'situational_intro', 'situational_prac', 'situational_game', 'end'].includes(stage)
 
   // CPT-3 Randomized Parameters (Conners Continuous Performance Battery)
   const cptPlan = cptPlanFor(heroAge)
@@ -1264,7 +1265,7 @@ function McInner() {
 
       {notice && <div role="alert" className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-white px-5 py-3 text-sm font-bold text-slate-900 shadow-xl">{notice} <button type="button" className="ml-3 underline" onClick={() => setNotice('')}>Dismiss</button></div>}
       <AmbientToggle mood="adhd" />
-      <div key={stage} className="mx-auto max-w-4xl relative z-10 qd-stage">
+      <div key={stage} className={`mx-auto ${isWideStage ? 'max-w-5xl lg:max-w-6xl w-full px-2 sm:px-4' : 'max-w-4xl'} relative z-10 qd-stage`}>
         {/* Navigation & Realm Indicator */}
         <div className="mb-4 flex items-center justify-between text-xs">
           <Link href="/gamified-assessments" prefetch={false} className="font-bold text-amber-300 hover:text-amber-200 hover:underline flex items-center gap-1.5 bg-black/50 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-amber-300/30 shadow-sm">
@@ -1411,7 +1412,7 @@ function McInner() {
 
         {/* 2b. SUNBIRD PRACTICE (not recorded) */}
         {stage === 'cpt_hold' && (
-          <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-6 md:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-xl mx-auto">
+          <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-6 md:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-4xl lg:max-w-5xl mx-auto w-full">
             <div className="flex justify-between items-center mb-4">
               <span className="text-xs font-bold uppercase tracking-wider text-amber-200 bg-[#3A2412]/80 border border-amber-400/30 px-3.5 py-1 rounded-full">
                 Wait {holdIdx + 1} of {HOLD_WAITS_MS.length}
@@ -1446,7 +1447,7 @@ function McInner() {
         )}
 
         {stage === 'cpt_game' && cptPrac !== 'off' && (
-          <div className="relative rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-6 md:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-xl mx-auto">
+          <div className="relative rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-6 md:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-4xl lg:max-w-5xl mx-auto w-full">
             <style>{CV_CSS}</style>
             {cptPrac === 'ready' ? (
               <div className="flex flex-col items-center gap-3 py-2">
@@ -1497,7 +1498,7 @@ function McInner() {
 
         {/* 3. CHAPTER 1 GAMEPLAY: CPT-3 VIGILANCE */}
         {stage === 'cpt_game' && cptPrac === 'off' && (
-          <div className="relative rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-6 sm:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-xl mx-auto">
+          <div className="relative rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-6 sm:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-4xl lg:max-w-5xl mx-auto w-full">
             {cptResting && (
               <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 overflow-hidden rounded-3xl bg-gradient-to-b from-[#1E1710]/95 via-[#2A1F16]/95 to-[#17120D]/95 border-2 border-amber-400/40 p-5 text-center sm:gap-4 sm:p-6 text-amber-100">
                 <style>{`@keyframes cr-breathe{0%,100%{transform:scale(.7);opacity:.5}50%{transform:scale(1);opacity:1}}@keyframes cr-bob{50%{transform:translateY(-8px)}}@media (prefers-reduced-motion:reduce){.cr-ring,.cr-owl{animation:none!important}}`}</style>
@@ -1604,7 +1605,7 @@ function McInner() {
 
         {/* 5. CHAPTER 2 GAMEPLAY: FLANKER (practice rounds first, then the 12 recorded formations) */}
         {stage === 'flanker_game' && flankerPhase === 'ready' && (
-          <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-8 md:p-10 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-xl mx-auto">
+          <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-8 md:p-10 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-4xl lg:max-w-5xl mx-auto w-full">
             <style>{CV_CSS}</style>
             <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float mx-auto h-24 w-24 object-contain drop-shadow" />
             <p className="font-patrick text-3xl text-amber-300 font-bold mt-3">Great job!</p>
@@ -1623,7 +1624,7 @@ function McInner() {
         )}
 
         {stage === 'flanker_game' && flankerPhase !== 'ready' && currentFlanker && (
-          <div className="relative rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-5 md:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-xl mx-auto">
+          <div className="relative rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-5 md:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-4xl lg:max-w-5xl mx-auto w-full">
             <style>{CV_CSS}</style>
             <div className="mb-4">
               {flankerPhase === 'real' ? (
@@ -1743,7 +1744,7 @@ function McInner() {
 
         {/* 7. CHAPTER 3 GAMEPLAY: ASTROLABE */}
         {stage === 'memory_game' && memPracReady && (
-          <div className="rounded-3xl border border-[#818CF8]/40 bg-gradient-to-b from-[#0B0F24]/75 via-[#121838]/65 to-[#0A0D1E]/85 backdrop-blur-md p-8 md:p-10 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-slate-100 max-w-xl mx-auto">
+          <div className="rounded-3xl border border-[#818CF8]/40 bg-gradient-to-b from-[#0B0F24]/75 via-[#121838]/65 to-[#0A0D1E]/85 backdrop-blur-md p-8 md:p-10 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-slate-100 max-w-4xl lg:max-w-5xl mx-auto w-full">
             <style>{CV_CSS}</style>
             <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float mx-auto h-24 w-24 object-contain drop-shadow" />
             <p className="font-patrick text-3xl text-purple-300 font-bold mt-3">Great job!</p>
@@ -1756,7 +1757,7 @@ function McInner() {
         )}
 
         {stage === 'memory_game' && !memPracReady && (
-          <div className="rounded-3xl border border-[#818CF8]/40 bg-gradient-to-b from-[#0B0F24]/75 via-[#121838]/65 to-[#0A0D1E]/85 backdrop-blur-md p-4 sm:p-7 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-slate-100 max-w-xl mx-auto">
+          <div className="rounded-3xl border border-[#818CF8]/40 bg-gradient-to-b from-[#0B0F24]/75 via-[#121838]/65 to-[#0A0D1E]/85 backdrop-blur-md p-4 sm:p-7 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-slate-100 max-w-4xl lg:max-w-5xl mx-auto w-full">
             <div className="flex justify-between items-center mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-purple-200 bg-[#251E4A]/80 border border-purple-400/30 px-3.5 py-1 rounded-full backdrop-blur-sm">
                 {memoryLevel < 1 ? 'Practice' : `Level ${memoryLevel} of 3 • Constellation Span: ${memorySequence.length || memoryLevel + 2}`}
@@ -1873,7 +1874,7 @@ function McInner() {
           ]
 
           return (
-            <div className="relative rounded-3xl border-2 border-[#D4A373]/60 bg-gradient-to-b from-[#1C1610]/90 via-[#271E15]/80 to-[#140F0A]/95 backdrop-blur-md p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.75)] text-center select-none text-amber-50 max-w-xl mx-auto overflow-hidden">
+            <div className="relative rounded-3xl border-2 border-[#D4A373]/60 bg-gradient-to-b from-[#1C1610]/90 via-[#271E15]/80 to-[#140F0A]/95 backdrop-blur-md p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.75)] text-center select-none text-amber-50 max-w-4xl lg:max-w-5xl mx-auto w-full overflow-hidden">
               {/* Subtle Temple Ambient Ray Overlay */}
               <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent -z-10" />
 
@@ -1889,7 +1890,7 @@ function McInner() {
               </div>
 
               {/* Guide Chirp Guidance Bubble */}
-              <div className="mb-4 flex items-center justify-center gap-3 bg-[#24170E]/80 border border-amber-400/30 rounded-2xl p-3 shadow-md backdrop-blur-sm max-w-md mx-auto">
+              <div className="mb-4 flex items-center justify-center gap-3 bg-[#24170E]/80 border border-amber-400/30 rounded-2xl p-3 shadow-md backdrop-blur-sm max-w-xl mx-auto">
                 <style>{CV_CSS}</style>
                 <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float h-12 w-12 object-contain drop-shadow" />
                 <p className="text-left text-xs sm:text-sm font-semibold text-amber-100 leading-snug">
@@ -1906,7 +1907,7 @@ function McInner() {
               </div>
 
               {/* Interactive Sacred Altar Dais & Sunstone Relic */}
-              <div className="relative mx-auto my-6 flex h-72 w-72 sm:h-80 sm:w-80 items-center justify-center">
+              <div className="relative mx-auto my-6 flex h-80 w-80 sm:h-96 sm:w-96 md:h-[420px] md:w-[420px] items-center justify-center">
                 {/* SVG Sacred Mandala Altar Dial */}
                 <svg className="absolute inset-0 w-full h-full pointer-events-none -rotate-90 select-none" viewBox="0 0 300 300">
                   <defs>
@@ -2030,7 +2031,7 @@ function McInner() {
                   onPointerUp={handleEndCharge}
                   onPointerLeave={handleEndCharge}
                   onContextMenu={(e) => e.preventDefault()}
-                  className={`relative z-10 w-48 h-48 sm:w-56 sm:h-56 rounded-full flex flex-col items-center justify-center transition-all cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300 ${
+                  className={`relative z-10 w-52 h-52 sm:w-64 sm:h-64 md:w-72 md:h-72 rounded-full flex flex-col items-center justify-center transition-all cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300 ${
                     isCharging
                       ? 'bg-gradient-to-tr from-amber-500 via-orange-500 to-yellow-300 scale-105 shadow-[0_0_80px_rgba(245,158,11,0.95),0_0_140px_rgba(251,191,36,0.6)] border-4 border-yellow-200'
                       : chargeStatusText === 'success'

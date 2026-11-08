@@ -15,7 +15,7 @@ export type Cls = {
 }
 
 type Props = {
-  theme: 'amber' | 'teal'
+  theme: 'amber' | 'teal' | 'indigo'
   classLabel: string
   classes: Cls[]
   selected: string
@@ -59,6 +59,18 @@ const THEMES = {
     dotOn: 'bg-teal-600',
     chipOn: 'border-teal-600 bg-teal-600 text-white',
     chipOff: 'border-[#E7E5E4] bg-white text-[#0F172A] hover:border-teal-300',
+  },
+  indigo: {
+    label: 'text-indigo-900',
+    cardOn: 'border-indigo-500 bg-indigo-50/90 shadow-lg ring-4 ring-indigo-300/80 scale-[1.01]',
+    cardOff: 'border-[#E7E5E4] bg-white hover:border-indigo-300 hover:shadow-md',
+    iconOn: 'bg-indigo-600 text-white',
+    badge: 'text-indigo-800 bg-indigo-200/90',
+    field: 'focus:border-indigo-500 focus:ring-indigo-200',
+    primary: 'bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 hover:from-indigo-700 hover:to-purple-800',
+    dotOn: 'bg-indigo-600',
+    chipOn: 'border-indigo-600 bg-indigo-600 text-white',
+    chipOff: 'border-[#E7E5E4] bg-white text-[#0F172A] hover:border-indigo-300',
   },
 } as const
 
@@ -113,7 +125,7 @@ export default function WelcomeWizard(p: Props) {
                 }`}
               >
                 {/* Top Avatar Illustration Window */}
-                <div className="relative mb-3 h-44 sm:h-48 w-full overflow-hidden rounded-2xl bg-gradient-to-b from-slate-100 to-slate-200/80 shadow-inner flex items-center justify-center">
+                <div className="relative mb-3 h-48 sm:h-56 w-full overflow-hidden rounded-2xl bg-gradient-to-b from-slate-100 to-slate-200/80 shadow-inner flex items-center justify-center">
                   {cls.image ? (
                     <img
                       src={cls.image}
@@ -130,7 +142,7 @@ export default function WelcomeWizard(p: Props) {
                   ) : null}
 
                   {/* Gentle gradient overlay at bottom of portrait for depth */}
-                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/40 to-transparent" />
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
 
                   {/* Persona Badge */}
                   {cls.badge && (
@@ -162,7 +174,7 @@ export default function WelcomeWizard(p: Props) {
                     </p>
                   </div>
                   <div className="mt-3 pt-2 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
-                    <span className={`inline-block h-2 w-2 rounded-full ${on ? (p.theme === 'amber' ? 'bg-amber-500' : 'bg-teal-600') : 'bg-slate-300'}`} />
+                    <span className={`inline-block h-2 w-2 rounded-full ${on ? (p.theme === 'amber' ? 'bg-amber-500' : p.theme === 'indigo' ? 'bg-indigo-600' : 'bg-teal-600') : 'bg-slate-300'}`} />
                     <span>{on ? 'Ready for Adventure!' : 'Tap to Select'}</span>
                   </div>
                 </div>

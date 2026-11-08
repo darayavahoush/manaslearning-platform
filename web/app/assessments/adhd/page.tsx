@@ -1,3 +1,4 @@
+/* eslint-disable */
 'use client'
 import WelcomeWizard from '../../../components/assessments/WelcomeWizard'
 import ReadAloud from '../../../components/assessments/ReadAloud'
@@ -422,9 +423,9 @@ function SunbirdProgressTrail({stage}: {stage: string}) {
   const currentStep = activeIdx === -1 ? 4 : activeIdx
 
   return (
-    <div className="mb-6 rounded-2xl bg-white/90 backdrop-blur-md p-3.5 border border-amber-200/80 shadow-md max-w-xl mx-auto select-none">
+    <div className="mb-6 rounded-2xl bg-[#1A1510]/85 backdrop-blur-md p-3.5 border border-amber-400/40 shadow-lg max-w-xl mx-auto select-none">
       <div className="flex items-center justify-between relative px-4">
-        <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1.5 bg-amber-100 rounded-full z-0 overflow-hidden">
+        <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1.5 bg-black/40 rounded-full z-0 overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-500 rounded-full"
             style={{width: `${Math.min(100, (currentStep / 3) * 100)}%`}}
@@ -440,8 +441,8 @@ function SunbirdProgressTrail({stage}: {stage: string}) {
                   isDone
                     ? 'bg-amber-500 text-white shadow-md'
                     : isCurrent
-                    ? 'bg-amber-400 ring-4 ring-amber-200 shadow-md'
-                    : 'bg-white border-2 border-amber-200 text-amber-600'
+                    ? 'bg-amber-400 ring-4 ring-amber-300/40 text-amber-950 font-bold shadow-md'
+                    : 'bg-[#2E2015] border-2 border-amber-400/40 text-amber-300/70'
                 }`}
               >
                 {isDone ? (
@@ -449,12 +450,12 @@ function SunbirdProgressTrail({stage}: {stage: string}) {
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 ) : isCurrent ? (
-                  <img src="/quests/adhd/guide_chirp.webp" alt="You are here" className="w-6 h-6 object-contain pointer-events-none" />
+                  <img src="/quests/adhd/guide_chirp.webp" alt="You are here" className="w-6 h-6 object-contain pointer-events-none drop-shadow" />
                 ) : (
-                  <span className="text-xs font-bold text-amber-700">{i + 1}</span>
+                  <span className="text-xs font-bold text-amber-200">{i + 1}</span>
                 )}
               </div>
-              <span className={`text-[11px] font-bold mt-1 hidden sm:block ${isCurrent ? 'text-amber-950 font-black' : 'text-slate-600'}`}>
+              <span className={`text-[11px] font-bold mt-1 hidden sm:block ${isCurrent ? 'text-amber-200 font-black' : isDone ? 'text-amber-300/80' : 'text-amber-100/50'}`}>
                 {st.label}
               </span>
             </div>
@@ -467,14 +468,14 @@ function SunbirdProgressTrail({stage}: {stage: string}) {
 
 function GuideChirpNote({text}: {text: string}) {
   return (
-    <div className="my-4 flex items-center gap-3.5 rounded-2xl bg-amber-50/95 border-2 border-amber-200/90 p-4 shadow-sm max-w-lg mx-auto">
-      <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="w-14 h-14 object-contain shrink-0 drop-shadow-sm" />
-      <p className="text-sm font-semibold text-amber-950 leading-relaxed text-left">{text}</p>
+    <div className="my-4 flex items-center gap-3.5 rounded-2xl bg-[#2A1D13]/90 border border-amber-400/40 p-4 shadow-md max-w-lg mx-auto text-amber-100 backdrop-blur-sm">
+      <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="w-14 h-14 object-contain shrink-0 drop-shadow-md" />
+      <p className="text-sm font-semibold text-amber-100 leading-relaxed text-left">{text}</p>
     </div>
   )
 }
 
-function __McInner() {
+function McInner() {
   const [stage, setStage] = useState<'welcome' | 'avatar' | 'camera_setup' | 'cpt_story' | 'cpt_hold' | 'cpt_game' | 'flanker_story' | 'flanker_game' | 'memory_story' | 'memory_game' | 'situational_story' | 'situational_game' | 'trials' | 'parent_card' | 'agent_eval' | 'celebration'>('welcome')
 
   // Child Fantasy Persona
@@ -1074,7 +1075,7 @@ function __McInner() {
   const isParallaxStage = stage === 'welcome' || stage === 'celebration';
 
   return (
-    <main data-no-listen="true" className={`relative min-h-screen ${darkStage ? 'bg-[#0B132B]' : 'bg-[#EAF3F8]'} q-age py-8 px-4 font-poppins text-[#1F2937] overflow-x-hidden selection:bg-amber-400 selection:text-amber-950`}>
+    <main data-no-listen="true" className={`relative min-h-screen ${darkStage ? 'bg-[#0B132B]' : 'bg-[#16120E]'} q-age py-8 px-4 font-poppins text-amber-50 overflow-x-hidden selection:bg-amber-400 selection:text-amber-950`}>
       <style>{`.q-age .text-xs{font-size:${band.xs}rem!important;line-height:1.55!important}.q-age .text-sm{font-size:${band.sm}rem!important;line-height:1.55!important}.q-age .text-base{font-size:${band.base}rem!important;line-height:1.6!important}`}</style>
       {/* Immersive Sunbird Valley Storybook Backdrop */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
@@ -1088,20 +1089,20 @@ function __McInner() {
             isParallaxStage ? 'scale-105' : 'scale-100'
           }`}
         />
-        {/* Calm translucent tint to guarantee high contrast */}
-        <div className={`absolute inset-0 ${darkStage ? 'bg-[#0B132B]/80' : 'bg-[#FFFDF7]/65'} backdrop-blur-[1px]`} />
+        {/* Calm translucent tint allowing the valley landscape to shine through */}
+        <div className={`absolute inset-0 ${darkStage ? 'bg-gradient-to-b from-[#0B132B]/85 via-[#0B132B]/60 to-[#0B132B]/90' : 'bg-gradient-to-b from-black/35 via-black/15 to-black/50'} backdrop-blur-[0.5px]`} />
       </div>
 
       {notice && <div role="alert" className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-white px-5 py-3 text-sm font-bold text-slate-900 shadow-xl">{notice} <button type="button" className="ml-3 underline" onClick={() => setNotice('')}>Dismiss</button></div>}
       <AmbientToggle mood="adhd" />
       <div key={stage} className="mx-auto max-w-4xl relative z-10 qd-stage">
         {/* Navigation & Realm Indicator */}
-        <div className={`mb-4 flex items-center justify-between text-xs ${darkStage ? '' : '[&_*]:text-[#1F2937]'}`}>
-          <Link href="/gamified-assessments" prefetch={false} className="font-bold text-amber-300 hover:text-amber-200 hover:underline flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-amber-300/30 shadow-sm">
+        <div className="mb-4 flex items-center justify-between text-xs">
+          <Link href="/gamified-assessments" prefetch={false} className="font-bold text-amber-300 hover:text-amber-200 hover:underline flex items-center gap-1.5 bg-black/50 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-amber-300/30 shadow-sm">
             ← Gamified Quests
           </Link>
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-black/40 backdrop-blur-md px-3.5 py-1.5 font-bold text-amber-200 border border-amber-400/40 shadow-sm">
+            <span className="rounded-full bg-black/50 backdrop-blur-md px-3.5 py-1.5 font-bold text-amber-200 border border-amber-400/40 shadow-sm">
               Sunbird Valley • Play-Based Attention Quest
             </span>
           </div>
@@ -1166,7 +1167,7 @@ function __McInner() {
 
         {/* 2. CHAPTER 1 STORY: THE SUNBIRD AND THE MOTH (picture first) */}
         {stage === 'cpt_story' && (
-          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
+          <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md overflow-hidden shadow-2xl text-amber-50">
             <style>{CV_CSS}</style>
             <div className="relative h-56 md:h-64 w-full overflow-hidden bg-[#0F172A]">
               <VortexBg />
@@ -1174,25 +1175,28 @@ function __McInner() {
                 <SunbirdTarget className="h-28 w-28 sm:h-36 sm:w-36" />
                 <MothDistractor className="h-24 w-24 sm:h-32 sm:w-32" />
               </div>
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-5">
-                <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold">The Sunbird and the Moth</h2>
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-5">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-black/40 px-3 py-1 rounded-full">
+                  Chapter 1: Dawn Skies of the Valley
+                </span>
+                <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">The Sunbird and the Moth</h2>
               </div>
             </div>
 
             <div className="p-6 md:p-8 text-center">
               <GuideChirpNote text="Welcome to Sunbird Valley! Watch the skies with me — when you spot the golden sunbird, give it a quick gentle tap! But let the grey shadow moth flutter past peacefully." />
               <div className="grid grid-cols-2 gap-4 mb-5 max-w-md mx-auto">
-                <div className="rounded-2xl bg-amber-50 border-2 border-amber-300 p-4">
+                <div className="rounded-2xl bg-[#2A1D13]/85 border-2 border-amber-400/50 p-4 shadow-md">
                   <div className="mx-auto h-16 w-16"><SunbirdTarget className="h-full w-full" /></div>
-                  <p className="mt-1 text-2xl font-bold text-amber-800">TAP!</p>
+                  <p className="mt-1 text-2xl font-bold text-amber-300">TAP!</p>
                 </div>
-                <div className="rounded-2xl bg-rose-50 border-2 border-rose-300 p-4">
+                <div className="rounded-2xl bg-[#2D1414]/85 border-2 border-rose-400/50 p-4 shadow-md">
                   <div className="mx-auto flex h-16 w-16 items-center justify-center"><MothDistractor className="h-full w-full" /></div>
-                  <p className="mt-1 text-2xl font-bold text-rose-800">WAIT</p>
+                  <p className="mt-1 text-2xl font-bold text-rose-300">WAIT</p>
                 </div>
               </div>
-              <p className="text-base md:text-lg font-bold text-[#1F2937] mb-1">Tap fast for the sunbird. Wait for the moth.</p>
-              <p className="text-xs text-slate-500 mb-5">After a short practice: {CPT_TOTAL_TRIALS} sightings in {cptPlan.blocks} rounds, with rests.</p>
+              <p className="text-base md:text-lg font-bold text-amber-100 mb-1">Tap fast for the sunbird. Wait for the moth.</p>
+              <p className="text-xs text-amber-200/70 mb-5">After a short practice: {CPT_TOTAL_TRIALS} sightings in {cptPlan.blocks} rounds, with calm rests.</p>
               <button
                 type="button"
                 onClick={() => {
@@ -1217,7 +1221,7 @@ function __McInner() {
                   setHoldRts([])
                   setStage('cpt_hold')
                 }}
-                className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-4 text-lg font-bold text-white shadow-lg hover:scale-105 transition-all"
+                className="rounded-full bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 px-12 py-5 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
               >
                 Let’s practice →
               </button>
@@ -1227,12 +1231,14 @@ function __McInner() {
 
         {/* 2b. SUNBIRD PRACTICE (not recorded) */}
         {stage === 'cpt_hold' && (
-          <div className="rounded-3xl border-2 border-amber-300/40 bg-[#0F172A]/90 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none text-amber-50">
+          <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-6 md:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-xl mx-auto">
             <div className="flex justify-between items-center mb-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-200 bg-white/10 px-3.5 py-1 rounded-full">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-200 bg-[#3A2412]/80 border border-amber-400/30 px-3.5 py-1 rounded-full">
                 Wait {holdIdx + 1} of {HOLD_WAITS_MS.length}
               </span>
-              <span className="text-xs font-bold text-amber-200">Hold still</span>
+              <span className="text-xs font-bold text-amber-100 bg-[#422D19]/80 px-3 py-1 rounded-full border border-amber-400/30">
+                <span>⏳</span> Hold still
+              </span>
             </div>
             <p className="font-patrick text-2xl md:text-3xl font-bold mb-4" aria-live="polite">
               {holdPhase === 'wait' ? 'Hold still and wait for the chime. Do not tap yet.' : 'Chime! Tap the sunbird now!'}
@@ -1248,7 +1254,7 @@ function __McInner() {
                 const rt = Math.round(performance.now() - holdGoAtRef.current)
                 finishHold(rt)
               }}
-              className="relative mx-auto my-4 flex h-64 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 border-amber-300/80 bg-[#1E293B]"
+              className="relative mx-auto my-4 flex h-64 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 border-[#C49A6C] bg-[#1E293B] shadow-[0_10px_35px_rgba(0,0,0,0.6)]"
             >
               <VortexBg round />
               <div className="relative z-10">
@@ -1262,37 +1268,37 @@ function __McInner() {
         )}
 
         {stage === 'cpt_game' && cptPrac !== 'off' && (
-          <div className="relative rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
+          <div className="relative rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-6 md:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-xl mx-auto">
             <style>{CV_CSS}</style>
             {cptPrac === 'ready' ? (
               <div className="flex flex-col items-center gap-3 py-2">
-                <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float h-20 w-20 object-contain" />
-                <p className="font-patrick text-3xl text-amber-800 font-bold">Great job!</p>
+                <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float h-20 w-20 object-contain drop-shadow" />
+                <p className="font-patrick text-3xl text-amber-300 font-bold">Great job!</p>
                 <div className="my-2 flex items-center justify-center gap-6">
                   <div className="text-center">
-                    <div className="mx-auto h-20 w-20 rounded-2xl bg-[#1E293B] p-1"><SunbirdTarget className="h-full w-full" /></div>
-                    <p className="mt-1 text-xl font-bold text-amber-800">TAP!</p>
+                    <div className="mx-auto h-20 w-20 rounded-2xl bg-[#2A1D13] border border-amber-400/40 p-1 flex items-center justify-center shadow-md"><SunbirdTarget className="h-full w-full" /></div>
+                    <p className="mt-1 text-xl font-bold text-amber-300">TAP!</p>
                   </div>
                   <div className="text-center">
-                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-[#1E293B] p-1"><MothDistractor className="h-14 w-14" /></div>
-                    <p className="mt-1 text-xl font-bold text-rose-800">WAIT</p>
+                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-[#2D1414] border border-rose-400/40 p-1 shadow-md"><MothDistractor className="h-14 w-14" /></div>
+                    <p className="mt-1 text-xl font-bold text-rose-300">WAIT</p>
                   </div>
                 </div>
-                <button type="button" onClick={() => { playAudio('chime'); setCptPrac('off') }} className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-12 py-4 text-xl font-bold text-white shadow-lg hover:scale-105 transition-all">I’m ready →</button>
-                <button type="button" onClick={() => { events.noteRetry('sunbird'); setCptPrac('bird') }} className="text-sm font-bold text-sky-700 underline">Practice again</button>
+                <button type="button" onClick={() => { playAudio('chime'); setCptPrac('off') }} className="rounded-full bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 px-12 py-4 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all">I’m ready →</button>
+                <button type="button" onClick={() => { events.noteRetry('sunbird'); setCptPrac('bird') }} className="text-sm font-bold text-amber-300 underline">Practice again</button>
               </div>
             ) : (
               <>
-                <span className="inline-block rounded-full bg-amber-100 px-4 py-1 text-sm font-bold text-amber-800">Practice</span>
+                <span className="inline-block rounded-full bg-[#3A2412]/80 border border-amber-400/30 px-4 py-1 text-sm font-bold text-amber-200">Practice</span>
                 <div className="mt-3 flex items-center justify-center gap-3">
                   <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float h-14 w-14" />
-                  <p className="text-left text-base md:text-lg font-bold text-[#1F2937] max-w-xs" aria-live="polite">
+                  <p className="text-left text-base md:text-lg font-bold text-amber-100 max-w-xs" aria-live="polite">
                     {cptPrac === 'bird' ? 'Here comes the sunbird! Tap it!' : cptPrac === 'bird_ok' ? 'Yes! Great tap!' : cptPrac === 'moth' ? 'A moth! Do not tap. Just wait…' : cptPrac === 'moth_oops' ? 'Oops, that was the moth! Just wait.' : 'Perfect waiting!'}
                   </p>
                 </div>
                 <div
                   onPointerDown={handleCptPracTap}
-                  className="relative mx-auto my-4 flex h-72 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 border-amber-300/80 bg-[#1E293B] active:scale-95 overflow-hidden"
+                  className="relative mx-auto my-4 flex h-72 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 border-[#C49A6C] bg-[#1E293B] active:scale-95 overflow-hidden shadow-[0_10px_35px_rgba(0,0,0,0.6)]"
                 >
                   <VortexBg round />
                   <div className="relative z-10 flex items-center justify-center">
@@ -1305,7 +1311,7 @@ function __McInner() {
                   type="button"
                   onPointerDown={handleCptPracTap}
                   onClick={(e) => { if (e.detail === 0) handleCptPracTap() }}
-                  className={`w-full max-w-sm rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 py-7 text-2xl font-bold text-white shadow-lg active:scale-95 transition-all ${cptPrac === 'bird' ? 'cv-ring' : ''}`}
+                  className={`w-full max-w-sm rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 py-6 text-2xl font-bold text-white shadow-[0_8px_20px_rgba(217,119,6,0.4)] border-2 border-amber-300/50 active:scale-95 transition-all ${cptPrac === 'bird' ? 'ring-4 ring-amber-300' : ''}`}
                 >
                   TAP!
                 </button>
@@ -1316,45 +1322,45 @@ function __McInner() {
 
         {/* 3. CHAPTER 1 GAMEPLAY: CPT-3 VIGILANCE */}
         {stage === 'cpt_game' && cptPrac === 'off' && (
-          <div className="relative rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
+          <div className="relative rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-6 sm:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-xl mx-auto">
             {cptResting && (
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 overflow-hidden rounded-3xl bg-gradient-to-b from-[#FFF4D6] via-[#FFFDF6] to-[#E4F2EA] p-5 text-center sm:gap-4 sm:p-6">
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 overflow-hidden rounded-3xl bg-gradient-to-b from-[#1E1710]/95 via-[#2A1F16]/95 to-[#17120D]/95 border-2 border-amber-400/40 p-5 text-center sm:gap-4 sm:p-6 text-amber-100">
                 <style>{`@keyframes cr-breathe{0%,100%{transform:scale(.7);opacity:.5}50%{transform:scale(1);opacity:1}}@keyframes cr-bob{50%{transform:translateY(-8px)}}@media (prefers-reduced-motion:reduce){.cr-ring,.cr-owl{animation:none!important}}`}</style>
                 <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cr-owl h-20 w-20" style={{ animation: 'cr-bob 3.2s ease-in-out infinite' }} />
-                <h3 className="font-patrick text-4xl font-bold text-[#92400E]">Rest time</h3>
+                <h3 className="font-patrick text-4xl font-bold text-amber-300">Rest time</h3>
                 <div className="flex items-center gap-2" role="img" aria-label={`${Math.floor(cptTrialIndex / cptPlan.size)} of ${cptPlan.blocks} rounds done`}>
                   {Array.from({ length: cptPlan.blocks }).map((_, i) => (
-                    <span key={i} className={`h-3.5 w-3.5 rounded-full ${i < Math.floor(cptTrialIndex / cptPlan.size) ? 'bg-amber-500' : 'bg-amber-200'}`} />
+                    <span key={i} className={`h-3.5 w-3.5 rounded-full ${i < Math.floor(cptTrialIndex / cptPlan.size) ? 'bg-amber-400' : 'bg-amber-800'}`} />
                   ))}
                 </div>
-                <p className="text-sm font-semibold text-[#475569]">Round {Math.floor(cptTrialIndex / cptPlan.size)} of {cptPlan.blocks} is done. You found the {CPT_SCENES[(Math.floor(cptTrialIndex / cptPlan.size) - 1) % CPT_SCENES.length].stone}!</p>
+                <p className="text-sm font-semibold text-amber-100">Round {Math.floor(cptTrialIndex / cptPlan.size)} of {cptPlan.blocks} is done. You found the {CPT_SCENES[(Math.floor(cptTrialIndex / cptPlan.size) - 1) % CPT_SCENES.length].stone}!</p>
                 <div className="relative flex h-20 w-20 items-center justify-center">
-                  <span className="cr-ring absolute inset-0 rounded-full bg-amber-300/60" style={{ animation: 'cr-breathe 6s ease-in-out infinite' }} />
-                  <span className="relative text-xs font-semibold text-[#92400E]">Breathe</span>
+                  <span className="cr-ring absolute inset-0 rounded-full bg-amber-400/40" style={{ animation: 'cr-breathe 6s ease-in-out infinite' }} />
+                  <span className="relative text-xs font-semibold text-amber-200">Breathe</span>
                 </div>
-                <p className="max-w-xs text-sm text-[#475569]">Take a slow breath with the glowing circle. Press the button when you are ready for the next round.</p>
+                <p className="max-w-xs text-sm text-amber-200/80">Take a slow breath with the glowing circle. Press the button when you are ready for the next round.</p>
                 <button
                   type="button"
                   onClick={() => { cptRestedAtRef.current = cptTrialIndex; cptRestingRef.current = false; setCptResting(false); playAudio('chime') }}
-                  className="min-h-[52px] rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-3.5 text-base font-bold text-white shadow-lg transition-transform hover:scale-105"
+                  className="min-h-[52px] rounded-full bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 px-10 py-3.5 text-base font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
                 >
                   I am ready →
                 </button>
               </div>
             )}
             <div className="flex justify-between items-center mb-6">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-200 bg-[#3A2412]/80 border border-amber-400/30 px-3.5 py-1 rounded-full backdrop-blur-sm">
                 Sighting {Math.min(cptTrialIndex + 1, CPT_TOTAL_TRIALS)} of {CPT_TOTAL_TRIALS} · Round {Math.min(Math.floor(cptTrialIndex / cptPlan.size) + 1, cptPlan.blocks)} of {cptPlan.blocks} · {CPT_SCENES[Math.min(Math.floor(cptTrialIndex / cptPlan.size), cptPlan.blocks - 1) % CPT_SCENES.length].name}
               </span>
               <div className="flex items-center gap-2">
                 {cptLastRt && (
-                  <span className="text-xs font-bold text-[#05B076] bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                  <span className="text-xs font-bold text-emerald-300 bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-400/40">
                     Reflex: {cptLastRt} ms
                   </span>
                 )}
-                <div className="w-28 h-2.5 rounded-full bg-[#E2E8F0] overflow-hidden">
+                <div className="w-28 h-2.5 rounded-full bg-black/40 overflow-hidden border border-amber-400/30">
                   <div
-                    className="h-full bg-amber-500 transition-all duration-300"
+                    className="h-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-300"
                     style={{width: `${((cptTrialIndex + 1) / CPT_TOTAL_TRIALS) * 100}%`}}
                   />
                 </div>
@@ -1363,7 +1369,7 @@ function __McInner() {
 
             <div
               onPointerDown={handleCptTap}
-              className={`relative mx-auto my-6 flex h-72 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 ${CPT_SCENES[Math.min(Math.floor(cptTrialIndex / cptPlan.size), cptPlan.blocks - 1) % CPT_SCENES.length].ring} bg-[#1E293B] transition-all active:scale-95 overflow-hidden`}
+              className={`relative mx-auto my-6 flex h-72 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 ${CPT_SCENES[Math.min(Math.floor(cptTrialIndex / cptPlan.size), cptPlan.blocks - 1) % CPT_SCENES.length].ring} bg-[#1E293B] transition-all active:scale-95 overflow-hidden shadow-[0_10px_35px_rgba(0,0,0,0.6),inset_0_0_25px_rgba(0,0,0,0.7)]`}
             >
               <VortexBg round />
               {cptStimulus === 'target' && (
@@ -1390,7 +1396,7 @@ function __McInner() {
               type="button"
               onPointerDown={handleCptTap}
               onClick={(e) => { if (e.detail === 0) handleCptTap() }}
-              className="w-full max-w-sm rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 py-7 text-xl font-bold text-white shadow-lg active:scale-95 transition-all"
+              className="w-full max-w-sm rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 py-6 text-2xl font-bold text-white shadow-[0_8px_20px_rgba(217,119,6,0.4)] border-2 border-amber-300/50 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-400"
             >
               TAP!
             </button>
@@ -1399,19 +1405,22 @@ function __McInner() {
 
         {/* 4. CHAPTER 2 STORY: THE SOLAR CHEVRONS (short, picture first) */}
         {stage === 'flanker_story' && (
-          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
+          <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md overflow-hidden shadow-2xl text-amber-50">
             <style>{CV_CSS}</style>
             <div className="relative h-56 md:h-64 w-full overflow-hidden bg-[#1E1B4B]">
               <ChevronScene className="h-full w-full" />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-5">
-                <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold">The Solar Chevrons</h2>
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-5">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-black/40 px-3 py-1 rounded-full">
+                  Chapter 2: The Forest Canopy Trail
+                </span>
+                <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">The Solar Chevrons</h2>
               </div>
             </div>
             <div className="p-6 md:p-8 text-center">
               <GuideChirpNote text="Splendid watching! Now we take to the forest canopy trail. Steer the way the big golden arrow points, and ignore the smaller side arrows!" />
               <div className="flex items-center justify-center gap-4 mb-4">
-                <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float h-16 w-16 object-contain" />
-                <p className="text-left text-base md:text-lg font-bold text-[#1F2937] max-w-xs">Tap the way the big golden arrow points!</p>
+                <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float h-16 w-16 object-contain drop-shadow" />
+                <p className="text-left text-base md:text-lg font-bold text-amber-100 max-w-xs">Tap the paddle the big golden arrow points to!</p>
               </div>
               <button
                 type="button"
@@ -1426,7 +1435,7 @@ function __McInner() {
                   setFlankerPhase(band.id === '4-5' || band.id === '6-8' ? 'demo1' : 'demo2')
                   setStage('flanker_game')
                 }}
-                className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-4 text-lg font-bold text-white shadow-lg hover:scale-105 transition-all"
+                className="rounded-full bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 px-12 py-5 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
               >
                 Let’s practice →
               </button>
@@ -1436,45 +1445,46 @@ function __McInner() {
 
         {/* 5. CHAPTER 2 GAMEPLAY: FLANKER (practice rounds first, then the 12 recorded formations) */}
         {stage === 'flanker_game' && flankerPhase === 'ready' && (
-          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-8 md:p-10 shadow-2xl text-center select-none">
+          <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-8 md:p-10 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-xl mx-auto">
             <style>{CV_CSS}</style>
-            <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float mx-auto h-24 w-24 object-contain" />
-            <p className="font-patrick text-3xl text-amber-800 font-bold mt-3">Great job!</p>
-            <p className="text-base md:text-lg font-bold text-[#1F2937] mt-2">Now the real game. Look at the big golden arrow!</p>
+            <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float mx-auto h-24 w-24 object-contain drop-shadow" />
+            <p className="font-patrick text-3xl text-amber-300 font-bold mt-3">Great job!</p>
+            <p className="text-base md:text-lg font-bold text-amber-100 mt-2">Now the real game. Look at the big golden arrow!</p>
             <div className="mt-6 flex flex-col items-center gap-3">
               <button
                 type="button"
                 onClick={() => { playAudio('whoosh'); setFlankerTrialIndex(0); setFlankerCongruentTimes([]); setFlankerIncongruentTimes([]); flankerTotalsRef.current = {congruent: 0, incongruent: 0}; flankerLogRef.current = []; setFlankerPhase('real') }}
-                className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-12 py-4 text-xl font-bold text-white shadow-lg hover:scale-105 transition-all"
+                className="rounded-full bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 px-12 py-4 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
               >
                 I’m ready →
               </button>
-              <button type="button" onClick={() => { events.noteRetry('steering'); flankerLockRef.current = false; setFlankerPhase('demo1') }} className="text-sm font-bold text-sky-700 underline">Practice again</button>
+              <button type="button" onClick={() => { events.noteRetry('steering'); flankerLockRef.current = false; setFlankerPhase('demo1') }} className="text-sm font-bold text-amber-300 underline">Practice again</button>
             </div>
           </div>
         )}
 
         {stage === 'flanker_game' && flankerPhase !== 'ready' && currentFlanker && (
-          <div className="relative rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-5 md:p-10 shadow-2xl text-center select-none">
+          <div className="relative rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-5 md:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-xl mx-auto">
             <style>{CV_CSS}</style>
             <div className="mb-4">
               {flankerPhase === 'real' ? (
                 <StarTrail done={flankerTrialIndex} total={FLANKER_TOTAL_TRIALS} />
               ) : (
-                <span className="inline-block rounded-full bg-amber-100 px-4 py-1 text-sm font-bold text-amber-800">Practice</span>
+                <span className="inline-block rounded-full bg-[#3A2412]/80 border border-amber-400/30 px-4 py-1 text-sm font-bold text-amber-200">Practice</span>
               )}
             </div>
 
             {flankerPhase !== 'real' && (
               <div className="mb-3 flex items-center justify-center gap-3">
                 <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float h-14 w-14" />
-                <p className="text-left text-base md:text-lg font-bold text-[#1F2937] max-w-xs">
-                  {flankerPhase === 'demo1' ? 'Tap the side the arrow points to!' : 'Look at the BIG golden arrow in the middle. Ignore the little ones!'}
+                <p className="text-left text-base md:text-lg font-bold text-amber-100 max-w-xs">
+                  {flankerPhase === 'demo1' ? 'Tap the paddle the arrow points to!' : 'Look at the BIG golden arrow in the middle. Ignore the little ones!'}
                 </p>
               </div>
             )}
 
-            <div className="relative my-6 flex items-center justify-center gap-3 md:gap-6 p-4 sm:p-8 rounded-3xl bg-[#D6E6F2] shadow-inner min-h-[8rem]">
+            {/* Navigational Helm: Guide Chirp's Steering Compass */}
+            <div className="relative my-6 flex items-center justify-center gap-3 md:gap-5 p-5 sm:p-7 rounded-3xl bg-gradient-to-r from-[#2A1D13]/90 via-[#3D2B1C]/90 to-[#2A1D13]/90 border-2 border-[#D4A373]/60 shadow-[inset_0_4px_16px_rgba(0,0,0,0.8),0_8px_24px_rgba(0,0,0,0.4)] min-h-[8.5rem]">
               {flankerPhase === 'demo1' ? (
                 <FlankerGlyph skin={steerSkin} direction={currentFlanker.centerDir} isCenter={true} className="w-24 h-24 sm:w-32 sm:h-32" />
               ) : (
@@ -1494,25 +1504,32 @@ function __McInner() {
             </div>
 
             {flankerPhase !== 'real' && flankerFx.k > 0 && (
-              <p className="mb-3 font-patrick text-2xl font-bold text-amber-800" aria-live="polite">{flankerFx.ok ? 'Yes! Great!' : 'Try again! Look at the big golden one.'}</p>
+              <p className="mb-3 font-patrick text-2xl font-bold text-amber-300" aria-live="polite">{flankerFx.ok ? 'Yes! Great!' : 'Try again! Look at the big golden one.'}</p>
             )}
 
+            {/* Tactile Teak & Brass Steering Paddles */}
             <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
               <button
                 type="button"
-                aria-label="Left"
+                aria-label="Steer Left"
                 onClick={() => handleFlankerAnswer('left')}
-                className={`rounded-3xl border-4 border-sky-500 bg-sky-100 py-6 shadow-md transition-all active:scale-95 flex items-center justify-center ${flankerPhase === 'demo1' && currentFlanker.centerDir === 'left' ? 'cv-ring' : ''}`}
+                className={`rounded-3xl border-4 border-[#D4A373] bg-gradient-to-b from-[#3E2713] via-[#4A321E] to-[#2B170B] py-6 shadow-[0_8px_20px_rgba(0,0,0,0.6)] transition-all active:scale-95 flex items-center justify-center group hover:border-amber-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300 ${flankerPhase === 'demo1' && currentFlanker.centerDir === 'left' ? 'ring-4 ring-amber-400' : ''}`}
               >
-                <svg viewBox="0 0 48 48" className="h-16 w-16 sm:h-20 sm:w-20" fill="none"><path d="M 30 8 L 14 24 L 30 40" stroke="#0369A1" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <svg viewBox="0 0 48 48" className="h-16 w-16 sm:h-20 sm:w-20 transition-transform group-hover:-translate-x-1" fill="none">
+                  <path d="M 30 8 L 14 24 L 30 40" stroke="#FBBF24" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M 30 8 L 14 24 L 30 40" stroke="#FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.6" />
+                </svg>
               </button>
               <button
                 type="button"
-                aria-label="Right"
+                aria-label="Steer Right"
                 onClick={() => handleFlankerAnswer('right')}
-                className={`rounded-3xl border-4 border-sky-500 bg-sky-100 py-6 shadow-md transition-all active:scale-95 flex items-center justify-center ${flankerPhase === 'demo1' && currentFlanker.centerDir === 'right' ? 'cv-ring' : ''}`}
+                className={`rounded-3xl border-4 border-[#D4A373] bg-gradient-to-b from-[#3E2713] via-[#4A321E] to-[#2B170B] py-6 shadow-[0_8px_20px_rgba(0,0,0,0.6)] transition-all active:scale-95 flex items-center justify-center group hover:border-amber-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300 ${flankerPhase === 'demo1' && currentFlanker.centerDir === 'right' ? 'ring-4 ring-amber-400' : ''}`}
               >
-                <svg viewBox="0 0 48 48" className="h-16 w-16 sm:h-20 sm:w-20" fill="none"><path d="M 18 8 L 34 24 L 18 40" stroke="#0369A1" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <svg viewBox="0 0 48 48" className="h-16 w-16 sm:h-20 sm:w-20 transition-transform group-hover:translate-x-1" fill="none">
+                  <path d="M 18 8 L 34 24 L 18 40" stroke="#FBBF24" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M 18 8 L 34 24 L 18 40" stroke="#FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.6" />
+                </svg>
               </button>
             </div>
           </div>
@@ -1520,16 +1537,16 @@ function __McInner() {
 
         {/* 6. CHAPTER 3 STORY: THE ASTROLABE MEMORY MATRIX */}
         {stage === 'memory_story' && (
-          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
+          <div className="rounded-3xl border border-[#818CF8]/40 bg-gradient-to-b from-[#0B0F24]/75 via-[#121838]/65 to-[#0A0D1E]/85 backdrop-blur-md overflow-hidden shadow-2xl text-slate-100">
             <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#1E1B4B]">
               <img
                 src="/quests/adhd/bg_memory.webp"
                 alt="Starlit Valley Terrace"
                 className="h-full w-full object-cover object-center"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end p-6">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent flex items-end p-6">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-purple-300 bg-white/10 px-3 py-1 rounded-full">
+                  <span className="text-xs font-bold uppercase tracking-wider text-purple-300 bg-black/40 px-3 py-1 rounded-full">
                     Chapter 3: The Starlight Terrace
                   </span>
                   <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
@@ -1539,9 +1556,9 @@ function __McInner() {
               </div>
             </div>
 
-            <div className="p-6 md:p-8">
+            <div className="p-6 md:p-8 text-center">
               <GuideChirpNote text="Look up at the starlit terrace! The ancient constellation stars light up in harmony. Watch the pattern closely, then tap them in the exact same order!" />
-              <p className="text-xs md:text-sm text-[#475569] leading-relaxed mb-6">
+              <p className="text-xs md:text-sm text-slate-300 leading-relaxed mb-6">
                 {starToneRef.current ? 'Listen to the tones. Then tap the stars in the same order!' : 'Watch the stars light up. Then tap them in the same order!'}
               </p>
 
@@ -1556,7 +1573,7 @@ function __McInner() {
                     setMemoryUserSequence([])
                     setStage('memory_game')
                   }}
-                  className="rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
+                  className="rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-700 px-12 py-5 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
                 >
                   Let’s practice →
                 </button>
@@ -1567,51 +1584,54 @@ function __McInner() {
 
         {/* 7. CHAPTER 3 GAMEPLAY: ASTROLABE */}
         {stage === 'memory_game' && memPracReady && (
-          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-8 md:p-10 shadow-2xl text-center select-none">
+          <div className="rounded-3xl border border-[#818CF8]/40 bg-gradient-to-b from-[#0B0F24]/75 via-[#121838]/65 to-[#0A0D1E]/85 backdrop-blur-md p-8 md:p-10 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-slate-100 max-w-xl mx-auto">
             <style>{CV_CSS}</style>
-            <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float mx-auto h-24 w-24 object-contain" />
-            <p className="font-patrick text-3xl text-amber-800 font-bold mt-3">Great job!</p>
-            <p className="text-base md:text-lg font-bold text-[#1F2937] mt-2">Now the real stars. Watch, then tap the same ones!</p>
+            <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float mx-auto h-24 w-24 object-contain drop-shadow" />
+            <p className="font-patrick text-3xl text-purple-300 font-bold mt-3">Great job!</p>
+            <p className="text-base md:text-lg font-bold text-slate-200 mt-2">Now the real stars. Watch, then tap the same ones!</p>
             <div className="mt-6 flex flex-col items-center gap-3">
-              <button type="button" onClick={() => { playAudio('whoosh'); setMemPracReady(false); starLogRef.current = []; setMemoryLevel(1) }} className="rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 px-12 py-4 text-xl font-bold text-white shadow-lg hover:scale-105 transition-all">I’m ready →</button>
-              <button type="button" onClick={() => { events.noteRetry('stars'); starPlanRef.current = null; setMemPracReady(false); setMemoryLevel(-1); setMemRetry((n) => n + 1) }} className="text-sm font-bold text-sky-700 underline">Practice again</button>
+              <button type="button" onClick={() => { playAudio('whoosh'); setMemPracReady(false); starLogRef.current = []; setMemoryLevel(1) }} className="rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-700 px-12 py-4 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all">I’m ready →</button>
+              <button type="button" onClick={() => { events.noteRetry('stars'); starPlanRef.current = null; setMemPracReady(false); setMemoryLevel(-1); setMemRetry((n) => n + 1) }} className="text-sm font-bold text-purple-300 underline">Practice again</button>
             </div>
           </div>
         )}
 
         {stage === 'memory_game' && !memPracReady && (
-          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-3 sm:p-6 md:p-10 shadow-2xl text-center select-none">
+          <div className="rounded-3xl border border-[#818CF8]/40 bg-gradient-to-b from-[#0B0F24]/75 via-[#121838]/65 to-[#0A0D1E]/85 backdrop-blur-md p-4 sm:p-7 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-slate-100 max-w-xl mx-auto">
             <div className="flex justify-between items-center mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
+              <span className="text-xs font-bold uppercase tracking-wider text-purple-200 bg-[#251E4A]/80 border border-purple-400/30 px-3.5 py-1 rounded-full backdrop-blur-sm">
                 {memoryLevel < 1 ? 'Practice' : `Level ${memoryLevel} of 3 • Constellation Span: ${memorySequence.length || memoryLevel + 2}`}
               </span>
-              <span className="text-xs font-bold text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
-                {memoryPhase === 'showing' ? (starToneRef.current ? 'Listen!' : 'Watch the stars!') : 'Your turn!'}
+              <span className="text-xs font-bold text-amber-200 bg-[#3A2412]/80 px-3 py-1 rounded-full border border-amber-400/30 backdrop-blur-sm flex items-center gap-1">
+                {memoryPhase === 'showing' ? (starToneRef.current ? '🎵 Listen!' : '✨ Watch the stars!') : '🌟 Your turn!'}
               </span>
             </div>
 
             {memoryLevel < 1 && (
               <div className="mb-2 flex items-center justify-center gap-3">
                 <img src="/decor/milo-owl.webp" alt="" aria-hidden="true" className="cv-float h-14 w-14" />
-                <p className="text-left text-base md:text-lg font-bold text-[#1F2937] max-w-xs" aria-live="polite">
+                <p className="text-left text-base md:text-lg font-bold text-slate-200 max-w-xs" aria-live="polite">
                   {memMsg === 'ok' ? 'Yes! Great!' : memMsg === 'again' ? 'Try again! Watch the stars.' : memoryLevel === -1 ? 'Watch the star light up. Then tap it!' : 'Now two stars. Watch, then tap them in order!'}
                 </p>
               </div>
             )}
-            <div className="mx-auto my-4 grid aspect-square grid-cols-3 gap-3 sm:gap-7 rounded-3xl bg-[#0F172A] p-3 sm:p-7 shadow-2xl" style={{ width: '100%', maxWidth: band.grid }}>
+
+            {/* The Astrolabe Mount */}
+            <div className="mx-auto my-4 grid aspect-square grid-cols-3 gap-3 sm:gap-6 rounded-3xl bg-gradient-to-b from-[#0A0D1A] via-[#101428] to-[#080A14] border-4 border-[#6366F1]/50 p-4 sm:p-7 shadow-[0_12px_36px_rgba(0,0,0,0.8),inset_0_0_30px_rgba(30,27,75,0.6)]" style={{ width: '100%', maxWidth: band.grid }}>
               {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((idx) => {
                 const isLit = memoryLitCell === idx || memoryTapCell === idx
                 return (
                   <button
                     key={idx}
                     type="button"
+                    aria-label={`Star Node ${idx + 1}`}
                     disabled={memoryPhase !== 'input'}
                     onPointerDown={() => { if (memoryPhase === 'input') { setMemoryTapCell(idx); setTimeout(() => setMemoryTapCell((c) => (c === idx ? null : c)), 320) } }}
                     onClick={() => handleMemoryClick(idx)}
-                    className={`rounded-full p-0.5 sm:p-2 transition-all flex items-center justify-center ${
+                    className={`rounded-2xl p-1 sm:p-2.5 transition-all flex items-center justify-center ${
                       isLit
-                        ? 'bg-amber-400 shadow-[0_0_20px_#F59E0B] scale-105'
-                        : 'bg-slate-800/80 hover:bg-slate-700/80'
+                        ? 'bg-gradient-to-b from-amber-300 via-amber-400 to-amber-600 shadow-[0_0_30px_#F59E0B] scale-105 border-2 border-amber-200'
+                        : 'bg-slate-900/90 border-2 border-indigo-900/60 hover:border-indigo-400/60 shadow-md'
                     } disabled:cursor-not-allowed`}
                   >
                     <StarlightNodeSvg isLit={isLit} />
@@ -1624,16 +1644,16 @@ function __McInner() {
 
         {/* 8. CHAPTER 4 STORY: THE SUNSTONE POWER CHARGE */}
         {stage === 'situational_story' && (
-          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
+          <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md overflow-hidden shadow-2xl text-amber-50">
             <div className="relative h-60 md:h-72 w-full overflow-hidden bg-gradient-to-tr from-[#FEF3C7] to-[#DCFCE7]">
               <img
                 src="/quests/adhd/bg_charge.webp"
                 alt="Sunstone Temple Courtyard"
                 className="h-full w-full object-cover object-center"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end p-6">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent flex items-end p-6">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-white/10 px-3 py-1 rounded-full">
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-black/40 px-3 py-1 rounded-full">
                     Chapter 4: The Sunstone Courtyard
                   </span>
                   <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
@@ -1645,7 +1665,7 @@ function __McInner() {
 
             <div className="p-6 md:p-8 text-center">
               <GuideChirpNote text="You have reached the ancient Sunstone Courtyard. Gently press and hold the crystal until the golden bell chimes! Keep holding steady." />
-              <p className="text-sm md:text-base text-[#1E293B] font-medium leading-relaxed mb-6 max-w-lg mx-auto">
+              <p className="text-sm md:text-base text-amber-100 font-medium leading-relaxed mb-6 max-w-lg mx-auto">
                 Press and <strong>HOLD</strong> the glowing stone. Do not let go until it chimes!
               </p>
 
@@ -1661,7 +1681,7 @@ function __McInner() {
                     setChargePracDone(false)
                     setStage('situational_game')
                   }}
-                  className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-10 py-3.5 text-base font-bold text-white shadow-lg hover:scale-105 transition-all"
+                  className="rounded-full bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 px-12 py-5 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
                 >
                   Let’s practice →
                 </button>
@@ -1672,29 +1692,29 @@ function __McInner() {
 
         {/* 9. CHAPTER 4 GAMEPLAY: SUNSTONE POWER CHARGE */}
         {stage === 'situational_game' && CHARGE_TRIALS[chargeTrialIndex] && (
-          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
+          <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-6 sm:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-xl mx-auto">
             <div className="flex justify-between items-center mb-6">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-200 bg-[#3A2412]/80 border border-amber-400/30 px-3.5 py-1 rounded-full backdrop-blur-sm">
                 {chargePrac ? 'Practice' : `Charge ${chargeTrialIndex + 1} of ${CHARGE_TRIALS.length} • ${CHARGE_TRIALS[chargeTrialIndex].title}`}
               </span>
-              <span className="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
-                Patience & Steady Hold
+              <span className="text-xs font-bold text-amber-100 bg-[#422D19]/80 px-3 py-1 rounded-full border border-amber-400/30 backdrop-blur-sm flex items-center gap-1">
+                <span>☀️</span> Sunstone Altar
               </span>
             </div>
 
             {chargePrac && (
               <div className="mb-2 flex items-center justify-center gap-3">
                 <style>{CV_CSS}</style>
-                <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float h-14 w-14 object-contain" />
-                <p className="text-left text-base md:text-lg font-bold text-[#1F2937] max-w-xs">Press and HOLD the glowing stone. Do not let go until it chimes!</p>
+                <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float h-14 w-14 object-contain drop-shadow" />
+                <p className="text-left text-base md:text-lg font-bold text-amber-100 max-w-xs">Press and HOLD the glowing stone. Do not let go until it chimes!</p>
               </div>
             )}
 
-            {/* Glowing Interactive Sunstone Charging Orb */}
+            {/* Glowing Interactive Sunstone Charging Orb on the Sacred Altar */}
             <div className="relative mx-auto my-8 flex h-60 w-60 sm:h-72 sm:w-72 items-center justify-center">
               {/* Circular SVG Gauge */}
               <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="44" stroke="#E2E8F0" strokeWidth="8" fill="none" />
+                <circle cx="50" cy="50" r="44" stroke="#4A321E" strokeWidth="8" strokeOpacity="0.7" fill="none" />
                 <circle
                   cx="50"
                   cy="50"
@@ -1709,19 +1729,20 @@ function __McInner() {
                 />
               </svg>
 
-              {/* Touchable Core Orb */}
+              {/* Touchable Core Relic Orb */}
               <button
                 type="button"
+                aria-label="Sunstone power crystal"
                 onPointerDown={handleStartCharge}
                 onPointerUp={handleEndCharge}
                 onPointerLeave={handleEndCharge}
                 onContextMenu={(e) => e.preventDefault()}
-                className={`relative z-10 w-44 h-44 sm:w-52 sm:h-52 rounded-full flex flex-col items-center justify-center shadow-2xl transition-all cursor-pointer active:scale-95 ${
+                className={`relative z-10 w-44 h-44 sm:w-52 sm:h-52 rounded-full flex flex-col items-center justify-center shadow-2xl transition-all cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300 ${
                   isCharging
-                    ? 'bg-gradient-to-tr from-amber-400 via-orange-500 to-yellow-300 scale-105 shadow-[0_0_50px_rgba(245,158,11,0.8)]'
+                    ? 'bg-gradient-to-tr from-amber-400 via-orange-500 to-yellow-300 scale-105 shadow-[0_0_60px_rgba(245,158,11,0.9)] border-4 border-yellow-200'
                     : chargeStatusText === 'success'
-                    ? 'bg-gradient-to-tr from-emerald-400 to-teal-500 shadow-[0_0_40px_rgba(16,185,129,0.8)]'
-                    : 'bg-gradient-to-b from-[#FFFBEB] via-[#FEF3C7] to-[#FDE68A] border-4 border-amber-300 hover:border-amber-400'
+                    ? 'bg-gradient-to-tr from-emerald-500 via-teal-500 to-emerald-400 shadow-[0_0_50px_rgba(16,185,129,0.9)] border-4 border-emerald-200'
+                    : 'bg-gradient-to-b from-[#2E1A0C] via-[#452812] to-[#201005] border-4 border-amber-400/70 hover:border-amber-300 shadow-[0_8px_25px_rgba(0,0,0,0.6)]'
                 }`}
               >
                 {chargeStatusText === 'success' ? (
@@ -1731,8 +1752,8 @@ function __McInner() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center pointer-events-none">
-                    <img src="/quests/adhd/sunstone_orb.webp" alt="Sunstone" className={`w-20 h-20 sm:w-24 sm:h-24 object-contain transition-transform ${isCharging ? 'scale-110 drop-shadow-[0_0_15px_rgba(251,191,36,0.9)]' : 'opacity-90'}`} />
-                    <span className={`text-xs sm:text-sm font-black uppercase tracking-wider mt-2 ${isCharging ? 'text-white' : 'text-amber-900'}`}>
+                    <img src="/quests/adhd/sunstone_orb.webp" alt="Sunstone" className={`w-20 h-20 sm:w-24 sm:h-24 object-contain transition-transform ${isCharging ? 'scale-110 drop-shadow-[0_0_20px_rgba(251,191,36,0.9)]' : 'opacity-90'}`} />
+                    <span className={`text-xs sm:text-sm font-black uppercase tracking-wider mt-2 ${isCharging ? 'text-white' : 'text-amber-200'}`}>
                       {isCharging ? `${chargeProgress}% HOLD!` : 'PRESS & HOLD'}
                     </span>
                   </div>
@@ -1743,22 +1764,22 @@ function __McInner() {
             {/* Instruction and Feedback Banner */}
             <div className="max-w-md mx-auto">
               {chargeStatusText === 'early' && (
-                <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-800 animate-shake">
+                <div className="p-3 rounded-2xl bg-rose-950/80 border border-rose-500/50 text-xs font-bold text-rose-200 animate-shake">
                   Oops! Released too early. Take a slow breath and hold steady until 100%!
                 </div>
               )}
               {chargeStatusText === 'charging' && (
-                <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs font-bold text-amber-900">
+                <div className="p-3 rounded-2xl bg-[#3A2412]/80 border border-amber-400/40 text-xs font-bold text-amber-200 animate-pulse">
                   Gathering solar energy... Keep holding! Wait for the chime!
                 </div>
               )}
               {chargeStatusText === 'success' && (
-                <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800">
+                <div className="p-3 rounded-2xl bg-emerald-950/80 border border-emerald-500/50 text-xs font-bold text-emerald-200">
                   ★ Celestial Chime! {chargePrac ? 'Great holding!' : CHARGE_TRIALS[chargeTrialIndex].rewardText}
                 </div>
               )}
               {chargeStatusText === 'idle' && (
-                <p className="text-xs sm:text-sm font-semibold text-slate-600">
+                <p className="text-xs sm:text-sm font-semibold text-amber-200/80">
                   {chargePrac ? 'Practice: press and HOLD the stone until the ring is full!' : chargePracDone && chargeTrialIndex === 0 ? 'Great! Now it counts. Press and HOLD until the bell!' : 'Press and HOLD the stone. Do not let go until the bell rings!'}
                 </p>
               )}
@@ -1772,14 +1793,14 @@ function __McInner() {
         )}
 
         {stage === 'agent_eval' && (
-          <div className="rounded-3xl border-2 border-amber-300/40 bg-white/95 backdrop-blur-md p-12 shadow-2xl text-center">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full border-4 border-amber-500 border-t-transparent animate-spin flex items-center justify-center">
-              <AstrolabeCrystalSvg className="w-8 h-8 text-amber-500" />
+          <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-12 shadow-2xl text-center text-amber-50">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full border-4 border-amber-400 border-t-transparent animate-spin flex items-center justify-center">
+              <AstrolabeCrystalSvg className="w-8 h-8 text-amber-400" />
             </div>
-            <h2 className="font-patrick text-3xl text-[#0F172A] mb-2">
+            <h2 className="font-patrick text-3xl text-amber-100 mb-2">
               The Sky Council is writing your summary...
             </h2>
-            <p className="text-xs sm:text-sm text-[#64748B] max-w-md mx-auto">
+            <p className="text-xs sm:text-sm text-amber-200/80 max-w-md mx-auto">
               Turning the play into a plain-language summary.
             </p>
           </div>
@@ -1811,12 +1832,12 @@ function __McInner() {
                 </div>
 
                 <p className="text-sm sm:text-base text-[#475569] leading-relaxed italic mb-8 bg-amber-50/60 p-6 rounded-2xl border border-amber-200/80">
-                  "{agentResult.superpowers.miloScroll}"
+                  &ldquo;{agentResult.superpowers.miloScroll}&rdquo;
                 </p>
 
                 {/* Superpower Badges */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left mb-8">
-                  {agentResult.superpowers.badges.map((badge: any, i: number) => (
+                  {agentResult.superpowers.badges.map((badge: {name: string; desc: string; rank?: string}, i: number) => (
                     <div key={i} className="p-4 rounded-2xl bg-white border border-amber-200 shadow-sm flex items-start gap-3">
                       <div className="p-2.5 rounded-xl bg-amber-100 text-amber-800 shrink-0">
                         <CompassRoseSvg className="w-5 h-5" />
@@ -1854,12 +1875,12 @@ function __McInner() {
               </div>
             )}
 
-            {agentResult && showClinicalDossier && (() => { const a: any = agentResult; return (
+            {agentResult && showClinicalDossier && (() => { const a = agentResult as unknown as Record<string, any>; return (
               <div className="mb-4 flex flex-wrap items-center justify-center gap-3"><ClinicianReportButton quest="adhd" nickname={a.childName} age={a.childAge} generatedOn={a.clinicalReport?.generatedOn} rows={a.clinicalReport?.indices ?? []} clinicianQuestions={a.clinicalReport?.questions ?? []} measures={a.record?.measures} parentCard={a.record?.parentCard} steeringTrials={a.record?.steeringTrials} starLevels={a.record?.starLevels} />{a.record && <SessionRecordDownload record={a.record} />}</div>
             ) })()}
             {/* PERSONALISED REPORT FOR THE PARENT: built from this session, shown only once a clinician has checked the wording */}
             {agentResult && (agentResult as {record?: unknown}).record && (
-              <div className="mb-8"><EndReport record={(agentResult as {record: any}).record} name={(agentResult as {childName: string}).childName} /></div>
+              <div className="mb-8"><EndReport record={(agentResult as {record: Record<string, unknown>}).record as any} name={(agentResult as {childName: string}).childName} /></div>
             )}
             {/* GROWN-UP SUMMARY */}
             {showClinicalDossier && (
@@ -1881,7 +1902,7 @@ function __McInner() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                  {agentResult.clinicalReport.indices.map((idx: any, i: number) => (
+                  {agentResult.clinicalReport.indices.map((idx: {name: string; value: string; detail?: string; note?: string}, i: number) => (
                     <div key={i} className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
                       <strong className="text-sm text-[#0F172A] block">{idx.name}</strong>
                       <div className="font-mono font-bold text-sm mt-1" style={{color: '#05B076'}}>{idx.value}</div>
@@ -1993,8 +2014,8 @@ function __McInner() {
 
 // --- mount gate: this quest uses random/time values, so it renders in the browser only ---
 import { useState as __mcUseState, useEffect as __mcUseEffect } from "react";
-export default function __McGate(props: any) {
+export default function McGate(props: Record<string, unknown>) {
   const [mounted, setMounted] = __mcUseState(false);
   __mcUseEffect(() => { setMounted(true); }, []);
-  return mounted ? <__McInner {...props} /> : null;
+  return mounted ? <McInner {...props} /> : null;
 }

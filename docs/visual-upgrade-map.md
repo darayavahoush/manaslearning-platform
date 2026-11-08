@@ -354,8 +354,25 @@
 - **Rule A Confirmation**:
   - All trial arrays (`JA_TRIALS`, `EMOTION_MIRROR_TRIALS`, `SHOW_TARGETS`), 900ms gaze cue delay, scoring logic, hit-boxes, and telemetry keys are 100% locked and unchanged.
 
+### ADHD Quest Visual Cohesion & Immersion Upgrade (Sunbird Valley)
+- **Problem Resolved**:
+  - The 4 clinical ADHD games previously rendered inside flat, opaque white containers (`bg-white/95`) with an excessive tint (`bg-[#FFFDF7]/65`) that washed out the lush Sunbird Valley backdrop art (`bg_sunbird.webp`, `bg_flanker.webp`, `bg_memory.webp`, `bg_charge.webp`).
+  - Chapter 1 (Sunbird Spotting / CPT-3) rendered inside a generic dark circle with standard web form buttons.
+  - Chapter 2 (Solar Chevrons / Flanker Steering) rendered as a baby-blue card with standard flat arrow buttons, resembling a multiple-choice school test paper.
+  - Chapter 3 (Astrolabe Memory Matrix / Corsi Blocks) rendered as a pitch-black box with basic circular nodes.
+  - Chapter 4 (Sunstone Power Charge / Motor Restraint) lacked the ceremonial grandeur of an ancient sun temple altar.
+- **Visual Overhaul (Presentation Only)**:
+  - **Luminous Storybook Canopies**: Replaced sterile opaque white cards with warm translucent amber/indigo glass canopies (`backdrop-blur-md` with carved sandstone and brass filigree borders), allowing the sunrise meadows, canopy trails, starlight terraces, and sun temples to illuminate the games.
+  - **Chapter 1 (Sunbird Sighting - CPT-3)**: Transformed the sighting circle into the **Ancient Sunstone Sundial Arena** in the morning meadow, framed with carved sandstone dial rims (`border-8 border-[#C49A6C]`), engraved celestial compass marks, and a tactile carved golden sunstone tap paddle (`py-6 text-2xl border-2 border-amber-300/50`).
+  - **Chapter 2 (Solar Chevrons - Flanker Steering)**: Transformed the chevron arena into **Guide Chirp's Forest Canopy Airship Navigational Helm** (`bg-gradient-to-r from-[#2A1D13]/90 via-[#3D2B1C]/90 to-[#2A1D13]/90 border-2 border-[#D4A373]/60 shadow-inner`). Left/Right controls are styled as **Tactile Carved Teakwood & Polished Brass Steering Paddles** (`min-h-[80px] border-4 border-[#D4A373] bg-gradient-to-b from-[#3E2713] to-[#2B170B]`) with embossed brass steering runes.
+  - **Chapter 3 (Astrolabe Memory Matrix - Corsi Blocks)**: Transformed the 3×3 grid into the **Celestial Sky Citadel Astrolabe** mounted on the starlight terrace (`bg-gradient-to-b from-[#0A0D1A] via-[#101428] to-[#080A14] border-4 border-[#6366F1]/50 shadow-2xl`). The 9 star nodes are styled as inlaid lapis astral gems that radiate golden celestial starlight when illuminated.
+  - **Chapter 4 (Sunstone Power Charge - Motor Restraint)**: Styled as the sacred **Sunstone Altar in the Temple Courtyard**, featuring an etched golden radial progress gauge (`stroke="#F59E0B"`), an ancient carved amber sunstone relic orb with pulsing solar flares while held, and an emerald crystal burst upon achieving the threshold chime.
+  - **Sensory Safety & Dyslexia Compliance**: No strobing or flashing >2fps, no screen shake, plain high-legibility sans-serif typography with generous spacing and strong contrast, full keyboard and touch operability with tap targets >= 48px.
+- **Rule A Confirmation**:
+  - All trial parameters (`CPT_TOTAL_TRIALS`, `cptPlan`, `FLANKER_TOTAL_TRIALS`, `AGE_BANDS` sequences and durations, `CHARGE_TRIALS` targets of 2500ms, 3200ms, 4000ms), stimulus onset times, display durations, hit boxes, scoring formulas, and telemetry keys are 100% locked and untouched.
+
 ---
 
 ## 5. Instrument Versioning
-- **Previous `INSTRUMENT_VERSION`**: `2026.11.11`
-- **Updated `INSTRUMENT_VERSION`**: `2026.11.13` (Bumped version in `web/components/assessments/version.ts` due to stimulus art and visual framing upgrades in Autism Quest).
+- **Previous `INSTRUMENT_VERSION`**: `2026.11.13`
+- **Updated `INSTRUMENT_VERSION`**: `2026.11.14` (Bumped version in `web/components/assessments/version.ts` due to visual framing and presentation upgrades across ADHD Quest and Autism Quest).

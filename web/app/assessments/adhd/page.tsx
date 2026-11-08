@@ -321,18 +321,108 @@ function StarTrail({done, total}: {done: number; total: number}) {
   )
 }
 
-const VX_CSS = `@keyframes cv-spin{to{transform:rotate(360deg)}}@keyframes cv-spin-rev{to{transform:rotate(-360deg)}}.cv-spin{animation:cv-spin 38s linear infinite}.cv-spin-rev{animation:cv-spin-rev 26s linear infinite}@media (prefers-reduced-motion:reduce){.cv-spin,.cv-spin-rev{animation:none!important}}`
-
-// Decorative swirl behind the sunbird and moth. The centre stays dark and the same for every sighting,
-// so the sunbird and moth are always seen against the same background.
-function VortexBg({round = false}: {round?: boolean}) {
+// Immersive Sunbird Valley Sky Observation Arena
+// Replaces the dark spinning vortex with an actual vast, living dawn sky lookout across Sunbird Valley
+function SunbirdSkyArena({
+  stimulus,
+  scene,
+  birdClassName = 'w-32 h-32',
+  isWaiting = false,
+  pracSuccess = false,
+  onTap,
+  interactive = true,
+  guideNote,
+}: {
+  stimulus: 'target' | 'distractor' | null
+  scene?: {name: string; ring: string; stone: string}
+  birdClassName?: string
+  isWaiting?: boolean
+  pracSuccess?: boolean
+  onTap: () => void
+  interactive?: boolean
+  guideNote?: string
+}) {
   return (
-    <div aria-hidden="true" className={`pointer-events-none absolute inset-0 overflow-hidden ${round ? 'rounded-full' : ''}`}>
-      <style>{VX_CSS}</style>
-      <div className="cv-spin absolute" style={{inset: '-35%', background: 'conic-gradient(from 0deg, #0F172A, #3B1A78, #0F172A, #0E5C57, #0F172A, #7C3A0A, #0F172A)'}} />
-      <div className="cv-spin-rev absolute rounded-full border-4 border-dashed border-amber-200/25" style={{inset: '-8%'}} />
-      <div className="cv-spin absolute rounded-full border-2 border-dotted border-sky-200/30" style={{inset: '10%'}} />
-      <div className="absolute inset-0" style={{background: 'radial-gradient(circle at center, #0F172A 0%, rgba(15,23,42,.92) 38%, rgba(15,23,42,0) 78%)'}} />
+    <div
+      onPointerDown={interactive ? onTap : undefined}
+      role={interactive ? 'button' : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      aria-label="Sunbird Valley Sky Observation Arena"
+      onKeyDown={(e) => {
+        if (interactive && (e.key === ' ' || e.key === 'Enter')) {
+          e.preventDefault()
+          onTap()
+        }
+      }}
+      className={`group relative mx-auto my-3 flex h-64 sm:h-76 md:h-[330px] w-full max-w-xl cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border-4 ${
+        scene ? scene.ring : 'border-[#D4A373]'
+      } shadow-[0_20px_50px_rgba(0,0,0,0.65)] select-none transition-all active:scale-[0.99] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-400`}
+    >
+      {/* 1. Painted Sunbird Valley Dawn Sky & Meadow Canvas */}
+      <img
+        src="/quests/adhd/bg_sunbird.webp"
+        alt="Sunbird Valley Sky"
+        className="absolute inset-0 h-full w-full object-cover object-center filter saturate-[1.12] brightness-[1.02] transition-transform duration-700 group-hover:scale-[1.02]"
+      />
+
+      {/* 2. Soft Ambient Sky Atmosphere & Golden Sunbeam Rays */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_18%,rgba(254,243,199,0.38)_0%,rgba(245,158,11,0.12)_45%,transparent_75%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-amber-950/20" />
+
+      {/* 3. Floating Sunlit Cloud Motes */}
+      <div className="pointer-events-none absolute top-4 left-8 h-10 w-44 rounded-full bg-white/20 blur-lg animate-pulse" />
+      <div className="pointer-events-none absolute top-10 right-12 h-8 w-36 rounded-full bg-amber-100/20 blur-md" />
+
+      {/* 4. Center Sky Stimulus Stage */}
+      <div className="relative z-10 flex h-full w-full items-center justify-center">
+        {stimulus === 'target' && (
+          <div className="relative flex items-center justify-center">
+            {/* Gentle Morning Sun Aura behind Sunbird */}
+            <div className="absolute -inset-6 rounded-full bg-amber-300/30 blur-xl animate-pulse" />
+            <SunbirdTarget className={birdClassName} />
+          </div>
+        )}
+
+        {stimulus === 'distractor' && (
+          <div className="relative flex items-center justify-center">
+            {/* Subtle Twilight Mist behind Moth */}
+            <div className="absolute -inset-6 rounded-full bg-slate-400/25 blur-xl" />
+            <MothDistractor className="w-32 h-32" />
+          </div>
+        )}
+
+        {pracSuccess && (
+          <div className="relative z-20 flex flex-col items-center">
+            <span aria-hidden="true" className="cv-float text-7xl drop-shadow-[0_0_25px_rgba(251,191,36,0.9)]">⭐</span>
+          </div>
+        )}
+
+        {!stimulus && !pracSuccess && isWaiting && (
+          <div className="relative z-10 flex flex-col items-center text-center text-amber-200/90">
+            {/* Soft Celestial Focus Reticle in the Center of the Sky */}
+            <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-dashed border-amber-300/50 bg-black/25 backdrop-blur-xs shadow-inner">
+              <div className="absolute inset-2 rounded-full border border-dotted border-amber-400/30 animate-spin" style={{animationDuration: '30s'}} />
+              <CompassRoseSvg className="h-7 w-7 text-amber-300 opacity-80" />
+            </div>
+            <span className="mt-2 text-xs font-bold tracking-widest uppercase text-amber-100 drop-shadow">
+              Watch the Sky…
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* 5. Treetop Observatory Balustrade & Guide Chirp Post */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex items-center justify-between border-t-2 border-[#D4A373]/80 bg-gradient-to-t from-[#25150B]/95 via-[#361E10]/90 to-transparent px-4 py-2 text-xs text-amber-200/90">
+        <div className="flex items-center gap-2">
+          <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="h-7 w-7 object-contain drop-shadow" />
+          <span className="font-semibold text-[11px] text-amber-200">
+            {scene ? scene.name : 'Dawn Meadow Lookout'}
+          </span>
+        </div>
+        <span className="rounded-full bg-black/40 px-2.5 py-0.5 text-[10px] font-bold text-amber-300 border border-amber-300/30">
+          {guideNote || 'Tap Sky or Button'}
+        </span>
+      </div>
     </div>
   )
 }
@@ -496,6 +586,15 @@ function GuideChirpNote({text}: {text: string}) {
 
 function McInner() {
   const [stage, setStage] = useState<'welcome' | 'avatar' | 'camera_setup' | 'cpt_story' | 'cpt_hold' | 'cpt_game' | 'flanker_story' | 'flanker_game' | 'memory_story' | 'memory_game' | 'situational_story' | 'situational_game' | 'trials' | 'parent_card' | 'agent_eval' | 'celebration'>('welcome')
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const q = new URLSearchParams(window.location.search).get('stage')
+      if (q) setStage(q as any)
+      const qPrac = new URLSearchParams(window.location.search).get('prac')
+      if (qPrac) setCptPrac(qPrac as any)
+    }
+  }, [])
 
   // Child Fantasy Persona
   const [heroName, setHeroName] = useState('')
@@ -1186,11 +1285,22 @@ function McInner() {
         {stage === 'cpt_story' && (
           <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md overflow-hidden shadow-2xl text-amber-50">
             <style>{CV_CSS}</style>
-            <div className="relative h-56 md:h-64 w-full overflow-hidden bg-[#0F172A]">
-              <VortexBg />
+            <div className="relative h-56 md:h-64 w-full overflow-hidden rounded-t-3xl border-b-2 border-[#D4A373]/60">
+              <img
+                src="/quests/adhd/bg_sunbird.webp"
+                alt="Sunbird Valley Dawn"
+                className="absolute inset-0 h-full w-full object-cover object-center filter saturate-[1.12] brightness-[1.02]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-amber-950/20" />
               <div className="relative z-10 flex h-full items-center justify-center gap-6 sm:gap-10">
-                <SunbirdTarget className="h-28 w-28 sm:h-36 sm:w-36" />
-                <MothDistractor className="h-24 w-24 sm:h-32 sm:w-32" />
+                <div className="relative flex items-center justify-center">
+                  <div className="absolute -inset-4 rounded-full bg-amber-400/25 blur-lg" />
+                  <SunbirdTarget className="h-28 w-28 sm:h-36 sm:w-36" />
+                </div>
+                <div className="relative flex items-center justify-center">
+                  <div className="absolute -inset-4 rounded-full bg-slate-400/20 blur-lg" />
+                  <MothDistractor className="h-24 w-24 sm:h-32 sm:w-32" />
+                </div>
               </div>
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-5">
                 <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-black/40 px-3 py-1 rounded-full">
@@ -1260,8 +1370,11 @@ function McInner() {
             <p className="font-patrick text-2xl md:text-3xl font-bold mb-4" aria-live="polite">
               {holdPhase === 'wait' ? 'Hold still and wait for the chime. Do not tap yet.' : 'Chime! Tap the sunbird now!'}
             </p>
-            <div
-              onPointerDown={() => {
+            <SunbirdSkyArena
+              stimulus={holdPhase === 'go' ? 'target' : null}
+              birdClassName={holdPhase === 'go' ? 'w-32 h-32' : 'w-28 h-28 opacity-60'}
+              isWaiting={holdPhase === 'wait'}
+              onTap={() => {
                 if (holdPhase === 'wait') {
                   setHoldTaps((t) => { const n = [...t]; n[holdIdx] = (n[holdIdx] ?? 0) + 1; return n })
                   playAudio('miss')
@@ -1271,13 +1384,8 @@ function McInner() {
                 const rt = Math.round(performance.now() - holdGoAtRef.current)
                 finishHold(rt)
               }}
-              className="relative mx-auto my-4 flex h-64 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 border-[#C49A6C] bg-[#1E293B] shadow-[0_10px_35px_rgba(0,0,0,0.6)]"
-            >
-              <VortexBg round />
-              <div className="relative z-10">
-                <SunbirdTarget className={holdPhase === 'go' ? 'w-32 h-32' : 'w-28 h-28 opacity-60'} />
-              </div>
-            </div>
+              guideNote={holdPhase === 'wait' ? 'Hold still… wait for chime' : 'Chime sounded! Tap sky!'}
+            />
             <p className="text-xs text-amber-200/80 min-h-[1.5em]">
               {holdPhase === 'wait' && holdTaps[holdIdx] ? 'Not yet. Wait for the chime.' : ''}
             </p>
@@ -1313,24 +1421,21 @@ function McInner() {
                     {cptPrac === 'bird' ? 'Here comes the sunbird! Tap it!' : cptPrac === 'bird_ok' ? 'Yes! Great tap!' : cptPrac === 'moth' ? 'A moth! Do not tap. Just wait…' : cptPrac === 'moth_oops' ? 'Oops, that was the moth! Just wait.' : 'Perfect waiting!'}
                   </p>
                 </div>
-                <div
-                  onPointerDown={handleCptPracTap}
-                  className="relative mx-auto my-4 flex h-72 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 border-[#C49A6C] bg-[#1E293B] active:scale-95 overflow-hidden shadow-[0_10px_35px_rgba(0,0,0,0.6)]"
-                >
-                  <VortexBg round />
-                  <div className="relative z-10 flex items-center justify-center">
-                    {cptPrac === 'bird' && <SunbirdTarget className={band.bird} />}
-                    {(cptPrac === 'moth' || cptPrac === 'moth_oops') && <MothDistractor className="w-32 h-32" />}
-                    {(cptPrac === 'bird_ok' || cptPrac === 'moth_ok') && <span aria-hidden="true" className="cv-float text-7xl">⭐</span>}
-                  </div>
-                </div>
+                <SunbirdSkyArena
+                  stimulus={cptPrac === 'bird' ? 'target' : (cptPrac === 'moth' || cptPrac === 'moth_oops') ? 'distractor' : null}
+                  birdClassName={band.bird}
+                  isWaiting={cptPrac === 'bird' || cptPrac === 'moth'}
+                  pracSuccess={cptPrac === 'bird_ok' || cptPrac === 'moth_ok'}
+                  onTap={handleCptPracTap}
+                  guideNote={cptPrac === 'bird' ? 'Tap sunbird in the sky!' : cptPrac === 'moth' ? 'Keep calm, wait for moth' : 'Great reflex!'}
+                />
                 <button
                   type="button"
                   onPointerDown={handleCptPracTap}
                   onClick={(e) => { if (e.detail === 0) handleCptPracTap() }}
-                  className={`w-full max-w-sm rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 py-6 text-2xl font-bold text-white shadow-[0_8px_20px_rgba(217,119,6,0.4)] border-2 border-amber-300/50 active:scale-95 transition-all ${cptPrac === 'bird' ? 'ring-4 ring-amber-300' : ''}`}
+                  className={`w-full max-w-sm rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 py-5 text-2xl font-extrabold text-white shadow-[0_10px_25px_rgba(217,119,6,0.45)] border-2 border-amber-300/60 active:scale-95 transition-all ${cptPrac === 'bird' ? 'ring-4 ring-amber-300' : ''}`}
                 >
-                  TAP!
+                  ☀️ TAP SKY OR BUTTON!
                 </button>
               </>
             )}
@@ -1384,38 +1489,22 @@ function McInner() {
               </div>
             </div>
 
-            <div
-              onPointerDown={handleCptTap}
-              className={`relative mx-auto my-6 flex h-72 w-full max-w-sm cursor-pointer items-center justify-center rounded-full border-8 ${CPT_SCENES[Math.min(Math.floor(cptTrialIndex / cptPlan.size), cptPlan.blocks - 1) % CPT_SCENES.length].ring} bg-[#1E293B] transition-all active:scale-95 overflow-hidden shadow-[0_10px_35px_rgba(0,0,0,0.6),inset_0_0_25px_rgba(0,0,0,0.7)]`}
-            >
-              <VortexBg round />
-              {cptStimulus === 'target' && (
-                <div className="relative z-10 flex flex-col items-center">
-                  <SunbirdTarget className={band.bird} />
-                </div>
-              )}
-              {cptStimulus === 'distractor' && (
-                <div className="relative z-10 flex flex-col items-center">
-                  <MothDistractor className="w-32 h-32" />
-                </div>
-              )}
-              {!cptStimulus && (
-                <div className="relative z-10 text-center text-amber-200/80">
-                  <div className="h-16 w-16 mx-auto mb-2 rounded-full border-2 border-dashed border-amber-400/50 flex items-center justify-center bg-white/5">
-                    <CompassRoseSvg className="w-6 h-6 text-amber-300" />
-                  </div>
-                  <span className="text-xs font-semibold text-amber-200">Watch…</span>
-                </div>
-              )}
-            </div>
+            <SunbirdSkyArena
+              stimulus={cptStimulus === 'target' ? 'target' : cptStimulus === 'distractor' ? 'distractor' : null}
+              scene={CPT_SCENES[Math.min(Math.floor(cptTrialIndex / cptPlan.size), cptPlan.blocks - 1) % CPT_SCENES.length]}
+              birdClassName={band.bird}
+              isWaiting={!cptStimulus}
+              onTap={handleCptTap}
+              guideNote="Tap Sky or Paddle Below"
+            />
 
             <button
               type="button"
               onPointerDown={handleCptTap}
               onClick={(e) => { if (e.detail === 0) handleCptTap() }}
-              className="w-full max-w-sm rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 py-6 text-2xl font-bold text-white shadow-[0_8px_20px_rgba(217,119,6,0.4)] border-2 border-amber-300/50 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-400"
+              className="w-full max-w-sm rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 py-5 text-2xl font-extrabold text-white shadow-[0_10px_25px_rgba(217,119,6,0.45)] border-2 border-amber-300/60 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-400"
             >
-              TAP!
+              ☀️ TAP SKY OR BUTTON!
             </button>
           </div>
         )}

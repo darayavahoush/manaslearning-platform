@@ -397,3 +397,22 @@
 - **Rule A Confirmation**:
   - All assessment parameters, age band allocations, scoring, consent gates, and telemetry keys remain 100% locked and unchanged.
 
+---
+
+## 7. ADHD Chapter 1: Immersive Sky Observation Arena Upgrade
+- **Problem Resolved**:
+  - Game 1 (Sunbird Sighting / CPT-3) previously displayed an artificial dark spinning vortex (`#0F172A`) inside an oval peephole with a plain button below, feeling like a clinical laboratory test rather than an immersive adventure.
+  - The child was told to "watch the dawn skies of the valley", but the screen lacked an actual sky.
+- **Visual Overhaul (Presentation Only)**:
+  - **Sunbird Valley Sky Observation Arena (`SunbirdSkyArena`)**:
+    - Replaced the dark spinning vortex with an expansive, breathtaking panoramic dawn sky lookout (`bg_sunbird.webp`), showing the authentic painted watercolor sky, morning sunbeams, rolling green meadows, and framing Gulmohar branches.
+    - Embedded a wooden/sandstone observation balustrade across the base where Guide Chirp perches to watch the sky alongside the child.
+    - When the Golden Sunbird appears, it soars majestically in the morning sky with a warm sunlit aura.
+    - When the Shadow Moth appears, it flutters across the morning sky with a cool twilight mist halo.
+    - During the waiting intervals, the sky remains open, peaceful, and alive with a delicate celestial compass reticle: *"Watch the Sky…"*.
+    - The child can tap directly anywhere on the sky canvas or on the prominent **Golden Sunstone Tap Paddle** (`☀️ TAP SKY OR BUTTON!`) below.
+  - Applied cohesively across `cpt_story`, `cpt_hold`, `cptPrac`, and `cpt_game`.
+- **Rule A Confirmation**:
+  - 100% locked clinical parameters: stimulus presentation durations, ISI delays (`CPT_WAITS`), block trial sequences (`CPT_ORDER`), hit/omission/commission recording, reaction time precision (`HRT`, `RTV`), hit-boxes, and telemetry keys remain strictly identical.
+
+

@@ -1012,7 +1012,7 @@ function __McInner() {
     : '/quests/autism/welcome.webp'
 
   const isTaskScreen = stage.endsWith('_game')
-  const isWideStage = ['ja_game', 'ja_show', 'feelings_game', 'room_game', 'dccs_game', 'end'].includes(stage)
+  const isWideStage = ['look_game', 'ja_game', 'ja_show', 'feelings_game', 'room_game', 'dccs_game', 'end'].includes(stage)
 
   return (
     <main data-no-listen="true" className="relative min-h-screen py-8 px-4 font-poppins text-[#1F2937] overflow-x-hidden selection:bg-teal-400 selection:text-teal-950">

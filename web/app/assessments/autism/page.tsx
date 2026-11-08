@@ -105,59 +105,248 @@ function ArtisanVesselSvg({type}: {type: 'A' | 'B' | 'C'}) {
   )
 }
 
-// Jewel-Tone Artifact Cards (DCCS Task) with Crisp Gouache Gemstones
-function JewelCardSvg({color, shape}: {color: 'red' | 'blue' | 'emerald' | 'amber'; shape: 'star' | 'circle' | 'diamond' | 'crescent'}) {
-  const cardWebp = (color === 'red' && shape === 'star')
-    ? '/quests/autism/card_red_star.webp'
-    : (color === 'blue' && shape === 'circle')
-    ? '/quests/autism/card_blue_circle.webp'
-    : (color === 'red' && shape === 'circle')
-    ? '/quests/autism/card_red_circle.webp'
-    : (color === 'blue' && shape === 'star')
-    ? '/quests/autism/card_blue_star.webp'
-    : null;
+// Multifaceted 3D Alchemical Gemstones (Zero Pixelation, Crisp Vector Facets & Ambient Aura)
+function AlchemicalGemstone({
+  color,
+  shape,
+  size = 'md',
+  className = '',
+}: {
+  color: 'red' | 'blue' | 'emerald' | 'amber'
+  shape: 'star' | 'circle' | 'diamond' | 'crescent'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+  className?: string
+}) {
+  const sizeClasses = {
+    sm: 'w-12 h-12',
+    md: 'w-20 h-20 sm:w-24 sm:h-24',
+    lg: 'w-28 h-28 sm:w-32 sm:h-32',
+    xl: 'w-36 h-36 sm:w-40 sm:h-40',
+  }[size]
 
-  if (cardWebp) {
-    return (
-      <div className="relative flex items-center justify-center p-2 rounded-2xl bg-white/95 border-2 border-teal-200/80 shadow-md">
-        <img
-          src={cardWebp}
-          alt={`${color} ${shape}`}
-          className="w-16 h-16 md:w-20 md:h-20 object-contain pointer-events-none select-none"
-          width={80}
-          height={80}
-        />
-      </div>
-    );
-  }
+  const isRed = color === 'red'
+  const isBlue = color === 'blue'
+  const isEmerald = color === 'emerald'
+  const isAmber = color === 'amber'
 
-  const colorFill = color === 'red' ? '#EF4444' : color === 'blue' ? '#3B82F6' : color === 'emerald' ? '#10B981' : '#F59E0B'
-  const colorGlow = color === 'red' ? '#FEE2E2' : color === 'blue' ? '#DBEAFE' : color === 'emerald' ? '#D1FAE5' : '#FEF3C7'
+  const idPrefix = `gem-${color}-${shape}-${size}`
 
   return (
-    <div className="relative flex items-center justify-center p-3 rounded-2xl bg-white border-2 border-[#CBD5E1] shadow-md hover:shadow-lg transition-all">
-      <svg viewBox="0 0 80 80" className="w-16 h-16 md:w-20 md:h-20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="40" cy="40" r="36" fill={colorGlow}/>
+    <div className={`relative flex items-center justify-center select-none ${sizeClasses} ${className}`}>
+      {/* Outer Luminous Magical Aura */}
+      <div
+        className={`absolute inset-[-15%] rounded-full blur-lg pointer-events-none transition-opacity duration-300 ${
+          isRed
+            ? 'bg-rose-500/40'
+            : isBlue
+            ? 'bg-sky-500/40'
+            : isEmerald
+            ? 'bg-emerald-500/40'
+            : 'bg-amber-500/40'
+        }`}
+      />
+
+      <svg
+        viewBox="0 0 100 100"
+        className="w-full h-full relative z-10 drop-shadow-[0_8px_20px_rgba(0,0,0,0.6)]"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          {/* Radial Ambient Aura */}
+          <radialGradient id={`${idPrefix}-glow`} cx="50%" cy="50%" r="50%">
+            <stop
+              offset="0%"
+              stopColor={isRed ? '#F43F5E' : isBlue ? '#38BDF8' : isEmerald ? '#34D399' : '#FBBF24'}
+              stopOpacity="0.6"
+            />
+            <stop
+              offset="80%"
+              stopColor={isRed ? '#881337' : isBlue ? '#0369A1' : isEmerald ? '#065F46' : '#92400E'}
+              stopOpacity="0.15"
+            />
+            <stop offset="100%" stopColor="#000000" stopOpacity="0" />
+          </radialGradient>
+
+          {/* Spherical Cabochon Base Gradient */}
+          <radialGradient id={`${idPrefix}-orb`} cx="36%" cy="32%" r="66%">
+            <stop
+              offset="0%"
+              stopColor={isRed ? '#FDA4AF' : isBlue ? '#BAE6FD' : isEmerald ? '#A7F3D0' : '#FDE68A'}
+            />
+            <stop
+              offset="25%"
+              stopColor={isRed ? '#F43F5E' : isBlue ? '#0EA5E9' : isEmerald ? '#10B981' : '#F59E0B'}
+            />
+            <stop
+              offset="65%"
+              stopColor={isRed ? '#BE123C' : isBlue ? '#0284C7' : isEmerald ? '#059669' : '#D97706'}
+            />
+            <stop
+              offset="90%"
+              stopColor={isRed ? '#881337' : isBlue ? '#075985' : isEmerald ? '#047857' : '#B45309'}
+            />
+            <stop
+              offset="100%"
+              stopColor={isRed ? '#4C0519' : isBlue ? '#082F49' : isEmerald ? '#064E3B' : '#78350F'}
+            />
+          </radialGradient>
+
+          {/* Golden / Silver Filigree Rim Gradient */}
+          <linearGradient id={`${idPrefix}-rim`} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={isRed || isAmber ? '#FDE68A' : '#F0F9FF'} />
+            <stop offset="50%" stopColor={isRed || isAmber ? '#F59E0B' : '#7DD3FC'} />
+            <stop offset="100%" stopColor={isRed || isAmber ? '#92400E' : '#0284C7'} />
+          </linearGradient>
+
+          {/* Light Facet Gradient */}
+          <linearGradient id={`${idPrefix}-facet-light`} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop
+              offset="0%"
+              stopColor={isRed ? '#FECDD3' : isBlue ? '#E0F2FE' : isEmerald ? '#D1FAE5' : '#FEF3C7'}
+            />
+            <stop
+              offset="100%"
+              stopColor={isRed ? '#FB7185' : isBlue ? '#38BDF8' : isEmerald ? '#34D399' : '#FBBF24'}
+            />
+          </linearGradient>
+
+          {/* Mid Facet Gradient */}
+          <linearGradient id={`${idPrefix}-facet-mid`} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop
+              offset="0%"
+              stopColor={isRed ? '#F43F5E' : isBlue ? '#0284C7' : isEmerald ? '#10B981' : '#F59E0B'}
+            />
+            <stop
+              offset="100%"
+              stopColor={isRed ? '#BE123C' : isBlue ? '#0369A1' : isEmerald ? '#059669' : '#D97706'}
+            />
+          </linearGradient>
+
+          {/* Deep Shadow Facet Gradient */}
+          <linearGradient id={`${idPrefix}-facet-dark`} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop
+              offset="0%"
+              stopColor={isRed ? '#9F1239' : isBlue ? '#075985' : isEmerald ? '#047857' : '#B45309'}
+            />
+            <stop
+              offset="100%"
+              stopColor={isRed ? '#4C0519' : isBlue ? '#082F49' : isEmerald ? '#064E3B' : '#78350F'}
+            />
+          </linearGradient>
+        </defs>
+
+        {/* Ambient Aura Disc */}
+        <circle cx="50" cy="50" r="48" fill={`url(#${idPrefix}-glow)`} />
+
+        {/* 1. CIRCLE GEM (Spherical Cabochon Crystal with Astral Core) */}
         {shape === 'circle' && (
-          <circle cx="40" cy="40" r="22" fill={colorFill} stroke="#FFFFFF" strokeWidth="2.5"/>
+          <g>
+            {/* Ornate Inlaid Bezel Ring */}
+            <circle cx="50" cy="50" r="44" stroke={`url(#${idPrefix}-rim)`} strokeWidth="3" fill="#0A1612" />
+            <circle cx="50" cy="50" r="40" stroke={isRed || isAmber ? '#FDE68A' : '#BAE6FD'} strokeWidth="1" strokeDasharray="3 3" opacity="0.6" />
+
+            {/* 3D Cabochon Core */}
+            <circle cx="50" cy="50" r="37" fill={`url(#${idPrefix}-orb)`} />
+
+            {/* Inner Astral Refraction Swirl */}
+            <path
+              d="M 28 58 C 34 70, 66 70, 72 58 C 66 64, 34 64, 28 58 Z"
+              fill={isRed ? '#FFE4E6' : isBlue ? '#E0F2FE' : '#ECFDF5'}
+              opacity="0.35"
+            />
+            <path
+              d="M 32 40 C 40 28, 60 28, 68 40 C 60 34, 40 34, 32 40 Z"
+              fill="#FFFFFF"
+              opacity="0.25"
+            />
+
+            {/* Specular Glare Highlights */}
+            <ellipse cx="38" cy="30" rx="13" ry="7" transform="rotate(-30 38 30)" fill="#FFFFFF" opacity="0.75" />
+            <circle cx="31" cy="24" r="3" fill="#FFFFFF" opacity="0.95" />
+          </g>
         )}
+
+        {/* 2. STAR GEM (Multifaceted 8-Pointed Star Crystal) */}
         {shape === 'star' && (
-          <path
-            d="M 40 16 L 46 32 L 63 32 L 49 42 L 54 58 L 40 48 L 26 58 L 31 42 L 17 32 L 34 32 Z"
-            fill={colorFill}
-            stroke="#FFFFFF"
-            strokeWidth="2"
-          />
+          <g>
+            {/* Outer Filigree Bezel Rim */}
+            <polygon
+              points="50,4 58.5,30 82.5,15.5 69,38.5 96,50 69,61.5 82.5,84.5 58.5,70 50,96 41.5,70 17.5,84.5 31,61.5 4,50 31,38.5 17.5,15.5 41.5,30"
+              fill="#0A1612"
+              stroke={`url(#${idPrefix}-rim)`}
+              strokeWidth="2.5"
+              strokeLinejoin="round"
+            />
+
+            {/* 16 Facet Triangles meeting at Center (50, 50) */}
+            {/* North Point */}
+            <polygon points="50,50 50,4 58.5,30" fill={`url(#${idPrefix}-facet-light)`} />
+            <polygon points="50,50 50,4 41.5,30" fill={`url(#${idPrefix}-facet-mid)`} />
+            {/* North-East Point */}
+            <polygon points="50,50 58.5,30 82.5,15.5" fill={`url(#${idPrefix}-facet-dark)`} />
+            <polygon points="50,50 82.5,15.5 69,38.5" fill={`url(#${idPrefix}-facet-light)`} />
+            {/* East Point */}
+            <polygon points="50,50 69,38.5 96,50" fill={`url(#${idPrefix}-facet-mid)`} />
+            <polygon points="50,50 96,50 69,61.5" fill={`url(#${idPrefix}-facet-dark)`} />
+            {/* South-East Point */}
+            <polygon points="50,50 69,61.5 82.5,84.5" fill={`url(#${idPrefix}-facet-mid)`} />
+            <polygon points="50,50 82.5,84.5 58.5,70" fill={`url(#${idPrefix}-facet-dark)`} />
+            {/* South Point */}
+            <polygon points="50,50 58.5,70 50,96" fill={`url(#${idPrefix}-facet-dark)`} />
+            <polygon points="50,50 50,96 41.5,70" fill={`url(#${idPrefix}-facet-mid)`} />
+            {/* South-West Point */}
+            <polygon points="50,50 41.5,70 17.5,84.5" fill={`url(#${idPrefix}-facet-dark)`} />
+            <polygon points="50,50 17.5,84.5 31,61.5" fill={`url(#${idPrefix}-facet-mid)`} />
+            {/* West Point */}
+            <polygon points="50,50 31,61.5 4,50" fill={`url(#${idPrefix}-facet-mid)`} />
+            <polygon points="50,50 4,50 31,38.5" fill={`url(#${idPrefix}-facet-light)`} />
+            {/* North-West Point */}
+            <polygon points="50,50 31,38.5 17.5,15.5" fill={`url(#${idPrefix}-facet-light)`} />
+            <polygon points="50,50 17.5,15.5 41.5,30" fill={`url(#${idPrefix}-facet-mid)`} />
+
+            {/* Central Diamond Crown Glint */}
+            <polygon
+              points="50,40 57,50 50,60 43,50"
+              fill="#FFFFFF"
+              opacity="0.85"
+            />
+            <circle cx="50" cy="50" r="3.5" fill="#FFFFFF" />
+            <circle cx="50" cy="50" r="6" stroke="#FFFFFF" strokeWidth="1" opacity="0.7" />
+          </g>
         )}
+
+        {/* 3. DIAMOND GEM (Fallback) */}
         {shape === 'diamond' && (
-          <polygon points="40,16 60,40 40,64 20,40" fill={colorFill} stroke="#FFFFFF" strokeWidth="2" />
+          <g>
+            <polygon points="50,8 90,50 50,92 10,50" fill="#0A1612" stroke={`url(#${idPrefix}-rim)`} strokeWidth="2.5" />
+            <polygon points="50,50 50,8 90,50" fill={`url(#${idPrefix}-facet-light)`} />
+            <polygon points="50,50 90,50 50,92" fill={`url(#${idPrefix}-facet-dark)`} />
+            <polygon points="50,50 50,92 10,50" fill={`url(#${idPrefix}-facet-dark)`} />
+            <polygon points="50,50 10,50 50,8" fill={`url(#${idPrefix}-facet-mid)`} />
+            <circle cx="50" cy="50" r="4" fill="#FFFFFF" />
+          </g>
         )}
+
+        {/* 4. CRESCENT GEM (Fallback) */}
         {shape === 'crescent' && (
-          <path d="M 46 22 A 18 18 0 1 1 36 56 A 15 15 0 0 0 46 22 Z" fill={colorFill} stroke="#FFFFFF" strokeWidth="2" />
+          <g>
+            <path
+              d="M 58 14 A 36 36 0 1 1 38 82 A 30 30 0 0 0 58 14 Z"
+              fill={`url(#${idPrefix}-orb)`}
+              stroke={`url(#${idPrefix}-rim)`}
+              strokeWidth="2.5"
+            />
+            <circle cx="42" cy="36" r="3" fill="#FFFFFF" opacity="0.85" />
+          </g>
         )}
       </svg>
     </div>
   )
+}
+
+function JewelCardSvg({color, shape}: {color: 'red' | 'blue' | 'emerald' | 'amber'; shape: 'star' | 'circle' | 'diamond' | 'crescent'}) {
+  return <AlchemicalGemstone color={color} shape={shape} size="md" />
 }
 
 /** The sprite's body: a glowing spirit with a leaf crown. Its colour is set by the emotion; the face drawn on top is unchanged. */
@@ -970,30 +1159,261 @@ function __McInner() {
       </PracticeFrame>
     )
   }
+  function AlchemicalSortingArena({
+    title,
+    subtitle,
+    rule,
+    targetGem,
+    onSort,
+    stepLabel,
+    modeLabel,
+    hintTray,
+    feedbackMsg,
+  }: {
+    title: string
+    subtitle: string
+    rule: 'color' | 'shape'
+    targetGem: {color: 'red' | 'blue'; shape: 'star' | 'circle'}
+    onSort: (bin: number) => void
+    stepLabel: string
+    modeLabel: string
+    hintTray?: number | null
+    feedbackMsg?: '' | 'yay' | 'retry'
+  }) {
+    return (
+      <div className="relative rounded-3xl border-2 border-emerald-400/50 bg-[#071712]/95 backdrop-blur-md overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.7)] text-teal-50 max-w-4xl lg:max-w-5xl mx-auto w-full select-none">
+        {/* Grand Alchemical Chamber Viewport Banner */}
+        <div className="relative h-44 sm:h-52 md:h-60 w-full overflow-hidden select-none bg-[#041D15]">
+          <img
+            src="/quests/autism/bg_sorting.webp"
+            alt="The Alchemist's Gem Chamber"
+            className="h-full w-full object-cover object-center opacity-80"
+          />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#071712] via-[#071712]/50 to-transparent" />
+
+          {/* Floating Realm Status Pills */}
+          <div className="absolute top-4 inset-x-4 flex items-center justify-between pointer-events-none z-10">
+            <span className="rounded-full bg-black/60 backdrop-blur-md border border-emerald-400/40 px-3.5 py-1 text-xs font-bold text-emerald-200 shadow-md">
+              Chapter 4 • The Alchemist&apos;s Gem Vault
+            </span>
+            <span className="rounded-full bg-black/60 backdrop-blur-md border border-amber-300/40 px-3.5 py-1 text-xs font-bold text-amber-200 shadow-md flex items-center gap-1.5">
+              <span>🔮</span>
+              <span>{stepLabel} • {modeLabel}</span>
+            </span>
+          </div>
+
+          {/* Guide Aria Alchemist Box */}
+          <div className="absolute bottom-3 inset-x-4 flex items-end justify-between pointer-events-none z-10">
+            <div className="flex items-center gap-3 bg-black/75 backdrop-blur-md border border-emerald-400/40 rounded-2xl p-2.5 sm:p-3 shadow-xl max-w-xl">
+              <img
+                src="/decor/itw/quest-aria-alchemist.webp"
+                alt="Aria the Alchemist"
+                className="w-11 h-11 sm:w-13 sm:h-13 rounded-xl object-cover border border-amber-300/50 shadow-sm flex-shrink-0"
+                width={52}
+                height={52}
+              />
+              <div className="text-left">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300 block">
+                  Aria the Alchemist Guide
+                </span>
+                <p className="text-xs sm:text-sm font-semibold text-teal-100 leading-tight">
+                  {rule === 'color'
+                    ? '“Watch the magic rule! Match by COLOR! Red gems go to the Ruby Vault, and blue gems go to the Sapphire Vault!”'
+                    : '“The ancient runes have shifted! Now match by SHAPE! Stars go to the Star Vault, and circles go to the Sphere Vault!”'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Transmutation Sorting Arena */}
+        <div className="p-4 sm:p-6 md:p-8">
+          {/* Active Rule Keystone Banner */}
+          <div className="mx-auto max-w-xl text-center mb-6">
+            <div className="inline-flex items-center gap-2.5 rounded-full border border-amber-400/60 bg-gradient-to-r from-amber-500/25 via-emerald-500/20 to-teal-500/25 px-6 py-2.5 backdrop-blur-md shadow-[0_0_25px_rgba(251,191,36,0.25)]">
+              <span className="text-2xl">{rule === 'color' ? '🎨' : '🔷'}</span>
+              <span className="font-poppins text-lg sm:text-2xl font-bold text-amber-200 tracking-wide drop-shadow-sm">
+                {title}
+              </span>
+            </div>
+            <p className="mt-2 text-xs sm:text-sm text-teal-200/90 font-medium max-w-md mx-auto">
+              {subtitle}
+            </p>
+          </div>
+
+          {/* Central Floating Gem Altar */}
+          <div className="relative mx-auto my-4 flex flex-col items-center justify-center">
+            <div className="relative flex h-36 w-36 sm:h-44 sm:w-44 items-center justify-center">
+              {/* Rotating Concentric Runic Rings */}
+              <div className="absolute inset-0 rounded-full border-2 border-dashed border-amber-300/40 animate-[spin_20s_linear_infinite]" />
+              <div className="absolute inset-2 rounded-full border border-teal-400/30 animate-[spin_15s_linear_infinite_reverse]" />
+              <div className="absolute inset-4 rounded-full bg-gradient-to-b from-[#132B22]/90 via-[#0B1E17]/95 to-[#06140F] shadow-[0_0_40px_rgba(16,185,129,0.35)] border border-emerald-400/50" />
+              {/* Floating Glowing Gemstone */}
+              <div className="relative z-10 w-24 h-24 sm:w-28 sm:h-28 animate-bounce transition-transform duration-300">
+                <AlchemicalGemstone color={targetGem.color} shape={targetGem.shape} size="lg" />
+              </div>
+            </div>
+            <span className="mt-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-amber-300/90 bg-black/50 px-3.5 py-1 rounded-full border border-amber-300/30 shadow-sm">
+              ✨ Magical Gem to Sort: {targetGem.color.toUpperCase()} {targetGem.shape.toUpperCase()}
+            </span>
+          </div>
+
+          {/* The Two Sorting Vault Pedestals */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-2xl mx-auto mt-6">
+            {/* Vault 0: Ruby Star Vault */}
+            <button
+              type="button"
+              onClick={() => onSort(0)}
+              aria-label="Ruby Star Vault"
+              className={`group relative flex flex-col items-center justify-between rounded-3xl border-2 border-rose-500/70 bg-gradient-to-b from-[#25090F]/95 via-[#1A060A]/95 to-[#0F0306]/95 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.6)] hover:border-rose-400 hover:shadow-[0_0_40px_rgba(244,63,94,0.5)] hover:scale-[1.03] active:scale-95 transition-all duration-300 cursor-pointer focus:outline-none ${
+                hintTray === 0 ? 'ring-4 ring-amber-400 animate-pulse' : ''
+              }`}
+            >
+              <div className="w-full flex items-center justify-between mb-3 pointer-events-none">
+                <span className="text-xs font-bold text-rose-300 flex items-center gap-1">
+                  <span>🔥</span> Ruby Star Vault
+                </span>
+                <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
+                  rule === 'color'
+                    ? 'bg-rose-500/25 text-rose-200 border-rose-400/60'
+                    : 'bg-amber-500/25 text-amber-200 border-amber-400/60'
+                }`}>
+                  {rule === 'color' ? 'Accepts: RED' : 'Accepts: STAR'}
+                </span>
+              </div>
+
+              {/* Inlaid Gem Preview */}
+              <div className="my-2 p-2">
+                <AlchemicalGemstone color="red" shape="star" size="md" />
+              </div>
+
+              <div className="mt-3 w-full rounded-2xl bg-gradient-to-r from-rose-900/60 via-rose-800/80 to-rose-900/60 border border-rose-400/40 py-2.5 px-4 text-center group-hover:border-rose-300 transition-all pointer-events-none">
+                <span className="text-sm font-bold text-rose-100 group-hover:text-white flex items-center justify-center gap-1.5">
+                  <span>Place Gem Here</span>
+                  <span className="text-base group-hover:translate-y-0.5 transition-transform">⬇</span>
+                </span>
+              </div>
+            </button>
+
+            {/* Vault 1: Sapphire Sphere Vault */}
+            <button
+              type="button"
+              onClick={() => onSort(1)}
+              aria-label="Sapphire Sphere Vault"
+              className={`group relative flex flex-col items-center justify-between rounded-3xl border-2 border-sky-500/70 bg-gradient-to-b from-[#091827]/95 via-[#05111C]/95 to-[#020A12]/95 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.6)] hover:border-sky-400 hover:shadow-[0_0_40px_rgba(56,189,248,0.5)] hover:scale-[1.03] active:scale-95 transition-all duration-300 cursor-pointer focus:outline-none ${
+                hintTray === 1 ? 'ring-4 ring-amber-400 animate-pulse' : ''
+              }`}
+            >
+              <div className="w-full flex items-center justify-between mb-3 pointer-events-none">
+                <span className="text-xs font-bold text-sky-300 flex items-center gap-1">
+                  <span>🌊</span> Sapphire Sphere Vault
+                </span>
+                <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
+                  rule === 'color'
+                    ? 'bg-sky-500/25 text-sky-200 border-sky-400/60'
+                    : 'bg-blue-500/25 text-blue-200 border-blue-400/60'
+                }`}>
+                  {rule === 'color' ? 'Accepts: BLUE' : 'Accepts: CIRCLE'}
+                </span>
+              </div>
+
+              {/* Inlaid Gem Preview */}
+              <div className="my-2 p-2">
+                <AlchemicalGemstone color="blue" shape="circle" size="md" />
+              </div>
+
+              <div className="mt-3 w-full rounded-2xl bg-gradient-to-r from-sky-900/60 via-sky-800/80 to-sky-900/60 border border-sky-400/40 py-2.5 px-4 text-center group-hover:border-sky-300 transition-all pointer-events-none">
+                <span className="text-sm font-bold text-sky-100 group-hover:text-white flex items-center justify-center gap-1.5">
+                  <span>Place Gem Here</span>
+                  <span className="text-base group-hover:translate-y-0.5 transition-transform">⬇</span>
+                </span>
+              </div>
+            </button>
+          </div>
+
+          {/* Feedback Status Indicator */}
+          {feedbackMsg && (
+            <div className="mt-6 flex items-center justify-center min-h-[3rem]">
+              {feedbackMsg === 'yay' && (
+                <div className="flex items-center justify-center gap-2 text-amber-300 font-bold text-lg animate-bounce">
+                  <ForestSpriteFaceSvg emotion="happy" className="w-8 h-8 drop-shadow" />
+                  <StarSvg />
+                  <span>✨ Splendid! You placed it in the right vault!</span>
+                </div>
+              )}
+              {feedbackMsg === 'retry' && (
+                <div className="flex items-center justify-center gap-2 text-teal-200 font-bold text-base">
+                  <ForestSpriteFaceSvg emotion="calm" className="w-8 h-8" />
+                  <span>Nice try! Look at the rule banner and try again.</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   function renderDccsPractice() {
     if (!prac) return null
-    if (prac.done) return renderPracDone('dccs', startDccs)
+    if (prac.done) {
+      return (
+        <div className="relative rounded-3xl border-2 border-emerald-400/60 bg-[#071712]/95 backdrop-blur-md p-8 sm:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.8)] text-center select-none max-w-2xl mx-auto overflow-hidden">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(16,185,129,0.25)_0%,transparent_70%)] animate-pulse" />
+          <div className="relative z-10 flex flex-col items-center">
+            <span className="rounded-full bg-emerald-500/20 border border-emerald-400/50 px-4 py-1 text-xs font-bold uppercase tracking-wider text-emerald-200 mb-3">
+              ✨ Practice Complete
+            </span>
+            <div className="flex gap-2 my-2">
+              <StarSvg />
+              <StarSvg />
+              <StarSvg />
+            </div>
+            <h2 className="font-patrick text-3xl sm:text-4xl font-bold text-amber-200 mb-2 drop-shadow-md">
+              Apprentice Alchemist Ready!
+            </h2>
+            <p className="text-base text-teal-100/90 mb-8 max-w-md">
+              You know how the magical vaults work! Step into the Grand Alchemical Vault and sort all the crystals.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+              <button
+                type="button"
+                onClick={startDccs}
+                className="w-full sm:w-auto rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-teal-600 px-10 py-4 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              >
+                Enter Grand Vault ▶
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  playAudio('tap')
+                  events.noteRetry('dccs')
+                  setPrac({g: 'dccs', i: 0, tries: 0, msg: '', done: false})
+                }}
+                className="w-full sm:w-auto rounded-full border border-teal-400/40 bg-[#122A21] px-6 py-3.5 text-sm font-bold text-teal-200 hover:text-white transition-all cursor-pointer"
+              >
+                Practice Again ↺
+              </button>
+            </div>
+          </div>
+        </div>
+      )
+    }
     const t = DCCS_PRACTICE[prac.i]
     const showHint = prac.tries >= 2
-    const tray = (n: number, color: 'red' | 'blue', shape: 'star' | 'circle', label: string, tone: string) => (
-      <button
-        type="button"
-        aria-label={label}
-        onClick={() => pracAnswer(n === t.tray, DCCS_PRACTICE.length)}
-        className={`flex min-h-[150px] flex-col items-center justify-center gap-2 rounded-3xl border-4 p-5 shadow-md transition-all hover:scale-105 active:scale-95 ${tone} ${showHint && n === t.tray ? 'animate-pulse ring-4 ring-amber-400' : ''}`}
-      >
-        <JewelCardSvg color={color} shape={shape} />
-        <span className="text-lg font-bold text-slate-800">{label}</span>
-      </button>
-    )
+
     return (
-      <PracticeFrame step={prac.i} total={DCCS_PRACTICE.length} say="Same COLOR goes together!" msg={prac.msg}>
-        <div className="my-4 flex justify-center"><JewelCardSvg color={t.color} shape={t.shape} /></div>
-        <div className="mx-auto grid max-w-md grid-cols-2 gap-4">
-          {tray(0, 'red', 'star', 'Red', 'border-rose-300 bg-rose-50/70')}
-          {tray(1, 'blue', 'circle', 'Blue', 'border-blue-300 bg-blue-50/70')}
-        </div>
-      </PracticeFrame>
+      <AlchemicalSortingArena
+        title="Same COLOR goes together!"
+        subtitle="Look at the color of this gem. Match Red to Ruby, and Blue to Sapphire!"
+        rule="color"
+        targetGem={t}
+        onSort={(n) => pracAnswer(n === t.tray, DCCS_PRACTICE.length)}
+        stepLabel={`Practice ${prac.i + 1} of ${DCCS_PRACTICE.length}`}
+        modeLabel="Apprentice Training"
+        hintTray={showHint ? t.tray : null}
+        feedbackMsg={prac.msg}
+      />
     )
   }
 
@@ -1012,7 +1432,7 @@ function __McInner() {
     : '/quests/autism/welcome.webp'
 
   const isTaskScreen = stage.endsWith('_game')
-  const isWideStage = ['look_game', 'ja_game', 'ja_show', 'feelings_game', 'sensory_story', 'dccs_game', 'end'].includes(stage)
+  const isWideStage = ['look_game', 'ja_game', 'ja_show', 'feelings_game', 'sensory_story', 'dccs_story', 'dccs_game', 'end'].includes(stage)
 
   return (
     <main data-no-listen="true" className="relative min-h-screen py-8 px-4 font-poppins text-[#1F2937] overflow-x-hidden selection:bg-teal-400 selection:text-teal-950">
@@ -1823,85 +2243,77 @@ function __McInner() {
         {stage === 'dccs_story' && renderDccsPractice()}
 
         {stage === 'dccs_game' && dccsWarnLeft !== null && (
-          <div className="rounded-3xl border-4 border-amber-300 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
-            <p className="font-patrick text-4xl md:text-5xl font-bold text-amber-800 mb-2">Watch the sign!</p>
-            <p className="text-base md:text-lg text-slate-700 mb-6">Something is about to change. Get ready.</p>
-            <div key={dccsWarnLeft} className="mx-auto mb-4 flex h-28 w-28 items-center justify-center rounded-full border-8 border-amber-400 bg-amber-50 text-5xl font-bold text-amber-800 animate-pulse">
-              {dccsWarnLeft}
+          <div className="relative rounded-3xl border-2 border-amber-400/80 bg-[#0A1612]/95 backdrop-blur-md p-8 sm:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.8)] text-center select-none max-w-2xl mx-auto overflow-hidden">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(251,191,36,0.25)_0%,transparent_70%)] animate-pulse" />
+            <div className="relative z-10 flex flex-col items-center">
+              <span className="rounded-full bg-amber-500/20 border border-amber-400/50 px-4 py-1 text-xs font-bold uppercase tracking-wider text-amber-200 mb-3 shadow-sm">
+                ✨ Chamber Runes Shifting
+              </span>
+              <h2 className="font-patrick text-4xl sm:text-5xl font-bold text-amber-300 mb-2 drop-shadow-md">
+                Watch the Ancient Sign!
+              </h2>
+              <p className="text-base sm:text-lg text-teal-100/90 mb-8 max-w-md">
+                The magical laws of the Alchemy Chamber are changing! Get ready for the new rule!
+              </p>
+              <div key={dccsWarnLeft} className="relative flex h-32 w-32 items-center justify-center rounded-full border-4 border-amber-300 bg-gradient-to-b from-amber-400/30 to-amber-600/40 shadow-[0_0_50px_rgba(251,191,36,0.6)] animate-pulse">
+                <div className="absolute inset-2 rounded-full border border-dashed border-amber-200/50 animate-[spin_6s_linear_infinite]" />
+                <span className="text-6xl font-extrabold text-amber-100 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+                  {dccsWarnLeft}
+                </span>
+              </div>
             </div>
           </div>
         )}
 
         {stage === 'dccs_game' && dccsRuleCheck && (
-          <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
-            <p className="font-patrick text-3xl md:text-4xl font-bold text-teal-900 mb-2">Quick check!</p>
-            <p className="text-base md:text-lg text-slate-800 mb-8">Which way are the gems being sorted right now?</p>
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              <button type="button" onClick={() => handleRuleCheck('colour')} className="rounded-2xl border-4 border-rose-400 bg-rose-50 px-8 py-5 text-xl font-bold text-rose-800 shadow-md hover:scale-105 active:scale-95 transition-all">By COLOR</button>
-              <button type="button" onClick={() => handleRuleCheck('shape')} className="rounded-2xl border-4 border-blue-400 bg-blue-50 px-8 py-5 text-xl font-bold text-blue-800 shadow-md hover:scale-105 active:scale-95 transition-all">By SHAPE</button>
+          <div className="relative rounded-3xl border-2 border-emerald-400/80 bg-[#0A1612]/95 backdrop-blur-md p-8 sm:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.8)] text-center select-none max-w-2xl mx-auto overflow-hidden">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(16,185,129,0.2)_0%,transparent_70%)]" />
+            <div className="relative z-10 flex flex-col items-center">
+              <span className="rounded-full bg-emerald-500/20 border border-emerald-400/50 px-4 py-1 text-xs font-bold uppercase tracking-wider text-emerald-200 mb-3 shadow-sm">
+                🔮 Alchemical Wisdom Check
+              </span>
+              <h2 className="font-patrick text-3xl sm:text-4xl font-bold text-amber-200 mb-2 drop-shadow-md">
+                Quick Wisdom Check!
+              </h2>
+              <p className="text-base sm:text-lg text-teal-100/90 mb-8 max-w-md">
+                Which magical law are the gems being sorted by right now?
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md">
+                <button
+                  type="button"
+                  onClick={() => handleRuleCheck('colour')}
+                  className="w-full sm:w-1/2 flex items-center justify-center gap-2.5 rounded-2xl border-2 border-rose-400/80 bg-gradient-to-b from-[#2B0E14] to-[#120508] px-6 py-4 text-lg font-bold text-rose-200 shadow-lg hover:border-rose-300 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                >
+                  <span className="text-2xl">🎨</span>
+                  <span>By COLOR</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleRuleCheck('shape')}
+                  className="w-full sm:w-1/2 flex items-center justify-center gap-2.5 rounded-2xl border-2 border-sky-400/80 bg-gradient-to-b from-[#0B1E2E] to-[#040D14] px-6 py-4 text-lg font-bold text-sky-200 shadow-lg hover:border-sky-300 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                >
+                  <span className="text-2xl">🔷</span>
+                  <span>By SHAPE</span>
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {stage === 'dccs_game' && DCCS_CARDS[dccsIndex] && dccsWarnLeft === null && !dccsRuleCheck && (
-          <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md p-6 md:p-10 shadow-2xl text-center select-none">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B] bg-[#F1F5F9] px-3.5 py-1 rounded-full">
-                Gem {dccsIndex + 1} of {DCCS_CARDS.length} • {DCCS_CARDS.length - dccsIndex - 1 === 0 ? 'Final gem!' : `${DCCS_CARDS.length - dccsIndex - 1} more to sort`}
-              </span>
-              <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
-                dccsRule === 'color' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-blue-50 text-blue-700 border-blue-200'
-              }`}>
-                {dccsRule === 'color' ? 'COLOR game' : 'SHAPE game'}
-              </span>
-            </div>
-
-            <p className="font-patrick text-2xl md:text-3xl font-bold text-teal-900 mb-4">
-              {dccsRule === 'color' ? 'Same COLOR goes together!' : 'Same SHAPE goes together!'}
-            </p>
-
-            {/* Target Gem to Sort */}
-            <div className="my-6 flex justify-center">
-              <JewelCardSvg
-                color={DCCS_CARDS[dccsIndex].color}
-                shape={DCCS_CARDS[dccsIndex].shape}
-              />
-            </div>
-
-            {/* Trays */}
-            <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
-              <button
-                type="button"
-                onClick={() => handleDccsSort(0)}
-                aria-label="Red star box"
-                className="min-h-[150px] p-5 rounded-3xl border-4 border-rose-300 bg-rose-50/70 hover:bg-rose-100/70 active:scale-95 shadow-md transition-all flex flex-col items-center justify-center gap-2"
-              >
-                <img
-                  src="/quests/autism/box_red_star.webp"
-                  alt="Red star box"
-                  className="w-16 h-16 md:w-20 md:h-20 object-contain pointer-events-none drop-shadow-sm select-none"
-                  width={80}
-                  height={80}
-                />
-                <span className="text-lg font-bold text-rose-800">Red star</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDccsSort(1)}
-                aria-label="Blue circle box"
-                className="min-h-[150px] p-5 rounded-3xl border-4 border-blue-300 bg-blue-50/70 hover:bg-blue-100/70 active:scale-95 shadow-md transition-all flex flex-col items-center justify-center gap-2"
-              >
-                <img
-                  src="/quests/autism/box_blue_circle.webp"
-                  alt="Blue circle box"
-                  className="w-16 h-16 md:w-20 md:h-20 object-contain pointer-events-none drop-shadow-sm select-none"
-                  width={80}
-                  height={80}
-                />
-                <span className="text-lg font-bold text-blue-800">Blue circle</span>
-              </button>
-            </div>
-          </div>
+          <AlchemicalSortingArena
+            title={dccsRule === 'color' ? 'Same COLOR goes together!' : 'Same SHAPE goes together!'}
+            subtitle={
+              dccsRule === 'color'
+                ? 'Color Law Active: Red gems go to the Ruby Vault, Blue gems go to the Sapphire Vault!'
+                : 'Shape Law Active: Stars go to the Star Vault, Circles go to the Sphere Vault!'
+            }
+            rule={dccsRule}
+            targetGem={DCCS_CARDS[dccsIndex]}
+            onSort={(bin) => handleDccsSort(bin)}
+            stepLabel={`Gem ${dccsIndex + 1} of ${DCCS_CARDS.length}`}
+            modeLabel={dccsRule === 'color' ? '🎨 Color Magic' : '🔷 Shape Magic'}
+          />
         )}
 
         {/* 8. LOADING AGENT */}

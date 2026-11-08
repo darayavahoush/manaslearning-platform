@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 import React, {useEffect, useRef, useState} from 'react'
 
@@ -8,6 +9,7 @@ export type Cls = {
   name: string
   desc: string
   badge?: string
+  image?: string
   Svg?: React.ComponentType<{className?: string}>
   AvatarSvg?: React.ComponentType<{className?: string}>
 }
@@ -111,8 +113,15 @@ export default function WelcomeWizard(p: Props) {
                 }`}
               >
                 {/* Top Avatar Illustration Window */}
-                <div className="relative mb-3 h-36 sm:h-40 w-full overflow-hidden rounded-2xl bg-gradient-to-b from-slate-100 to-slate-200/80 shadow-inner flex items-center justify-center">
-                  {AvatarComponent ? (
+                <div className="relative mb-3 h-44 sm:h-48 w-full overflow-hidden rounded-2xl bg-gradient-to-b from-slate-100 to-slate-200/80 shadow-inner flex items-center justify-center">
+                  {cls.image ? (
+                    <img
+                      src={cls.image}
+                      alt={cls.name}
+                      className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                      loading="eager"
+                    />
+                  ) : AvatarComponent ? (
                     <AvatarComponent className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                   ) : Icon ? (
                     <div className={`rounded-2xl p-4 ${on ? T.iconOn : 'bg-white text-slate-700 shadow-sm'}`}>
@@ -120,9 +129,12 @@ export default function WelcomeWizard(p: Props) {
                     </div>
                   ) : null}
 
+                  {/* Gentle gradient overlay at bottom of portrait for depth */}
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/40 to-transparent" />
+
                   {/* Persona Badge */}
                   {cls.badge && (
-                    <span className="absolute top-2.5 left-2.5 rounded-full bg-slate-900/75 backdrop-blur-md px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm border border-white/20">
+                    <span className="absolute top-2.5 left-2.5 rounded-full bg-slate-900/85 backdrop-blur-md px-3 py-1 text-[11px] font-bold text-amber-200 shadow-md border border-amber-300/30">
                       {cls.badge}
                     </span>
                   )}
@@ -133,7 +145,7 @@ export default function WelcomeWizard(p: Props) {
                       <span>★</span> Chosen
                     </span>
                   ) : (
-                    <span className="absolute top-2.5 right-2.5 rounded-full bg-white/85 backdrop-blur-sm px-2 py-0.5 text-[10px] font-semibold text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="absolute top-2.5 right-2.5 rounded-full bg-black/60 backdrop-blur-sm px-2.5 py-1 text-[10px] font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity">
                       Tap to Pick
                     </span>
                   )}
@@ -203,11 +215,15 @@ export default function WelcomeWizard(p: Props) {
         return (
           <div>
             <div className="mb-5 flex flex-col sm:flex-row items-center gap-4 rounded-3xl bg-slate-50 border-2 border-slate-200/80 p-4">
-              {ChosenAvatar && (
+              {chosenCls?.image ? (
+                <div className="h-24 w-32 sm:h-28 sm:w-36 shrink-0 overflow-hidden rounded-2xl bg-slate-200 shadow-inner">
+                  <img src={chosenCls.image} alt={chosenCls.name} className="h-full w-full object-cover object-center" />
+                </div>
+              ) : ChosenAvatar ? (
                 <div className="h-24 w-32 sm:h-28 sm:w-36 shrink-0 overflow-hidden rounded-2xl bg-slate-200 shadow-inner">
                   <ChosenAvatar className="h-full w-full object-cover" />
                 </div>
-              )}
+              ) : null}
               <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-base flex-1 w-full">
                 <dt className="font-semibold text-[#64748B]">{p.classLabel}</dt>
                 <dd className="font-bold text-[#0F172A]">{p.selected}</dd>

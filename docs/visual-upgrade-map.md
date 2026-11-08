@@ -483,6 +483,27 @@
 - **Rule A Confirmation**:
   - Hit-box dimensions (`band.bird`, responsive per age band, min >= 44px), presentation durations, stimulus timing, scoring formulas, and CPT telemetry keys (`omissions`, `commissions`, `hrtMs`, `rtvMs`) are 100% preserved.
 
+---
+
+## 12. High-Fidelity Storybook Character Portrait Art Overhaul (`WelcomeWizard.tsx`)
+- **Problem Resolved**:
+  - The Step 1 character class selection screen previously displayed elementary flat geometric SVG drawings or small monochrome icons with clinical, abstract descriptions. Young children could not visually identify with the characters or understand what their explorer personas represented.
+- **Visual Overhaul (Presentation Only)**:
+  - **Bespoke Storybook Character Portraits (`web/public/quests/characters/`)**: Created 6 high-resolution, publishing-grade children's fantasy watercolor & gouache character portraits with delicate ink outlines:
+    - **ADHD Sunbird Valley Explorer Guild**:
+      1. `Canopy Sky Ranger` ([`canopy_sky_ranger.webp`](file:///Users/ananyasridhar/work/vaakbot/web/public/quests/characters/canopy_sky_ranger.webp)): A spirited, sharp-eyed forest scout in a mossy hooded cloak with a golden feather headband and carved wooden bow, perched among sunlit canopy boughs.
+      2. `Astral Spellcaster` ([`astral_spellcaster.webp`](file:///Users/ananyasridhar/work/vaakbot/web/public/quests/characters/astral_spellcaster.webp)): A wonder-filled young star mage in constellation-embroidered indigo robes, holding a glowing crystal star wand amidst swirling pastel nebulae.
+      3. `Sunfire Knight` ([`sunfire_knight.webp`](file:///Users/ananyasridhar/work/vaakbot/web/public/quests/characters/sunfire_knight.webp)): A kind-hearted, courageous young hero in polished bronze-gold armor with an embossed sun-crest shield in a sunlit stone archway.
+    - **Autism Lumina Groves Affinities**:
+      4. `Grove Harmonizer` ([`grove_harmonizer.webp`](file:///Users/ananyasridhar/work/vaakbot/web/public/quests/characters/grove_harmonizer.webp)): A gentle nature friend in a woven wildflower crown welcoming two friendly, glowing golden fireflies with an outstretched hand in a mossy woodland.
+      5. `Crystal Alchemist` ([`crystal_alchemist.webp`](file:///Users/ananyasridhar/work/vaakbot/web/public/quests/characters/crystal_alchemist.webp)): A curious young researcher with round brass spectacles, curly hair, and a pocketed leather apron holding a glowing multifaceted potion flask in a cozy apothecary library.
+      6. `Quiet Seeker` ([`quiet_seeker.webp`](file:///Users/ananyasridhar/work/vaakbot/web/public/quests/characters/quiet_seeker.webp)): A serene, thoughtful child wrapped in a cozy knitted lavender scarf with a gentle snowy white peace dove perched softly on their shoulder in a tranquil wisteria garden.
+  - **Card Presentation**: Upgraded `WelcomeWizard.tsx` cards with dedicated `h-44 sm:h-48` image viewports, bottom depth gradients, prominent persona badges, smooth hover zoom (`scale-105`), and clear selection state indicators ("✓ Selected Explorer").
+  - **Step 4 Review Preview**: Connected the selected character image directly into the Step 4 confirmation card.
+- **Rule A Confirmation**:
+  - Class names, underlying telemetry fields (`guildClass`, `guildAffinity`), age band assignments, consent protocols, and scoring logic remain 100% untouched.
+
+
 
 
 

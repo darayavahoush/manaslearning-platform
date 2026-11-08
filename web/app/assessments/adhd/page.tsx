@@ -447,6 +447,7 @@ const GUILD_CLASSES = [
   {
     name: 'Canopy Sky Ranger',
     badge: 'Eagle-Eyed Scout',
+    image: '/quests/characters/canopy_sky_ranger.webp',
     Svg: BowIconSvg,
     AvatarSvg: CanopyRangerAvatarSvg,
     desc: 'Fast & sharp-eyed · Spots distant birds in the forest canopy'
@@ -454,6 +455,7 @@ const GUILD_CLASSES = [
   {
     name: 'Astral Spellcaster',
     badge: 'Star Mage',
+    image: '/quests/characters/astral_spellcaster.webp',
     Svg: WandIconSvg,
     AvatarSvg: AstralSpellcasterAvatarSvg,
     desc: 'Creative & quick-thinking · Lights up constellations with starlight'
@@ -461,6 +463,7 @@ const GUILD_CLASSES = [
   {
     name: 'Sunfire Knight',
     badge: 'Sun Guardian',
+    image: '/quests/characters/sunfire_knight.webp',
     Svg: ShieldIconSvg,
     AvatarSvg: SunfireKnightAvatarSvg,
     desc: 'Steady & calm-hearted · Brings courage and focus to the valley'

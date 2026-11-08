@@ -1,6 +1,7 @@
 /* eslint-disable */
 'use client'
 import WelcomeWizard from '../../../components/assessments/WelcomeWizard'
+import {CanopyRangerAvatarSvg, AstralSpellcasterAvatarSvg, SunfireKnightAvatarSvg} from '../../../components/assessments/CharacterAvatars'
 import ReadAloud from '../../../components/assessments/ReadAloud'
 import ClinicianReportButton from '../../../components/assessments/ClinicianReport'
 import ParentCard, {type ParentAnswers} from '../../../components/assessments/ParentCard'
@@ -352,9 +353,27 @@ function StarlightNodeSvg({isLit}: {isLit: boolean}) {
 
 // Child Superpower Guild Classes
 const GUILD_CLASSES = [
-  {name: 'Canopy Sky Ranger', Svg: BowIconSvg, desc: 'Sharp Focus & Vigilant Watch'},
-  {name: 'Astral Spellcaster', Svg: WandIconSvg, desc: 'Creative Spark & Quick Ideas'},
-  {name: 'Sunfire Knight', Svg: ShieldIconSvg, desc: 'Calm Reflexes & Steady Courage'},
+  {
+    name: 'Canopy Sky Ranger',
+    badge: 'Eagle-Eyed Scout',
+    Svg: BowIconSvg,
+    AvatarSvg: CanopyRangerAvatarSvg,
+    desc: 'Fast & sharp-eyed · Spots distant birds in the forest canopy'
+  },
+  {
+    name: 'Astral Spellcaster',
+    badge: 'Star Mage',
+    Svg: WandIconSvg,
+    AvatarSvg: AstralSpellcasterAvatarSvg,
+    desc: 'Creative & quick-thinking · Lights up constellations with starlight'
+  },
+  {
+    name: 'Sunfire Knight',
+    badge: 'Sun Guardian',
+    Svg: ShieldIconSvg,
+    AvatarSvg: SunfireKnightAvatarSvg,
+    desc: 'Steady & calm-hearted · Brings courage and focus to the valley'
+  },
 ]
 
 // Chapter 4: The Sunstone Power Charge (100% Visual Motor Inhibition & Delay of Gratification Trial)
@@ -595,7 +614,6 @@ function McInner() {
     }, HOLD_WAITS_MS[holdIdx])
     return () => clearTimeout(t)
     // HOLD_WAITS_MS is a fixed list defined in render
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage, holdPhase, holdIdx])
 
   useEffect(() => {
@@ -603,7 +621,6 @@ function McInner() {
     const t = setTimeout(() => finishHold(null), 5000)
     return () => clearTimeout(t)
     // finishHold is rebuilt from the same state on every render, so this timer always sees current values
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage, holdPhase, holdIdx])
 
   function finishHold(rt: number | null) {

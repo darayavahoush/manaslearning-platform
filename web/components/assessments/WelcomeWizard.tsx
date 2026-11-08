@@ -4,7 +4,13 @@ import React, {useEffect, useRef, useState} from 'react'
 // One question per screen. The parent fills this in (the consent line says so), so it is plain and calm:
 // a progress bar, one clear question, big tap targets, and Back / Next at the bottom.
 
-type Cls = {name: string; desc: string; Svg: React.ComponentType<any>}
+export type Cls = {
+  name: string
+  desc: string
+  badge?: string
+  Svg?: React.ComponentType<{className?: string}>
+  AvatarSvg?: React.ComponentType<{className?: string}>
+}
 
 type Props = {
   theme: 'amber' | 'teal'
@@ -30,10 +36,10 @@ type Props = {
 const THEMES = {
   amber: {
     label: 'text-[#78350F]',
-    cardOn: 'border-amber-500 bg-amber-50/80 shadow-md ring-2 ring-amber-300',
-    cardOff: 'border-[#E7E5E4] bg-white hover:border-amber-300',
+    cardOn: 'border-amber-500 bg-amber-50/90 shadow-lg ring-4 ring-amber-300/80 scale-[1.01]',
+    cardOff: 'border-[#E7E5E4] bg-white hover:border-amber-300 hover:shadow-md',
     iconOn: 'bg-amber-500 text-white',
-    badge: 'text-amber-700 bg-amber-200/80',
+    badge: 'text-amber-800 bg-amber-200/90',
     field: 'focus:border-amber-500 focus:ring-amber-200',
     primary: 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700',
     dotOn: 'bg-amber-500',
@@ -42,10 +48,10 @@ const THEMES = {
   },
   teal: {
     label: 'text-teal-900',
-    cardOn: 'border-teal-500 bg-teal-50/80 shadow-md ring-2 ring-teal-300',
-    cardOff: 'border-[#E7E5E4] bg-white hover:border-teal-300',
+    cardOn: 'border-teal-500 bg-teal-50/90 shadow-lg ring-4 ring-teal-300/80 scale-[1.01]',
+    cardOff: 'border-[#E7E5E4] bg-white hover:border-teal-300 hover:shadow-md',
     iconOn: 'bg-teal-600 text-white',
-    badge: 'text-teal-800 bg-teal-200/80',
+    badge: 'text-teal-800 bg-teal-200/90',
     field: 'focus:border-teal-500 focus:ring-teal-200',
     primary: 'bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700',
     dotOn: 'bg-teal-600',
@@ -89,9 +95,10 @@ export default function WelcomeWizard(p: Props) {
       <h2 ref={head} tabIndex={-1} className="font-patrick mb-5 text-2xl text-[#0F172A] outline-none md:text-3xl">{titles[step - 1]}</h2>
 
       {step === 1 && (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {p.classes.map((cls) => {
             const on = p.selected === cls.name
+            const AvatarComponent = cls.AvatarSvg
             const Icon = cls.Svg
             return (
               <button
@@ -99,17 +106,53 @@ export default function WelcomeWizard(p: Props) {
                 type="button"
                 aria-pressed={on}
                 onClick={() => { tick(); p.onSelect(cls.name) }}
-                className={`flex min-h-[132px] flex-col justify-between rounded-2xl border-2 p-4 text-left transition-all ${on ? T.cardOn : T.cardOff}`}
+                className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border-2 p-3 sm:p-4 text-left transition-all duration-200 ${
+                  on ? T.cardOn : T.cardOff
+                }`}
               >
-                <div className="mb-2 flex items-center justify-between">
-                  <div className={`rounded-xl p-2 ${on ? T.iconOn : 'bg-slate-100 text-slate-700'}`}>
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  {on && <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${T.badge}`}>Chosen</span>}
+                {/* Top Avatar Illustration Window */}
+                <div className="relative mb-3 h-36 sm:h-40 w-full overflow-hidden rounded-2xl bg-gradient-to-b from-slate-100 to-slate-200/80 shadow-inner flex items-center justify-center">
+                  {AvatarComponent ? (
+                    <AvatarComponent className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                  ) : Icon ? (
+                    <div className={`rounded-2xl p-4 ${on ? T.iconOn : 'bg-white text-slate-700 shadow-sm'}`}>
+                      <Icon className="h-12 w-12" />
+                    </div>
+                  ) : null}
+
+                  {/* Persona Badge */}
+                  {cls.badge && (
+                    <span className="absolute top-2.5 left-2.5 rounded-full bg-slate-900/75 backdrop-blur-md px-2.5 py-0.5 text-[11px] font-bold text-white shadow-sm border border-white/20">
+                      {cls.badge}
+                    </span>
+                  )}
+
+                  {/* Selected Pill */}
+                  {on ? (
+                    <span className={`absolute top-2.5 right-2.5 flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-extrabold uppercase shadow-sm ${T.badge}`}>
+                      <span>★</span> Chosen
+                    </span>
+                  ) : (
+                    <span className="absolute top-2.5 right-2.5 rounded-full bg-white/85 backdrop-blur-sm px-2 py-0.5 text-[10px] font-semibold text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                      Tap to Pick
+                    </span>
+                  )}
                 </div>
-                <div>
-                  <strong className="block text-base font-bold text-[#0F172A]">{cls.name}</strong>
-                  <span className="text-sm text-[#64748B]">{cls.desc}</span>
+
+                {/* Character Titles & Child-Friendly Superpower */}
+                <div className="flex flex-col flex-1 justify-between">
+                  <div>
+                    <strong className="block text-lg font-bold text-[#0F172A] transition-colors">
+                      {cls.name}
+                    </strong>
+                    <p className="mt-1 text-xs sm:text-sm text-[#475569] leading-snug">
+                      {cls.desc}
+                    </p>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
+                    <span className={`inline-block h-2 w-2 rounded-full ${on ? (p.theme === 'amber' ? 'bg-amber-500' : 'bg-teal-600') : 'bg-slate-300'}`} />
+                    <span>{on ? 'Ready for Adventure!' : 'Tap to Select'}</span>
+                  </div>
                 </div>
               </button>
             )
@@ -154,29 +197,43 @@ export default function WelcomeWizard(p: Props) {
         </div>
       )}
 
-      {step === 4 && (
-        <div>
-          <dl className="mb-5 grid grid-cols-[auto_1fr] gap-x-5 gap-y-2 rounded-2xl bg-slate-50 p-4 text-base">
-            <dt className="font-semibold text-[#64748B]">{p.classLabel}</dt><dd className="font-bold text-[#0F172A]">{p.selected}</dd>
-            <dt className="font-semibold text-[#64748B]">{p.nameLabel}</dt><dd className="font-bold text-[#0F172A]">{p.name.trim()}</dd>
-            <dt className="font-semibold text-[#64748B]">Age</dt><dd className="font-bold text-[#0F172A]">{p.age}</dd>
-          </dl>
-          <label className="mb-6 flex items-start gap-3 text-left text-sm leading-relaxed text-slate-700">
-            <input type="checkbox" checked={p.consent} onChange={(e) => p.onConsent(e.target.checked)} className="mt-0.5 h-6 w-6 shrink-0" />
-            <span>I am this child&apos;s parent or guardian. This is a play activity, not a diagnosis. We do not save anything from this session. At the end, the codename and play counts are sent to write the summary, and an AI model may help word it.</span>
-          </label>
-          <div className="text-center">
-            <button
-              type="button"
-              disabled={!p.consent || !nameOk}
-              onClick={p.onStart}
-              className={`min-h-[56px] rounded-full px-10 py-4 text-base font-bold text-white shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50 ${T.primary}`}
-            >
-              {p.startLabel}
-            </button>
+      {step === 4 && (() => {
+        const chosenCls = p.classes.find((c) => c.name === p.selected)
+        const ChosenAvatar = chosenCls?.AvatarSvg
+        return (
+          <div>
+            <div className="mb-5 flex flex-col sm:flex-row items-center gap-4 rounded-3xl bg-slate-50 border-2 border-slate-200/80 p-4">
+              {ChosenAvatar && (
+                <div className="h-24 w-32 sm:h-28 sm:w-36 shrink-0 overflow-hidden rounded-2xl bg-slate-200 shadow-inner">
+                  <ChosenAvatar className="h-full w-full object-cover" />
+                </div>
+              )}
+              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-base flex-1 w-full">
+                <dt className="font-semibold text-[#64748B]">{p.classLabel}</dt>
+                <dd className="font-bold text-[#0F172A]">{p.selected}</dd>
+                <dt className="font-semibold text-[#64748B]">{p.nameLabel}</dt>
+                <dd className="font-bold text-[#0F172A]">{p.name.trim()}</dd>
+                <dt className="font-semibold text-[#64748B]">Age</dt>
+                <dd className="font-bold text-[#0F172A]">{p.age}</dd>
+              </dl>
+            </div>
+            <label className="mb-6 flex items-start gap-3 text-left text-sm leading-relaxed text-slate-700">
+              <input type="checkbox" checked={p.consent} onChange={(e) => p.onConsent(e.target.checked)} className="mt-0.5 h-6 w-6 shrink-0" />
+              <span>I am this child&apos;s parent or guardian. This is a play activity, not a diagnosis. We do not save anything from this session. At the end, the codename and play counts are sent to write the summary, and an AI model may help word it.</span>
+            </label>
+            <div className="text-center">
+              <button
+                type="button"
+                disabled={!p.consent || !nameOk}
+                onClick={p.onStart}
+                className={`min-h-[56px] rounded-full px-10 py-4 text-base font-bold text-white shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50 ${T.primary}`}
+              >
+                {p.startLabel}
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       <div className="mt-8 flex items-center justify-between gap-3">
         {step > 1 ? (

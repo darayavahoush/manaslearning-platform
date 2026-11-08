@@ -376,3 +376,24 @@
 ## 5. Instrument Versioning
 - **Previous `INSTRUMENT_VERSION`**: `2026.11.13`
 - **Updated `INSTRUMENT_VERSION`**: `2026.11.14` (Bumped version in `web/components/assessments/version.ts` due to visual framing and presentation upgrades across ADHD Quest and Autism Quest).
+
+---
+
+## 6. Character Selection Visuals Upgrade (`WelcomeWizard.tsx`, `CharacterAvatars.tsx`)
+- **Problem Resolved**:
+  - The initial character/affinity selection screen in Step 1 of `WelcomeWizard` only displayed tiny 24×24px monochrome line icons with abstract adult descriptions ("Canopy Sky Ranger — Sharp Focus & Vigilant Watch"), making it difficult for pediatric players (ages 4–14) to understand who they are choosing.
+- **Visual Overhaul (Presentation Only)**:
+  - **Bespoke Character Portraits (`CharacterAvatars.tsx`)**: Crafted 6 high-detail, charming vector character portraits with storybook dawn/dusk palettes, expressive facial features, cute hair/headwear, and faithful companions:
+    - **ADHD Sunbird Valley Explorer Guild**:
+      1. `Canopy Sky Ranger` (Badge: *Eagle-Eyed Scout*): Agile young ranger with emerald cowl, golden feather, birch bow, sparkling hazel eyes, and rosy cheeks (*"Fast & sharp-eyed · Spots distant birds in the forest canopy"*).
+      2. `Astral Spellcaster` (Badge: *Star Mage*): Wonder-filled young star-mage in midnight-violet capelet with gold star hairpin, holding a crystal star wand (*"Creative & quick-thinking · Lights up constellations with starlight"*).
+      3. `Sunfire Knight` (Badge: *Sun Guardian*): Kind, brave young hero in polished bronze-gold breastplate with a radiant sun-crest shield (*"Steady & calm-hearted · Brings courage and focus to the valley"*).
+    - **Autism Lumina Groves Affinities**:
+      1. `Grove Harmonizer` (Badge: *Forest Friend*): Gentle nature friend in woven clover crown and mint-green linen tunic with two glowing firefly companions (*"Gentle & caring · Listens to the trees, plants, and friendly fireflies"*).
+      2. `Crystal Alchemist` (Badge: *Pattern Explorer*): Inquisitive researcher with round brass spectacles, potion vials, and a glowing faceted crystal flask (*"Curious & observant · Notices hidden clues and solves colorful puzzles"*).
+      3. `Quiet Seeker` (Badge: *Peaceful Observer*): Serene, observant child wrapped in a cozy knitted lavender scarf with a snowy white peace dove resting softly on their shoulder (*"Calm & thoughtful · Notices gentle details and understands friends quietly"*).
+  - **WelcomeWizard Character Cards**: Upgraded Step 1 into spacious hero character cards with a dedicated `h-36 sm:h-40` portrait container, persona pill, clear superpower subtitles, and an illuminated `ring-4` active state with `★ Chosen` badge.
+  - **Confirmation Step Preview**: In Step 4 (review screen), the selected character portrait thumbnail is displayed alongside the child's codename and age.
+- **Rule A Confirmation**:
+  - All assessment parameters, age band allocations, scoring, consent gates, and telemetry keys remain 100% locked and unchanged.
+

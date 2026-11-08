@@ -1,6 +1,7 @@
 /* eslint-disable */
 'use client'
 import WelcomeWizard from '../../../components/assessments/WelcomeWizard'
+import {GroveHarmonizerAvatarSvg, CrystalAlchemistAvatarSvg, QuietSeekerAvatarSvg} from '../../../components/assessments/CharacterAvatars'
 import ReadAloud from '../../../components/assessments/ReadAloud'
 import ClinicianReportButton from '../../../components/assessments/ClinicianReport'
 import SessionRecordDownload from '../../../components/assessments/SessionRecordDownload'
@@ -264,9 +265,27 @@ function LanternProgressTrail({stage}: {stage: string}) {
 
 // Child Superpower Grove Affinities
 const GROVE_AFFINITIES = [
-  {name: 'Grove Harmonizer', Svg: LeafGlyphSvg, desc: 'Sensory Empathy & Nature Connection'},
-  {name: 'Crystal Alchemist', Svg: CrystalGlyphSvg, desc: 'Pattern Seer & Deep Truth Finder'},
-  {name: 'Quiet Seeker', Svg: DoveGlyphSvg, desc: 'Thoughtful Observer & Loyal Friend'},
+  {
+    name: 'Grove Harmonizer',
+    badge: 'Forest Friend',
+    Svg: LeafGlyphSvg,
+    AvatarSvg: GroveHarmonizerAvatarSvg,
+    desc: 'Gentle & caring · Listens to the trees, plants, and friendly fireflies'
+  },
+  {
+    name: 'Crystal Alchemist',
+    badge: 'Pattern Explorer',
+    Svg: CrystalGlyphSvg,
+    AvatarSvg: CrystalAlchemistAvatarSvg,
+    desc: 'Curious & observant · Notices hidden clues and solves colorful puzzles'
+  },
+  {
+    name: 'Quiet Seeker',
+    badge: 'Peaceful Observer',
+    Svg: DoveGlyphSvg,
+    AvatarSvg: QuietSeekerAvatarSvg,
+    desc: 'Calm & thoughtful · Notices gentle details and understands friends quietly'
+  },
 ]
 
 // Chapter 2: The Forest Sprite's Emotion Mirror Trials (100% Visual Social Resonance Game)

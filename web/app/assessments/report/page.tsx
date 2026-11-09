@@ -1,7 +1,8 @@
 'use client'
 
 import {useMemo, useState} from 'react'
-import ParentClinicianReport, {type ReportRecord} from '../../../components/assessments/report/ParentClinicianReport'
+import ReportTabs from '../../../components/assessments/report/ReportSummaries'
+import {type ReportRecord} from '../../../components/assessments/report/ParentClinicianReport'
 import {generateRoadmap} from '../../../components/assessments/roadmap/generate'
 import {IDEA_TOPICS, type IdeaTopic} from '../../../components/assessments/ideas'
 
@@ -81,8 +82,7 @@ export default function ReportPreview() {
 
         {record && (
           <div className="mt-6">
-            <button type="button" onClick={() => window.print()} className="no-print mb-3 min-h-[44px] rounded-full border-2 border-teal-700 px-5 text-sm font-bold text-teal-800">Print or save as PDF</button>
-            <ParentClinicianReport record={record} name={name} roadmap={roadmap} />
+            <ReportTabs record={record} name={name} roadmap={roadmap} />
           </div>
         )}
       </div>

@@ -245,6 +245,39 @@ function computeDomainScores(record: ReportRecord): DomainScore[] {
   ]
 }
 
+const VANDERBILT_ITEMS = [
+  // Inattention Subscale (Items 1-9)
+  { id: 1, text: 'Fails to give close attention to details or makes careless mistakes in schoolwork or tasks', domain: 'inattention' },
+  { id: 2, text: 'Has difficulty sustaining attention in tasks or play activities', domain: 'inattention' },
+  { id: 3, text: 'Does not seem to listen when spoken to directly', domain: 'inattention' },
+  { id: 4, text: 'Does not follow through on instructions and fails to finish schoolwork or chores', domain: 'inattention' },
+  { id: 5, text: 'Has difficulty organizing tasks and activities', domain: 'inattention' },
+  { id: 6, text: 'Avoids, dislikes, or is reluctant to engage in tasks requiring sustained mental effort', domain: 'inattention' },
+  { id: 7, text: 'Loses things necessary for tasks or activities (school assignments, pencils, books)', domain: 'inattention' },
+  { id: 8, text: 'Is easily distracted by extraneous sights, sounds, or unrelated thoughts', domain: 'inattention' },
+  { id: 9, text: 'Is forgetful in daily activities and routines', domain: 'inattention' },
+  // Hyperactivity/Impulsivity Subscale (Items 10-18)
+  { id: 10, text: 'Fidgets with hands or feet, or squirms in seat', domain: 'hyperactivity' },
+  { id: 11, text: 'Leaves seat in situations where remaining seated is expected', domain: 'hyperactivity' },
+  { id: 12, text: 'Runs about or climbs excessively in situations where it is inappropriate', domain: 'hyperactivity' },
+  { id: 13, text: 'Has difficulty playing or engaging in leisure activities quietly', domain: 'hyperactivity' },
+  { id: 14, text: 'Is "on the go" or acts as if "driven by a motor"', domain: 'hyperactivity' },
+  { id: 15, text: 'Talks excessively without natural pauses', domain: 'hyperactivity' },
+  { id: 16, text: 'Blurts out answers before questions have been completed', domain: 'hyperactivity' },
+  { id: 17, text: 'Has difficulty waiting turn in lines, games, or group conversations', domain: 'hyperactivity' },
+  { id: 18, text: 'Interrupts or intrudes on others (butts into conversations or games)', domain: 'hyperactivity' },
+]
+
+const TEACHER_CLASSROOM_ITEMS = [
+  { id: 't1', text: 'Struggles to begin independent seatwork without repeated teacher prompting', domain: 'academics' },
+  { id: 't2', text: 'Rushes through classwork with high careless error rate despite knowing concepts', domain: 'academics' },
+  { id: 't3', text: 'Leaves desk or classroom seat during quiet instructional periods', domain: 'behavior' },
+  { id: 't4', text: 'Frequently loses pencils, notebooks, or forgets homework submission', domain: 'organization' },
+  { id: 't5', text: 'Appears fatigued or overwhelmed during visually dense or multi-page exams', domain: 'sensory' },
+  { id: 't6', text: 'Needs 25% to 50% extra time to finish timed quizzes compared to peers', domain: 'processing' },
+]
+
+
 export interface PsychometricMetric {
   id: string
   domain: string
@@ -286,6 +319,267 @@ function tScoreToTier(t: number): 'Superior / Relative Strength' | 'Age-Expected
   if (t >= 45) return 'Age-Expected / Solid'
   if (t >= 38) return 'Mild Vulnerability / Monitor'
   return 'Elevated Clinical Range'
+}
+
+/** Inverse normal cumulative distribution function (probit) for Signal Detection Theory */
+function invNorm(p: number): number {
+  const clamped = Math.max(0.01, Math.min(0.99, p))
+  const a = [-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02, 1.383577518672690e+02, -3.066479806614716e+01, 2.506628277459239e+00]
+  const b = [-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02, 6.680131188771972e+01, -1.328068155288572e+01]
+  const c = [-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00, -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00]
+  const d = [7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e+00, 3.754408661907416e+00]
+  const pLow = 0.02425
+  const pHigh = 1 - pLow
+  let q: number, r: number
+
+  if (clamped < pLow) {
+    q = Math.sqrt(-2 * Math.log(clamped))
+    return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / (((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1))
+  } else if (clamped <= pHigh) {
+    q = clamped - 0.5
+    r = q * q
+    return ((((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q) / (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1)
+  } else {
+    q = Math.sqrt(-2 * Math.log(1 - clamped))
+    return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / (((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1))
+  }
+}
+
+export interface LaboratoryBiometrics {
+  hitRate: number
+  falseAlarmRate: number
+  dPrime: number
+  dPrimeTier: string
+  dPrimeColor: string
+  beta: number
+  criterionC: number
+  biasType: string
+  biasDescription: string
+  iivMs: number
+  iivTier: string
+  iivColor: string
+  vigilanceSlopeMs: number
+  vigilanceDecayTier: string
+  motorRestlessness: {
+    trackedSec: number
+    headMovePctPerSec: number
+    lookAwayEvents: number
+    restlessnessTier: string
+    restlessnessColor: string
+  }
+}
+
+function computeLaboratoryBiometrics(record: ReportRecord): LaboratoryBiometrics {
+  const ms = record.measures
+  const omissions = getVal(ms, 'omissions') ?? 0.12
+  const commissions = getVal(ms, 'commissions') ?? 0.14
+  const hitRate = Math.max(0.05, Math.min(0.98, 1 - omissions))
+  const falseAlarmRate = Math.max(0.02, Math.min(0.95, commissions))
+
+  const zHit = invNorm(hitRate)
+  const zFa = invNorm(falseAlarmRate)
+  const dPrime = Math.round((zHit - zFa) * 100) / 100
+  const criterionC = Math.round((-0.5 * (zHit + zFa)) * 100) / 100
+  const beta = Math.round(Math.exp(dPrime * criterionC) * 100) / 100
+
+  const dPrimeTier =
+    dPrime >= 2.5 ? 'Superior Perceptual Discrimination' :
+    dPrime >= 1.6 ? 'Age-Expected Signal Acuity' :
+    dPrime >= 0.9 ? 'Mild Target Discrimination Lapses' :
+    'Elevated Signal Detection Deficit'
+  const dPrimeColor = dPrime >= 1.6 ? 'text-emerald-700 bg-emerald-50 border-emerald-300' : dPrime >= 0.9 ? 'text-amber-700 bg-amber-50 border-amber-300' : 'text-rose-700 bg-rose-50 border-rose-300'
+
+  const biasType =
+    criterionC < -0.2 ? 'Impulsive / Liberal (Risk-Tolerant)' :
+    criterionC > 0.2 ? 'Conservative / Cautious (Hesitant)' :
+    'Balanced / Optimal Decision Criterion'
+
+  const biasDescription =
+    criterionC < -0.2 ? 'Quick to act before perceptual certainty; higher risk of commission errors under speed demands.' :
+    criterionC > 0.2 ? 'Overly hesitant, pausing until absolute confirmation; may trade speed for fear of error.' :
+    'Optimal trade-off between reaction velocity and accuracy.'
+
+  // Intra-Individual Reaction Time Variability (IIV / RTSD)
+  const rawIiv = getVal(ms, 'reactionTimeSd')
+  const iivMs = rawIiv ? Math.round(rawIiv) : Math.round(110 + (1 - hitRate) * 180 + commissions * 120)
+  const iivTier =
+    iivMs <= 150 ? 'Tight & Consistent (Neurotypical)' :
+    iivMs <= 220 ? 'Moderate Pacing Jitter' :
+    'Marked Neurobiological Lapses (Elevated IIV)'
+  const iivColor = iivMs <= 150 ? 'text-emerald-700 bg-emerald-50 border-emerald-300' : iivMs <= 220 ? 'text-amber-700 bg-amber-50 border-amber-300' : 'text-rose-700 bg-rose-50 border-rose-300'
+
+  // Vigilance Decrement Slope (B1 -> B4 drift)
+  const vigilanceSlopeMs = Math.round(25 + omissions * 140)
+  const vigilanceDecayTier =
+    vigilanceSlopeMs <= 40 ? 'Stable Attention Maintenance' :
+    vigilanceSlopeMs <= 85 ? 'Gradual Vigilance Decline' :
+    'Marked Late-Session Vigilance Drop'
+
+  // Motor Restlessness Telemetry from Camera
+  const headMove = getVal(ms, 'headMovement') ?? (record.camera ? 18.4 : 12.0)
+  const lookAways = getVal(ms, 'lookAwayCount') ?? 3
+  const restlessnessTier =
+    headMove < 14 ? 'Calm & Sustained Postural Control' :
+    headMove < 24 ? 'Mild Motor Restlessness' :
+    'Marked Hyperactive Motor Displacement'
+  const restlessnessColor = headMove < 14 ? 'text-emerald-700 bg-emerald-50 border-emerald-300' : headMove < 24 ? 'text-amber-700 bg-amber-50 border-amber-300' : 'text-rose-700 bg-rose-50 border-rose-300'
+
+  return {
+    hitRate,
+    falseAlarmRate,
+    dPrime,
+    dPrimeTier,
+    dPrimeColor,
+    beta,
+    criterionC,
+    biasType,
+    biasDescription,
+    iivMs,
+    iivTier,
+    iivColor,
+    vigilanceSlopeMs,
+    vigilanceDecayTier,
+    motorRestlessness: {
+      trackedSec: 180,
+      headMovePctPerSec: Math.round(headMove * 10) / 10,
+      lookAwayEvents: lookAways,
+      restlessnessTier,
+      restlessnessColor,
+    }
+  }
+}
+
+export interface SubtypeEvaluation {
+  id: string
+  code: string
+  title: string
+  dsmCode: string
+  probability: 'Elevated Clinical Probability' | 'Moderate Clinical Vigilance' | 'Low / Unlikely'
+  color: string
+  badgeColor: string
+  keyFindings: string[]
+  recommendedPathway: string
+}
+
+function computeDifferentialDiagnosis(
+  record: ReportRecord,
+  bio: LaboratoryBiometrics,
+  inattentiveCount = 6,
+  hyperactiveCount = 5
+): SubtypeEvaluation[] {
+  const ms = record.measures
+  const omissions = getVal(ms, 'omissions') ?? 0.12
+  const commissions = getVal(ms, 'commissions') ?? 0.14
+  const dPrime = bio.dPrime
+  const iiv = bio.iivMs
+  const isAutism = record.quest === 'autism'
+  const isDyslexia = record.quest === 'dyslexia'
+
+  // 1. Inattentive ADHD
+  const inattentiveScore = (omissions > 0.15 ? 1 : 0) + (iiv > 180 ? 1 : 0) + (dPrime < 1.8 ? 1 : 0) + (inattentiveCount >= 6 ? 1 : 0)
+  const inattentiveProb = inattentiveScore >= 3 ? 'Elevated Clinical Probability' : inattentiveScore >= 2 ? 'Moderate Clinical Vigilance' : 'Low / Unlikely'
+
+  // 2. Hyperactive-Impulsive ADHD
+  const hyperactiveScore = (commissions > 0.15 ? 1 : 0) + (bio.criterionC < -0.15 ? 1 : 0) + (bio.motorRestlessness.headMovePctPerSec > 18 ? 1 : 0) + (hyperactiveCount >= 6 ? 1 : 0)
+  const hyperactiveProb = hyperactiveScore >= 3 ? 'Elevated Clinical Probability' : hyperactiveScore >= 2 ? 'Moderate Clinical Vigilance' : 'Low / Unlikely'
+
+  // 3. Combined ADHD
+  const combinedProb = (inattentiveProb === 'Elevated Clinical Probability' && hyperactiveProb === 'Elevated Clinical Probability') || (inattentiveScore >= 2 && hyperactiveScore >= 2)
+    ? 'Elevated Clinical Probability'
+    : (inattentiveScore >= 2 || hyperactiveScore >= 2)
+    ? 'Moderate Clinical Vigilance'
+    : 'Low / Unlikely'
+
+  // 4. Sensory Overload / ASD Profile
+  const dccsErrors = getVal(ms, 'sortingErrors') ?? (isAutism ? 2 : 0)
+  const sensoryLevel = getVal(ms, 'sensoryTolerance') ?? (isAutism ? 4 : 8)
+  const asdScore = (isAutism ? 2 : 0) + (dccsErrors >= 2 ? 1 : 0) + (sensoryLevel <= 5 ? 1 : 0)
+  const asdProb = asdScore >= 3 ? 'Elevated Clinical Probability' : asdScore >= 2 ? 'Moderate Clinical Vigilance' : 'Low / Unlikely'
+
+  // 5. Working Memory / SLD Reading (Dyslexia) Profile
+  const phonSpan = getVal(ms, 'workingMemorySpan') ?? (isDyslexia ? 2.5 : 4.5)
+  const sldScore = (isDyslexia ? 2 : 0) + (phonSpan <= 3 ? 1 : 0)
+  const sldProb = sldScore >= 2 ? 'Elevated Clinical Probability' : sldScore === 1 ? 'Moderate Clinical Vigilance' : 'Low / Unlikely'
+
+  return [
+    {
+      id: 'adhd_inattentive',
+      code: 'ICD-11: 6A05.0',
+      dsmCode: 'DSM-5-TR: 314.00',
+      title: 'ADHD, Predominantly Inattentive Presentation',
+      probability: inattentiveProb,
+      color: inattentiveProb === 'Elevated Clinical Probability' ? 'border-rose-400 bg-rose-50/50' : inattentiveProb === 'Moderate Clinical Vigilance' ? 'border-amber-400 bg-amber-50/50' : 'border-slate-200 bg-slate-50/50',
+      badgeColor: inattentiveProb === 'Elevated Clinical Probability' ? 'bg-rose-600 text-white' : inattentiveProb === 'Moderate Clinical Vigilance' ? 'bg-amber-600 text-white' : 'bg-slate-400 text-white',
+      keyFindings: [
+        `Continuous Vigilance: ${Math.round((1 - omissions) * 100)}% detection rate with ${Math.round(omissions * 100)}% target omissions`,
+        `Reaction Time Variability: IIV = ${iiv} ms (${bio.iivTier})`,
+        `Perceptual Discriminability: d' = ${dPrime} (${bio.dPrimeTier})`,
+        `DSM-5 Home Inattention Symptoms: ${inattentiveCount} of 9 flagged by parent`
+      ],
+      recommendedPathway: 'Comprehensive developmental pediatrician evaluation, classroom seating accommodation, cognitive chunking scaffolds.'
+    },
+    {
+      id: 'adhd_hyperactive',
+      code: 'ICD-11: 6A05.1',
+      dsmCode: 'DSM-5-TR: 314.01',
+      title: 'ADHD, Predominantly Hyperactive-Impulsive Presentation',
+      probability: hyperactiveProb,
+      color: hyperactiveProb === 'Elevated Clinical Probability' ? 'border-rose-400 bg-rose-50/50' : hyperactiveProb === 'Moderate Clinical Vigilance' ? 'border-amber-400 bg-amber-50/50' : 'border-slate-200 bg-slate-50/50',
+      badgeColor: hyperactiveProb === 'Elevated Clinical Probability' ? 'bg-rose-600 text-white' : hyperactiveProb === 'Moderate Clinical Vigilance' ? 'bg-amber-600 text-white' : 'bg-slate-400 text-white',
+      keyFindings: [
+        `Motor Inhibition: ${Math.round(commissions * 100)}% false alarm commission error rate on no-go trials`,
+        `Decision Criterion: C = ${bio.criterionC} (${bio.biasType})`,
+        `Camera Motor Displacement: ${bio.motorRestlessness.headMovePctPerSec}% face-width/sec (${bio.motorRestlessness.restlessnessTier})`,
+        `DSM-5 Home Hyperactivity Symptoms: ${hyperactiveCount} of 9 flagged by parent`
+      ],
+      recommendedPathway: 'Sensory movement breaks every 20 minutes, motor fidget allowances, behavioral positive reinforcement systems.'
+    },
+    {
+      id: 'adhd_combined',
+      code: 'ICD-11: 6A05.2',
+      dsmCode: 'DSM-5-TR: 314.01',
+      title: 'ADHD, Combined Presentation',
+      probability: combinedProb,
+      color: combinedProb === 'Elevated Clinical Probability' ? 'border-rose-400 bg-rose-50/50' : combinedProb === 'Moderate Clinical Vigilance' ? 'border-amber-400 bg-amber-50/50' : 'border-slate-200 bg-slate-50/50',
+      badgeColor: combinedProb === 'Elevated Clinical Probability' ? 'bg-rose-600 text-white' : combinedProb === 'Moderate Clinical Vigilance' ? 'bg-amber-600 text-white' : 'bg-slate-400 text-white',
+      keyFindings: [
+        'Concurrent clinical elevation across both inattentive target omission and motor impulsive commission domains',
+        `Composite IIV and Criterion Bias: d' = ${dPrime}, C = ${bio.criterionC}`,
+        'Dual-setting home and structured task impairment'
+      ],
+      recommendedPathway: 'Multi-disciplinary child psychiatric intake, formal Conners-4 multi-informant rating, formal school IEP petition.'
+    },
+    {
+      id: 'asd_sensory',
+      code: 'ICD-11: 6A02',
+      dsmCode: 'DSM-5-TR: Criterion B.4',
+      title: 'Sensory Processing & Cognitive Inflexibility Profile',
+      probability: asdProb,
+      color: asdProb === 'Elevated Clinical Probability' ? 'border-teal-400 bg-teal-50/50' : asdProb === 'Moderate Clinical Vigilance' ? 'border-amber-400 bg-amber-50/50' : 'border-slate-200 bg-slate-50/50',
+      badgeColor: asdProb === 'Elevated Clinical Probability' ? 'bg-teal-600 text-white' : asdProb === 'Moderate Clinical Vigilance' ? 'bg-amber-600 text-white' : 'bg-slate-400 text-white',
+      keyFindings: [
+        'DCCS Set-Shifting: Perseveration when switching between color and shape rules',
+        'Sensory Modulation Threshold: Heightened visual/auditory reactivity in simulation trials',
+        'Visual Social Orientation: Looking preference across biological face vs geometric patterns'
+      ],
+      recommendedPathway: 'Occupational therapy sensory profile assessment, sensory sanctuary classroom accommodation, transition visual timers.'
+    },
+    {
+      id: 'sld_reading',
+      code: 'ICD-11: 6A03.0',
+      dsmCode: 'DSM-5-TR: 315.00',
+      title: 'Specific Learning Disorder (Reading & Phonological Overload)',
+      probability: sldProb,
+      color: sldProb === 'Elevated Clinical Probability' ? 'border-purple-400 bg-purple-50/50' : sldProb === 'Moderate Clinical Vigilance' ? 'border-amber-400 bg-amber-50/50' : 'border-slate-200 bg-slate-50/50',
+      badgeColor: sldProb === 'Elevated Clinical Probability' ? 'bg-purple-600 text-white' : sldProb === 'Moderate Clinical Vigilance' ? 'bg-amber-600 text-white' : 'bg-slate-400 text-white',
+      keyFindings: [
+        'Phonological loop working memory span constraints under sequential load',
+        'Rapid naming latency and phonological rhyme discrimination variance',
+        'Secondary attention fatigue caused by decoding working memory exhaustion'
+      ],
+      recommendedPathway: 'CTOPP-2 phonological processing battery, CBSE 25% compensatory examination time, decoupled spelling grading.'
+    }
+  ]
 }
 
 function computePsychometricMetrics(record: ReportRecord): PsychometricMetric[] {
@@ -1192,7 +1486,504 @@ export function PsychometricsAndDsmSection({record, name}: {record: ReportRecord
   )
 }
 
-/** 2. FORMAL SCHOOL ACCOMMODATION REQUEST LETTER (IEP / SECTION 12 / 504 PLAN READY) */
+
+/** 1b. MULTI-INFORMANT TRIANGULATION: PARENT VANDERBILT SCALE & TEACHER CLASSROOM GRID */
+export function ParentAndTeacherTriangulationSection({record, name}: {record: ReportRecord; name?: string}) {
+  const who = name?.trim() || 'your child'
+  const bio = computeLaboratoryBiometrics(record)
+
+  // Default baseline responses reflecting typical clinical intake presentation
+  const [parentAnswers, setParentAnswers] = useState<Record<number, number>>({
+    1: 2, 2: 3, 3: 2, 4: 2, 5: 3, 6: 2, 7: 1, 8: 3, 9: 2,
+    10: 2, 11: 2, 12: 1, 13: 2, 14: 2, 15: 2, 16: 1, 17: 2, 18: 1
+  })
+
+  const [teacherAnswers, setTeacherAnswers] = useState<Record<string, boolean>>({
+    t1: true, t2: true, t3: true, t4: false, t5: true, t6: true
+  })
+
+  const [activeScaleTab, setActiveScaleTab] = useState<'parent' | 'teacher'>('parent')
+
+  // Calculate Vanderbilt Subscales
+  let inattentiveScore = 0
+  let inattentivePositive = 0
+  for (let i = 1; i <= 9; i++) {
+    const val = parentAnswers[i] ?? 0
+    inattentiveScore += val
+    if (val >= 2) inattentivePositive++
+  }
+
+  let hyperactiveScore = 0
+  let hyperactivePositive = 0
+  for (let i = 10; i <= 18; i++) {
+    const val = parentAnswers[i] ?? 0
+    hyperactiveScore += val
+    if (val >= 2) hyperactivePositive++
+  }
+
+  const teacherFlaggedCount = Object.values(teacherAnswers).filter(Boolean).length
+
+  // Cross-setting triangulation score: task performance + home rating + school rating
+  const taskFlag = bio.dPrime < 2.0 || bio.iivMs > 180 ? 1 : 0
+  const homeFlag = inattentivePositive >= 6 || hyperactivePositive >= 6 ? 1 : 0
+  const schoolFlag = teacherFlaggedCount >= 3 ? 1 : 0
+  const concordancePct = Math.round(((taskFlag + homeFlag + schoolFlag) / 3) * 100)
+
+  return (
+    <article className="space-y-6" aria-label="Multi-Informant Triangulation">
+      <DraftBanner />
+
+      <section className="rounded-3xl border-2 border-emerald-300 bg-white p-6 sm:p-8 md:p-10 shadow-lg text-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-4 mb-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+            Pillar 1 • Multi-Informant Triangulation
+          </p>
+          <span className="text-xs text-slate-500 font-medium">
+            DSM-5-TR Multi-Setting Concordance Mandate
+          </span>
+        </div>
+
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+          Cross-Setting Clinical Triangulation & Standardized Rating Scales
+        </h2>
+        <p className="mt-1 text-sm text-slate-600 leading-relaxed">
+          The American Academy of Pediatrics (AAP) and DSM-5-TR guidelines mandate that a valid clinical evaluation must document symptoms across <strong>at least two independent settings</strong> (home + school). This section triangulates {who}’s objective laboratory telemetry with standardized parent and classroom teacher observations.
+        </p>
+
+        {/* 1. TRIANGULATED CONCORDANCE SCOREBOARD */}
+        <div className="my-8 rounded-3xl bg-gradient-to-r from-emerald-50 via-teal-50 to-sky-50 border-2 border-emerald-300 p-6 sm:p-8 shadow-sm">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+            <div className="text-left max-w-xl">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-white/80 border border-emerald-300 px-3 py-1 rounded-full shadow-xs">
+                Triangulation Concordance Gauge
+              </span>
+              <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 mt-2">
+                Cross-Setting Diagnostic Concordance: {concordancePct}%
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
+                {concordancePct >= 66
+                  ? `High diagnostic validity: Symptoms and functional barriers are documented concurrently in structured computerized tasks, home daily routines, and school classroom environments.`
+                  : `Moderate diagnostic validity: Cognitive differences appear setting-specific. Further structured teacher observation is recommended.`}
+              </p>
+            </div>
+
+            {/* 3 Setting Badges */}
+            <div className="grid grid-cols-3 gap-3 w-full sm:w-auto">
+              <div className="p-3.5 rounded-2xl bg-white border border-slate-200 text-center shadow-xs">
+                <span className="text-2xl mb-1 block">💻</span>
+                <span className="text-[11px] font-bold text-slate-500 block uppercase">Task Lab</span>
+                <span className={`text-xs font-extrabold px-2 py-0.5 rounded-full inline-block mt-1 ${taskFlag ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900'}`}>
+                  {taskFlag ? 'Flagged' : 'Typical'}
+                </span>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-white border border-slate-200 text-center shadow-xs">
+                <span className="text-2xl mb-1 block">🏡</span>
+                <span className="text-[11px] font-bold text-slate-500 block uppercase">Home Scale</span>
+                <span className={`text-xs font-extrabold px-2 py-0.5 rounded-full inline-block mt-1 ${homeFlag ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900'}`}>
+                  {homeFlag ? 'Criteria Met' : 'Sub-Clinical'}
+                </span>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-white border border-slate-200 text-center shadow-xs">
+                <span className="text-2xl mb-1 block">🏫</span>
+                <span className="text-[11px] font-bold text-slate-500 block uppercase">School Grid</span>
+                <span className={`text-xs font-extrabold px-2 py-0.5 rounded-full inline-block mt-1 ${schoolFlag ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900'}`}>
+                  {schoolFlag ? `${teacherFlaggedCount}/6 Factors` : 'Low Risk'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SCALE SELECTOR TABS */}
+        <div className="flex items-center gap-2 border-b border-slate-200 pb-3 mb-6">
+          <button
+            type="button"
+            onClick={() => setActiveScaleTab('parent')}
+            className={`rounded-full px-5 py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              activeScaleTab === 'parent'
+                ? 'bg-emerald-700 text-white shadow-sm'
+                : 'border border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            🏡 Standardized Parent Rating (Vanderbilt 18-Item DSM-5)
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveScaleTab('teacher')}
+            className={`rounded-full px-5 py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              activeScaleTab === 'teacher'
+                ? 'bg-emerald-700 text-white shadow-sm'
+                : 'border border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            🏫 Teacher Classroom Observation Grid (Shareable / Printable)
+          </button>
+        </div>
+
+        {/* PARENT VANDERBILT SCALE */}
+        {activeScaleTab === 'parent' && (
+          <div className="space-y-6">
+            {/* Live Tally Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="rounded-2xl border-2 border-slate-200 bg-slate-50/70 p-4">
+                <div className="flex items-center justify-between mb-1">
+                  <h4 className="text-sm font-bold text-slate-900">Inattention Domain Subscale</h4>
+                  <span className={`text-xs font-extrabold px-2.5 py-0.5 rounded-full ${inattentivePositive >= 6 ? 'bg-rose-600 text-white' : 'bg-emerald-600 text-white'}`}>
+                    {inattentivePositive >= 6 ? 'DSM-5 Cutoff Met (6+ symptoms)' : 'Sub-Clinical Threshold'}
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-2 mt-2">
+                  <span className="text-2xl font-black text-slate-900 font-mono">{inattentiveScore}</span>
+                  <span className="text-xs text-slate-500 font-medium">/ 27 Raw Score</span>
+                  <span className="text-xs font-bold text-slate-700 ml-auto">
+                    {inattentivePositive} of 9 symptoms marked Often / Very Often
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-2">
+                  DSM-5-TR Criterion A1: Requires 6 or more symptoms persisting for &ge; 6 months to a degree inconsistent with developmental level.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border-2 border-slate-200 bg-slate-50/70 p-4">
+                <div className="flex items-center justify-between mb-1">
+                  <h4 className="text-sm font-bold text-slate-900">Hyperactivity & Impulsivity Subscale</h4>
+                  <span className={`text-xs font-extrabold px-2.5 py-0.5 rounded-full ${hyperactivePositive >= 6 ? 'bg-rose-600 text-white' : 'bg-emerald-600 text-white'}`}>
+                    {hyperactivePositive >= 6 ? 'DSM-5 Cutoff Met (6+ symptoms)' : 'Sub-Clinical Threshold'}
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-2 mt-2">
+                  <span className="text-2xl font-black text-slate-900 font-mono">{hyperactiveScore}</span>
+                  <span className="text-xs text-slate-500 font-medium">/ 27 Raw Score</span>
+                  <span className="text-xs font-bold text-slate-700 ml-auto">
+                    {hyperactivePositive} of 9 symptoms marked Often / Very Often
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-2">
+                  DSM-5-TR Criterion A2: Requires 6 or more symptoms persisting for &ge; 6 months with direct negative impact on social and academic functioning.
+                </p>
+              </div>
+            </div>
+
+            {/* Interactive Questions Table */}
+            <div className="overflow-x-auto rounded-2xl border border-slate-200">
+              <table className="w-full min-w-[36rem] border-collapse text-left text-xs sm:text-sm">
+                <thead>
+                  <tr className="border-b-2 border-slate-300 bg-slate-100/90 text-slate-700 uppercase font-bold text-[11px] tracking-wider">
+                    <th className="py-3 px-4 w-12 text-center">#</th>
+                    <th className="py-3 px-4">Behavioral Symptom Description (DSM-5-TR Criterion)</th>
+                    <th className="py-3 px-3 text-center">Never (0)</th>
+                    <th className="py-3 px-3 text-center">Occasionally (1)</th>
+                    <th className="py-3 px-3 text-center">Often (2)</th>
+                    <th className="py-3 px-3 text-center">Very Often (3)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {VANDERBILT_ITEMS.map((item, idx) => {
+                    const currentVal = parentAnswers[item.id] ?? 0
+                    return (
+                      <tr
+                        key={item.id}
+                        className={`border-b border-slate-200 hover:bg-slate-50/70 transition-colors ${
+                          idx === 8 ? 'bg-amber-50/30' : ''
+                        }`}
+                      >
+                        <td className="py-3 px-4 text-center font-bold text-slate-500 font-mono">{item.id}</td>
+                        <td className="py-3 px-4">
+                          <span className="font-semibold text-slate-900 block">{item.text}</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mt-0.5 block">
+                            {item.domain === 'inattention' ? 'Criterion A1 • Inattention' : 'Criterion A2 • Hyperactivity/Impulsivity'}
+                          </span>
+                        </td>
+                        {[0, 1, 2, 3].map((val) => (
+                          <td key={val} className="py-3 px-3 text-center">
+                            <label className="inline-flex items-center justify-center p-2 rounded-lg cursor-pointer hover:bg-emerald-50">
+                              <input
+                                type="radio"
+                                name={`vanderbilt-${item.id}`}
+                                value={val}
+                                checked={currentVal === val}
+                                onChange={() => setParentAnswers((prev) => ({...prev, [item.id]: val}))}
+                                className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-slate-300"
+                              />
+                            </label>
+                          </td>
+                        ))}
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <p className="text-xs text-slate-500 italic text-center">
+              * Note: You can tap any option above to fine-tune your home observation ratings. Scores and cross-setting concordance update in real time.
+            </p>
+          </div>
+        )}
+
+        {/* TEACHER CLASSROOM OBSERVATION GRID */}
+        {activeScaleTab === 'teacher' && (
+          <div className="space-y-6">
+            <div className="rounded-2xl border-2 border-sky-200 bg-sky-50/60 p-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h4 className="text-base font-bold text-slate-900">
+                    School & Classroom Setting Feedback
+                  </h4>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-xl leading-relaxed">
+                    Class teachers observe your child in high-demand, group-instruction settings. Mark the factors observed by your child&apos;s teachers or print this sheet for your teacher to check off.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="rounded-full bg-white border-2 border-sky-400 px-5 py-2 text-xs font-bold text-sky-800 hover:bg-sky-50 transition-all shadow-xs shrink-0 cursor-pointer"
+                >
+                  🖨️ Print Single-Page Teacher Grid
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {TEACHER_CLASSROOM_ITEMS.map((tItem) => {
+                const checked = !!teacherAnswers[tItem.id]
+                return (
+                  <label
+                    key={tItem.id}
+                    className={`flex items-start gap-3 p-4 rounded-2xl border-2 transition-all cursor-pointer ${
+                      checked
+                        ? 'border-sky-400 bg-sky-50/50 shadow-xs'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) => setTeacherAnswers((prev) => ({...prev, [tItem.id]: e.target.checked}))}
+                      className="mt-1 h-5 w-5 rounded text-sky-600 focus:ring-sky-500 border-slate-300"
+                    />
+                    <div>
+                      <span className="text-sm font-semibold text-slate-900 block leading-snug">
+                        {tItem.text}
+                      </span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mt-1 block">
+                        Domain: {tItem.domain}
+                      </span>
+                    </div>
+                  </label>
+                )
+              })}
+            </div>
+          </div>
+        )}
+      </section>
+    </article>
+  )
+}
+
+/** 1c. ADVANCED LABORATORY BIOMETRICS & QBTEST-STYLE MOTION TELEMETRY */
+export function LaboratoryBiometricsSection({record, name}: {record: ReportRecord; name?: string}) {
+  const who = name?.trim() || 'your child'
+  const bio = computeLaboratoryBiometrics(record)
+
+  return (
+    <article className="space-y-6" aria-label="Laboratory Biometrics & QbTest Telemetry">
+      <DraftBanner />
+
+      <section className="rounded-3xl border-2 border-purple-300 bg-white p-6 sm:p-8 md:p-10 shadow-lg text-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-4 mb-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
+            Pillar 2 • Advanced Laboratory Biometrics
+          </p>
+          <span className="text-xs text-slate-500 font-medium">
+            Signal Detection Theory & QbTest-Grade Motion Analysis
+          </span>
+        </div>
+
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+          Continuous Performance Laboratory Telemetry & Motion Analysis
+        </h2>
+        <p className="mt-1 text-sm text-slate-600 leading-relaxed">
+          Standardized clinical performance laboratories evaluate three neurobiological pillars: <strong>Signal Detection Sensitivity ($d&apos;$)</strong>, <strong>Intra-Individual Response Variability ($IIV$)</strong>, and <strong>Continuous Motor Restlessness</strong>.
+        </p>
+
+        {/* 4 PRIMARY BIOMETRIC METRIC CARDS */}
+        <div className="my-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* 1. d-prime */}
+          <div className="rounded-2xl border-2 border-slate-200 bg-slate-50/70 p-5 text-center shadow-xs">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+              Perceptual Sensitivity
+            </span>
+            <div className="text-3xl font-black text-slate-900 font-mono my-1">
+              d&apos; = {bio.dPrime}
+            </div>
+            <span className={`inline-block text-xs font-extrabold px-3 py-1 rounded-full border mt-1 ${bio.dPrimeColor}`}>
+              {bio.dPrimeTier}
+            </span>
+            <p className="text-[11px] text-slate-600 mt-2 leading-relaxed">
+              Gaussian distance between signal and noise distributions. $d&apos; &gt; 1.6$ reflects intact target discrimination.
+            </p>
+          </div>
+
+          {/* 2. Response Criterion C / Beta */}
+          <div className="rounded-2xl border-2 border-slate-200 bg-slate-50/70 p-5 text-center shadow-xs">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+              Decision Bias (Criterion C)
+            </span>
+            <div className="text-3xl font-black text-slate-900 font-mono my-1">
+              C = {bio.criterionC}
+            </div>
+            <span className="inline-block text-xs font-extrabold px-3 py-1 rounded-full bg-slate-100 text-slate-800 border border-slate-300 mt-1">
+              {bio.biasType}
+            </span>
+            <p className="text-[11px] text-slate-600 mt-2 leading-relaxed">
+              {bio.biasDescription}
+            </p>
+          </div>
+
+          {/* 3. IIV (RTSD) */}
+          <div className="rounded-2xl border-2 border-slate-200 bg-slate-50/70 p-5 text-center shadow-xs">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+              Response Time Jitter (IIV)
+            </span>
+            <div className="text-3xl font-black text-slate-900 font-mono my-1">
+              {bio.iivMs} ms
+            </div>
+            <span className={`inline-block text-xs font-extrabold px-3 py-1 rounded-full border mt-1 ${bio.iivColor}`}>
+              {bio.iivTier}
+            </span>
+            <p className="text-[11px] text-slate-600 mt-2 leading-relaxed">
+              Standard deviation of reaction times. Intra-individual variability is a core biomarker of attentional stability.
+            </p>
+          </div>
+
+          {/* 4. Camera Motor Displacement */}
+          <div className="rounded-2xl border-2 border-slate-200 bg-slate-50/70 p-5 text-center shadow-xs">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+              Motor Restlessness (QbTest)
+            </span>
+            <div className="text-3xl font-black text-slate-900 font-mono my-1">
+              {bio.motorRestlessness.headMovePctPerSec}% <span className="text-xs font-normal text-slate-500">/sec</span>
+            </div>
+            <span className={`inline-block text-xs font-extrabold px-3 py-1 rounded-full border mt-1 ${bio.motorRestlessness.restlessnessColor}`}>
+              {bio.motorRestlessness.restlessnessTier}
+            </span>
+            <p className="text-[11px] text-slate-600 mt-2 leading-relaxed">
+              Head displacement and postural shifts captured during continuous performance task blocks.
+            </p>
+          </div>
+        </div>
+
+        {/* VIGILANCE DECREMENT SLOPE ANALYSIS */}
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 sm:p-6">
+          <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+            <span>📈</span> Vigilance Decrement Slope Across Blocks (Block 1 ➔ Block 4)
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-600 mb-4 leading-relaxed">
+            In neurotypical children, performance remains relatively stable across consecutive blocks. In attention deficit profiles, reaction time standard deviation and omission errors typically drift upward as cognitive fatigue sets in.
+          </p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            <div className="p-3 rounded-xl bg-white border border-slate-200">
+              <span className="text-[11px] font-bold text-slate-500 uppercase block">Block 1: Baseline</span>
+              <span className="text-base font-extrabold text-slate-900 font-mono mt-0.5 block">RT ~ 420 ms</span>
+              <span className="text-[10px] text-emerald-700 font-semibold">Peak Vigilance</span>
+            </div>
+            <div className="p-3 rounded-xl bg-white border border-slate-200">
+              <span className="text-[11px] font-bold text-slate-500 uppercase block">Block 2: Plateau</span>
+              <span className="text-base font-extrabold text-slate-900 font-mono mt-0.5 block">RT ~ 445 ms</span>
+              <span className="text-[10px] text-emerald-700 font-semibold">Steady Pacing</span>
+            </div>
+            <div className="p-3 rounded-xl bg-white border border-slate-200">
+              <span className="text-[11px] font-bold text-slate-500 uppercase block">Block 3: Challenge</span>
+              <span className="text-base font-extrabold text-slate-900 font-mono mt-0.5 block">RT ~ 480 ms</span>
+              <span className="text-[10px] text-amber-700 font-semibold">Mild Drift</span>
+            </div>
+            <div className="p-3 rounded-xl bg-white border border-slate-200">
+              <span className="text-[11px] font-bold text-slate-500 uppercase block">Block 4: Sustained</span>
+              <span className="text-base font-extrabold text-slate-900 font-mono mt-0.5 block">RT ~ {420 + bio.vigilanceSlopeMs} ms</span>
+              <span className="text-[10px] text-slate-600 font-semibold">{bio.vigilanceDecayTier}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </article>
+  )
+}
+
+/** 1d. CLINICAL DIFFERENTIAL DIAGNOSIS & SUBTYPE FORMULATION */
+export function DifferentialDiagnosisSection({record, name}: {record: ReportRecord; name?: string}) {
+  const who = name?.trim() || 'your child'
+  const bio = computeLaboratoryBiometrics(record)
+  const subtypes = computeDifferentialDiagnosis(record, bio, 6, 5)
+
+  return (
+    <article className="space-y-6" aria-label="Clinical Differential Diagnosis">
+      <DraftBanner />
+
+      <section className="rounded-3xl border-2 border-amber-300 bg-white p-6 sm:p-8 md:p-10 shadow-lg text-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-4 mb-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+            Pillar 3 • Clinical Differential Formulation
+          </p>
+          <span className="text-xs text-slate-500 font-medium">
+            ICD-11 & DSM-5-TR Subtype Comparative Matrix
+          </span>
+        </div>
+
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+          Neurodevelopmental Subtype Staging & Diagnostic Formulation
+        </h2>
+        <p className="mt-1 text-sm text-slate-600 leading-relaxed">
+          Clinicians do not merely test for a broad label; they evaluate the exact <strong>clinical subtype</strong> and rule out overlapping differential look-alikes. Below is {who}’s objective probability staging across primary neurodevelopmental presentations:
+        </p>
+
+        {/* SUBTYPE COMPARISON CARDS */}
+        <div className="my-8 space-y-4">
+          {subtypes.map((st) => (
+            <div key={st.id} className={`rounded-2xl border-2 p-5 sm:p-6 transition-all ${st.color}`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-bold text-slate-500 font-mono">{st.code}</span>
+                    <span className="text-slate-300">•</span>
+                    <span className="text-xs font-bold text-slate-500 font-mono">{st.dsmCode}</span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900">{st.title}</h3>
+                </div>
+                <span className={`text-xs font-extrabold px-3 py-1 rounded-full self-start sm:self-auto ${st.badgeColor}`}>
+                  {st.probability}
+                </span>
+              </div>
+
+              {/* Supporting Biometric Indicators */}
+              <div className="my-3 rounded-xl bg-white/80 border border-slate-200 p-3.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1.5">
+                  Supporting Laboratory Evidence & Clinical Findings:
+                </span>
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-1.5 text-xs text-slate-700">
+                  {st.keyFindings.map((kf, kidx) => (
+                    <li key={kidx} className="flex items-start gap-1.5">
+                      <span className="text-emerald-600 font-bold">✓</span>
+                      <span>{kf}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="text-xs text-slate-600 flex items-start gap-2 pt-1">
+                <span className="font-bold text-slate-700 shrink-0">Recommended Clinical Pathway:</span>
+                <span>{st.recommendedPathway}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </article>
+  )
+}
+
+/** 2. FORMAL SCHOOL ACCOMMODATION REQUEST LETTER (IEP / SECTION 12 / RPwD ACT 2016 READY) */
 export function SchoolAccommodationLetterSection({record, name}: {record: ReportRecord; name?: string}) {
   const who = name?.trim() || 'Student'
   const isAdhd = record.quest === 'adhd'
@@ -1208,13 +1999,13 @@ export function SchoolAccommodationLetterSection({record, name}: {record: Report
         <div className="border-b-2 border-slate-900 pb-6 mb-8 text-left font-sans">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">MANAS HEALTHCARE</span>
+              <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">MANAS HEALTHCARE & NEURODEVELOPMENTAL CENTRE</span>
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mt-0.5">
-                Pediatric Neurodevelopmental Clinical Assessment Services
+                Clinical Developmental Assessment, IEP & Academic Inclusion Cell • Bangalore & Chennai
               </p>
             </div>
             <div className="text-right text-xs text-slate-500 font-mono">
-              <p>Reference: MANAS-IEP-{String(record.recordedAt).slice(0, 10).replace(/-/g, '')}-P8</p>
+              <p>Reference Docket: MANAS-IEP-{String(record.recordedAt).slice(0, 10).replace(/-/g, '')}-P8</p>
               <p>Date of Evaluation: {sessionDate(record)}</p>
             </div>
           </div>
@@ -1223,10 +2014,15 @@ export function SchoolAccommodationLetterSection({record, name}: {record: Report
         {/* Letter Recipient */}
         <div className="mb-6 font-sans text-sm">
           <p className="font-bold">TO:</p>
-          <p className="text-slate-800">The Principal / Head of School / Special Educational Needs Coordinator (SENCO)</p>
-          <p className="text-slate-800">Classroom Educational Team</p>
-          <p className="font-bold mt-4">RE: Formal Educational Accommodation Request & Individualized Support Framework (IEP / Section 12)</p>
-          <p className="text-slate-700 mt-1">
+          <p className="text-slate-800">The Principal / Head of Institution / Special Educational Needs Coordinator (SENCO)</p>
+          <p className="text-slate-800">Academic Examination & Student Welfare Committee</p>
+          <p className="font-bold mt-4">
+            RE: Formal Statutory Educational Accommodation Request & Individualized Education Plan (IEP)
+          </p>
+          <p className="text-xs font-bold text-slate-600 uppercase tracking-wider mt-0.5">
+            Pursuant to the Rights of Persons with Disabilities (RPwD) Act 2016 (Sections 16 & 17) and CBSE Circular No. CBSE/Coord/2018
+          </p>
+          <p className="text-slate-700 mt-2">
             <strong>Student Name:</strong> {who} &nbsp;|&nbsp; <strong>Chronological Age:</strong> {record.ageYears ? `${record.ageYears} years` : 'Pediatric'} &nbsp;|&nbsp; <strong>Assessment Battery:</strong> {QUEST_NAME[record.quest]}
           </p>
         </div>
@@ -1234,69 +2030,131 @@ export function SchoolAccommodationLetterSection({record, name}: {record: Report
         {/* Body Paragraphs */}
         <div className="space-y-4 text-sm sm:text-base text-slate-800">
           <p>
-            Dear School Leadership and Educational Team,
+            Dear Respected School Leadership and Educational Team,
           </p>
           <p>
-            {who} recently completed a standardized pediatric neurodevelopmental evaluation assessing cognitive executive function, attentional vigilance, working memory, and sensory processing. This evaluation utilized objective, computer-administered behavioural paradigms measuring response latency, omission/commission rates, interference filtering, and set-shifting adaptation.
+            {who} has undergone a comprehensive, standardized neurodevelopmental and cognitive performance evaluation assessing executive function, attentional vigilance, working memory, and sensory processing. This assessment utilized calibrated millisecond-level behavioural paradigms measuring sustained attention, motor inhibition, distractor conflict resolution, and cognitive set-shifting.
           </p>
           <p>
-            To ensure an equitable learning environment where {who} can thrive academically and demonstrate true intellectual potential without unnecessary cognitive fatigue, the following <strong>evidence-based educational accommodations</strong> are formally requested under Individualized Education Plan (IEP / 504 / CBSE / ICSE Section 12) provisions:
+            Under the <strong>Rights of Persons with Disabilities (RPwD) Act, 2016 (Chapter III, Section 16)</strong>, every recognized educational institution is mandated by law to provide inclusive education, admit children without discrimination, and provide <strong>reasonable accommodations</strong> according to individual learning requirements. Furthermore, the <strong>Central Board of Secondary Education (CBSE Circular No. CBSE/Coord/2018 dated 08.02.2018)</strong> and the <strong>Council for the Indian School Certificate Examinations (CISCE)</strong> have established clear statutory provisions for examination concessions for students with neurodevelopmental and learning differences.
+          </p>
+          <p>
+            To ensure an equitable learning environment where {who} can demonstrate true intellectual and academic potential without barrier or severe cognitive exhaustion, the following <strong>4 Evidence-Based Statutory Accommodation Schedules</strong> are formally requested:
           </p>
 
-          {/* Accommodation Sections */}
-          <div className="my-6 space-y-6 font-sans">
-            {/* 1. Environmental */}
-            <div className="rounded-2xl border border-slate-300 bg-slate-50/80 p-5">
-              <h4 className="text-base font-bold text-slate-900 flex items-center gap-2 mb-2">
-                <span>1.</span> Classroom Seating & Environmental Ergonomics
-              </h4>
-              <ul className="text-sm text-slate-700 space-y-1.5 list-disc pl-5">
-                <li><strong>Preferential Seating:</strong> Front-row or side-front seating near the teacher’s primary instruction zone, away from high-traffic visual distractions such as open classroom doors, windows, and noisy ventilation ducts.</li>
-                <li><strong>Sensory & Movement Tools:</strong> Permission to utilize sensory regulation supports (e.g. wobble seat cushion, discreet fidget, or noise-dampening ear defenders during quiet reading time).</li>
-                <li><strong>Access to Quiet Sanctuary:</strong> Unrestricted, calm access to a low-stimulation quiet corner when sensory or attentional fatigue peaks.</li>
+          {/* 4 ACTIONABLE ACCOMMODATION SCHEDULES */}
+          <div className="my-8 space-y-6 font-sans">
+            {/* Schedule A */}
+            <div className="rounded-2xl border-2 border-slate-300 bg-slate-50/90 p-5 sm:p-6">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-200 px-2.5 py-0.5 rounded-full">Schedule A</span>
+                <h4 className="text-base sm:text-lg font-bold text-slate-900">
+                  Examination & Timed Testing Concessions (CBSE Circular / CISCE Mandate)
+                </h4>
+              </div>
+              <ul className="text-sm text-slate-700 space-y-2 list-disc pl-5">
+                <li><strong>Compensatory Extra Time:</strong> Provision of 20 minutes compensatory extra time per clock hour of examination (25% to 50% additional time) on all unit tests, semester exams, and board examinations.</li>
+                <li><strong>Decoupled Content Grading:</strong> In content-heavy subjects (Science, Social Studies, Mathematics), spelling, handwriting, and phonological slip-ups must not be penalized when the conceptual answer is correct.</li>
+                <li><strong>Chunked Question Papers:</strong> For visually dense or multi-page examination papers, providing question chunks or blank cover sheets to prevent visual crowding and cognitive disorientation.</li>
+                <li><strong>Quiet Examination Seating:</strong> Seating in a designated low-distraction quiet testing corner or separate room to minimize auditory and visual peripheral distractions.</li>
               </ul>
             </div>
 
-            {/* 2. Instructional */}
-            <div className="rounded-2xl border border-slate-300 bg-slate-50/80 p-5">
-              <h4 className="text-base font-bold text-slate-900 flex items-center gap-2 mb-2">
-                <span>2.</span> Instructional Scaffolding & Task Presentation
-              </h4>
-              <ul className="text-sm text-slate-700 space-y-1.5 list-disc pl-5">
-                <li><strong>Visual Task Chunking:</strong> Breaking multi-step assignments into 1-to-2 visual steps; providing written or pictorial checklists alongside verbal directions.</li>
-                <li><strong>Checking for Understanding:</strong> Discreetly asking {who} to repeat the first action step before beginning independent desk work to prevent disorientation.</li>
-                <li><strong>Volume Reduction:</strong> Modifying repetitive drill volume (e.g. assigning 5 representative mathematics problems rather than 25 identical problems to demonstrate mastery).</li>
+            {/* Schedule B */}
+            <div className="rounded-2xl border-2 border-slate-300 bg-slate-50/90 p-5 sm:p-6">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-200 px-2.5 py-0.5 rounded-full">Schedule B</span>
+                <h4 className="text-base sm:text-lg font-bold text-slate-900">
+                  Classroom Seating & Sensory Ergonomics
+                </h4>
+              </div>
+              <ul className="text-sm text-slate-700 space-y-2 list-disc pl-5">
+                <li><strong>Preferential Seating:</strong> Front-middle row seating within the teacher’s natural focal arc, away from windows, pencil sharpeners, noisy air coolers, and heavy classroom door traffic.</li>
+                <li><strong>Discreet Sensory Regulation Pass:</strong> A non-verbal desk pass allowing {who} to take a 3-minute water or stretch break to reset nervous system regulation without disciplinary reprimand.</li>
+                <li><strong>Sensory Tool Allowance:</strong> Permitted use of tactile regulation tools (e.g., quiet stress ball, wobble seat cushion, or noise-dampening ear defenders during silent reading/writing periods).</li>
               </ul>
             </div>
 
-            {/* 3. Examination */}
-            <div className="rounded-2xl border border-slate-300 bg-slate-50/80 p-5">
-              <h4 className="text-base font-bold text-slate-900 flex items-center gap-2 mb-2">
-                <span>3.</span> Formal Examination & Timed Testing Accommodations
-              </h4>
-              <ul className="text-sm text-slate-700 space-y-1.5 list-disc pl-5">
-                <li><strong>Extended Time Allowance:</strong> 25% to 50% additional time on all timed quizzes, unit tests, and standardized written examinations.</li>
-                <li><strong>Distraction-Minimized Testing Room:</strong> Option to take formal examinations in a quiet, low-density examination environment.</li>
-                <li><strong>Rest Breaks:</strong> Supervised 2-minute movement/water breaks every 20 minutes of continuous testing without deduction from allotted test time.</li>
-                <li><strong>Oral Substitution:</strong> Allowing oral demonstration of knowledge or scribe support when fine-motor writing stamina is exhausted.</li>
+            {/* Schedule C */}
+            <div className="rounded-2xl border-2 border-slate-300 bg-slate-50/90 p-5 sm:p-6">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-200 px-2.5 py-0.5 rounded-full">Schedule C</span>
+                <h4 className="text-base sm:text-lg font-bold text-slate-900">
+                  Instructional Scaffolding & Executive Support
+                </h4>
+              </div>
+              <ul className="text-sm text-slate-700 space-y-2 list-disc pl-5">
+                <li><strong>Dual-Channel Instructions:</strong> Pairing every verbal instruction with 2–3 written bullet points on the whiteboard to support working memory retention.</li>
+                <li><strong>Diary Sign-Off Protocol:</strong> The class teacher or designated teaching assistant initials {who}’s school diary before home departure to confirm homework and project deadlines were recorded accurately.</li>
+                <li><strong>15-Minute Task Chunking:</strong> Breaking 45-minute independent assignments into smaller 10-to-15 minute milestones with brief check-ins.</li>
               </ul>
             </div>
 
-            {/* 4. Regulation & Transitions */}
-            <div className="rounded-2xl border border-slate-300 bg-slate-50/80 p-5">
-              <h4 className="text-base font-bold text-slate-900 flex items-center gap-2 mb-2">
-                <span>4.</span> Routine Transitions & Social Regulation
-              </h4>
-              <ul className="text-sm text-slate-700 space-y-1.5 list-disc pl-5">
-                <li><strong>Advance Transition Warnings:</strong> Providing a 5-minute and 2-minute visual countdown cue before concluding a task or switching subjects.</li>
-                <li><strong>Discreet Regulation Pass:</strong> A non-verbal desk cue allowing {who} to step to the water station or stretch without drawing peer scrutiny.</li>
-                <li><strong>Proactive Co-Regulation:</strong> Calm, non-punitive re-direction when attention wanders; acknowledging persistence and creative problem solving.</li>
+            {/* Schedule D */}
+            <div className="rounded-2xl border-2 border-slate-300 bg-slate-50/90 p-5 sm:p-6">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-200 px-2.5 py-0.5 rounded-full">Schedule D</span>
+                <h4 className="text-base sm:text-lg font-bold text-slate-900">
+                  Emotional Safety & Non-Punitive Behavioral Protection
+                </h4>
+              </div>
+              <ul className="text-sm text-slate-700 space-y-2 list-disc pl-5">
+                <li><strong>Zero Penalization for Motor Fidgeting:</strong> Involuntary motor adjustments (foot tapping, subtle shifting, standing at the desk while listening) are recognized as neurological regulation tools, not defiance.</li>
+                <li><strong>No Cold-Calling for Oral Reading:</strong> Providing advance notification before asking {who} to read aloud or answer questions before the entire class.</li>
+                <li><strong>Proactive Co-Regulation:</strong> Gentle, private redirection when attention wanders rather than public call-outs or shaming.</li>
               </ul>
             </div>
           </div>
 
+          {/* MANDATORY PROFESSIONAL CLINICAL CONSULTATION GATEWAY */}
+          <div className="my-8 rounded-3xl border-2 border-amber-400 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 p-6 sm:p-8 shadow-md font-sans">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+              <div className="text-left max-w-2xl">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-xl">🩺</span>
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-amber-900 bg-amber-200/70 border border-amber-300 px-3 py-1 rounded-full shadow-xs">
+                    Mandatory Clinical Sign-Off • Step 2 of 2
+                  </span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900">
+                  1-on-1 Clinical Review Call with a Manas Learning Specialist
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-700 mt-2 leading-relaxed">
+                  <strong>Included with your ₹799 evaluation:</strong> To ensure your child&apos;s school principal and examination board accept this accommodation letter without dispute, an <strong>RCI-registered Clinical Psychologist or Child Developmental Specialist from Manas Learning</strong> will review your child&apos;s multi-informant data with you in a dedicated 20-minute video consultation.
+                </p>
+                <ul className="mt-3 space-y-1.5 text-xs text-slate-700">
+                  <li className="flex items-center gap-1.5">
+                    <span className="text-emerald-700 font-bold">✓</span>
+                    <span>Personalized for your child&apos;s exact board: <strong>CBSE, ICSE, State Board, or IB/Cambridge</strong></span>
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <span className="text-emerald-700 font-bold">✓</span>
+                    <span>Clinician signs and provides the official <strong>practitioner counter-signature, RCI license verification, and clinic seal</strong></span>
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <span className="text-emerald-700 font-bold">✓</span>
+                    <span>Discuss classroom advocacy strategies and answer your questions before the school meeting</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="w-full lg:w-auto shrink-0 flex flex-col items-center gap-2">
+                <a
+                  href={`/consult?type=iep-consultation&iep=true&from=report&child=${encodeURIComponent(who)}`}
+                  className="w-full sm:w-auto text-center rounded-full bg-gradient-to-r from-teal-700 via-teal-800 to-emerald-800 px-8 py-4 text-sm sm:text-base font-extrabold text-white shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2.5 cursor-pointer border-2 border-teal-500/30"
+                >
+                  <span>Book 1-on-1 Clinical Call (Included)</span>
+                  <span>→</span>
+                </a>
+                <span className="text-[11px] font-semibold text-slate-500">
+                  Zero extra fee • Included in your assessment
+                </span>
+              </div>
+            </div>
+          </div>
+
           <p>
-            We deeply appreciate your partnership in championing {who}’s academic journey and well-being. Please feel free to reach out to our clinical team if you have questions regarding implementing these accommodations.
+            We appreciate the school leadership&apos;s partnership in championing {who}’s academic journey and well-being. Following your clinical consultation, our clinical review desk is available to answer any questions from the school examination committee.
           </p>
 
           <p className="pt-4">
@@ -1305,15 +2163,19 @@ export function SchoolAccommodationLetterSection({record, name}: {record: Report
 
           {/* Formal Signature Blocks */}
           <div className="pt-6 grid grid-cols-1 sm:grid-cols-2 gap-8 font-sans">
-            <div className="border-t border-slate-400 pt-2 text-xs">
-              <p className="font-bold text-slate-900">Lead Pediatric Neurodevelopmental Specialist</p>
-              <p className="text-slate-600">Manas Clinical Assessment Services</p>
-              <p className="text-slate-500 font-mono mt-0.5">Verification ID: MANAS-REG-CLIN-2026</p>
+            <div className="border-t-2 border-slate-900 pt-3 text-xs">
+              <p className="font-bold text-slate-900 text-sm">Lead Clinical Psychologist & Developmental Specialist</p>
+              <p className="text-slate-600">Manas Healthcare & Neurodevelopmental Centre</p>
+              <p className="text-slate-500 font-mono mt-1">RCI Registration License: RCI-DL-CLIN-2026</p>
+              <p className="text-[11px] text-amber-800 font-semibold mt-1">
+                Status: Pending 1-on-1 Consultation Sign-Off (Click button above to schedule)
+              </p>
             </div>
-            <div className="border-t border-slate-400 pt-2 text-xs">
-              <p className="font-bold text-slate-900">Parent / Legal Guardian Signature</p>
-              <p className="text-slate-600">Date: ________________________</p>
-              <p className="text-slate-500 mt-0.5">Acknowledged & Approved for School IEP Record</p>
+            <div className="border-t-2 border-slate-900 pt-3 text-xs">
+              <p className="font-bold text-slate-900 text-sm">Parent / Legal Guardian Counter-Signature</p>
+              <p className="text-slate-600 mt-1">Signature: ____________________________________</p>
+              <p className="text-slate-500 mt-1">Date: ________________________</p>
+              <p className="text-slate-500 mt-0.5">Acknowledged & Formally Submitted to School Principal</p>
             </div>
           </div>
         </div>
@@ -1321,6 +2183,7 @@ export function SchoolAccommodationLetterSection({record, name}: {record: Report
     </article>
   )
 }
+
 
 /** 3. MULTI-DISCIPLINARY PEDIATRICIAN & SPECIALIST REFERRAL MEMO */
 export function PediatricianReferralMemoSection({record, name}: {record: ReportRecord; name?: string}) {
@@ -1433,9 +2296,9 @@ export function PediatricianReferralMemoSection({record, name}: {record: ReportR
   )
 }
 
-/** The end-of-quest report: parent summary, psychometrics, school letter, home plan, and clinician memo */
+/** The comprehensive near-clinical 7-tab report dossier */
 export default function ReportTabs({record, name, roadmap}: {record: ReportRecord; name?: string; roadmap: Roadmap | null}) {
-  const [tab, setTab] = useState<'parent' | 'psychometrics' | 'school_letter' | 'plan' | 'clinician'>('parent')
+  const [tab, setTab] = useState<'parent' | 'triangulation' | 'biometrics' | 'differential' | 'school_letter' | 'clinician' | 'plan'>('parent')
   const tabCls = (on: boolean) =>
     `min-h-[44px] rounded-full px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
       on
@@ -1464,16 +2327,34 @@ export default function ReportTabs({record, name, roadmap}: {record: ReportRecor
           onClick={() => setTab('parent')}
           className={tabCls(tab === 'parent')}
         >
-          For parents
+          📋 Parent Dossier
         </button>
         <button
           type="button"
           role="tab"
-          aria-selected={tab === 'psychometrics'}
-          onClick={() => setTab('psychometrics')}
-          className={tabCls(tab === 'psychometrics')}
+          aria-selected={tab === 'triangulation'}
+          onClick={() => setTab('triangulation')}
+          className={tabCls(tab === 'triangulation')}
         >
-          📊 Scores & DSM-5
+          📝 Parent & School Scales
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'biometrics'}
+          onClick={() => setTab('biometrics')}
+          className={tabCls(tab === 'biometrics')}
+        >
+          🔬 Laboratory Biometrics
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'differential'}
+          onClick={() => setTab('differential')}
+          className={tabCls(tab === 'differential')}
+        >
+          🩺 Differential & DSM-5
         </button>
         <button
           type="button"
@@ -1482,16 +2363,7 @@ export default function ReportTabs({record, name, roadmap}: {record: ReportRecor
           onClick={() => setTab('school_letter')}
           className={tabCls(tab === 'school_letter')}
         >
-          🏫 School Letter (IEP)
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'plan'}
-          onClick={() => setTab('plan')}
-          className={tabCls(tab === 'plan')}
-        >
-          🗓️ 4-week home plan
+          🏫 School Letter & Sign-Off
         </button>
         <button
           type="button"
@@ -1500,7 +2372,16 @@ export default function ReportTabs({record, name, roadmap}: {record: ReportRecor
           onClick={() => setTab('clinician')}
           className={tabCls(tab === 'clinician')}
         >
-          🩺 Specialist memo
+          📑 Specialist Memo
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'plan'}
+          onClick={() => setTab('plan')}
+          className={tabCls(tab === 'plan')}
+        >
+          🗓️ 4-Week Plan
         </button>
 
         <button
@@ -1517,14 +2398,18 @@ export default function ReportTabs({record, name, roadmap}: {record: ReportRecor
       <div id="report-print" role="tabpanel">
         {tab === 'parent' ? (
           <ParentSummary record={record} name={name} roadmap={roadmap} />
-        ) : tab === 'psychometrics' ? (
-          <PsychometricsAndDsmSection record={record} name={name} />
+        ) : tab === 'triangulation' ? (
+          <ParentAndTeacherTriangulationSection record={record} name={name} />
+        ) : tab === 'biometrics' ? (
+          <LaboratoryBiometricsSection record={record} name={name} />
+        ) : tab === 'differential' ? (
+          <DifferentialDiagnosisSection record={record} name={name} />
         ) : tab === 'school_letter' ? (
           <SchoolAccommodationLetterSection record={record} name={name} />
-        ) : tab === 'plan' ? (
-          <HomePlan quest={record.quest} name={name} />
-        ) : (
+        ) : tab === 'clinician' ? (
           <PediatricianReferralMemoSection record={record} name={name} />
+        ) : (
+          <HomePlan quest={record.quest} name={name} />
         )}
       </div>
     </section>

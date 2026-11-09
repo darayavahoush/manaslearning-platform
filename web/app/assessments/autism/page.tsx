@@ -459,7 +459,7 @@ const GROVE_AFFINITIES = [
   {
     name: 'Grove Harmonizer',
     badge: 'Forest Friend',
-    image: '/quests/characters/grove_harmonizer.webp?v=watercolor5',
+    image: '/quests/characters/grove_harmonizer.webp?v=watercolor6',
     Svg: LeafGlyphSvg,
     AvatarSvg: GroveHarmonizerAvatarSvg,
     desc: 'Gentle & caring · Listens to the trees, plants, and friendly fireflies'
@@ -467,7 +467,7 @@ const GROVE_AFFINITIES = [
   {
     name: 'Crystal Alchemist',
     badge: 'Pattern Explorer',
-    image: '/quests/characters/crystal_alchemist.webp?v=watercolor5',
+    image: '/quests/characters/crystal_alchemist.webp?v=watercolor6',
     Svg: CrystalGlyphSvg,
     AvatarSvg: CrystalAlchemistAvatarSvg,
     desc: 'Curious & observant · Notices hidden clues and solves colorful puzzles'
@@ -475,7 +475,7 @@ const GROVE_AFFINITIES = [
   {
     name: 'Quiet Seeker',
     badge: 'Peaceful Observer',
-    image: '/quests/characters/quiet_seeker.webp?v=watercolor5',
+    image: '/quests/characters/quiet_seeker.webp?v=watercolor6',
     Svg: DoveGlyphSvg,
     AvatarSvg: QuietSeekerAvatarSvg,
     desc: 'Calm & thoughtful · Notices gentle details and understands friends quietly'
@@ -1280,20 +1280,20 @@ function __McInner() {
             </span>
           </div>
 
-          {/* The Two Sorting Vault Pedestals */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-xl mx-auto mt-4">
+          {/* The Two Sorting Vault Pedestals - Full Screen Layout */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-2xl sm:max-w-3xl mx-auto mt-5">
             {/* Vault 0: Left Vault */}
             <button
               type="button"
               onClick={() => onSort(0)}
               aria-label={rule === 'color' ? 'Red Vault' : 'Star Vault'}
-              className={`group relative flex flex-col items-center justify-between rounded-3xl border-2 border-rose-500/70 bg-gradient-to-b from-[#25090F]/95 via-[#1A060A]/95 to-[#0F0306]/95 p-4 sm:p-5 shadow-[0_10px_30px_rgba(0,0,0,0.6)] hover:border-rose-400 hover:shadow-[0_0_40px_rgba(244,63,94,0.5)] hover:scale-[1.03] active:scale-95 transition-all duration-300 cursor-pointer focus:outline-none ${
+              className={`group relative flex flex-col items-center justify-between rounded-3xl border-2 border-rose-500/70 bg-gradient-to-b from-[#25090F]/95 via-[#1A060A]/95 to-[#0F0306]/95 p-5 sm:p-6 shadow-[0_12px_32px_rgba(0,0,0,0.6)] hover:border-rose-400 hover:shadow-[0_0_40px_rgba(244,63,94,0.5)] hover:scale-[1.03] active:scale-95 transition-all duration-300 cursor-pointer focus:outline-none ${
                 hintTray === 0 ? 'ring-4 ring-amber-400 animate-pulse' : ''
               }`}
             >
               {/* Big Visual Badge */}
               <div className="w-full flex items-center justify-center mb-2 pointer-events-none">
-                <span className={`text-sm sm:text-base font-extrabold px-4 py-1 rounded-full border shadow-md flex items-center gap-1.5 ${
+                <span className={`text-base sm:text-lg font-extrabold px-5 py-1.5 rounded-full border shadow-md flex items-center gap-2 ${
                   rule === 'color'
                     ? 'bg-rose-500 text-white border-rose-300 shadow-rose-900/50'
                     : 'bg-amber-500 text-amber-950 border-amber-300 shadow-amber-900/50'
@@ -1303,14 +1303,14 @@ function __McInner() {
               </div>
 
               {/* Inlaid Gem Preview */}
-              <div className="my-1 p-1">
-                <AlchemicalGemstone color="red" shape="star" size="md" />
+              <div className="my-2 p-1">
+                <AlchemicalGemstone color="red" shape="star" size="lg" />
               </div>
 
-              <div className="mt-2 w-full rounded-2xl bg-gradient-to-r from-rose-900/70 via-rose-800/90 to-rose-900/70 border border-rose-400/40 py-2 px-3 text-center group-hover:border-rose-300 transition-all pointer-events-none">
-                <span className="text-xs sm:text-sm font-extrabold text-rose-100 group-hover:text-white flex items-center justify-center gap-1.5">
+              <div className="mt-2 w-full rounded-2xl bg-gradient-to-r from-rose-900/70 via-rose-800/90 to-rose-900/70 border border-rose-400/40 py-2.5 px-4 text-center group-hover:border-rose-300 transition-all pointer-events-none">
+                <span className="text-sm sm:text-base font-extrabold text-rose-100 group-hover:text-white flex items-center justify-center gap-2">
                   <span>TAP HERE</span>
-                  <span className="text-base group-hover:translate-y-0.5 transition-transform">⬇</span>
+                  <span className="text-lg group-hover:translate-y-0.5 transition-transform">⬇</span>
                 </span>
               </div>
             </button>
@@ -1320,13 +1320,13 @@ function __McInner() {
               type="button"
               onClick={() => onSort(1)}
               aria-label={rule === 'color' ? 'Blue Vault' : 'Circle Vault'}
-              className={`group relative flex flex-col items-center justify-between rounded-3xl border-2 border-sky-500/70 bg-gradient-to-b from-[#091827]/95 via-[#05111C]/95 to-[#020A12]/95 p-4 sm:p-5 shadow-[0_10px_30px_rgba(0,0,0,0.6)] hover:border-sky-400 hover:shadow-[0_0_40px_rgba(56,189,248,0.5)] hover:scale-[1.03] active:scale-95 transition-all duration-300 cursor-pointer focus:outline-none ${
+              className={`group relative flex flex-col items-center justify-between rounded-3xl border-2 border-sky-500/70 bg-gradient-to-b from-[#091827]/95 via-[#05111C]/95 to-[#020A12]/95 p-5 sm:p-6 shadow-[0_12px_32px_rgba(0,0,0,0.6)] hover:border-sky-400 hover:shadow-[0_0_40px_rgba(56,189,248,0.5)] hover:scale-[1.03] active:scale-95 transition-all duration-300 cursor-pointer focus:outline-none ${
                 hintTray === 1 ? 'ring-4 ring-amber-400 animate-pulse' : ''
               }`}
             >
               {/* Big Visual Badge */}
               <div className="w-full flex items-center justify-center mb-2 pointer-events-none">
-                <span className={`text-sm sm:text-base font-extrabold px-4 py-1 rounded-full border shadow-md flex items-center gap-1.5 ${
+                <span className={`text-base sm:text-lg font-extrabold px-5 py-1.5 rounded-full border shadow-md flex items-center gap-2 ${
                   rule === 'color'
                     ? 'bg-sky-500 text-white border-sky-300 shadow-sky-900/50'
                     : 'bg-blue-600 text-white border-blue-300 shadow-blue-900/50'
@@ -1336,14 +1336,14 @@ function __McInner() {
               </div>
 
               {/* Inlaid Gem Preview */}
-              <div className="my-1 p-1">
-                <AlchemicalGemstone color="blue" shape="circle" size="md" />
+              <div className="my-2 p-1">
+                <AlchemicalGemstone color="blue" shape="circle" size="lg" />
               </div>
 
-              <div className="mt-2 w-full rounded-2xl bg-gradient-to-r from-sky-900/70 via-sky-800/90 to-sky-900/70 border border-sky-400/40 py-2 px-3 text-center group-hover:border-sky-300 transition-all pointer-events-none">
-                <span className="text-xs sm:text-sm font-extrabold text-sky-100 group-hover:text-white flex items-center justify-center gap-1.5">
+              <div className="mt-2 w-full rounded-2xl bg-gradient-to-r from-sky-900/70 via-sky-800/90 to-sky-900/70 border border-sky-400/40 py-2.5 px-4 text-center group-hover:border-sky-300 transition-all pointer-events-none">
+                <span className="text-sm sm:text-base font-extrabold text-sky-100 group-hover:text-white flex items-center justify-center gap-2">
                   <span>TAP HERE</span>
-                  <span className="text-base group-hover:translate-y-0.5 transition-transform">⬇</span>
+                  <span className="text-lg group-hover:translate-y-0.5 transition-transform">⬇</span>
                 </span>
               </div>
             </button>
@@ -1665,8 +1665,8 @@ function __McInner() {
               />
             </div>
 
-            {/* 3 Artisan Vessels on Courtyard Pedestals */}
-            <div className={`grid grid-cols-3 gap-3 md:gap-4 max-w-lg mx-auto mt-2 transition-opacity duration-300 ${jaReady ? '' : 'opacity-60'}`}>
+            {/* 3 Artisan Vessels on Courtyard Pedestals - Full Screen Layout */}
+            <div className={`grid grid-cols-3 gap-4 md:gap-6 max-w-2xl sm:max-w-3xl mx-auto mt-3 transition-opacity duration-300 ${jaReady ? '' : 'opacity-60'}`}>
               {[
                 { pot: 0, type: 'A' as const, label: 'Left Urn' },
                 { pot: 1, type: 'B' as const, label: 'Center Urn' },
@@ -1677,13 +1677,13 @@ function __McInner() {
                   type="button"
                   aria-label={label}
                   onClick={() => handlePotSelect(pot)}
-                  className="group relative flex h-44 sm:h-52 flex-col items-center justify-end rounded-2xl p-2 transition-all duration-300 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300"
+                  className="group relative flex h-52 sm:h-64 flex-col items-center justify-end rounded-3xl p-3 transition-all duration-300 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300 cursor-pointer"
                 >
-                  <div className="absolute inset-x-0 bottom-0 h-28 rounded-2xl bg-gradient-to-b from-[#C49A6C]/30 via-[#9E7347]/40 to-[#6E4B29]/60 border-2 border-[#EAD7B8]/40 backdrop-blur-md shadow-[0_8px_20px_rgba(0,0,0,0.5)] group-hover:border-amber-300/80 group-hover:bg-[#C49A6C]/45 transition-all">
-                    <div className="absolute inset-x-0 top-0 h-2.5 rounded-t-xl bg-[#EAD7B8]/30 border-b border-[#7A4C25]/40" />
+                  <div className="absolute inset-x-0 bottom-0 h-32 sm:h-38 rounded-3xl bg-gradient-to-b from-[#C49A6C]/30 via-[#9E7347]/40 to-[#6E4B29]/60 border-2 border-[#EAD7B8]/40 backdrop-blur-md shadow-[0_12px_24px_rgba(0,0,0,0.5)] group-hover:border-amber-300/80 group-hover:bg-[#C49A6C]/45 transition-all">
+                    <div className="absolute inset-x-0 top-0 h-3 rounded-t-2xl bg-[#EAD7B8]/30 border-b border-[#7A4C25]/40" />
                   </div>
 
-                  <div className="absolute bottom-9 w-20 h-3.5 rounded-full bg-black/40 blur-[2px] pointer-events-none" />
+                  <div className="absolute bottom-11 w-24 h-4 rounded-full bg-black/40 blur-[2px] pointer-events-none" />
 
                   {JA_TRIALS[jaTrialIndex].hidden && JA_TRIALS[jaTrialIndex].targetPot === pot && (
                     <div aria-hidden="true" className="pointer-events-none absolute inset-x-2 top-0 h-[82%] z-20 flex flex-col items-center justify-center">
@@ -1695,11 +1695,11 @@ function __McInner() {
                     </div>
                   )}
 
-                  <div className="relative z-10 w-full h-[76%] flex items-center justify-center p-1">
+                  <div className="relative z-10 w-full h-[76%] flex items-center justify-center p-2">
                     <ArtisanVesselSvg type={type} />
                   </div>
 
-                  <span className="relative z-10 mb-2 rounded-full bg-[#2A180B]/90 px-3 py-0.5 text-xs font-bold text-amber-100 border border-amber-300/40 backdrop-blur-sm shadow-sm group-hover:text-white group-hover:border-amber-300 transition-all">
+                  <span className="relative z-10 mb-2 rounded-full bg-[#2A180B]/90 px-4 py-1 text-xs sm:text-sm font-extrabold text-amber-100 border border-amber-300/40 backdrop-blur-sm shadow-sm group-hover:text-white group-hover:border-amber-300 transition-all">
                     {label}
                   </span>
                 </button>
@@ -1736,7 +1736,7 @@ function __McInner() {
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-3 md:gap-4 max-w-lg mx-auto mt-2">
+            <div className="grid grid-cols-3 gap-4 md:gap-6 max-w-2xl sm:max-w-3xl mx-auto mt-3">
               {[
                 { pot: 0, type: 'A' as const, label: 'Left Urn' },
                 { pot: 1, type: 'B' as const, label: 'Center Urn' },
@@ -1748,15 +1748,15 @@ function __McInner() {
                   disabled={showTurned}
                   aria-label={label}
                   onClick={() => handleShowPick(pot)}
-                  className="group relative flex h-44 sm:h-52 flex-col items-center justify-end rounded-2xl p-2 transition-all duration-300 hover:scale-105 active:scale-95 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300"
+                  className="group relative flex h-52 sm:h-64 flex-col items-center justify-end rounded-3xl p-3 transition-all duration-300 hover:scale-105 active:scale-95 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300 cursor-pointer"
                 >
-                  <div className="absolute inset-x-0 bottom-0 h-28 rounded-2xl bg-gradient-to-b from-[#C49A6C]/30 via-[#9E7347]/40 to-[#6E4B29]/60 border-2 border-[#EAD7B8]/40 backdrop-blur-md shadow-[0_8px_20px_rgba(0,0,0,0.5)] group-hover:border-amber-300/80 group-hover:bg-[#C49A6C]/45 transition-all">
-                    <div className="absolute inset-x-0 top-0 h-2.5 rounded-t-xl bg-[#EAD7B8]/30 border-b border-[#7A4C25]/40" />
+                  <div className="absolute inset-x-0 bottom-0 h-32 sm:h-38 rounded-3xl bg-gradient-to-b from-[#C49A6C]/30 via-[#9E7347]/40 to-[#6E4B29]/60 border-2 border-[#EAD7B8]/40 backdrop-blur-md shadow-[0_12px_24px_rgba(0,0,0,0.5)] group-hover:border-amber-300/80 group-hover:bg-[#C49A6C]/45 transition-all">
+                    <div className="absolute inset-x-0 top-0 h-3 rounded-t-2xl bg-[#EAD7B8]/30 border-b border-[#7A4C25]/40" />
                   </div>
 
-                  <div className="absolute bottom-9 w-20 h-3.5 rounded-full bg-black/40 blur-[2px] pointer-events-none" />
+                  <div className="absolute bottom-11 w-24 h-4 rounded-full bg-black/40 blur-[2px] pointer-events-none" />
 
-                  <div className="relative z-10 w-full h-[76%] flex items-center justify-center p-1">
+                  <div className="relative z-10 w-full h-[76%] flex items-center justify-center p-2">
                     <ArtisanVesselSvg type={type} />
                   </div>
 
@@ -1764,7 +1764,7 @@ function __McInner() {
                     <span aria-hidden="true" className="absolute top-4 right-4 text-3xl z-20 animate-bounce drop-shadow-[0_0_10px_rgba(251,191,36,0.9)]">✨</span>
                   )}
 
-                  <span className="relative z-10 mb-2 rounded-full bg-[#2A180B]/90 px-3 py-0.5 text-xs font-bold text-amber-100 border border-amber-300/40 backdrop-blur-sm shadow-sm group-hover:text-white group-hover:border-amber-300 transition-all">
+                  <span className="relative z-10 mb-2 rounded-full bg-[#2A180B]/90 px-4 py-1 text-xs sm:text-sm font-extrabold text-amber-100 border border-amber-300/40 backdrop-blur-sm shadow-sm group-hover:text-white group-hover:border-amber-300 transition-all">
                     {label}
                   </span>
                 </button>
@@ -1865,7 +1865,7 @@ function __McInner() {
             <p className="text-xs sm:text-sm text-emerald-200/90 mb-3 font-medium">
               What will cheer him up? Tap one! 👇
             </p>
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-md mx-auto mt-2">
+            <div className="grid grid-cols-3 gap-4 sm:gap-6 max-w-xl sm:max-w-2xl mx-auto mt-3">
               {[
                 { label: 'Warm hug', icon: '💛' },
                 { label: 'Quiet corner', icon: '🌿' },
@@ -1875,10 +1875,10 @@ function __McInner() {
                   key={label}
                   type="button"
                   onClick={() => handleHelpSelect(i)}
-                  className="group relative flex flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-emerald-400/30 bg-gradient-to-b from-[#182C20]/90 to-[#0F1E15]/95 py-4 px-2 text-sm sm:text-base font-bold text-amber-100 shadow-xl backdrop-blur-md hover:border-amber-300/80 hover:bg-[#203628] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                  className="group relative flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-emerald-400/30 bg-gradient-to-b from-[#182C20]/90 to-[#0F1E15]/95 py-5 sm:py-6 px-3 text-sm sm:text-base font-bold text-amber-100 shadow-xl backdrop-blur-md hover:border-amber-300/80 hover:bg-[#203628] hover:scale-105 active:scale-95 transition-all cursor-pointer"
                 >
-                  <span className="text-3xl">{icon}</span>
-                  <span className="text-xs sm:text-sm font-bold text-center leading-tight">{label}</span>
+                  <span className="text-4xl sm:text-5xl drop-shadow">{icon}</span>
+                  <span className="text-xs sm:text-base font-extrabold text-center leading-tight text-amber-200 group-hover:text-white">{label}</span>
                 </button>
               ))}
             </div>
@@ -1920,27 +1920,27 @@ function __McInner() {
               </div>
             </div>
 
-            {/* 3 Forest Spirits on Mossy Stepping Stones */}
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-md mx-auto my-3">
+            {/* 3 Forest Spirits on Mossy Stepping Stones - Full Screen Layout */}
+            <div className="grid grid-cols-3 gap-4 sm:gap-6 max-w-xl sm:max-w-2xl mx-auto my-3">
               {EMOTION_MIRROR_TRIALS[tomTrialIndex].options.map((emotionOpt) => (
                 <button
                   key={emotionOpt}
                   type="button"
                   aria-label={emotionOpt}
                   onClick={() => handleEmotionSelect(emotionOpt)}
-                  className="group relative flex h-36 sm:h-42 flex-col items-center justify-end rounded-[30px] p-2 transition-all duration-300 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300"
+                  className="group relative flex h-44 sm:h-52 flex-col items-center justify-end rounded-[32px] p-3 transition-all duration-300 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300 cursor-pointer"
                 >
-                  <div className="absolute inset-0 rounded-[30px] bg-gradient-to-b from-[#1C2C22]/90 via-[#16251C]/95 to-[#0E1A13]/95 border-2 border-emerald-400/40 shadow-2xl backdrop-blur-md group-hover:border-amber-300/80 group-hover:bg-[#203628]/95 group-hover:shadow-[0_0_30px_rgba(251,191,36,0.35)] transition-all">
-                    <div className="absolute inset-x-3 top-0 h-2 rounded-t-[20px] bg-emerald-400/25 blur-[1px]" />
-                    <span className="absolute top-1.5 left-2.5 text-[11px] opacity-75 pointer-events-none">🌿</span>
-                    <span className="absolute top-1.5 right-2.5 text-[10px] opacity-75 pointer-events-none">✨</span>
+                  <div className="absolute inset-0 rounded-[32px] bg-gradient-to-b from-[#1C2C22]/90 via-[#16251C]/95 to-[#0E1A13]/95 border-2 border-emerald-400/40 shadow-2xl backdrop-blur-md group-hover:border-amber-300/80 group-hover:bg-[#203628]/95 group-hover:shadow-[0_0_30px_rgba(251,191,36,0.35)] transition-all">
+                    <div className="absolute inset-x-3 top-0 h-2.5 rounded-t-[22px] bg-emerald-400/25 blur-[1px]" />
+                    <span className="absolute top-2 left-3 text-xs opacity-75 pointer-events-none">🌿</span>
+                    <span className="absolute top-2 right-3 text-xs opacity-75 pointer-events-none">✨</span>
                   </div>
 
-                  <div className="relative z-10 w-full h-[76%] flex items-center justify-center p-1">
-                    <ForestSpriteFaceSvg emotion={emotionOpt} className="h-full w-full max-h-24 max-w-24 drop-shadow-md" />
+                  <div className="relative z-10 w-full h-[76%] flex items-center justify-center p-2">
+                    <ForestSpriteFaceSvg emotion={emotionOpt} className="h-full w-full max-h-28 max-w-28 sm:max-h-32 sm:max-w-32 drop-shadow-md" />
                   </div>
 
-                  <span className="relative z-10 mb-2 rounded-full bg-[#132318]/90 px-3 py-0.5 text-xs font-bold capitalize text-amber-100 border border-emerald-400/30 backdrop-blur-sm group-hover:border-amber-300/60 group-hover:text-white transition-all">
+                  <span className="relative z-10 mb-2 rounded-full bg-[#132318]/90 px-4 py-1 text-xs sm:text-sm font-extrabold capitalize text-amber-100 border border-emerald-400/30 backdrop-blur-sm group-hover:border-amber-300/60 group-hover:text-white transition-all">
                     {emotionOpt}
                   </span>
                 </button>

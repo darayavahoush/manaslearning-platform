@@ -89,6 +89,10 @@ const SKILLS: Skill[] = [
     strong: 'Filtered out conflicting surrounding distractions to stay focused on the main cue.',
     needs: 'Found it hard to filter out conflicting visual distractions in the surroundings.',
     evidence: (k, n) => `${k} of ${n} complex cues resolved accurately`},
+  {key: 'trailSwitchesCorrect', quest: 'adhd', area: 'Mental set-shifting & alternating flexibility', good: 'high', chance: 0.5,
+    strong: 'Smoothly switched mental focus between alternating patterns without cognitive fatigue or getting stuck.',
+    needs: 'Found alternating mental sets challenging, showing perseverative errors when switching rules.',
+    evidence: (k, n) => `${k} of ${n} alternating trail transitions correct`},
   // social and sensory quest
   {key: 'gazeMatches', quest: 'autism', area: 'Joint attention & social referencing', good: 'high', chance: 1 / 3,
     strong: 'Naturally followed a partner’s social gaze and pointing cues to share visual focus.',
@@ -106,6 +110,10 @@ const SKILLS: Skill[] = [
     strong: 'Smoothly shifted mental strategies when the rule changed, avoiding getting stuck.',
     needs: 'Showed difficulty shifting gears, tending to stick to the old rule after it changed.',
     evidence: (k, n) => `${k} of ${n} items correctly sorted after rule change`},
+  {key: 'socialStoryMatches', quest: 'autism', area: 'Social perspective taking & Theory of Mind', good: 'high', chance: 0.33,
+    strong: 'Demonstrated empathetic perspective taking, accurately deducing peer intentions, unstated beliefs, and repair actions.',
+    needs: 'Found it challenging to infer other children’s unstated thoughts, false beliefs, or social motives.',
+    evidence: (k, n) => `${k} of ${n} social scenarios resolved accurately`},
   // reading quest
   {key: 'rhymeMatches', quest: 'dyslexia', group: 'sounds', area: 'Phonological rhyme awareness', good: 'high', chance: 0.5,
     strong: 'Easily recognized rhyming sound patterns in spoken words without printed text.',

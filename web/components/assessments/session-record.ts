@@ -233,10 +233,12 @@ export function gameOf(key: string): string {
   if (/^flanker/.test(key)) return 'Steering game'
   if (/^workingMemory/.test(key)) return 'Star-sequence game'
   if (/^prematureReleases/.test(key)) return 'Patience game'
+  if (/^trail/.test(key)) return 'Sky Trail game'
   if (/^(gaze|show)/.test(key)) return 'Gaze game'
   if (/^feelings/.test(key)) return 'Feelings match'
   if (/^(light|sound|touch)Level|^(rampStop|adjust|shieldUses|designSec)/.test(key)) return 'Comfort choices'
   if (/^sort/.test(key)) return 'Sorting game'
+  if (/^(socialStory|falseBelief|socialRepair)/.test(key)) return 'Social stories game'
   if (/^cam/.test(key)) return 'Camera (optional)'
   if (/^look/.test(key)) return 'Looking game (optional camera)'
   if (/^rhyme/.test(key)) return 'Rhyme game'
@@ -278,6 +280,9 @@ function adhdMeasures(t: Tele): Array<Measure | null> {
     proportion('flankerIncongruent', 'Conflicting-arrow rounds answered correctly', get(t, 'flankerIncongruentN'), get(t, 'flankerIncongruentTotal')),
     value('flankerCostMs', 'Slowdown when the arrows disagreed (correct answers only)', get(t, 'flankerCostMs'), 'ms', get(t, 'flankerIncongruentN')),
     value('workingMemorySpan', 'Longest star sequence repeated', get(t, 'workingMemorySpan'), 'stars', null),
+    proportion('trailSwitchesCorrect', 'Alternating trail switches completed accurately', get(t, 'trailSwitchesCorrect'), get(t, 'trailSwitchesTotal')),
+    value('trailSwitchErrors', 'Trail perseveration errors (tapping same set twice)', get(t, 'trailSwitchErrors'), 'errors', null),
+    value('trailCompletionMs', 'Time taken to complete the alternating trail', get(t, 'trailCompletionMs'), 'ms', null),
     proportion('prematureReleases', 'Early releases in the patience game', get(t, 'prematureReleases'), get(t, 'chargeTrials'),
       'Practice game for fun, not a validated task.'),
     ...eventMeasures(t, [['retrySunbird', 'sunbird game'], ['retrySteering', 'steering game'], ['retryStars', 'star-sequence game']]),
@@ -383,6 +388,9 @@ function autismMeasures(t: Tele): Array<Measure | null> {
       'Only a few cards, so the interval is wide.'),
     proportion('sortPost', 'Cards put in the right box after the rule changed (shape)', get(t, 'sortPostCorrect'), get(t, 'sortPostTotal'),
       'Only a few cards, so the interval is wide. Practice cards are never counted.'),
+    proportion('socialStoryMatches', 'Social context and intention scenarios answered accurately', get(t, 'socialStoryCorrect'), get(t, 'socialStoryTotal')),
+    proportion('falseBeliefPassed', 'Perspective taking & false belief scenarios correct', get(t, 'falseBeliefCorrect'), get(t, 'falseBeliefTotal')),
+    proportion('socialRepairSelected', 'Prosocial and repair actions selected in peer conflicts', get(t, 'socialRepairCorrect'), get(t, 'socialRepairTotal')),
     ...roomMeasures(t),
     value('ruleNamed', 'Named the rule straight after the change (1 = the new rule, 0 = the old one)', get(t, 'ruleCheck'), 'score', null,
       'One question, so this is a single answer, not a rate.'),

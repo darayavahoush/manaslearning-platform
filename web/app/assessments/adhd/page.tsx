@@ -447,7 +447,7 @@ const GUILD_CLASSES = [
   {
     name: 'Canopy Sky Ranger',
     badge: 'Eagle-Eyed Scout',
-    image: '/quests/characters/canopy_sky_ranger.webp?v=watercolor5',
+    image: '/quests/characters/canopy_sky_ranger.webp?v=watercolor7',
     Svg: BowIconSvg,
     AvatarSvg: CanopyRangerAvatarSvg,
     desc: 'Fast & sharp-eyed · Spots distant birds'
@@ -455,7 +455,7 @@ const GUILD_CLASSES = [
   {
     name: 'Astral Spellcaster',
     badge: 'Star Mage',
-    image: '/quests/characters/astral_spellcaster.webp?v=watercolor5',
+    image: '/quests/characters/astral_spellcaster.webp?v=watercolor7',
     Svg: WandIconSvg,
     AvatarSvg: AstralSpellcasterAvatarSvg,
     desc: 'Creative & bright · Lights up constellations'
@@ -463,7 +463,7 @@ const GUILD_CLASSES = [
   {
     name: 'Sunfire Knight',
     badge: 'Sun Guardian',
-    image: '/quests/characters/sunfire_knight.webp?v=watercolor5',
+    image: '/quests/characters/sunfire_knight.webp?v=watercolor7',
     Svg: ShieldIconSvg,
     AvatarSvg: SunfireKnightAvatarSvg,
     desc: 'Steady & brave · Brings courage & calm'
@@ -527,13 +527,14 @@ function randomStarSeq(len: number, avoid: number[][] = []): number[] {
 function SunbirdProgressTrail({stage}: {stage: string}) {
   const steps = [
     {id: 'cpt', icon: '🐦', label: 'Sunbird', stages: ['cpt_story', 'cpt_hold', 'cpt_game']},
-    {id: 'flanker', icon: '🦋', label: 'Canopy', stages: ['flanker_story', 'flanker_game']},
+    {id: 'flanker', icon: '🏹', label: 'Canopy', stages: ['flanker_story', 'flanker_game']},
     {id: 'memory', icon: '⭐', label: 'Stars', stages: ['memory_story', 'memory_game']},
     {id: 'charge', icon: '☀️', label: 'Sunstone', stages: ['situational_story', 'situational_game']},
+    {id: 'trail', icon: '🌌', label: 'Sky Trail', stages: ['trail_story', 'trail_game']},
   ]
   const activeIdx = steps.findIndex(s => s.stages.includes(stage))
   if (activeIdx === -1 && stage !== 'celebration') return null
-  const currentStep = activeIdx === -1 ? 4 : activeIdx
+  const currentStep = activeIdx === -1 ? 5 : activeIdx
 
   return (
     <div className="mb-6 rounded-2xl bg-[#1A1510]/85 backdrop-blur-md p-3.5 border border-amber-400/40 shadow-lg max-w-xl mx-auto select-none">
@@ -541,7 +542,7 @@ function SunbirdProgressTrail({stage}: {stage: string}) {
         <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1.5 bg-black/40 rounded-full z-0 overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-500 rounded-full"
-            style={{width: `${Math.min(100, (currentStep / 3) * 100)}%`}}
+            style={{width: `${Math.min(100, (currentStep / 4) * 100)}%`}}
           />
         </div>
         {steps.map((st, i) => {
@@ -590,7 +591,7 @@ function GuideChirpNote({text}: {text: string}) {
 }
 
 function McInner() {
-  const [stage, setStage] = useState<'welcome' | 'avatar' | 'camera_setup' | 'cpt_story' | 'cpt_hold' | 'cpt_game' | 'flanker_story' | 'flanker_game' | 'memory_story' | 'memory_game' | 'situational_story' | 'situational_game' | 'trials' | 'parent_card' | 'agent_eval' | 'celebration'>('welcome')
+  const [stage, setStage] = useState<'welcome' | 'avatar' | 'camera_setup' | 'cpt_story' | 'cpt_hold' | 'cpt_game' | 'flanker_story' | 'flanker_game' | 'memory_story' | 'memory_game' | 'situational_story' | 'situational_game' | 'trail_story' | 'trail_game' | 'trials' | 'parent_card' | 'agent_eval' | 'celebration'>('welcome')
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -607,9 +608,9 @@ function McInner() {
   const [guildClass, setGuildClass] = useState('Canopy Sky Ranger')
   const [companion] = useState('Milo the Wise Owl')
   const band = bandFor(heroAge)
-  // the last two games (star memory and Sunstone charge) use the dark night-sky look
-  const darkStage = stage === 'memory_story' || stage === 'memory_game' || stage === 'situational_story' || stage === 'situational_game'
-  const isWideStage = ['cpt_hold', 'cpt_game', 'cpt_prep', 'cpt_break', 'flanker_intro', 'flanker_prac', 'flanker_game', 'memory_intro', 'memory_prac', 'memory_game', 'situational_intro', 'situational_prac', 'situational_game', 'end'].includes(stage)
+  // the night games (star memory, Sunstone charge, sky trail) use the dark night-sky look
+  const darkStage = stage === 'memory_story' || stage === 'memory_game' || stage === 'situational_story' || stage === 'situational_game' || stage === 'trail_story' || stage === 'trail_game'
+  const isWideStage = ['cpt_hold', 'cpt_game', 'cpt_prep', 'cpt_break', 'flanker_intro', 'flanker_prac', 'flanker_game', 'memory_intro', 'memory_prac', 'memory_game', 'situational_intro', 'situational_prac', 'situational_game', 'trail_story', 'trail_game', 'end'].includes(stage)
 
   // CPT-3 Randomized Parameters (Conners Continuous Performance Battery)
   const cptPlan = cptPlanFor(heroAge)
@@ -697,6 +698,71 @@ function McInner() {
   const chargeStartRef = useRef<number>(0)
   const chargeIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
+  // Chapter 5: Sky Trail (Alternating Trail Making Test Part B)
+  const TRAIL_NODES = useMemo(() => [
+    {id: 0, num: 1, type: 'sun' as const, symbol: '☀️', x: 22, y: 30, label: '1 ☀️'},
+    {id: 1, num: 1, type: 'moon' as const, symbol: '🌙', x: 74, y: 22, label: '1 🌙'},
+    {id: 2, num: 2, type: 'sun' as const, symbol: '☀️', x: 48, y: 50, label: '2 ☀️'},
+    {id: 3, num: 2, type: 'moon' as const, symbol: '🌙', x: 20, y: 74, label: '2 🌙'},
+    {id: 4, num: 3, type: 'sun' as const, symbol: '☀️', x: 80, y: 68, label: '3 ☀️'},
+    {id: 5, num: 3, type: 'moon' as const, symbol: '🌙', x: 38, y: 16, label: '3 🌙'},
+    {id: 6, num: 4, type: 'sun' as const, symbol: '☀️', x: 64, y: 36, label: '4 ☀️'},
+    {id: 7, num: 4, type: 'moon' as const, symbol: '🌙', x: 50, y: 82, label: '4 🌙'},
+  ], [])
+
+  const [trailStep, setTrailStep] = useState(0)
+  const [trailCompleted, setTrailCompleted] = useState<number[]>([])
+  const [trailLines, setTrailLines] = useState<Array<{x1: number; y1: number; x2: number; y2: number}>>([])
+  const [trailFeedback, setTrailFeedback] = useState<string>('')
+  const [trailErrorShakeId, setTrailErrorShakeId] = useState<number | null>(null)
+  const trailSwitchesCorrectRef = useRef<number>(0)
+  const trailErrorsRef = useRef<number>(0)
+  const trailStartTimeRef = useRef<number>(0)
+  const trailCompletionMsRef = useRef<number>(0)
+
+  function handleTrailNodeClick(nodeId: number) {
+    if (trailCompleted.includes(nodeId)) return
+
+    const expected = TRAIL_NODES[trailStep]
+    if (nodeId === trailStep) {
+      playAudio('chime')
+      trailSwitchesCorrectRef.current += 1
+      const newCompleted = [...trailCompleted, nodeId]
+      setTrailCompleted(newCompleted)
+
+      if (trailCompleted.length > 0) {
+        const prevNode = TRAIL_NODES[trailCompleted[trailCompleted.length - 1]]
+        const currNode = TRAIL_NODES[nodeId]
+        setTrailLines((prev) => [...prev, {x1: prevNode.x, y1: prevNode.y, x2: currNode.x, y2: currNode.y}])
+      }
+
+      setTrailFeedback('✨ Starlight connected!')
+
+      if (trailStep + 1 >= TRAIL_NODES.length) {
+        trailCompletionMsRef.current = Math.round(performance.now() - trailStartTimeRef.current)
+        playAudio('fanfare')
+        setTrailFeedback('🎉 Constellation complete!')
+        setTimeout(() => {
+          setStage('parent_card')
+        }, 1600)
+      } else {
+        setTrailStep((s) => s + 1)
+      }
+    } else {
+      playAudio('miss')
+      trailErrorsRef.current += 1
+      setTrailErrorShakeId(nodeId)
+      setTimeout(() => setTrailErrorShakeId(null), 600)
+
+      const clickedNode = TRAIL_NODES[nodeId]
+      if (expected && clickedNode && clickedNode.type === TRAIL_NODES[Math.max(0, trailStep - 1)]?.type) {
+        setTrailFeedback(`Remember to alternate! Look for ${expected.num} ${expected.symbol} (${expected.type === 'sun' ? 'Sun' : 'Moon'})!`)
+      } else if (expected) {
+        setTrailFeedback(`Next star is ${expected.num} ${expected.symbol}!`)
+      }
+    }
+  }
+
   // Agent Output
   const [agentResult, setAgentResult] = useState<any>(null)
   const [showClinicalDossier, setShowClinicalDossier] = useState(() => {
@@ -734,6 +800,10 @@ function McInner() {
             flankerCongruentTotal: 6,
             flankerIncongruentTotal: 6,
             workingMemorySpan: 4,
+            trailSwitchesCorrect: 7,
+            trailSwitchesTotal: 8,
+            trailSwitchErrors: 1,
+            trailCompletionMs: 14200,
             prematureReleases: 1,
             chargeTrials: 3,
             cptTargets: 12,
@@ -1102,7 +1172,8 @@ function McInner() {
             setChargeProgress(0)
             setChargeStatusText('idle')
           } else {
-            setStage('parent_card')
+            playAudio('whoosh')
+            setStage('trail_story')
           }
         }, 1400)
       }
@@ -1184,6 +1255,10 @@ function McInner() {
         flankerCongruentN: flankerCongruentTimes.length,
         flankerIncongruentN: flankerIncongruentTimes.length,
         workingMemorySpan: memoryMaxSpan > 0 ? memoryMaxSpan : null,
+        trailSwitchesCorrect: trailSwitchesCorrectRef.current,
+        trailSwitchesTotal: 8,
+        trailSwitchErrors: trailErrorsRef.current,
+        trailCompletionMs: trailCompletionMsRef.current,
         prematureReleases,
         chargeTrials: CHARGE_TRIALS.length,
         cptTargets,
@@ -1242,6 +1317,7 @@ function McInner() {
     (stage === 'flanker_story' || stage === 'flanker_game') ? '/quests/adhd/bg_flanker.webp' :
     (stage === 'memory_story' || stage === 'memory_game') ? '/quests/adhd/bg_memory.webp' :
     (stage === 'situational_story' || stage === 'situational_game') ? '/quests/adhd/bg_charge.webp' :
+    (stage === 'trail_story' || stage === 'trail_game') ? '/quests/adhd/bg_memory.webp' :
     '/quests/adhd/celebration.webp';
   const isParallaxStage = stage === 'welcome' || stage === 'celebration';
 
@@ -2145,7 +2221,151 @@ function McInner() {
           )
         })()}
 
-        {/* 10. LOADING AGENTIC EVALUATION */}
+        {/* 10. CHAPTER 5 STORY: SKY TRAIL (SUN & MOON) */}
+        {stage === 'trail_story' && (
+          <div className="mx-auto max-w-2xl text-center select-none py-6">
+            <div className="rounded-3xl border border-amber-400/40 bg-gradient-to-b from-[#18112C]/95 via-[#231840]/90 to-[#120B22]/95 backdrop-blur-md p-6 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.7)] text-amber-50">
+              <span className="inline-block rounded-full bg-amber-400/20 border border-amber-300/40 px-4 py-1 text-xs font-bold uppercase tracking-wider text-amber-200 mb-3 shadow-sm">
+                🌌 Chapter 5: Constellation Trail
+              </span>
+              <h2 className="font-patrick text-3xl sm:text-4xl text-amber-200 font-bold mb-2 drop-shadow-md">
+                Sky Trail: Sun & Moon ☀️🌙
+              </h2>
+              <p className="text-sm md:text-base text-amber-100 font-medium leading-relaxed mb-6 max-w-lg mx-auto">
+                Connect the celestial stones in order, alternating between Sun and Moon!
+              </p>
+
+              {/* Byte-sized Visual Formula */}
+              <div className="mb-6 rounded-2xl bg-black/40 border border-amber-400/30 p-4 max-w-md mx-auto">
+                <p className="text-xs font-bold text-amber-200 uppercase tracking-wider mb-2">Alternating Sequence:</p>
+                <div className="flex flex-wrap items-center justify-center gap-2 text-sm font-black">
+                  <span className="px-2.5 py-1 rounded-xl bg-amber-500/30 border border-amber-400 text-amber-200">1 ☀️</span>
+                  <span>➔</span>
+                  <span className="px-2.5 py-1 rounded-xl bg-indigo-500/30 border border-indigo-400 text-indigo-200">1 🌙</span>
+                  <span>➔</span>
+                  <span className="px-2.5 py-1 rounded-xl bg-amber-500/30 border border-amber-400 text-amber-200">2 ☀️</span>
+                  <span>➔</span>
+                  <span className="px-2.5 py-1 rounded-xl bg-indigo-500/30 border border-indigo-400 text-indigo-200">2 🌙</span>
+                  <span>➔</span>
+                  <span className="px-2.5 py-1 rounded-xl bg-amber-500/30 border border-amber-400 text-amber-200">3 ☀️...</span>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    playAudio('whoosh')
+                    setTrailStep(0)
+                    setTrailCompleted([])
+                    setTrailLines([])
+                    setTrailFeedback('')
+                    trailSwitchesCorrectRef.current = 0
+                    trailErrorsRef.current = 0
+                    trailStartTimeRef.current = performance.now()
+                    setStage('trail_game')
+                  }}
+                  className="rounded-full bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 px-12 py-5 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                >
+                  Start Sky Trail ▶
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 11. CHAPTER 5 GAMEPLAY: SKY TRAIL ARENA */}
+        {stage === 'trail_game' && (() => {
+          const expected = TRAIL_NODES[trailStep]
+          return (
+            <div className="mx-auto max-w-4xl lg:max-w-5xl select-none py-2 text-center">
+              {/* Header Banner */}
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#140E24]/90 border border-amber-400/40 p-3 px-5 backdrop-blur-md shadow-md text-amber-100">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">🌌</span>
+                  <div className="text-left">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 block">
+                      Trail Making Set-Shifting
+                    </span>
+                    <span className="font-patrick text-xl sm:text-2xl font-bold text-white">
+                      Next: {expected ? `${expected.num} ${expected.symbol} (${expected.type === 'sun' ? 'Sun' : 'Moon'})` : 'Done!'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <span className="rounded-full bg-amber-500/20 border border-amber-400/40 px-3.5 py-1 text-xs font-bold text-amber-200">
+                    Step {Math.min(trailStep + 1, TRAIL_NODES.length)} of {TRAIL_NODES.length}
+                  </span>
+                </div>
+              </div>
+
+              {/* Feedback Prompt */}
+              {trailFeedback && (
+                <div className="mb-3 text-xs sm:text-sm font-bold text-amber-200 animate-pulse">
+                  {trailFeedback}
+                </div>
+              )}
+
+              {/* Starlight Constellation Canvas */}
+              <div className="relative mx-auto w-full aspect-[16/10] min-h-[380px] sm:min-h-[460px] md:min-h-[520px] rounded-3xl overflow-hidden border-2 border-indigo-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.8)] bg-gradient-to-b from-[#090514] via-[#120B24] to-[#0A0616]">
+                {/* SVG Constellation Connection Lines */}
+                <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  {trailLines.map((line, idx) => (
+                    <line
+                      key={idx}
+                      x1={`${line.x1}%`}
+                      y1={`${line.y1}%`}
+                      x2={`${line.x2}%`}
+                      y2={`${line.y2}%`}
+                      stroke="#FBBF24"
+                      strokeWidth="0.8"
+                      strokeDasharray="2 1"
+                      strokeLinecap="round"
+                      className="animate-pulse"
+                      filter="drop-shadow(0 0 4px #F59E0B)"
+                    />
+                  ))}
+                </svg>
+
+                {/* Celestial Nodes */}
+                {TRAIL_NODES.map((node) => {
+                  const isDone = trailCompleted.includes(node.id)
+                  const isNext = node.id === trailStep
+                  const isShaking = trailErrorShakeId === node.id
+
+                  return (
+                    <button
+                      key={node.id}
+                      type="button"
+                      aria-label={node.label}
+                      onClick={() => handleTrailNodeClick(node.id)}
+                      style={{left: `${node.x}%`, top: `${node.y}%`}}
+                      className={`absolute -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center justify-center rounded-full transition-transform active:scale-90 cursor-pointer ${
+                        isDone
+                          ? 'w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-tr from-amber-400 to-yellow-300 border-2 border-white shadow-[0_0_20px_rgba(251,191,36,0.9)] opacity-90'
+                          : isNext
+                          ? 'w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-b from-[#2A1D4E] to-[#170E2E] border-2 border-amber-300 shadow-[0_0_25px_rgba(245,158,11,0.7)] animate-pulse'
+                          : 'w-14 h-14 sm:w-16 sm:h-16 bg-[#160E2A]/90 border border-indigo-400/50 hover:border-amber-300/80 shadow-md'
+                      } ${isShaking ? 'animate-shake ring-4 ring-rose-500' : ''}`}
+                    >
+                      <span className={`text-xl sm:text-2xl ${isDone ? 'brightness-125' : ''}`}>
+                        {node.symbol}
+                      </span>
+                      <span className={`text-[11px] sm:text-xs font-black mt-0.5 ${
+                        isDone ? 'text-slate-950 font-extrabold' : 'text-amber-200'
+                      }`}>
+                        {node.num}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* 12. LOADING AGENTIC EVALUATION */}
         {stage === 'parent_card' && (
           <ParentCard childName={heroName} onDone={(a) => submitCognitiveAgent(a)} />
         )}

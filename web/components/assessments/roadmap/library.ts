@@ -20,8 +20,8 @@ export const WINDOWS: Array<{id: WindowId; label: string; theme: string}> = [
 ]
 
 export const EXPECTED_GAMES = {
-  adhd: ['Sunbird game', 'Steering game', 'Star-sequence game', 'Patience game'],
-  autism: ['Gaze game', 'Feelings match', 'Comfort choices', 'Sorting game'],
+  adhd: ['Sunbird game', 'Steering game', 'Star-sequence game', 'Patience game', 'Sky Trail game'],
+  autism: ['Gaze game', 'Feelings match', 'Comfort choices', 'Sorting game', 'Social stories game'],
   dyslexia: ['Rhyme game', 'First-sound game', 'Letter game', 'Sound-order game'],
 } as const
 

@@ -250,9 +250,31 @@ export default function WelcomeWizard(p: Props) {
                 <dd className="font-bold text-[#0F172A]">{p.age}</dd>
               </dl>
             </div>
-            <label className="mb-6 flex items-start gap-3 text-left text-sm leading-relaxed text-slate-700">
-              <input type="checkbox" checked={p.consent} onChange={(e) => p.onConsent(e.target.checked)} className="mt-0.5 h-6 w-6 shrink-0" />
-              <span>I am this child&apos;s parent or guardian. This is a play activity, not a diagnosis. We do not save anything from this session. At the end, the codename and play counts are sent to write the summary, and an AI model may help word it.</span>
+
+            {/* Byte-Sized What Parents Discover Cards */}
+            <div className="mb-5 grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+              <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80">
+                <span className="text-xs font-bold text-amber-900 uppercase tracking-wide block mb-1">
+                  🔍 What We Observe
+                </span>
+                <p className="text-xs text-slate-700 leading-snug">
+                  Natural reaction times, target sound recognition, letter shape discrimination, and sequential memory buffer.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-teal-50/70 border border-teal-200/80">
+                <span className="text-xs font-bold text-teal-900 uppercase tracking-wide block mb-1">
+                  💡 What You Receive
+                </span>
+                <p className="text-xs text-slate-700 leading-snug">
+                  Comprehensive parent dossier with executive domain scorecard, home & school daily translations, and 4-week roadmap.
+                </p>
+              </div>
+            </div>
+
+            <label className="mb-6 flex items-start gap-3 text-left text-xs sm:text-sm leading-relaxed text-slate-700">
+              <input type="checkbox" checked={p.consent} onChange={(e) => p.onConsent(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-teal-600" />
+              <span>I am this child&apos;s parent or guardian. This is a low-stress play activity, not a diagnosis. We do not save data to servers. At the end, gameplay scores write your comprehensive report and home plan.</span>
             </label>
             <div className="text-center">
               <button

@@ -406,10 +406,11 @@ function LanternProgressTrail({stage}: {stage: string}) {
     {id: 'tom', icon: '🦊', label: 'Feelings', stages: ['tom_story', 'tom_game']},
     {id: 'room', icon: '🏡', label: 'Treehouse', stages: ['sensory_story', 'sensory_game']},
     {id: 'dccs', icon: '🔮', label: 'Gems', stages: ['dccs_story', 'dccs_game']},
+    {id: 'social', icon: '🌸', label: 'Friends', stages: ['social_story', 'social_game']},
   ]
   const activeIdx = steps.findIndex(s => s.stages.includes(stage))
   if (activeIdx === -1 && stage !== 'celebration') return null
-  const currentStep = activeIdx === -1 ? 4 : activeIdx
+  const currentStep = activeIdx === -1 ? 5 : activeIdx
 
   return (
     <div className="mb-6 rounded-2xl bg-white/90 backdrop-blur-md p-3.5 border border-teal-200/80 shadow-md max-w-xl mx-auto select-none">
@@ -417,7 +418,7 @@ function LanternProgressTrail({stage}: {stage: string}) {
         <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1.5 bg-teal-100 rounded-full z-0 overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-teal-400 to-emerald-500 transition-all duration-500 rounded-full"
-            style={{width: `${Math.min(100, (currentStep / 3) * 100)}%`}}
+            style={{width: `${Math.min(100, (currentStep / 4) * 100)}%`}}
           />
         </div>
         {steps.map((st, i) => {
@@ -594,7 +595,7 @@ function HandArrow() {
 }
 
 function __McInner() {
-  const [stage, setStage] = useState<'welcome' | 'avatar' | 'look_setup' | 'look_game' | 'ja_story' | 'ja_game' | 'tom_story' | 'tom_game' | 'sensory_story' | 'sensory_game' | 'ja_show' | 'dccs_story' | 'dccs_game' | 'parent_card' | 'agent_eval' | 'celebration'>('welcome')
+  const [stage, setStage] = useState<'welcome' | 'avatar' | 'look_setup' | 'look_game' | 'ja_story' | 'ja_game' | 'tom_story' | 'tom_game' | 'sensory_story' | 'sensory_game' | 'ja_show' | 'dccs_story' | 'dccs_game' | 'social_story' | 'social_game' | 'parent_card' | 'agent_eval' | 'celebration'>('welcome')
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -701,6 +702,99 @@ function __McInner() {
   const [dccsRuleCheck, setDccsRuleCheck] = useState(false)
   const [dccsRuleAnswer, setDccsRuleAnswer] = useState<{answered: 'colour' | 'shape'; ms: number} | null>(null)
   const [isPaused, setIsPaused] = useState(false)
+
+  // Chapter 5: The Whispering Grove Gathering (Social Scenarios & Theory of Mind)
+  const SOCIAL_SCENARIOS = useMemo(() => [
+    {
+      id: 0,
+      title: 'Sharing Berries 🍓',
+      badge: 'Kindness & Sharing',
+      story: 'Pip found two juicy sweet berries. Milo the owl is hungry and has no food.',
+      question: 'What is the kindest thing for Pip to do?',
+      options: [
+        {text: 'Share a berry with Milo 🍓', isCorrect: true, emoji: '🤝'},
+        {text: 'Eat both berries alone 🍽️', isCorrect: false, emoji: '😋'},
+        {text: 'Hide the berries in a leaf 🍃', isCorrect: false, emoji: '🙈'},
+      ],
+      celebration: 'Wonderful! Sharing brings friends closer! ✨'
+    },
+    {
+      id: 1,
+      title: 'Aria’s Magic Crystal 🔮',
+      badge: 'Perspective & Beliefs',
+      story: 'Aria puts her magic crystal into the Green Basket 🧺. Then Aria goes outside to pick flowers 🌸. While Aria is outside, Fox moves the crystal into the Purple Box 📦. Now Aria comes back inside.',
+      question: 'Where will Aria LOOK FIRST for her crystal?',
+      options: [
+        {text: 'The Green Basket 🧺', isCorrect: true, emoji: '🧺'},
+        {text: 'The Purple Box 📦', isCorrect: false, emoji: '📦'},
+        {text: 'Under the bench 🪑', isCorrect: false, emoji: '🪑'},
+      ],
+      celebration: 'Great perspective thinking! Aria looks where she remembers leaving it! 🧠'
+    },
+    {
+      id: 2,
+      title: 'A New Friend Arrives 🦌',
+      badge: 'Welcoming Others',
+      story: 'Little Deer is standing alone near the garden gate, shyly watching the others play leapfrog with hopeful eyes.',
+      question: 'How can Fox help Deer feel happy and included?',
+      options: [
+        {text: 'Wave and say "Come play with us!" 👋', isCorrect: true, emoji: '👋'},
+        {text: 'Run past without saying hello 🏃', isCorrect: false, emoji: '🏃'},
+        {text: 'Tell Deer to stay far away 🌳', isCorrect: false, emoji: '🛑'},
+      ],
+      celebration: 'Beautiful welcoming heart! Including friends is wonderful! 🌟'
+    },
+    {
+      id: 3,
+      title: 'Rebuilding the Tower 🏰',
+      badge: 'Empathy & Repair',
+      story: 'While doing a joyful spin, Fox accidentally bumps Aria’s tall block tower and it tumbles down! Fox feels really bad.',
+      question: 'What is the best way for Fox to fix things?',
+      options: [
+        {text: 'Say "I am sorry, let me help rebuild it!" 🤝', isCorrect: true, emoji: '🤝'},
+        {text: 'Run away and hide 🏃', isCorrect: false, emoji: '🏃'},
+        {text: 'Blame the wind 💨', isCorrect: false, emoji: '💨'},
+      ],
+      celebration: 'Terrific empathy! Apologizing and helping rebuild heals feelings! ❤️'
+    },
+  ], [])
+
+  const [socialIndex, setSocialIndex] = useState(0)
+  const [socialSelectedOption, setSocialSelectedOption] = useState<number | null>(null)
+  const [socialFeedback, setSocialFeedback] = useState<string>('')
+  const socialStoryCorrectRef = useRef<number>(0)
+  const falseBeliefCorrectRef = useRef<boolean>(false)
+  const socialRepairCorrectRef = useRef<boolean>(false)
+
+  function handleSocialOptionSelect(optionIdx: number) {
+    if (socialSelectedOption !== null) return
+    setSocialSelectedOption(optionIdx)
+
+    const curr = SOCIAL_SCENARIOS[socialIndex]
+    const chosen = curr.options[optionIdx]
+
+    if (chosen.isCorrect) {
+      playAudio('chime')
+      socialStoryCorrectRef.current += 1
+      if (curr.id === 1) falseBeliefCorrectRef.current = true
+      if (curr.id === 3) socialRepairCorrectRef.current = true
+      setSocialFeedback(curr.celebration)
+    } else {
+      playAudio('miss')
+      setSocialFeedback('A good try! Friends feel happier when we care and share! 💖')
+    }
+
+    setTimeout(() => {
+      if (socialIndex + 1 < SOCIAL_SCENARIOS.length) {
+        setSocialIndex((idx) => idx + 1)
+        setSocialSelectedOption(null)
+        setSocialFeedback('')
+      } else {
+        playAudio('fanfare')
+        setStage('parent_card')
+      }
+    }, 1800)
+  }
   const ruleCheckStartRef = useRef<number>(0)
   const pracTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => () => { if (pracTimer.current) clearTimeout(pracTimer.current) }, [])
@@ -841,8 +935,8 @@ function __McInner() {
         playAudio('sensory')
       }
       if (dccsIndex >= DCCS_CARDS.length) {
-        playAudio('fanfare')
-        setStage('parent_card')
+        playAudio('whoosh')
+        setStage('social_story')
         return
       }
       dccsStartRef.current = performance.now()
@@ -923,6 +1017,12 @@ function __McInner() {
         sortPreCorrect: countTrue(preAnswers),
         sortPostTotal: postAnswers.length,
         sortPostCorrect: countTrue(postAnswers),
+        socialStoryCorrect: socialStoryCorrectRef.current,
+        socialStoryTotal: 4,
+        falseBeliefCorrect: falseBeliefCorrectRef.current ? 1 : 0,
+        falseBeliefTotal: 1,
+        socialRepairCorrect: socialRepairCorrectRef.current ? 1 : 0,
+        socialRepairTotal: 1,
         // encounter by encounter in the gaze game: vessel chosen (0 left, 1 centre, 2 right) and time in ms
         ...Object.fromEntries(Array.from({length: JA_TRIALS.length}, (_, i) => [`gazePick${i + 1}`, jaPicks[i] ?? null])),
         ...Object.fromEntries(Array.from({length: JA_TRIALS.length}, (_, i) => [`gazeMs${i + 1}`, jaResponseTimes[i] ?? null])),
@@ -1445,12 +1545,14 @@ function __McInner() {
     ? '/quests/autism/bg_sanctuary.webp'
     : (stage === 'dccs_story' || stage === 'dccs_game')
     ? '/quests/autism/bg_sorting.webp'
+    : (stage === 'social_story' || stage === 'social_game')
+    ? '/quests/autism/bg_feelings.webp'
     : stage === 'celebration'
     ? '/quests/autism/celebration.webp'
     : '/quests/autism/welcome.webp'
 
   const isTaskScreen = stage.endsWith('_game')
-  const isWideStage = ['look_game', 'ja_game', 'ja_show', 'feelings_game', 'sensory_story', 'dccs_story', 'dccs_game', 'end'].includes(stage)
+  const isWideStage = ['look_game', 'ja_game', 'ja_show', 'feelings_game', 'sensory_story', 'dccs_story', 'dccs_game', 'social_story', 'social_game', 'end'].includes(stage)
 
   return (
     <main data-no-listen="true" className="relative min-h-screen py-8 px-4 font-poppins text-[#1F2937] overflow-x-hidden selection:bg-teal-400 selection:text-teal-950">
@@ -2383,7 +2485,139 @@ function __McInner() {
           />
         )}
 
-        {/* 8. LOADING AGENT */}
+        {/* 8. CHAPTER 5 STORY: THE WHISPERING GROVE GATHERING */}
+        {stage === 'social_story' && (
+          <div className="mx-auto max-w-2xl text-center select-none py-6">
+            <div className="rounded-3xl border border-teal-300/40 bg-gradient-to-b from-[#0A2219]/95 via-[#0D2B20]/90 to-[#071912]/95 backdrop-blur-md p-6 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.7)] text-teal-50">
+              <span className="inline-block rounded-full bg-teal-400/20 border border-teal-300/40 px-4 py-1 text-xs font-bold uppercase tracking-wider text-teal-200 mb-3 shadow-sm">
+                🌸 Chapter 5: The Whispering Grove Gathering
+              </span>
+              <h2 className="font-patrick text-3xl sm:text-4xl text-amber-200 font-bold mb-2 drop-shadow-md">
+                Understanding Friends 🌸🤝
+              </h2>
+              <p className="text-sm md:text-base text-teal-100 font-medium leading-relaxed mb-6 max-w-lg mx-auto">
+                Our forest friends are playing in the grove! Notice what each friend needs and choose the kindest action.
+              </p>
+
+              {/* Byte-sized Visual Formula */}
+              <div className="grid grid-cols-3 gap-3 max-w-md mx-auto mb-6">
+                <div className="flex flex-col items-center p-3 rounded-2xl bg-black/40 border border-teal-400/30">
+                  <span className="text-2xl mb-1">📖</span>
+                  <span className="text-xs font-bold text-amber-200">1. See scene</span>
+                </div>
+                <div className="flex flex-col items-center p-3 rounded-2xl bg-black/40 border border-teal-400/30">
+                  <span className="text-2xl mb-1">🤔</span>
+                  <span className="text-xs font-bold text-teal-200">2. Think & feel</span>
+                </div>
+                <div className="flex flex-col items-center p-3 rounded-2xl bg-black/40 border border-teal-400/30">
+                  <span className="text-2xl mb-1">🤝</span>
+                  <span className="text-xs font-bold text-emerald-200">3. Tap match!</span>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    playAudio('whoosh')
+                    setSocialIndex(0)
+                    setSocialSelectedOption(null)
+                    setSocialFeedback('')
+                    socialStoryCorrectRef.current = 0
+                    falseBeliefCorrectRef.current = false
+                    socialRepairCorrectRef.current = false
+                    setStage('social_game')
+                  }}
+                  className="rounded-full bg-gradient-to-r from-teal-500 via-teal-600 to-emerald-600 px-12 py-5 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                >
+                  Meet the Friends ▶
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 9. CHAPTER 5 GAMEPLAY: SOCIAL SCENARIOS & THEORY OF MIND */}
+        {stage === 'social_game' && SOCIAL_SCENARIOS[socialIndex] && (() => {
+          const sc = SOCIAL_SCENARIOS[socialIndex]
+          return (
+            <div className="mx-auto max-w-3xl select-none py-2 text-center">
+              {/* Header Banner */}
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#091D16]/90 border border-teal-400/40 p-3 px-5 backdrop-blur-md shadow-md text-teal-100">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">🌸</span>
+                  <div className="text-left">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-teal-300 block">
+                      Social Thinking & Perspective
+                    </span>
+                    <span className="font-patrick text-xl sm:text-2xl font-bold text-amber-200">
+                      {sc.title}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <span className="rounded-full bg-teal-500/20 border border-teal-400/40 px-3.5 py-1 text-xs font-bold text-teal-200">
+                    Story {socialIndex + 1} of {SOCIAL_SCENARIOS.length}
+                  </span>
+                </div>
+              </div>
+
+              {/* Story Context Card */}
+              <div className="rounded-3xl border-2 border-teal-400/50 bg-gradient-to-b from-[#0B251B]/95 via-[#0D2D21]/90 to-[#071B13]/95 backdrop-blur-md p-6 sm:p-8 shadow-2xl text-teal-50 mb-6">
+                <div className="inline-block rounded-full bg-amber-400/20 border border-amber-300/40 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-amber-200 mb-3">
+                  {sc.badge}
+                </div>
+
+                <p className="text-base sm:text-lg md:text-xl font-medium leading-relaxed mb-4 text-emerald-50">
+                  {sc.story}
+                </p>
+
+                <p className="font-patrick text-xl sm:text-2xl font-bold text-amber-200 border-t border-teal-400/30 pt-3">
+                  {sc.question}
+                </p>
+
+                {/* Feedback Prompt */}
+                {socialFeedback && (
+                  <div className="mt-4 p-3 rounded-2xl bg-amber-500/20 border border-amber-400/50 text-sm font-bold text-amber-200 animate-pulse">
+                    {socialFeedback}
+                  </div>
+                )}
+              </div>
+
+              {/* Interactive Options Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {sc.options.map((opt, oIdx) => {
+                  const isSelected = socialSelectedOption === oIdx
+                  return (
+                    <button
+                      key={oIdx}
+                      type="button"
+                      disabled={socialSelectedOption !== null}
+                      onClick={() => handleSocialOptionSelect(oIdx)}
+                      className={`group relative flex flex-col items-center justify-center rounded-3xl p-5 sm:p-6 transition-all duration-300 active:scale-95 cursor-pointer border-2 ${
+                        isSelected
+                          ? opt.isCorrect
+                            ? 'bg-gradient-to-b from-emerald-600 to-teal-700 border-emerald-300 shadow-[0_0_30px_rgba(16,185,129,0.8)] scale-102'
+                            : 'bg-gradient-to-b from-rose-900 to-rose-950 border-rose-400'
+                          : 'bg-[#0B231A]/90 border-teal-400/40 hover:border-amber-300/80 hover:bg-[#103024] shadow-lg'
+                      }`}
+                    >
+                      <span className="text-4xl sm:text-5xl mb-2 drop-shadow transition-transform group-hover:scale-110">
+                        {opt.emoji}
+                      </span>
+                      <span className="text-xs sm:text-sm font-bold text-center text-teal-100 group-hover:text-white leading-snug">
+                        {opt.text}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* 10. LOADING AGENT */}
         {stage === 'parent_card' && (
           <ParentCard childName={guardianName} onDone={(a) => submitAutismAgent(a)} />
         )}

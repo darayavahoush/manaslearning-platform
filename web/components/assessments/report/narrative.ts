@@ -152,6 +152,28 @@ function patience(r: Rec): string[] {
   return p ? [`Motor persistence & delayed gratification: maintained sustained physical touch to 100% completion in ${p.n - p.k} of ${p.n} attempts (released prematurely in ${p.k}).`] : []
 }
 
+function trail(r: Rec): string[] {
+  const m = prop(r, 'trailSwitchesCorrect')
+  if (!m) return []
+  const err = val(r, 'trailSwitchErrors')
+  const out = [`Set-shifting & cognitive alternating: ${m.k} of ${m.n} alternating trail switches completed correctly (${Math.round(m.p * 100)}%).`]
+  if (err && (err.value ?? 0) > 0) {
+    out.push(`Perseverative tendencies: ${err.value} times tapped the same category twice before shifting sets.`)
+  }
+  return out
+}
+
+function socialStories(r: Rec, who: string): string[] {
+  const m = prop(r, 'socialStoryMatches')
+  if (!m) return []
+  const fb = prop(r, 'falseBeliefPassed')
+  const out = [`Social perspective taking & intention decoding: ${who} correctly evaluated ${m.k} of ${m.n} peer scenarios (${Math.round(m.p * 100)}%).`]
+  if (fb) {
+    out.push(fb.k ? `Theory of mind (false belief): accurately predicted peer perspectives based on what the other person knew.` : `Theory of mind: found predicting other people’s false beliefs challenging.`)
+  }
+  return out
+}
+
 function parentAnswers(r: Rec): string[] {
   const c = r.parentCard
   if (!c) return []
@@ -282,10 +304,12 @@ export const STORY_SECTION_TITLE: Record<string, string> = {
   'Steering game': 'Selective Attention & Distraction Filtering (Flanker Task)',
   'Star-sequence game': 'Visual Working Memory & Sequence Recall (Spatial Span)',
   'Patience game': 'Motor Persistence & Delayed Gratification (Hold Task)',
+  'Sky Trail game': 'Cognitive Flexibility & Set-Shifting (Alternating Trail)',
   'Gaze game': 'Joint Attention & Social Referencing',
   'Feelings match': 'Facial Emotion Recognition & Social Empathy',
   'Comfort choices': 'Sensory Calibration & Comfort Thresholds',
   'Sorting game': 'Cognitive Flexibility & Rule Switching (DCCS Task)',
+  'Social stories game': 'Social Perspective Taking & Theory of Mind',
   'Rhyme game': 'Phonological Rhyme Awareness',
   'First-sound game': 'Beginning Sound Isolation & Phonemic Awareness',
   'Letter game': 'Orthographic Discrimination & Letter Reversals (b/d/p/q)',
@@ -305,10 +329,12 @@ export function buildGameStories(record: Rec, name?: string): {stories: GameStor
     'Steering game': steering,
     'Star-sequence game': stars,
     'Patience game': patience,
+    'Sky Trail game': trail,
     'Gaze game': (r) => gaze(r, who),
     'Feelings match': (r) => feelings(r, who),
     'Comfort choices': (r) => comfort(r, who),
     'Sorting game': (r) => sorting(r, who),
+    'Social stories game': (r) => socialStories(r, who),
     'Rhyme game': rhyme,
     'First-sound game': firstSound,
     'Letter game': letters,

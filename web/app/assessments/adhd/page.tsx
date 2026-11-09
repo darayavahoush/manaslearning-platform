@@ -450,7 +450,7 @@ const GUILD_CLASSES = [
     image: '/quests/characters/canopy_sky_ranger.webp',
     Svg: BowIconSvg,
     AvatarSvg: CanopyRangerAvatarSvg,
-    desc: 'Fast & sharp-eyed · Spots distant birds in the forest canopy'
+    desc: 'Fast & sharp-eyed · Spots distant birds'
   },
   {
     name: 'Astral Spellcaster',
@@ -458,7 +458,7 @@ const GUILD_CLASSES = [
     image: '/quests/characters/astral_spellcaster.webp',
     Svg: WandIconSvg,
     AvatarSvg: AstralSpellcasterAvatarSvg,
-    desc: 'Creative & quick-thinking · Lights up constellations with starlight'
+    desc: 'Creative & bright · Lights up constellations'
   },
   {
     name: 'Sunfire Knight',
@@ -466,7 +466,7 @@ const GUILD_CLASSES = [
     image: '/quests/characters/sunfire_knight.webp',
     Svg: ShieldIconSvg,
     AvatarSvg: SunfireKnightAvatarSvg,
-    desc: 'Steady & calm-hearted · Brings courage and focus to the valley'
+    desc: 'Steady & brave · Brings courage & calm'
   },
 ]
 

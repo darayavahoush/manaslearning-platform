@@ -94,6 +94,39 @@ const SCHOLAR_CLASSES: Cls[] = [
   },
 ];
 
+const CHAPTER_VISUALS: Record<string, { icon: string; shortPrompt: string; steps: [string, string, string] }> = {
+  rhyme: {
+    icon: '🔔',
+    shortPrompt: 'Listen to the echo ➔ Tap the rhyming stone!',
+    steps: ['👂 1. Hear word', '🔔 2. Find rhyme', '💎 3. Tap stone!'],
+  },
+  first: {
+    icon: '🎯',
+    shortPrompt: 'Listen to the start sound ➔ Tap the match!',
+    steps: ['👂 1. Hear sound', '🎯 2. Match start', '💎 3. Tap stone!'],
+  },
+  letters: {
+    icon: '🦋',
+    shortPrompt: 'Find all letters matching the lantern!',
+    steps: ['🏮 1. Check letter', '🔍 2. Spot twins', '🦋 3. Tap all!'],
+  },
+  span: {
+    icon: '🎵',
+    shortPrompt: 'Listen to the tunes ➔ Tap in the same order!',
+    steps: ['🎵 1. Hear tune', '🧠 2. Remember order', '🔢 3. Tap stones!'],
+  },
+  words: {
+    icon: '📖',
+    shortPrompt: 'Real word or made-up word? Tap to sort!',
+    steps: ['📖 1. Read word', '✨ 2. Real word?', '🪄 3. Or made-up?'],
+  },
+  spell: {
+    icon: '✍️',
+    shortPrompt: 'Listen to the word ➔ Pick the right spelling!',
+    steps: ['👂 1. Hear word', '✍️ 2. Pick spelling', '🌟 3. Tap match!'],
+  },
+};
+
 function Owl({ line, pose = 'greeting' }: { line: string; pose?: 'greeting' | 'listening' | 'cheering' | 'resting' }) {
   const map: Record<string, string> = {
     greeting: '/quests/dyslexia/pip_greeting.webp',
@@ -635,28 +668,46 @@ function McInner() {
       {/* STAGE 3: CHAPTER BRIEFING */}
       {stage === "intro" && (
         <section className="mx-auto max-w-3xl relative z-10 my-8 px-4">
-          <div className="rounded-3xl border-2 border-indigo-400/40 bg-gradient-to-b from-[#1E1636]/90 via-[#261C44]/80 to-[#18112C]/95 backdrop-blur-md p-8 md:p-10 shadow-2xl text-center text-amber-100">
+          <div className="rounded-3xl border-2 border-indigo-400/40 bg-gradient-to-b from-[#1E1636]/90 via-[#261C44]/80 to-[#18112C]/95 backdrop-blur-md p-6 sm:p-10 shadow-2xl text-center text-amber-100">
             <Owl line={`Chapter ${ch + 1}: ${c.name}`} pose="greeting" />
-            <h2 className="font-patrick text-3xl sm:text-4xl text-amber-300 font-bold mt-4 mb-2">
+
+            <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-indigo-500/20 border border-indigo-400/40 px-3.5 py-1 text-xs font-bold text-amber-200">
+              <span>{CHAPTER_VISUALS[c.id]?.icon || '✨'}</span>
+              <span>Chapter {ch + 1} of {chapters.length}</span>
+            </div>
+
+            <h2 className="font-patrick text-3xl sm:text-4xl text-amber-300 font-bold mt-2 mb-1">
               {c.name}
             </h2>
-            <p className="text-base text-amber-100 max-w-lg mx-auto mb-6 leading-relaxed">
-              {c.hint}
+            <p className="text-base sm:text-lg font-bold text-amber-100 max-w-lg mx-auto mb-5">
+              {CHAPTER_VISUALS[c.id]?.shortPrompt || c.hint}
             </p>
+
+            {/* Illustrated Byte-Sized Action Chips */}
+            {CHAPTER_VISUALS[c.id] && (
+              <div className="grid grid-cols-3 gap-2.5 max-w-md mx-auto mb-6">
+                {CHAPTER_VISUALS[c.id].steps.map((st, idx) => (
+                  <div key={idx} className="flex flex-col items-center p-2.5 rounded-2xl bg-black/40 border border-indigo-400/30 shadow-xs">
+                    <span className="text-xs font-bold text-amber-200">{st}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div className="flex flex-wrap justify-center gap-4">
               <button
-                className="rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 px-10 py-4 text-lg font-bold text-slate-950 shadow-xl hover:scale-105 active:scale-95 transition-all"
+                className="rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 px-10 py-4 text-lg font-bold text-slate-950 shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
                 onClick={() => setStage("play")}
               >
-                Start Chapter →
+                Start Chapter ▶
               </button>
               {(c.id === "spell" || c.id === "words") && (
-                <button className="rounded-full border border-amber-400/60 bg-black/30 px-6 py-4 text-sm font-bold text-amber-200 hover:bg-black/50 transition-all" onClick={() => next()}>
+                <button className="rounded-full border border-amber-400/60 bg-black/30 px-6 py-4 text-sm font-bold text-amber-200 hover:bg-black/50 transition-all cursor-pointer" onClick={() => next()}>
                   Skip this part
                 </button>
               )}
-              <button className="rounded-full border border-amber-400/60 bg-black/30 px-6 py-4 text-sm font-bold text-amber-200 hover:bg-black/50 transition-all" onClick={() => speak(teen ? c.plain.hint : c.say, vol)}>
-                Hear instructions again
+              <button className="rounded-full border border-amber-400/60 bg-black/30 px-6 py-4 text-sm font-bold text-amber-200 hover:bg-black/50 transition-all cursor-pointer" onClick={() => speak(teen ? c.plain.hint : c.say, vol)}>
+                Hear again 🔊
               </button>
             </div>
           </div>

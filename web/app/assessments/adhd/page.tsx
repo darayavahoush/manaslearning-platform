@@ -526,10 +526,10 @@ function randomStarSeq(len: number, avoid: number[][] = []): number[] {
 
 function SunbirdProgressTrail({stage}: {stage: string}) {
   const steps = [
-    {id: 'cpt', label: 'Sunbird Meadow', stages: ['cpt_story', 'cpt_hold', 'cpt_game']},
-    {id: 'flanker', label: 'Canopy Trail', stages: ['flanker_story', 'flanker_game']},
-    {id: 'memory', label: 'Starlit Terrace', stages: ['memory_story', 'memory_game']},
-    {id: 'charge', label: 'Sunstone Courtyard', stages: ['situational_story', 'situational_game']},
+    {id: 'cpt', icon: '🐦', label: 'Sunbird', stages: ['cpt_story', 'cpt_hold', 'cpt_game']},
+    {id: 'flanker', icon: '🦋', label: 'Canopy', stages: ['flanker_story', 'flanker_game']},
+    {id: 'memory', icon: '⭐', label: 'Stars', stages: ['memory_story', 'memory_game']},
+    {id: 'charge', icon: '☀️', label: 'Sunstone', stages: ['situational_story', 'situational_game']},
   ]
   const activeIdx = steps.findIndex(s => s.stages.includes(stage))
   if (activeIdx === -1 && stage !== 'celebration') return null
@@ -568,8 +568,9 @@ function SunbirdProgressTrail({stage}: {stage: string}) {
                   <span className="text-xs font-bold text-amber-200">{i + 1}</span>
                 )}
               </div>
-              <span className={`text-[11px] font-bold mt-1 hidden sm:block ${isCurrent ? 'text-amber-200 font-black' : isDone ? 'text-amber-300/80' : 'text-amber-100/50'}`}>
-                {st.label}
+              <span className={`text-[11px] font-bold mt-1.5 flex items-center gap-1 ${isCurrent ? 'text-amber-200 font-extrabold' : isDone ? 'text-amber-300/80' : 'text-amber-100/50'}`}>
+                <span>{st.icon}</span>
+                <span>{st.label}</span>
               </span>
             </div>
           )
@@ -1412,17 +1413,27 @@ function McInner() {
 
         {/* 2b. SUNBIRD PRACTICE (not recorded) */}
         {stage === 'cpt_hold' && (
-          <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-6 md:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-4xl lg:max-w-5xl mx-auto w-full">
-            <div className="flex justify-between items-center mb-4">
+          <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md p-6 md:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none text-amber-50 max-w-5xl lg:max-w-6xl mx-auto w-full">
+            <div className="flex justify-between items-center mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-amber-200 bg-[#3A2412]/80 border border-amber-400/30 px-3.5 py-1 rounded-full">
-                Wait {holdIdx + 1} of {HOLD_WAITS_MS.length}
+                🐦 Wait {holdIdx + 1} of {HOLD_WAITS_MS.length}
               </span>
               <span className="text-xs font-bold text-amber-100 bg-[#422D19]/80 px-3 py-1 rounded-full border border-amber-400/30">
                 <span>⏳</span> Hold still
               </span>
             </div>
-            <p className="font-patrick text-2xl md:text-3xl font-bold mb-4" aria-live="polite">
-              {holdPhase === 'wait' ? 'Hold still and wait for the chime. Do not tap yet.' : 'Chime! Tap the sunbird now!'}
+            <p className="font-patrick text-2xl sm:text-3xl md:text-4xl font-bold mb-3 flex items-center justify-center gap-2" aria-live="polite">
+              {holdPhase === 'wait' ? (
+                <>
+                  <span className="text-2xl sm:text-3xl">🤫</span>
+                  <span className="text-amber-100">Hold still... wait for chime!</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-2xl sm:text-3xl animate-bounce">🔔</span>
+                  <span className="text-amber-300">CHIME! Tap the sunbird! 🐦</span>
+                </>
+              )}
             </p>
             <SunbirdSkyArena
               stimulus={holdPhase === 'go' ? 'target' : null}
@@ -1874,7 +1885,7 @@ function McInner() {
           ]
 
           return (
-            <div className="relative rounded-3xl border-2 border-[#D4A373]/60 bg-gradient-to-b from-[#1C1610]/90 via-[#271E15]/80 to-[#140F0A]/95 backdrop-blur-md p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.75)] text-center select-none text-amber-50 max-w-4xl lg:max-w-5xl mx-auto w-full overflow-hidden">
+            <div className="relative rounded-3xl border-2 border-[#D4A373]/60 bg-gradient-to-b from-[#1C1610]/90 via-[#271E15]/80 to-[#140F0A]/95 backdrop-blur-md p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.75)] text-center select-none text-amber-50 max-w-5xl lg:max-w-6xl mx-auto w-full overflow-hidden">
               {/* Subtle Temple Ambient Ray Overlay */}
               <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent -z-10" />
 
@@ -1893,16 +1904,16 @@ function McInner() {
               <div className="mb-4 flex items-center justify-center gap-3 bg-[#24170E]/80 border border-amber-400/30 rounded-2xl p-3 shadow-md backdrop-blur-sm max-w-xl mx-auto">
                 <style>{CV_CSS}</style>
                 <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float h-12 w-12 object-contain drop-shadow" />
-                <p className="text-left text-xs sm:text-sm font-semibold text-amber-100 leading-snug">
+                <p className="text-left text-sm sm:text-base font-bold text-amber-100 leading-snug">
                   {chargePrac
-                    ? 'Press and HOLD the glowing stone! Keep your finger steady until the ring fills.'
+                    ? 'Hold the stone steady until the ring fills! ☀️'
                     : chargeStatusText === 'early'
-                    ? 'The spark cooled! Breathe gently and hold steady all the way to 100%!'
+                    ? 'Almost! 💨 Hold steady all the way to 100% 🔔'
                     : chargeStatusText === 'charging'
-                    ? 'Feel the solar power flowing! Hold steady until the temple bell chimes!'
+                    ? `Power rising! ⚡ Keep holding! (${chargeProgress}%)`
                     : chargeStatusText === 'success'
-                    ? '★ The sacred chime sang! Brilliant steady patience!'
-                    : 'Place your finger on the ancient Sunstone and HOLD steady until the chime!'}
+                    ? '★ Ding! Chime sounded! Beautiful hold! 🌟'
+                    : 'Press & HOLD the Sunstone until the chime! ☀️'}
                 </p>
               </div>
 
@@ -2066,11 +2077,11 @@ function McInner() {
                         </div>
                       ) : (
                         <div className="mt-1 flex flex-col items-center">
-                          <span className="rounded-full bg-[#1A0E05]/80 px-3.5 py-1 text-xs font-black uppercase tracking-wider text-amber-200 border border-amber-400/50 shadow-sm">
-                            TOUCH & HOLD
+                          <span className="rounded-full bg-[#1A0E05]/90 px-4 py-1 text-xs sm:text-sm font-black uppercase tracking-wider text-amber-200 border border-amber-400/50 shadow-sm flex items-center gap-1.5">
+                            <span>☀️</span> PRESS & HOLD
                           </span>
-                          <span className="text-[10px] font-semibold text-amber-300/80 mt-0.5">
-                            Hold steady until bell
+                          <span className="text-[11px] font-bold text-amber-300 mt-1">
+                            Hold until chime 🔔
                           </span>
                         </div>
                       )}
@@ -2082,28 +2093,27 @@ function McInner() {
               {/* Status and Action Feedback Banner */}
               <div className="max-w-md mx-auto">
                 {chargeStatusText === 'early' && (
-                  <div className="p-3.5 rounded-2xl bg-rose-950/85 border border-rose-500/60 text-xs sm:text-sm font-bold text-rose-200 animate-shake shadow-lg">
-                    💨 Released a bit early! Take a calm breath and hold steady until 100%!
+                  <div className="p-3 rounded-2xl bg-rose-950/85 border border-rose-500/60 text-xs sm:text-sm font-bold text-rose-200 animate-shake shadow-lg flex items-center justify-center gap-2">
+                    <span>💨</span>
+                    <span>Released a bit early! Hold until 100% 🔔</span>
                   </div>
                 )}
                 {chargeStatusText === 'charging' && (
-                  <div className="p-3.5 rounded-2xl bg-[#3A2412]/90 border border-amber-400/50 text-xs sm:text-sm font-bold text-amber-200 animate-pulse shadow-lg flex items-center justify-center gap-2">
+                  <div className="p-3 rounded-2xl bg-[#3A2412]/90 border border-amber-400/50 text-xs sm:text-sm font-bold text-amber-200 animate-pulse shadow-lg flex items-center justify-center gap-2">
                     <span className="animate-spin">☀️</span>
-                    Gathering ancient solar power... Keep holding! Wait for the bell!
+                    <span>Charging {chargeProgress}% • Keep holding!</span>
                   </div>
                 )}
                 {chargeStatusText === 'success' && (
-                  <div className="p-3.5 rounded-2xl bg-emerald-950/90 border border-emerald-500/60 text-xs sm:text-sm font-bold text-emerald-200 shadow-lg">
-                    ★ Celestial Chime! {chargePrac ? 'Superb holding! Ready for the trials.' : CHARGE_TRIALS[chargeTrialIndex].rewardText}
+                  <div className="p-3 rounded-2xl bg-emerald-950/90 border border-emerald-500/60 text-xs sm:text-sm font-bold text-emerald-200 shadow-lg flex items-center justify-center gap-2">
+                    <span>🌟</span>
+                    <span>100% Charged! Super steady holding!</span>
                   </div>
                 )}
                 {chargeStatusText === 'idle' && (
-                  <p className="text-xs sm:text-sm font-semibold text-amber-200/90">
-                    {chargePrac
-                      ? 'Practice: press and HOLD the stone until the golden ring completes!'
-                      : chargePracDone && chargeTrialIndex === 0
-                      ? 'Great practice! Now it counts for real. Press and HOLD until the bell!'
-                      : 'Press and HOLD the stone. Do not let go until the bell rings!'}
+                  <p className="text-xs sm:text-sm font-bold text-amber-200/90 flex items-center justify-center gap-1.5">
+                    <span>👇</span>
+                    <span>Touch and hold the center stone</span>
                   </p>
                 )}
               </div>

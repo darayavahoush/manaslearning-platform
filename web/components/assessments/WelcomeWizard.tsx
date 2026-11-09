@@ -93,7 +93,12 @@ export default function WelcomeWizard(p: Props) {
   const tick = () => p.onTick?.()
   const next = () => { if (canNext && step < TOTAL) { tick(); setStep(step + 1) } }
   const back = () => { if (step > 1) { tick(); setStep(step - 1) } }
-  const titles = [`Choose your ${p.classLabel}`, `Enter your ${p.nameLabel}`, 'Choose the age', 'One last thing']
+  const titles = [
+    `Pick your Hero! 🦸`,
+    `What is your explorer name? ✨`,
+    `How old is the explorer? 🎂`,
+    `Ready to Begin! 🚀`,
+  ]
 
   return (
     <div>
@@ -106,7 +111,10 @@ export default function WelcomeWizard(p: Props) {
         </div>
       </div>
 
-      <h2 ref={head} tabIndex={-1} className="font-patrick mb-5 text-2xl text-[#0F172A] outline-none md:text-3xl">{titles[step - 1]}</h2>
+      <h2 ref={head} tabIndex={-1} className="font-patrick mb-2 text-2xl text-[#0F172A] outline-none md:text-3xl">{titles[step - 1]}</h2>
+      <p className="text-xs sm:text-sm text-slate-500 mb-5">
+        {step === 1 ? 'Tap your favorite hero to lead this adventure:' : step === 2 ? 'Choose a fun codename for your quest badge:' : step === 3 ? 'This helps us tune the challenge just for you:' : 'A quick grown-up check before we embark:'}
+      </p>
 
       {step === 1 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

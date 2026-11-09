@@ -402,10 +402,10 @@ function FoxCubFaceSvg({emotion, className = 'w-24 h-24'}: {emotion: 'happy' | '
 
 function LanternProgressTrail({stage}: {stage: string}) {
   const steps = [
-    {id: 'ja', label: 'Artisan Veranda', stages: ['ja_story', 'ja_game', 'ja_show']},
-    {id: 'tom', label: 'Crystal Mirror', stages: ['tom_story', 'tom_game']},
-    {id: 'room', label: 'Calm Sanctuary', stages: ['sensory_story', 'sensory_game']},
-    {id: 'dccs', label: 'Alchemy Chamber', stages: ['dccs_story', 'dccs_game']},
+    {id: 'ja', icon: '🏺', label: 'Urns', stages: ['ja_story', 'ja_game', 'ja_show']},
+    {id: 'tom', icon: '🦊', label: 'Feelings', stages: ['tom_story', 'tom_game']},
+    {id: 'room', icon: '🏡', label: 'Treehouse', stages: ['sensory_story', 'sensory_game']},
+    {id: 'dccs', icon: '🔮', label: 'Gems', stages: ['dccs_story', 'dccs_game']},
   ]
   const activeIdx = steps.findIndex(s => s.stages.includes(stage))
   if (activeIdx === -1 && stage !== 'celebration') return null
@@ -442,8 +442,9 @@ function LanternProgressTrail({stage}: {stage: string}) {
                   <span className="text-xs font-bold">{i + 1}</span>
                 )}
               </div>
-              <span className={`text-[10px] font-semibold mt-1 hidden sm:block ${isCurrent ? 'text-teal-900 font-bold' : 'text-slate-600'}`}>
-                {st.label}
+              <span className={`text-[11px] font-bold mt-1.5 flex items-center gap-1 ${isCurrent ? 'text-teal-900 font-extrabold' : 'text-slate-600'}`}>
+                <span>{st.icon}</span>
+                <span>{st.label}</span>
               </span>
             </div>
           )
@@ -1183,7 +1184,7 @@ function __McInner() {
     return (
       <div className="relative rounded-3xl border-2 border-emerald-400/50 bg-[#071712]/95 backdrop-blur-md overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.7)] text-teal-50 max-w-4xl lg:max-w-5xl mx-auto w-full select-none">
         {/* Grand Alchemical Chamber Viewport Banner */}
-        <div className="relative h-44 sm:h-52 md:h-60 w-full overflow-hidden select-none bg-[#041D15]">
+        <div className="relative h-36 sm:h-44 md:h-48 w-full overflow-hidden select-none bg-[#041D15]">
           <img
             src="/quests/autism/bg_sorting.webp"
             alt="The Alchemist's Gem Chamber"
@@ -1192,34 +1193,34 @@ function __McInner() {
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#071712] via-[#071712]/50 to-transparent" />
 
           {/* Floating Realm Status Pills */}
-          <div className="absolute top-4 inset-x-4 flex items-center justify-between pointer-events-none z-10">
-            <span className="rounded-full bg-black/60 backdrop-blur-md border border-emerald-400/40 px-3.5 py-1 text-xs font-bold text-emerald-200 shadow-md">
-              Chapter 4 • The Alchemist&apos;s Gem Vault
-            </span>
-            <span className="rounded-full bg-black/60 backdrop-blur-md border border-amber-300/40 px-3.5 py-1 text-xs font-bold text-amber-200 shadow-md flex items-center gap-1.5">
+          <div className="absolute top-3 inset-x-4 flex items-center justify-between pointer-events-none z-10">
+            <span className="rounded-full bg-black/60 backdrop-blur-md border border-emerald-400/40 px-3 py-1 text-xs font-bold text-emerald-200 shadow-md flex items-center gap-1.5">
               <span>🔮</span>
-              <span>{stepLabel} • {modeLabel}</span>
+              <span>Gem Vault</span>
+            </span>
+            <span className="rounded-full bg-black/60 backdrop-blur-md border border-amber-300/40 px-3 py-1 text-xs font-bold text-amber-200 shadow-md">
+              {stepLabel}
             </span>
           </div>
 
           {/* Guide Aria Alchemist Box */}
-          <div className="absolute bottom-3 inset-x-4 flex items-end justify-between pointer-events-none z-10">
-            <div className="flex items-center gap-3 bg-black/75 backdrop-blur-md border border-emerald-400/40 rounded-2xl p-2.5 sm:p-3 shadow-xl max-w-xl">
+          <div className="absolute bottom-2.5 inset-x-4 flex items-center justify-between pointer-events-none z-10">
+            <div className="flex items-center gap-2.5 bg-black/80 backdrop-blur-md border border-emerald-400/40 rounded-2xl p-2 sm:p-2.5 shadow-xl max-w-lg">
               <img
                 src="/decor/itw/quest-aria-alchemist.webp"
-                alt="Aria the Alchemist"
-                className="w-11 h-11 sm:w-13 sm:h-13 rounded-xl object-cover border border-amber-300/50 shadow-sm flex-shrink-0"
-                width={52}
-                height={52}
+                alt="Aria"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-cover border border-amber-300/50 shadow-sm shrink-0"
+                width={44}
+                height={44}
               />
               <div className="text-left">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300 block">
-                  Aria the Alchemist Guide
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 block">
+                  Aria
                 </span>
-                <p className="text-xs sm:text-sm font-semibold text-teal-100 leading-tight">
+                <p className="text-xs sm:text-sm font-bold text-teal-100 leading-tight">
                   {rule === 'color'
-                    ? '“Watch the magic rule! Match by COLOR! Red gems go to the Ruby Vault, and blue gems go to the Sapphire Vault!”'
-                    : '“The ancient runes have shifted! Now match by SHAPE! Stars go to the Star Vault, and circles go to the Sphere Vault!”'}
+                    ? '“Match colors! 🔴 to 🔴 and 🔵 to 🔵!”'
+                    : '“Match shapes! ⭐ to ⭐ and ⭕ to ⭕!”'}
                 </p>
               </div>
             </div>
@@ -1227,104 +1228,121 @@ function __McInner() {
         </div>
 
         {/* Transmutation Sorting Arena */}
-        <div className="p-4 sm:p-6 md:p-8">
-          {/* Active Rule Keystone Banner */}
-          <div className="mx-auto max-w-xl text-center mb-6">
-            <div className="inline-flex items-center gap-2.5 rounded-full border border-amber-400/60 bg-gradient-to-r from-amber-500/25 via-emerald-500/20 to-teal-500/25 px-6 py-2.5 backdrop-blur-md shadow-[0_0_25px_rgba(251,191,36,0.25)]">
+        <div className="p-4 sm:p-6">
+          {/* Active Rule Keystone Banner - Visual-First */}
+          <div className="mx-auto max-w-xl text-center mb-4">
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/70 bg-gradient-to-r from-amber-500/30 via-emerald-500/25 to-teal-500/30 px-5 py-2 backdrop-blur-md shadow-[0_0_25px_rgba(251,191,36,0.25)]">
               <span className="text-2xl">{rule === 'color' ? '🎨' : '🔷'}</span>
-              <span className="font-poppins text-lg sm:text-2xl font-bold text-amber-200 tracking-wide drop-shadow-sm">
-                {title}
+              <span className="font-poppins text-lg sm:text-2xl font-extrabold text-amber-200 tracking-wide">
+                {rule === 'color' ? 'Match COLOR' : 'Match SHAPE'}
               </span>
             </div>
-            <p className="mt-2 text-xs sm:text-sm text-teal-200/90 font-medium max-w-md mx-auto">
-              {subtitle}
-            </p>
+
+            {/* Visual Comparison Chips */}
+            <div className="flex items-center justify-center gap-2 sm:gap-4 mt-2">
+              {rule === 'color' ? (
+                <>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 border border-rose-400/60 text-xs font-bold text-rose-200">
+                    <span>🔴</span> <span>Red</span> <span>➔</span> <span>Red Vault</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/20 border border-sky-400/60 text-xs font-bold text-sky-200">
+                    <span>🔵</span> <span>Blue</span> <span>➔</span> <span>Blue Vault</span>
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/60 text-xs font-bold text-amber-200">
+                    <span>⭐</span> <span>Star</span> <span>➔</span> <span>Star Vault</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/20 border border-sky-400/60 text-xs font-bold text-sky-200">
+                    <span>⭕</span> <span>Circle</span> <span>➔</span> <span>Circle Vault</span>
+                  </span>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Central Floating Gem Altar */}
-          <div className="relative mx-auto my-4 flex flex-col items-center justify-center">
-            <div className="relative flex h-36 w-36 sm:h-44 sm:w-44 items-center justify-center">
+          <div className="relative mx-auto my-3 flex flex-col items-center justify-center">
+            <div className="relative flex h-32 w-32 sm:h-38 sm:w-38 items-center justify-center">
               {/* Rotating Concentric Runic Rings */}
               <div className="absolute inset-0 rounded-full border-2 border-dashed border-amber-300/40 animate-[spin_20s_linear_infinite]" />
               <div className="absolute inset-2 rounded-full border border-teal-400/30 animate-[spin_15s_linear_infinite_reverse]" />
               <div className="absolute inset-4 rounded-full bg-gradient-to-b from-[#132B22]/90 via-[#0B1E17]/95 to-[#06140F] shadow-[0_0_40px_rgba(16,185,129,0.35)] border border-emerald-400/50" />
               {/* Floating Glowing Gemstone */}
-              <div className="relative z-10 w-24 h-24 sm:w-28 sm:h-28 animate-bounce transition-transform duration-300">
+              <div className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 animate-bounce transition-transform duration-300">
                 <AlchemicalGemstone color={targetGem.color} shape={targetGem.shape} size="lg" />
               </div>
             </div>
-            <span className="mt-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-amber-300/90 bg-black/50 px-3.5 py-1 rounded-full border border-amber-300/30 shadow-sm">
-              ✨ Magical Gem to Sort: {targetGem.color.toUpperCase()} {targetGem.shape.toUpperCase()}
+            <span className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-amber-200 bg-black/60 px-3.5 py-1 rounded-full border border-amber-300/40 shadow-sm">
+              <span>Where does this gem go?</span>
+              <span className="text-sm animate-bounce">⬇</span>
             </span>
           </div>
 
           {/* The Two Sorting Vault Pedestals */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-2xl mx-auto mt-6">
-            {/* Vault 0: Ruby Star Vault */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-xl mx-auto mt-4">
+            {/* Vault 0: Left Vault */}
             <button
               type="button"
               onClick={() => onSort(0)}
-              aria-label="Ruby Star Vault"
-              className={`group relative flex flex-col items-center justify-between rounded-3xl border-2 border-rose-500/70 bg-gradient-to-b from-[#25090F]/95 via-[#1A060A]/95 to-[#0F0306]/95 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.6)] hover:border-rose-400 hover:shadow-[0_0_40px_rgba(244,63,94,0.5)] hover:scale-[1.03] active:scale-95 transition-all duration-300 cursor-pointer focus:outline-none ${
+              aria-label={rule === 'color' ? 'Red Vault' : 'Star Vault'}
+              className={`group relative flex flex-col items-center justify-between rounded-3xl border-2 border-rose-500/70 bg-gradient-to-b from-[#25090F]/95 via-[#1A060A]/95 to-[#0F0306]/95 p-4 sm:p-5 shadow-[0_10px_30px_rgba(0,0,0,0.6)] hover:border-rose-400 hover:shadow-[0_0_40px_rgba(244,63,94,0.5)] hover:scale-[1.03] active:scale-95 transition-all duration-300 cursor-pointer focus:outline-none ${
                 hintTray === 0 ? 'ring-4 ring-amber-400 animate-pulse' : ''
               }`}
             >
-              <div className="w-full flex items-center justify-between mb-3 pointer-events-none">
-                <span className="text-xs font-bold text-rose-300 flex items-center gap-1">
-                  <span>🔥</span> Ruby Star Vault
-                </span>
-                <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
+              {/* Big Visual Badge */}
+              <div className="w-full flex items-center justify-center mb-2 pointer-events-none">
+                <span className={`text-sm sm:text-base font-extrabold px-4 py-1 rounded-full border shadow-md flex items-center gap-1.5 ${
                   rule === 'color'
-                    ? 'bg-rose-500/25 text-rose-200 border-rose-400/60'
-                    : 'bg-amber-500/25 text-amber-200 border-amber-400/60'
+                    ? 'bg-rose-500 text-white border-rose-300 shadow-rose-900/50'
+                    : 'bg-amber-500 text-amber-950 border-amber-300 shadow-amber-900/50'
                 }`}>
-                  {rule === 'color' ? 'Accepts: RED' : 'Accepts: STAR'}
+                  <span>{rule === 'color' ? '🔴 RED' : '⭐ STAR'}</span>
                 </span>
               </div>
 
               {/* Inlaid Gem Preview */}
-              <div className="my-2 p-2">
+              <div className="my-1 p-1">
                 <AlchemicalGemstone color="red" shape="star" size="md" />
               </div>
 
-              <div className="mt-3 w-full rounded-2xl bg-gradient-to-r from-rose-900/60 via-rose-800/80 to-rose-900/60 border border-rose-400/40 py-2.5 px-4 text-center group-hover:border-rose-300 transition-all pointer-events-none">
-                <span className="text-sm font-bold text-rose-100 group-hover:text-white flex items-center justify-center gap-1.5">
-                  <span>Place Gem Here</span>
+              <div className="mt-2 w-full rounded-2xl bg-gradient-to-r from-rose-900/70 via-rose-800/90 to-rose-900/70 border border-rose-400/40 py-2 px-3 text-center group-hover:border-rose-300 transition-all pointer-events-none">
+                <span className="text-xs sm:text-sm font-extrabold text-rose-100 group-hover:text-white flex items-center justify-center gap-1.5">
+                  <span>TAP HERE</span>
                   <span className="text-base group-hover:translate-y-0.5 transition-transform">⬇</span>
                 </span>
               </div>
             </button>
 
-            {/* Vault 1: Sapphire Sphere Vault */}
+            {/* Vault 1: Right Vault */}
             <button
               type="button"
               onClick={() => onSort(1)}
-              aria-label="Sapphire Sphere Vault"
-              className={`group relative flex flex-col items-center justify-between rounded-3xl border-2 border-sky-500/70 bg-gradient-to-b from-[#091827]/95 via-[#05111C]/95 to-[#020A12]/95 p-5 shadow-[0_10px_30px_rgba(0,0,0,0.6)] hover:border-sky-400 hover:shadow-[0_0_40px_rgba(56,189,248,0.5)] hover:scale-[1.03] active:scale-95 transition-all duration-300 cursor-pointer focus:outline-none ${
+              aria-label={rule === 'color' ? 'Blue Vault' : 'Circle Vault'}
+              className={`group relative flex flex-col items-center justify-between rounded-3xl border-2 border-sky-500/70 bg-gradient-to-b from-[#091827]/95 via-[#05111C]/95 to-[#020A12]/95 p-4 sm:p-5 shadow-[0_10px_30px_rgba(0,0,0,0.6)] hover:border-sky-400 hover:shadow-[0_0_40px_rgba(56,189,248,0.5)] hover:scale-[1.03] active:scale-95 transition-all duration-300 cursor-pointer focus:outline-none ${
                 hintTray === 1 ? 'ring-4 ring-amber-400 animate-pulse' : ''
               }`}
             >
-              <div className="w-full flex items-center justify-between mb-3 pointer-events-none">
-                <span className="text-xs font-bold text-sky-300 flex items-center gap-1">
-                  <span>🌊</span> Sapphire Sphere Vault
-                </span>
-                <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
+              {/* Big Visual Badge */}
+              <div className="w-full flex items-center justify-center mb-2 pointer-events-none">
+                <span className={`text-sm sm:text-base font-extrabold px-4 py-1 rounded-full border shadow-md flex items-center gap-1.5 ${
                   rule === 'color'
-                    ? 'bg-sky-500/25 text-sky-200 border-sky-400/60'
-                    : 'bg-blue-500/25 text-blue-200 border-blue-400/60'
+                    ? 'bg-sky-500 text-white border-sky-300 shadow-sky-900/50'
+                    : 'bg-blue-600 text-white border-blue-300 shadow-blue-900/50'
                 }`}>
-                  {rule === 'color' ? 'Accepts: BLUE' : 'Accepts: CIRCLE'}
+                  <span>{rule === 'color' ? '🔵 BLUE' : '⭕ CIRCLE'}</span>
                 </span>
               </div>
 
               {/* Inlaid Gem Preview */}
-              <div className="my-2 p-2">
+              <div className="my-1 p-1">
                 <AlchemicalGemstone color="blue" shape="circle" size="md" />
               </div>
 
-              <div className="mt-3 w-full rounded-2xl bg-gradient-to-r from-sky-900/60 via-sky-800/80 to-sky-900/60 border border-sky-400/40 py-2.5 px-4 text-center group-hover:border-sky-300 transition-all pointer-events-none">
-                <span className="text-sm font-bold text-sky-100 group-hover:text-white flex items-center justify-center gap-1.5">
-                  <span>Place Gem Here</span>
+              <div className="mt-2 w-full rounded-2xl bg-gradient-to-r from-sky-900/70 via-sky-800/90 to-sky-900/70 border border-sky-400/40 py-2 px-3 text-center group-hover:border-sky-300 transition-all pointer-events-none">
+                <span className="text-xs sm:text-sm font-extrabold text-sky-100 group-hover:text-white flex items-center justify-center gap-1.5">
+                  <span>TAP HERE</span>
                   <span className="text-base group-hover:translate-y-0.5 transition-transform">⬇</span>
                 </span>
               </div>
@@ -1333,18 +1351,18 @@ function __McInner() {
 
           {/* Feedback Status Indicator */}
           {feedbackMsg && (
-            <div className="mt-6 flex items-center justify-center min-h-[3rem]">
+            <div className="mt-4 flex items-center justify-center min-h-[2.5rem]">
               {feedbackMsg === 'yay' && (
-                <div className="flex items-center justify-center gap-2 text-amber-300 font-bold text-lg animate-bounce">
+                <div className="flex items-center justify-center gap-2 text-amber-300 font-extrabold text-lg animate-bounce">
                   <ForestSpriteFaceSvg emotion="happy" className="w-8 h-8 drop-shadow" />
                   <StarSvg />
-                  <span>✨ Splendid! You placed it in the right vault!</span>
+                  <span>Yay! Right vault! 🌟</span>
                 </div>
               )}
               {feedbackMsg === 'retry' && (
                 <div className="flex items-center justify-center gap-2 text-teal-200 font-bold text-base">
                   <ForestSpriteFaceSvg emotion="calm" className="w-8 h-8" />
-                  <span>Nice try! Look at the rule banner and try again.</span>
+                  <span>Nice try! Look at the rule 👀</span>
                 </div>
               )}
             </div>
@@ -1358,30 +1376,30 @@ function __McInner() {
     if (!prac) return null
     if (prac.done) {
       return (
-        <div className="relative rounded-3xl border-2 border-emerald-400/60 bg-[#071712]/95 backdrop-blur-md p-8 sm:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.8)] text-center select-none max-w-2xl mx-auto overflow-hidden">
+        <div className="relative rounded-3xl border-2 border-emerald-400/60 bg-[#071712]/95 backdrop-blur-md p-8 sm:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.8)] text-center select-none max-w-xl mx-auto overflow-hidden">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(16,185,129,0.25)_0%,transparent_70%)] animate-pulse" />
           <div className="relative z-10 flex flex-col items-center">
             <span className="rounded-full bg-emerald-500/20 border border-emerald-400/50 px-4 py-1 text-xs font-bold uppercase tracking-wider text-emerald-200 mb-3">
-              ✨ Practice Complete
+              ✨ Ready to Play!
             </span>
             <div className="flex gap-2 my-2">
               <StarSvg />
               <StarSvg />
               <StarSvg />
             </div>
-            <h2 className="font-patrick text-3xl sm:text-4xl font-bold text-amber-200 mb-2 drop-shadow-md">
-              Apprentice Alchemist Ready!
+            <h2 className="font-patrick text-3xl sm:text-4xl font-bold text-amber-200 mb-1 drop-shadow-md">
+              You are Ready! 🌟
             </h2>
-            <p className="text-base text-teal-100/90 mb-8 max-w-md">
-              You know how the magical vaults work! Step into the Grand Alchemical Vault and sort all the crystals.
+            <p className="text-sm text-teal-100/90 mb-6 max-w-sm">
+              Let&apos;s sort all the crystals in the Grand Vault!
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
               <button
                 type="button"
                 onClick={startDccs}
-                className="w-full sm:w-auto rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-teal-600 px-10 py-4 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                className="w-full sm:w-auto rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-teal-600 px-10 py-4 text-xl font-extrabold text-white shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
               >
-                Enter Grand Vault ▶
+                Play! ▶
               </button>
               <button
                 type="button"
@@ -1390,7 +1408,7 @@ function __McInner() {
                   events.noteRetry('dccs')
                   setPrac({g: 'dccs', i: 0, tries: 0, msg: '', done: false})
                 }}
-                className="w-full sm:w-auto rounded-full border border-teal-400/40 bg-[#122A21] px-6 py-3.5 text-sm font-bold text-teal-200 hover:text-white transition-all cursor-pointer"
+                className="w-full sm:w-auto rounded-full border border-teal-400/40 bg-[#122A21] px-6 py-3 text-xs font-bold text-teal-200 hover:text-white transition-all cursor-pointer"
               >
                 Practice Again ↺
               </button>
@@ -1404,13 +1422,13 @@ function __McInner() {
 
     return (
       <AlchemicalSortingArena
-        title="Same COLOR goes together!"
-        subtitle="Look at the color of this gem. Match Red to Ruby, and Blue to Sapphire!"
+        title="Match COLOR 🎨"
+        subtitle="🔴 Red goes to Red • 🔵 Blue goes to Blue"
         rule="color"
         targetGem={t}
         onSort={(n) => pracAnswer(n === t.tray, DCCS_PRACTICE.length)}
         stepLabel={`Practice ${prac.i + 1} of ${DCCS_PRACTICE.length}`}
-        modeLabel="Apprentice Training"
+        modeLabel="Training"
         hintTray={showHint ? t.tray : null}
         feedbackMsg={prac.msg}
       />
@@ -1570,7 +1588,7 @@ function __McInner() {
         {stage === 'ja_story' && prac?.g === 'ja' && renderJaPractice()}
         {stage === 'ja_story' && !prac && (
           <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
-            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-gradient-to-b from-[#CCFBF1] to-[#DBEAFE]">
+            <div className="relative h-52 sm:h-60 md:h-64 w-full overflow-hidden bg-gradient-to-b from-[#CCFBF1] to-[#DBEAFE]">
               <img
                 src="/decor/itw/quest-lumina-groves-banner.webp"
                 alt="Veranda of Lumina"
@@ -1578,28 +1596,40 @@ function __McInner() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent flex items-end p-6">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-teal-300 bg-black/40 px-3 py-1 rounded-full">
-                    Chapter 1: The Artisan Veranda
+                  <span className="text-xs font-bold uppercase tracking-wider text-teal-300 bg-black/40 px-3 py-1 rounded-full flex items-center gap-1.5 w-fit">
+                    <span>🏺</span> Chapter 1 • Secret Urns
                   </span>
-                  <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    Joint Attention & The Secret Ceramic Urns
+                  <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1.5">
+                    Aria&apos;s Secret Urns
                   </h2>
                 </div>
               </div>
             </div>
 
-            <div className="p-6 md:p-8">
-              <p className="font-patrick text-2xl md:text-3xl font-bold text-teal-900 text-center leading-snug mb-6">
-                Aria will point at a pot. Tap the pot she points to!
-              </p>
+            <div className="p-6 md:p-8 text-center">
+              {/* Byte-sized illustrated steps */}
+              <div className="grid grid-cols-3 gap-3 max-w-lg mx-auto mb-6">
+                <div className="flex flex-col items-center p-3 rounded-2xl bg-teal-50 border border-teal-200 shadow-xs">
+                  <span className="text-3xl mb-1">👀</span>
+                  <span className="text-xs font-bold text-teal-900">1. Watch Aria</span>
+                </div>
+                <div className="flex flex-col items-center p-3 rounded-2xl bg-amber-50 border border-amber-200 shadow-xs">
+                  <span className="text-3xl mb-1">👉</span>
+                  <span className="text-xs font-bold text-amber-900">2. See her look</span>
+                </div>
+                <div className="flex flex-col items-center p-3 rounded-2xl bg-emerald-50 border border-emerald-200 shadow-xs">
+                  <span className="text-3xl mb-1">🏺</span>
+                  <span className="text-xs font-bold text-emerald-900">3. Tap that urn!</span>
+                </div>
+              </div>
 
               <div className="text-center">
                 <button
                   type="button"
                   onClick={() => beginPractice('ja', 'Aria will point at a pot. Tap the pot she points to!')}
-                  className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-12 py-5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
+                  className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-10 py-4 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
                 >
-                  Let's practice! ▶
+                  Let&apos;s practice! ▶
                 </button>
               </div>
             </div>
@@ -1611,18 +1641,18 @@ function __McInner() {
           <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#14120E]/50 via-[#1D1914]/40 to-[#120F0C]/60 backdrop-blur-md p-5 sm:p-7 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none max-w-4xl lg:max-w-5xl mx-auto w-full text-white">
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-bold uppercase tracking-wider text-amber-200 bg-[#3A2412]/80 border border-amber-400/30 px-3.5 py-1 rounded-full backdrop-blur-sm">
-                Encounter {jaTrialIndex + 1} of {JA_TRIALS.length} • {JA_TRIALS.length - jaTrialIndex - 1 === 0 ? 'Last one, then a rest!' : `${JA_TRIALS.length - jaTrialIndex - 1} more, then a rest`}
+                🏺 Urn {jaTrialIndex + 1} of {JA_TRIALS.length}
               </span>
               <span className="text-xs font-bold text-amber-100 bg-[#422D19]/80 px-3 py-1 rounded-full border border-amber-400/30 backdrop-blur-sm flex items-center gap-1">
-                <span>🏛️</span> The Palace Terrace
+                <span>🏛️</span> Terrace
               </span>
             </div>
 
-            <p className="font-poppins text-lg sm:text-2xl text-amber-50 font-bold mb-1 drop-shadow-md">
-              Where is Aria looking? Tap that pot!
+            <p className="font-patrick text-2xl sm:text-3xl text-amber-50 font-bold mb-1 drop-shadow-md">
+              Where is Aria looking? 👀
             </p>
-            <p className="text-xs text-amber-200/80 mb-2">
-              Watch her eyes and pointing arm as she spots the secret vessel
+            <p className="text-xs sm:text-sm text-amber-200/90 mb-2 font-medium">
+              Tap the urn she is looking or pointing at! 👇
             </p>
 
             {/* Guide Avatar (Aria standing at the Veranda Balustrade) */}
@@ -1683,18 +1713,18 @@ function __McInner() {
           <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#14120E]/50 via-[#1D1914]/40 to-[#120F0C]/60 backdrop-blur-md p-5 sm:p-7 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none max-w-4xl lg:max-w-5xl mx-auto w-full text-white">
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-bold uppercase tracking-wider text-amber-200 bg-[#3A2412]/80 border border-amber-400/30 px-3.5 py-1 rounded-full backdrop-blur-sm">
-                Your turn {showRound + 1} of {SHOW_TARGETS.length}
+                ✨ Turn {showRound + 1} of {SHOW_TARGETS.length}
               </span>
               <span className="text-xs font-bold text-amber-100 bg-[#422D19]/80 px-3 py-1 rounded-full border border-amber-400/30 backdrop-blur-sm flex items-center gap-1">
                 <span>✨</span> Show Aria
               </span>
             </div>
 
-            <p className="font-poppins text-lg sm:text-2xl text-amber-50 font-bold mb-1 drop-shadow-md">
-              Aria cannot see the sparkle. Tap the urn that has it, to show her!
+            <p className="font-patrick text-2xl sm:text-3xl text-amber-50 font-bold mb-1 drop-shadow-md">
+              Show Aria the sparkle! ✨
             </p>
-            <p className="text-xs text-amber-200/80 mb-2">
-              Help your alchemist friend find the glowing spark
+            <p className="text-xs sm:text-sm text-amber-200/90 mb-2 font-medium">
+              Tap the urn with the spark to point it out! 👉
             </p>
 
             <div className="my-1">
@@ -1752,7 +1782,7 @@ function __McInner() {
         {stage === 'tom_story' && prac?.g === 'tom' && renderTomPractice()}
         {stage === 'tom_story' && !prac && (
           <div className="rounded-3xl border-2 border-teal-300/40 bg-white/95 backdrop-blur-md overflow-hidden shadow-2xl">
-            <div className="relative h-60 md:h-72 w-full overflow-hidden bg-[#1E3A8A]">
+            <div className="relative h-52 sm:h-60 md:h-64 w-full overflow-hidden bg-[#1E3A8A]">
               <img
                 src="/decor/itw/quest-lumina-groves-banner.webp"
                 alt="Emotion Mirror"
@@ -1760,37 +1790,45 @@ function __McInner() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent flex items-end p-6">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-teal-300 bg-white/10 px-3 py-1 rounded-full">
-                    Chapter 2: The Crystal Emotion Mirror
+                  <span className="text-xs font-bold uppercase tracking-wider text-teal-300 bg-black/40 px-3 py-1 rounded-full flex items-center gap-1.5 w-fit">
+                    <span>🦊</span> Chapter 2 • Feeling Faces
                   </span>
-                  <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    The Fox Cub’s Feelings Game
+                  <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1.5">
+                    Fox Cub&apos;s Feelings 🦊
                   </h2>
                 </div>
               </div>
             </div>
 
             <div className="p-6 md:p-8 text-center">
-              <p className="font-patrick text-2xl md:text-3xl font-bold text-teal-900 leading-snug mb-6 max-w-lg mx-auto">
-                The fox cub makes a face. Tap the sprite with the same feeling!
+              <p className="font-patrick text-2xl md:text-3xl font-bold text-teal-900 leading-snug mb-5 max-w-lg mx-auto">
+                Fox makes a face. Tap the friend with the same feeling! 👇
               </p>
 
-              <div className="flex items-center justify-center gap-6 mb-8">
-                <div className="flex flex-col items-center">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-lg mx-auto mb-6">
+                <div className="flex flex-col items-center p-3 rounded-2xl bg-amber-50 border border-amber-200 shadow-xs">
                   <ForestSpriteFaceSvg emotion="happy" className="w-16 h-16 drop-shadow-md" />
-                  <span className="text-xs font-bold text-amber-700 mt-1">Happy</span>
+                  <span className="text-xs font-bold text-amber-800 mt-1 flex items-center gap-1">
+                    <span>😊</span> Happy
+                  </span>
                 </div>
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center p-3 rounded-2xl bg-blue-50 border border-blue-200 shadow-xs">
                   <ForestSpriteFaceSvg emotion="sad" className="w-16 h-16 drop-shadow-md" />
-                  <span className="text-xs font-bold text-blue-700 mt-1">Sad</span>
+                  <span className="text-xs font-bold text-blue-800 mt-1 flex items-center gap-1">
+                    <span>😢</span> Sad
+                  </span>
                 </div>
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center p-3 rounded-2xl bg-purple-50 border border-purple-200 shadow-xs">
                   <ForestSpriteFaceSvg emotion="surprised" className="w-16 h-16 drop-shadow-md" />
-                  <span className="text-xs font-bold text-purple-700 mt-1">Surprised</span>
+                  <span className="text-xs font-bold text-purple-800 mt-1 flex items-center gap-1">
+                    <span>😮</span> Surprised
+                  </span>
                 </div>
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center p-3 rounded-2xl bg-emerald-50 border border-emerald-200 shadow-xs">
                   <ForestSpriteFaceSvg emotion="calm" className="w-16 h-16 drop-shadow-md" />
-                  <span className="text-xs font-bold text-emerald-700 mt-1">Calm</span>
+                  <span className="text-xs font-bold text-emerald-800 mt-1 flex items-center gap-1">
+                    <span>😌</span> Calm
+                  </span>
                 </div>
               </div>
 
@@ -1798,9 +1836,9 @@ function __McInner() {
                 <button
                   type="button"
                   onClick={() => beginPractice('tom', 'The fox cub makes a face. Tap the sprite with the same feeling!')}
-                  className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-12 py-5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
+                  className="rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 px-10 py-4 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
                 >
-                  Let's practice! ▶
+                  Let&apos;s practice! ▶
                 </button>
               </div>
             </div>
@@ -1811,7 +1849,7 @@ function __McInner() {
         {stage === 'tom_game' && helpPending && (
           <div className="rounded-3xl border border-emerald-400/30 bg-gradient-to-b from-[#0A1F16]/50 via-[#081811]/40 to-[#04100B]/60 backdrop-blur-md p-5 sm:p-7 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none max-w-4xl lg:max-w-5xl mx-auto w-full text-white">
             <span className="text-xs font-bold uppercase tracking-wider text-amber-200/90 bg-[#162D1F]/80 border border-amber-300/30 px-3.5 py-1 rounded-full backdrop-blur-sm">
-              🌿 Garden of Empathy
+              💛 Helping Fox
             </span>
             <div className="my-3">
               <div className="relative mx-auto flex h-36 w-36 sm:h-44 sm:w-44 items-center justify-center">
@@ -1821,22 +1859,25 @@ function __McInner() {
                 <FoxCubFaceSvg emotion="sad" className="relative z-10 w-[78%] h-[78%] drop-shadow-md select-none pointer-events-none" />
               </div>
             </div>
-            <p className="font-poppins text-lg sm:text-2xl text-amber-50 font-bold mb-2 drop-shadow-md">
-              The fox cub looks sad. What would help him feel cozy?
+            <p className="font-patrick text-2xl sm:text-3xl text-amber-50 font-bold mb-1 drop-shadow-md">
+              Fox is feeling sad 😢
             </p>
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-md mx-auto mt-4">
+            <p className="text-xs sm:text-sm text-emerald-200/90 mb-3 font-medium">
+              What will cheer him up? Tap one! 👇
+            </p>
+            <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-md mx-auto mt-2">
               {[
-                { label: 'A warm hug', icon: '💛' },
-                { label: 'A quiet corner', icon: '🌿' },
-                { label: 'A gentle story', icon: '📖' }
+                { label: 'Warm hug', icon: '💛' },
+                { label: 'Quiet corner', icon: '🌿' },
+                { label: 'Storybook', icon: '📖' }
               ].map(({ label, icon }, i) => (
                 <button
                   key={label}
                   type="button"
                   onClick={() => handleHelpSelect(i)}
-                  className="group relative flex flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-emerald-400/30 bg-gradient-to-b from-[#182C20]/90 to-[#0F1E15]/95 py-4 px-2 text-sm sm:text-base font-bold text-amber-100 shadow-xl backdrop-blur-md hover:border-amber-300/80 hover:bg-[#203628] hover:scale-105 active:scale-95 transition-all"
+                  className="group relative flex flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-emerald-400/30 bg-gradient-to-b from-[#182C20]/90 to-[#0F1E15]/95 py-4 px-2 text-sm sm:text-base font-bold text-amber-100 shadow-xl backdrop-blur-md hover:border-amber-300/80 hover:bg-[#203628] hover:scale-105 active:scale-95 transition-all cursor-pointer"
                 >
-                  <span className="text-2xl">{icon}</span>
+                  <span className="text-3xl">{icon}</span>
                   <span className="text-xs sm:text-sm font-bold text-center leading-tight">{label}</span>
                 </button>
               ))}
@@ -1848,18 +1889,18 @@ function __McInner() {
           <div className="rounded-3xl border border-emerald-400/30 bg-gradient-to-b from-[#0A1F16]/50 via-[#081811]/40 to-[#04100B]/60 backdrop-blur-md p-5 sm:p-7 shadow-[0_16px_40px_rgba(0,0,0,0.6)] text-center select-none max-w-4xl lg:max-w-5xl mx-auto w-full text-white">
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-bold uppercase tracking-wider text-amber-200/90 bg-[#162D1F]/80 border border-amber-300/30 px-3.5 py-1 rounded-full backdrop-blur-sm">
-                Round {tomTrialIndex + 1} of {EMOTION_MIRROR_TRIALS.length} • {EMOTION_MIRROR_TRIALS.length - tomTrialIndex - 1 === 0 ? 'Last one, then a rest!' : `${EMOTION_MIRROR_TRIALS.length - tomTrialIndex - 1} more, then a rest`}
+                🦊 Face {tomTrialIndex + 1} of {EMOTION_MIRROR_TRIALS.length}
               </span>
               <span className="text-xs font-bold text-emerald-200 bg-[#0E2419]/80 px-3 py-1 rounded-full border border-emerald-400/40 backdrop-blur-sm flex items-center gap-1">
-                <span>🌸</span> The Whispering Gazebo
+                <span>🌸</span> Gazebo
               </span>
             </div>
 
-            <p className="font-poppins text-lg sm:text-2xl text-amber-50 font-bold mb-1 drop-shadow-md">
-              Which spirit friend feels the same as Amber the fox cub?
+            <p className="font-patrick text-2xl sm:text-3xl text-amber-50 font-bold mb-1 drop-shadow-md">
+              How does Fox feel? 🤔
             </p>
-            <p className="text-xs text-emerald-200/80 mb-2">
-              Look closely at the expression in the enchanted blossom mirror
+            <p className="text-xs sm:text-sm text-emerald-200/90 mb-2 font-medium">
+              Tap the matching friend! 👇
             </p>
 
             {/* The Enchanted Blossom Mirror Frame */}
@@ -1937,22 +1978,23 @@ function __McInner() {
 
               {/* Floating Chapter Badge & Status Pill */}
               <div className="absolute top-4 inset-x-4 flex items-center justify-between pointer-events-none z-10">
-                <span className="rounded-full bg-black/60 backdrop-blur-md border border-teal-300/40 px-3.5 py-1 text-xs font-bold text-teal-200 shadow-md">
-                  Chapter 3 • Restorative Sensory Haven
+                <span className="rounded-full bg-black/60 backdrop-blur-md border border-teal-300/40 px-3.5 py-1 text-xs font-bold text-teal-200 shadow-md flex items-center gap-1.5">
+                  <span>🏡</span>
+                  <span>Treehouse Haven</span>
                 </span>
                 <span className="rounded-full bg-black/60 backdrop-blur-md border border-amber-300/40 px-3.5 py-1 text-xs font-bold text-amber-200 shadow-md flex items-center gap-1.5">
                   <span>{roomDim === 0 ? '☀️' : roomDim === 1 ? '🌧️' : '🪶'}</span>
-                  <span>{roomPhase === 'ramp' ? (roomDim === 0 ? 'Visual Light Threshold' : roomDim === 1 ? 'Auditory Sound Threshold' : 'Tactile Comfort Threshold') : 'Custom Haven Studio'}</span>
+                  <span>{roomPhase === 'ramp' ? (roomDim === 0 ? 'Light' : roomDim === 1 ? 'Rain Sound' : 'Pillow Softness') : 'My Haven'}</span>
                 </span>
               </div>
 
               {/* Sanctuary Headline on Banner */}
               <div className="absolute bottom-4 inset-x-6 text-left pointer-events-none z-10">
                 <h2 className="font-patrick text-3xl sm:text-4xl text-white font-bold drop-shadow-md">
-                  Design Your Restorative Haven
+                  The Cozy Treehouse 🏡
                 </h2>
                 <p className="text-xs sm:text-sm text-teal-100/90 max-w-xl drop-shadow">
-                  A calming sanctuary tailored to your child&apos;s exact comfort for lighting, rain sound, and cushion weight.
+                  Make the room feel just right for you!
                 </p>
               </div>
             </div>
@@ -1962,22 +2004,43 @@ function __McInner() {
               {/* PHASE 1: INTRO */}
               {roomPhase === 'intro' && (
                 <div className="max-w-xl mx-auto text-center py-2">
-                  <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl border-2 border-teal-400/50 bg-[#142C23] p-1 shadow-lg">
+                  <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-teal-400/50 bg-[#142C23] p-1 shadow-lg">
                     <img src="/quests/autism/aria_gaze_center.webp" alt="Aria" className="h-full w-full object-cover rounded-xl" />
                   </div>
-                  <h3 className="font-patrick text-2xl sm:text-3xl text-amber-200 font-bold mb-2">
-                    Welcome to the Treehouse Sanctuary!
+                  <h3 className="font-patrick text-2xl sm:text-3xl text-amber-200 font-bold mb-1">
+                    Make Your Cozy Treehouse! 🏡
                   </h3>
-                  <p className="text-sm text-teal-100/90 leading-relaxed mb-6">
-                    Every explorer feels cozy with different light, sounds, and soft cushions. First, we will gently turn up the light, soft rain, and cushion weight one by one. Whenever it feels like enough, tap <strong>&quot;That&apos;s too much&quot;</strong>. Then you get to design your own dream haven!
+                  <p className="text-xs sm:text-sm text-teal-100/90 mb-4 font-medium">
+                    We will test 3 cozy things one by one:
                   </p>
-                  <div className="flex flex-wrap justify-center items-center gap-4">
+
+                  {/* 3 Byte-Sized Illustrated Cards */}
+                  <div className="grid grid-cols-3 gap-2.5 sm:gap-3 max-w-sm mx-auto mb-5">
+                    <div className="flex flex-col items-center p-3 rounded-2xl bg-black/40 border border-teal-400/30 shadow-sm">
+                      <span className="text-3xl mb-1">☀️</span>
+                      <span className="text-xs font-bold text-amber-200">1. Light</span>
+                    </div>
+                    <div className="flex flex-col items-center p-3 rounded-2xl bg-black/40 border border-teal-400/30 shadow-sm">
+                      <span className="text-3xl mb-1">🌧️</span>
+                      <span className="text-xs font-bold text-teal-200">2. Rain</span>
+                    </div>
+                    <div className="flex flex-col items-center p-3 rounded-2xl bg-black/40 border border-teal-400/30 shadow-sm">
+                      <span className="text-3xl mb-1">🪶</span>
+                      <span className="text-xs font-bold text-emerald-200">3. Pillows</span>
+                    </div>
+                  </div>
+
+                  <p className="text-sm font-bold text-amber-300 mb-6">
+                    Tap ✋ when it feels like enough!
+                  </p>
+
+                  <div className="flex justify-center items-center">
                     <button
                       type="button"
                       onClick={startRoom}
-                      className="rounded-full bg-gradient-to-r from-teal-500 via-teal-600 to-emerald-600 px-10 py-4 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
+                      className="rounded-full bg-gradient-to-r from-teal-500 via-teal-600 to-emerald-600 px-10 py-4 text-xl font-extrabold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
                     >
-                      Step Inside Sanctuary ▶
+                      Start! ▶
                     </button>
                   </div>
                 </div>
@@ -1986,23 +2049,23 @@ function __McInner() {
               {/* PHASE 2: SENSORY THRESHOLD RAMP */}
               {roomPhase === 'ramp' && (
                 <div className="max-w-xl mx-auto text-center">
-                  {/* Guide Aria Guidance Box */}
+                  {/* Guide Aria Guidance Box - Byte-Sized */}
                   <div className="mb-4 flex items-center justify-center gap-3 bg-[#0B1A14]/90 border border-teal-400/30 rounded-2xl p-3 px-4 shadow-md backdrop-blur-sm text-left">
                     <img
                       src="/quests/autism/aria_gaze_center.webp"
                       alt="Aria Guidance"
-                      className="h-12 w-12 rounded-xl object-cover border border-teal-300/40 shrink-0"
+                      className="h-11 w-11 rounded-xl object-cover border border-teal-300/40 shrink-0"
                     />
                     <div>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-teal-300 block">
-                        Aria, Grove Guide
+                        Aria Guide
                       </span>
                       <p className="font-patrick text-lg sm:text-xl text-amber-100 font-bold leading-tight" aria-live="polite">
                         {roomDim === 0
-                          ? 'Watch the treehouse brighten slowly. Tap the button as soon as it feels too bright!'
+                          ? '☀️ Light is rising... Tap ✋ when it’s too bright!'
                           : roomDim === 1
-                          ? 'Listen to the rain outside the windows. Tap the button as soon as it feels too loud!'
-                          : 'Feel the weight of the cushions. Tap the button as soon as it feels too heavy!'}
+                          ? '🌧️ Rain is louder... Tap ✋ when it’s too loud!'
+                          : '🪶 Pillows heavier... Tap ✋ when it’s too heavy!'}
                       </p>
                     </div>
                   </div>
@@ -2031,27 +2094,26 @@ function __McInner() {
                     })}
                   </div>
 
-                  {/* Real-Time Sensory Intensity Readout */}
+                  {/* Real-Time Sensory Intensity Readout - Visual & Byte-Sized */}
                   <div className="inline-flex items-center gap-2 rounded-full bg-black/60 border border-teal-400/30 px-4 py-1.5 text-xs sm:text-sm font-bold text-amber-200 mb-6 backdrop-blur-sm shadow-sm">
-                    <span>{roomDim === 0 ? '☀️' : roomDim === 1 ? '🌧️' : '🪶'}</span>
                     <span>
                       {roomDim === 0
                         ? roomLevel <= 3
-                          ? `Level ${roomLevel} of 10 • Dim Candlelight Glow`
+                          ? `Level ${roomLevel} • 🕯️ Soft Glow`
                           : roomLevel <= 6
-                          ? `Level ${roomLevel} of 10 • Warm Natural Sunlight`
-                          : `Level ${roomLevel} of 10 • Bright Sunbeam Daylight`
+                          ? `Level ${roomLevel} • ☀️ Cozy Light`
+                          : `Level ${roomLevel} • ⚡ Bright Sunbeam`
                         : roomDim === 1
                         ? roomLevel <= 3
-                          ? `Level ${roomLevel} of 10 • Whispering Forest Drizzle`
+                          ? `Level ${roomLevel} • 💧 Soft Drizzle`
                           : roomLevel <= 6
-                          ? `Level ${roomLevel} of 10 • Steady Window Rain & Windchimes`
-                          : `Level ${roomLevel} of 10 • Lively Rushing Waterfall`
+                          ? `Level ${roomLevel} • 🌧️ Window Rain`
+                          : `Level ${roomLevel} • ⛈️ Loud Storm`
                         : roomLevel <= 3
-                        ? `Level ${roomLevel} of 10 • Light Silk Feather Pillows`
+                        ? `Level ${roomLevel} • 🪶 Light Pillows`
                         : roomLevel <= 6
-                        ? `Level ${roomLevel} of 10 • Plush Woven Bench Cushions`
-                        : `Level ${roomLevel} of 10 • Deep Weighted Sanctuary Blanket`}
+                        ? `Level ${roomLevel} • 🛏️ Snug Cushions`
+                        : `Level ${roomLevel} • 🛡️ Heavy Blanket`}
                     </span>
                   </div>
 
@@ -2068,8 +2130,8 @@ function __McInner() {
                       <span className="text-2xl sm:text-3xl transition-transform group-hover:scale-110">✋</span>
                       <span>That&apos;s Too Much!</span>
                     </button>
-                    <p className="mt-3 text-xs text-teal-200/70">
-                      Tap as soon as it feels uncomfortable · Or let it rise if you feel completely cozy
+                    <p className="mt-3 text-xs text-teal-200/80 font-medium">
+                      Tap ✋ when it feels like enough for you
                     </p>
                   </div>
                 </div>
@@ -2080,13 +2142,13 @@ function __McInner() {
                 <>
                   <div className="text-center mb-6">
                     <span className="inline-block rounded-full bg-teal-400/20 border border-teal-300/40 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-teal-200 mb-1">
-                      ✨ Sensory Haven Studio
+                      🌿 Haven Studio
                     </span>
                     <h3 className="font-patrick text-3xl sm:text-4xl text-amber-200 font-bold">
-                      Make The Sanctuary Yours
+                      Set Your Cozy Haven 🏡
                     </h3>
-                    <p className="text-xs sm:text-sm text-teal-100/90 max-w-lg mx-auto mt-1">
-                      Tune your cozy lighting, rain soundscape, and cushion weight until the room feels just right.
+                    <p className="text-xs sm:text-sm text-teal-100/90 max-w-sm mx-auto mt-1">
+                      Pick what feels best to you:
                     </p>
                   </div>
 
@@ -2096,10 +2158,10 @@ function __McInner() {
                     <div className="rounded-2xl border border-teal-400/30 bg-[#0D241C]/80 p-4 shadow-md backdrop-blur-sm text-left">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-bold uppercase text-amber-200 flex items-center gap-1.5">
-                          <span>☀️</span> Light Level
+                          <span>☀️</span> Light
                         </span>
                         <span className="text-xs font-bold text-teal-200">
-                          {sensoryLight === null ? 'Default (5)' : `${sensoryLight} / 10`}
+                          {sensoryLight ?? 5} / 10
                         </span>
                       </div>
                       <input
@@ -2111,13 +2173,11 @@ function __McInner() {
                         className="w-full accent-amber-400 cursor-pointer"
                       />
                       <span className="block mt-2 text-[11px] font-semibold text-teal-100/80">
-                        {sensoryLight === null || sensoryLight === 5
-                          ? 'Soft Natural Sunlight'
-                          : sensoryLight <= 3
-                          ? '🕯️ Cozy Candlelight Glow'
-                          : sensoryLight <= 7
-                          ? '☀️ Soft Forest Light'
-                          : '⚡ Bright Daylight Sunbeam'}
+                        {(sensoryLight ?? 5) <= 3
+                          ? '🕯️ Soft Glow'
+                          : (sensoryLight ?? 5) <= 7
+                          ? '☀️ Cozy Sunlight'
+                          : '⚡ Bright Sunbeam'}
                       </span>
                     </div>
 
@@ -2128,7 +2188,7 @@ function __McInner() {
                           <span>🌧️</span> Rain Sound
                         </span>
                         <span className="text-xs font-bold text-teal-200">
-                          {sensorySound === null ? 'Default (5)' : `${sensorySound} / 10`}
+                          {sensorySound ?? 5} / 10
                         </span>
                       </div>
                       <input
@@ -2140,13 +2200,11 @@ function __McInner() {
                         className="w-full accent-teal-400 cursor-pointer"
                       />
                       <span className="block mt-2 text-[11px] font-semibold text-teal-100/80">
-                        {sensorySound === null || sensorySound === 5
-                          ? 'Gentle Forest Rain'
-                          : sensorySound <= 3
-                          ? '💧 Whisper Soft Drizzle'
-                          : sensorySound <= 7
-                          ? '🌧️ Window Rain & Chimes'
-                          : '⛈️ Lively Rushing Torrent'}
+                        {(sensorySound ?? 5) <= 3
+                          ? '💧 Whisper Drizzle'
+                          : (sensorySound ?? 5) <= 7
+                          ? '🌧️ Cozy Rain'
+                          : '⛈️ Loud Storm'}
                       </span>
                     </div>
 
@@ -2157,7 +2215,7 @@ function __McInner() {
                           <span>🪶</span> Cushion Weight
                         </span>
                         <span className="text-xs font-bold text-teal-200">
-                          {sensoryTouch === null ? 'Default (5)' : `${sensoryTouch} / 10`}
+                          {sensoryTouch ?? 5} / 10
                         </span>
                       </div>
                       <input
@@ -2169,17 +2227,17 @@ function __McInner() {
                         className="w-full accent-emerald-400 cursor-pointer"
                       />
                       <span className="block mt-2 text-[11px] font-semibold text-teal-100/80">
-                        {sensoryTouch === null || sensoryTouch === 5
-                          ? 'Plush Bench Cushions'
-                          : sensoryTouch <= 4
-                          ? '🪶 Light Feather Pillows'
-                          : '🛏️ Soothing Weighted Blanket'}
+                        {(sensoryTouch ?? 5) <= 4
+                          ? '🪶 Light Feather'
+                          : (sensoryTouch ?? 5) <= 7
+                          ? '🛏️ Snug Cushion'
+                          : '🛡️ Cozy Heavy Blanket'}
                       </span>
                     </div>
                   </div>
 
-                  {/* Preset Sanctuary Moods */}
-                  <div className="mb-6 flex flex-wrap justify-center items-center gap-3">
+                  {/* Preset Sanctuary Moods - Byte-Sized */}
+                  <div className="mb-6 flex flex-wrap justify-center items-center gap-2.5">
                     <button
                       type="button"
                       onClick={() => {
@@ -2191,7 +2249,7 @@ function __McInner() {
                       }}
                       className="rounded-full border border-teal-400/40 bg-[#122A21] px-4 py-2 text-xs font-bold text-teal-200 hover:border-amber-300 hover:text-white transition-all shadow-sm flex items-center gap-1.5"
                     >
-                      <span>🌙</span> Twilight Cocoon (Dim & Weighted)
+                      <span>🌙</span> Dim & Snug
                     </button>
                     <button
                       type="button"
@@ -2204,14 +2262,14 @@ function __McInner() {
                       }}
                       className="rounded-full border border-teal-400/40 bg-[#122A21] px-4 py-2 text-xs font-bold text-teal-200 hover:border-amber-300 hover:text-white transition-all shadow-sm flex items-center gap-1.5"
                     >
-                      <span>🌿</span> Sunlit Forest Veranda
+                      <span>🌿</span> Sunlit & Open
                     </button>
                     <button
                       type="button"
                       onClick={shieldRoom}
                       className="rounded-full border-2 border-emerald-400 bg-gradient-to-r from-emerald-600 to-teal-700 px-5 py-2 text-xs font-bold text-white shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
                     >
-                      <span>🛡️</span> Calm Shield: Softest Everything
+                      <span>🛡️</span> Softest Everything
                     </button>
                   </div>
 
@@ -2228,9 +2286,9 @@ function __McInner() {
                         setStage('dccs_story')
                         sayIt('Put the gem in the box with the same color!')
                       }}
-                      className="rounded-full bg-gradient-to-r from-teal-500 via-teal-600 to-emerald-600 px-12 py-5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
+                      className="rounded-full bg-gradient-to-r from-teal-500 via-teal-600 to-emerald-600 px-12 py-5 text-2xl font-extrabold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
                     >
-                      Save Sanctuary & Play Final Game ▶
+                      All Done! Next Game ▶
                     </button>
                   </div>
                 </>
@@ -2243,21 +2301,28 @@ function __McInner() {
         {stage === 'dccs_story' && renderDccsPractice()}
 
         {stage === 'dccs_game' && dccsWarnLeft !== null && (
-          <div className="relative rounded-3xl border-2 border-amber-400/80 bg-[#0A1612]/95 backdrop-blur-md p-8 sm:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.8)] text-center select-none max-w-2xl mx-auto overflow-hidden">
+          <div className="relative rounded-3xl border-2 border-amber-400/80 bg-[#0A1612]/95 backdrop-blur-md p-6 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] text-center select-none max-w-xl mx-auto overflow-hidden">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(251,191,36,0.25)_0%,transparent_70%)] animate-pulse" />
             <div className="relative z-10 flex flex-col items-center">
-              <span className="rounded-full bg-amber-500/20 border border-amber-400/50 px-4 py-1 text-xs font-bold uppercase tracking-wider text-amber-200 mb-3 shadow-sm">
-                ✨ Chamber Runes Shifting
+              <span className="rounded-full bg-amber-500/20 border border-amber-400/50 px-4 py-1 text-xs font-bold uppercase tracking-wider text-amber-200 mb-2 shadow-sm">
+                🔔 Watch out!
               </span>
-              <h2 className="font-patrick text-4xl sm:text-5xl font-bold text-amber-300 mb-2 drop-shadow-md">
-                Watch the Ancient Sign!
+              <h2 className="font-patrick text-3xl sm:text-4xl font-bold text-amber-300 mb-2 drop-shadow-md">
+                Rule is changing!
               </h2>
-              <p className="text-base sm:text-lg text-teal-100/90 mb-8 max-w-md">
-                The magical laws of the Alchemy Chamber are changing! Get ready for the new rule!
-              </p>
-              <div key={dccsWarnLeft} className="relative flex h-32 w-32 items-center justify-center rounded-full border-4 border-amber-300 bg-gradient-to-b from-amber-400/30 to-amber-600/40 shadow-[0_0_50px_rgba(251,191,36,0.6)] animate-pulse">
+              {/* Visual Shift Diagram */}
+              <div className="flex items-center justify-center gap-3 my-3">
+                <span className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-rose-500/25 border border-rose-400/60 text-xs sm:text-sm font-bold text-rose-200">
+                  <span>🎨</span> Colors
+                </span>
+                <span className="text-amber-300 text-lg font-bold animate-pulse">➔ ⚡ ➔</span>
+                <span className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-sky-500/25 border border-sky-400/60 text-xs sm:text-sm font-bold text-sky-200">
+                  <span>🔷</span> Shapes
+                </span>
+              </div>
+              <div key={dccsWarnLeft} className="relative flex h-28 w-28 items-center justify-center rounded-full border-4 border-amber-300 bg-gradient-to-b from-amber-400/30 to-amber-600/40 shadow-[0_0_40px_rgba(251,191,36,0.6)] animate-pulse my-2">
                 <div className="absolute inset-2 rounded-full border border-dashed border-amber-200/50 animate-[spin_6s_linear_infinite]" />
-                <span className="text-6xl font-extrabold text-amber-100 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+                <span className="text-5xl font-extrabold text-amber-100 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                   {dccsWarnLeft}
                 </span>
               </div>
@@ -2266,34 +2331,36 @@ function __McInner() {
         )}
 
         {stage === 'dccs_game' && dccsRuleCheck && (
-          <div className="relative rounded-3xl border-2 border-emerald-400/80 bg-[#0A1612]/95 backdrop-blur-md p-8 sm:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.8)] text-center select-none max-w-2xl mx-auto overflow-hidden">
+          <div className="relative rounded-3xl border-2 border-emerald-400/80 bg-[#0A1612]/95 backdrop-blur-md p-6 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] text-center select-none max-w-xl mx-auto overflow-hidden">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(16,185,129,0.2)_0%,transparent_70%)]" />
             <div className="relative z-10 flex flex-col items-center">
-              <span className="rounded-full bg-emerald-500/20 border border-emerald-400/50 px-4 py-1 text-xs font-bold uppercase tracking-wider text-emerald-200 mb-3 shadow-sm">
-                🔮 Alchemical Wisdom Check
+              <span className="rounded-full bg-emerald-500/20 border border-emerald-400/50 px-4 py-1 text-xs font-bold uppercase tracking-wider text-emerald-200 mb-2 shadow-sm">
+                🤔 Quick Question
               </span>
-              <h2 className="font-patrick text-3xl sm:text-4xl font-bold text-amber-200 mb-2 drop-shadow-md">
-                Quick Wisdom Check!
+              <h2 className="font-patrick text-3xl sm:text-4xl font-bold text-amber-200 mb-1 drop-shadow-md">
+                What are we matching now?
               </h2>
-              <p className="text-base sm:text-lg text-teal-100/90 mb-8 max-w-md">
-                Which magical law are the gems being sorted by right now?
+              <p className="text-xs sm:text-sm text-teal-200/80 mb-6">
+                Tap what we match by right now:
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md">
                 <button
                   type="button"
                   onClick={() => handleRuleCheck('colour')}
-                  className="w-full sm:w-1/2 flex items-center justify-center gap-2.5 rounded-2xl border-2 border-rose-400/80 bg-gradient-to-b from-[#2B0E14] to-[#120508] px-6 py-4 text-lg font-bold text-rose-200 shadow-lg hover:border-rose-300 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                  className="w-full sm:w-1/2 flex flex-col items-center justify-center gap-1 rounded-2xl border-2 border-rose-400/80 bg-gradient-to-b from-[#2B0E14] to-[#120508] p-4 text-base font-bold text-rose-200 shadow-lg hover:border-rose-300 hover:scale-105 active:scale-95 transition-all cursor-pointer"
                 >
-                  <span className="text-2xl">🎨</span>
-                  <span>By COLOR</span>
+                  <span className="text-3xl">🎨</span>
+                  <span className="text-lg font-bold">COLORS</span>
+                  <span className="text-[11px] font-semibold text-rose-300">🔴 Red & 🔵 Blue</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleRuleCheck('shape')}
-                  className="w-full sm:w-1/2 flex items-center justify-center gap-2.5 rounded-2xl border-2 border-sky-400/80 bg-gradient-to-b from-[#0B1E2E] to-[#040D14] px-6 py-4 text-lg font-bold text-sky-200 shadow-lg hover:border-sky-300 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                  className="w-full sm:w-1/2 flex flex-col items-center justify-center gap-1 rounded-2xl border-2 border-sky-400/80 bg-gradient-to-b from-[#0B1E2E] to-[#040D14] p-4 text-base font-bold text-sky-200 shadow-lg hover:border-sky-300 hover:scale-105 active:scale-95 transition-all cursor-pointer"
                 >
-                  <span className="text-2xl">🔷</span>
-                  <span>By SHAPE</span>
+                  <span className="text-3xl">🔷</span>
+                  <span className="text-lg font-bold">SHAPES</span>
+                  <span className="text-[11px] font-semibold text-sky-300">⭐ Stars & ⭕ Circles</span>
                 </button>
               </div>
             </div>
@@ -2302,17 +2369,17 @@ function __McInner() {
 
         {stage === 'dccs_game' && DCCS_CARDS[dccsIndex] && dccsWarnLeft === null && !dccsRuleCheck && (
           <AlchemicalSortingArena
-            title={dccsRule === 'color' ? 'Same COLOR goes together!' : 'Same SHAPE goes together!'}
+            title={dccsRule === 'color' ? 'Match COLOR 🎨' : 'Match SHAPE 🔷'}
             subtitle={
               dccsRule === 'color'
-                ? 'Color Law Active: Red gems go to the Ruby Vault, Blue gems go to the Sapphire Vault!'
-                : 'Shape Law Active: Stars go to the Star Vault, Circles go to the Sphere Vault!'
+                ? '🔴 Red goes to Red • 🔵 Blue goes to Blue'
+                : '⭐ Stars go to Stars • ⭕ Circles go to Circles'
             }
             rule={dccsRule}
             targetGem={DCCS_CARDS[dccsIndex]}
             onSort={(bin) => handleDccsSort(bin)}
             stepLabel={`Gem ${dccsIndex + 1} of ${DCCS_CARDS.length}`}
-            modeLabel={dccsRule === 'color' ? '🎨 Color Magic' : '🔷 Shape Magic'}
+            modeLabel={dccsRule === 'color' ? 'Colors' : 'Shapes'}
           />
         )}
 

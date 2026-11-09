@@ -167,32 +167,49 @@ export default function LookingGame({
             />
           </div>
           <span className="inline-block rounded-full bg-teal-400/20 border border-teal-300/40 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-teal-200 mb-2">
-            The Lantern Garden • Starlight Gaze Calibration
+            ⭐ The Lantern Garden • Starlight Watch
           </span>
-          <h2 className="font-patrick text-3xl sm:text-4xl text-amber-200 font-bold mb-3">
-            The Starlight Looking Activity
+          <h2 className="font-patrick text-3xl sm:text-4xl text-amber-200 font-bold mb-2">
+            Watch the Starlight! ⭐
           </h2>
-          <p className="text-sm sm:text-base text-teal-100/90 mb-3 leading-relaxed">
-            First, {name} watches a gentle glowing star glide across the night sky — to the left, then to the right. Then garden pictures will appear!
+          <p className="text-sm sm:text-base text-teal-100/90 mb-4 leading-relaxed font-medium">
+            Just watch the star glide across the sky. Zero buttons to press!
           </p>
-          <div className="mb-6 rounded-2xl bg-black/40 border border-teal-400/30 p-3.5 text-xs text-teal-200/90 leading-relaxed text-left flex items-start gap-2.5">
+
+          {/* Visual byte-sized cue chips */}
+          <div className="grid grid-cols-3 gap-2.5 max-w-md mx-auto mb-6">
+            <div className="flex flex-col items-center p-2.5 rounded-2xl bg-black/40 border border-teal-400/30">
+              <span className="text-2xl mb-1">⭐</span>
+              <span className="text-[11px] font-bold text-amber-200">1. Spot star</span>
+            </div>
+            <div className="flex flex-col items-center p-2.5 rounded-2xl bg-black/40 border border-teal-400/30">
+              <span className="text-2xl mb-1">👀</span>
+              <span className="text-[11px] font-bold text-teal-200">2. Follow eyes</span>
+            </div>
+            <div className="flex flex-col items-center p-2.5 rounded-2xl bg-black/40 border border-teal-400/30">
+              <span className="text-2xl mb-1">🌸</span>
+              <span className="text-[11px] font-bold text-emerald-200">3. Garden fun!</span>
+            </div>
+          </div>
+
+          <div className="mb-6 rounded-2xl bg-black/40 border border-teal-400/30 p-3 text-xs text-teal-200/90 leading-relaxed text-left flex items-start gap-2.5">
             <span className="text-base shrink-0">💡</span>
             <span>
-              <strong>Parent Tip:</strong> Sit facing the screen comfortably in a well-lit room. {name} can just watch naturally — zero buttons or reading required.
+              <strong>Parent Tip:</strong> Sit facing the screen comfortably in a well-lit room. {name} can just watch naturally — no clicking needed!
             </span>
           </div>
           <div className="flex flex-wrap justify-center items-center gap-4">
             <button
               type="button"
               onClick={start}
-              className="rounded-full bg-gradient-to-r from-teal-500 via-teal-600 to-emerald-600 px-8 py-4 text-base font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
+              className="rounded-full bg-gradient-to-r from-teal-500 via-teal-600 to-emerald-600 px-10 py-4 text-lg font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
             >
-              Start Starlight Activity ▶
+              Start Starlight ▶
             </button>
             <button
               type="button"
               onClick={skip}
-              className="rounded-full border border-teal-300/40 bg-black/30 px-6 py-4 text-sm font-bold text-teal-200 hover:bg-black/50 transition-all"
+              className="rounded-full border border-teal-300/40 bg-black/30 px-6 py-4 text-sm font-bold text-teal-200 hover:bg-black/50 transition-all cursor-pointer"
             >
               Skip this part
             </button>
@@ -211,23 +228,23 @@ export default function LookingGame({
             />
           </div>
           <h3 className="font-patrick text-3xl text-amber-300 font-bold mb-2">
-            One More Starlight Glimpse!
+            One More Look at the Stars! ⭐
           </h3>
           <p className="text-sm text-amber-100/90 mb-4 leading-relaxed">
-            Aria needs one more gentle look at the stars to calibrate the starlight. Please keep your screen steady with the room gently lit.
+            Follow the gentle star one more time so Aria can tune the starlight!
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <button
               type="button"
               onClick={() => setPhase({k: 'cal', side: 'left', attempt: 1})}
-              className="rounded-full bg-gradient-to-r from-teal-500 to-emerald-600 px-8 py-3.5 text-base font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
+              className="rounded-full bg-gradient-to-r from-teal-500 to-emerald-600 px-8 py-3.5 text-base font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
             >
-              Follow the Stars Again ▶
+              Follow Stars Again ▶
             </button>
             <button
               type="button"
               onClick={() => finish(NOT_CALIBRATED_TELEMETRY)}
-              className="rounded-full border border-teal-300/40 bg-black/30 px-6 py-3.5 text-sm font-bold text-teal-200 hover:bg-black/50 transition-all"
+              className="rounded-full border border-teal-300/40 bg-black/30 px-6 py-3.5 text-sm font-bold text-teal-200 hover:bg-black/50 transition-all cursor-pointer"
             >
               Continue without camera
             </button>
@@ -248,16 +265,16 @@ export default function LookingGame({
               />
               <div className="text-left">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-teal-300 block">
-                  Aria, Grove Alchemist
+                  Aria the Alchemist
                 </span>
-                <p className="font-patrick text-xl sm:text-2xl text-amber-100 font-bold leading-tight" aria-live="polite">
+                <p className="font-patrick text-2xl sm:text-3xl text-amber-100 font-bold leading-tight" aria-live="polite">
                   {phase.k === 'cal'
                     ? phase.side === 'left'
-                      ? 'Look at the glowing star on the left!'
-                      : 'Now look! The star glided to the right!'
+                      ? '👀 Look left at the star! ⭐'
+                      : '👀 Look right at the star! ⭐'
                     : phase.k === 'gap'
-                    ? 'Wonderful! Keep looking at the center star...'
-                    : 'Watch whatever catches your eyes!'}
+                    ? '✨ Look at the center star!'
+                    : '🌸 Watch whatever catches your eyes!'}
                 </p>
               </div>
             </div>

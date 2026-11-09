@@ -447,7 +447,7 @@ const GUILD_CLASSES = [
   {
     name: 'Canopy Sky Ranger',
     badge: 'Eagle-Eyed Scout',
-    image: '/quests/characters/canopy_sky_ranger.webp?v=organic_wc10',
+    image: '/quests/characters/canopy_sky_ranger.webp?v=watercolor_v11',
     Svg: BowIconSvg,
     AvatarSvg: CanopyRangerAvatarSvg,
     desc: 'Fast & sharp-eyed · Spots distant birds'
@@ -455,7 +455,7 @@ const GUILD_CLASSES = [
   {
     name: 'Astral Spellcaster',
     badge: 'Star Mage',
-    image: '/quests/characters/astral_spellcaster.webp?v=organic_wc10',
+    image: '/quests/characters/astral_spellcaster.webp?v=watercolor_v11',
     Svg: WandIconSvg,
     AvatarSvg: AstralSpellcasterAvatarSvg,
     desc: 'Creative & bright · Lights up constellations'
@@ -463,7 +463,7 @@ const GUILD_CLASSES = [
   {
     name: 'Sunfire Knight',
     badge: 'Sun Guardian',
-    image: '/quests/characters/sunfire_knight.webp?v=organic_wc10',
+    image: '/quests/characters/sunfire_knight.webp?v=watercolor_v11',
     Svg: ShieldIconSvg,
     AvatarSvg: SunfireKnightAvatarSvg,
     desc: 'Steady & brave · Brings courage & calm'
@@ -1442,7 +1442,7 @@ function McInner() {
             </div>
 
             <div className="p-6 md:p-8 text-center">
-              <GuideChirpNote text="Welcome to Sunbird Valley! Watch the skies with me — when you spot the golden sunbird, give it a quick gentle tap! But let the grey shadow moth flutter past peacefully." />
+              <GuideChirpNote text="Spot the golden sunbird? Tap quick! 🐦 See the grey moth? Let it fly by! 🦋" />
               <div className="grid grid-cols-2 gap-4 mb-5 max-w-md mx-auto">
                 <div className="rounded-2xl bg-[#2A1D13]/85 border-2 border-amber-400/50 p-4 shadow-md">
                   <div className="mx-auto h-16 w-16"><SunbirdTarget className="h-full w-full" /></div>
@@ -1654,8 +1654,12 @@ function McInner() {
         {stage === 'flanker_story' && (
           <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md overflow-hidden shadow-2xl text-amber-50">
             <style>{CV_CSS}</style>
-            <div className="relative h-52 md:h-60 w-full overflow-hidden bg-[#1E1B4B]">
-              <ChevronScene className="h-full w-full" />
+            <div className="relative h-56 md:h-64 w-full overflow-hidden bg-[#1E1B4B]">
+              <img
+                src="/quests/adhd/canopy_river_trail_banner.webp?v=wc1"
+                alt="Canopy River Trail"
+                className="h-full w-full object-cover object-center"
+              />
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-5">
                 <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-black/50 border border-amber-400/30 px-3 py-1 rounded-full">
                   Chapter 2 • Forest Canopy Trail
@@ -1821,17 +1825,33 @@ function McInner() {
                     Chapter 3: The Starlight Terrace
                   </span>
                   <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    Harmonizing the Starlight Stones
+                    Remember the Stars! ⭐
                   </h2>
                 </div>
               </div>
             </div>
 
             <div className="p-6 md:p-8 text-center">
-              <GuideChirpNote text="Look up at the starlit terrace! The ancient constellation stars light up in harmony. Watch the pattern closely, then tap them in the exact same order!" />
-              <p className="text-xs md:text-sm text-slate-300 leading-relaxed mb-6">
-                {starToneRef.current ? 'Listen to the tones. Then tap the stars in the same order!' : 'Watch the stars light up. Then tap them in the same order!'}
-              </p>
+              <GuideChirpNote text="Watch the stars glow! Remember the pattern, then tap them in the exact same order! ⭐" />
+
+              {/* 3 Byte-sized visual steps */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-4 max-w-xl mx-auto">
+                <div className="rounded-2xl bg-indigo-500/15 border border-indigo-400/30 p-3 flex flex-col items-center text-center shadow-sm">
+                  <span className="text-2xl mb-1">👀</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-purple-300">Step 1</span>
+                  <p className="text-xs font-bold text-slate-100 mt-0.5">Watch stars glow</p>
+                </div>
+                <div className="rounded-2xl bg-indigo-500/15 border border-indigo-400/30 p-3 flex flex-col items-center text-center shadow-sm">
+                  <span className="text-2xl mb-1">🧠</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-purple-300">Step 2</span>
+                  <p className="text-xs font-bold text-slate-100 mt-0.5">Remember order</p>
+                </div>
+                <div className="rounded-2xl bg-indigo-500/15 border border-indigo-400/30 p-3 flex flex-col items-center text-center shadow-sm">
+                  <span className="text-2xl mb-1">⭐</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-purple-300">Step 3</span>
+                  <p className="text-xs font-bold text-slate-100 mt-0.5">Tap in same order!</p>
+                </div>
+              </div>
 
               <div className="text-center">
                 <button
@@ -1928,17 +1948,33 @@ function McInner() {
                     Chapter 4: The Sunstone Courtyard
                   </span>
                   <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
-                    The Sacred Sunstone Power Charge
+                    Hold the Sunstone! ☀️
                   </h2>
                 </div>
               </div>
             </div>
 
             <div className="p-6 md:p-8 text-center">
-              <GuideChirpNote text="You have reached the ancient Sunstone Courtyard. Gently press and hold the crystal until the golden bell chimes! Keep holding steady." />
-              <p className="text-sm md:text-base text-amber-100 font-medium leading-relaxed mb-6 max-w-lg mx-auto">
-                Press and <strong>HOLD</strong> the glowing stone. Do not let go until it chimes!
-              </p>
+              <GuideChirpNote text="Press and HOLD the glowing stone! Keep holding steady until you hear the chime! 🔔" />
+
+              {/* 3 Byte-sized visual steps */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-4 max-w-xl mx-auto">
+                <div className="rounded-2xl bg-amber-500/15 border border-amber-400/30 p-3 flex flex-col items-center text-center shadow-sm">
+                  <span className="text-2xl mb-1">👆</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300">Step 1</span>
+                  <p className="text-xs font-bold text-amber-100 mt-0.5">Press & HOLD</p>
+                </div>
+                <div className="rounded-2xl bg-amber-500/15 border border-amber-400/30 p-3 flex flex-col items-center text-center shadow-sm">
+                  <span className="text-2xl mb-1">⏳</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300">Step 2</span>
+                  <p className="text-xs font-bold text-amber-100 mt-0.5">Stay steady</p>
+                </div>
+                <div className="rounded-2xl bg-amber-500/15 border border-amber-400/30 p-3 flex flex-col items-center text-center shadow-sm">
+                  <span className="text-2xl mb-1">🔔</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300">Step 3</span>
+                  <p className="text-xs font-bold text-amber-100 mt-0.5">Release on chime!</p>
+                </div>
+              </div>
 
               <div className="text-center">
                 <button

@@ -78,19 +78,19 @@ const SCHOLAR_CLASSES: Cls[] = [
     name: "Echo Scribe",
     desc: "Keen listener · Catches echoing sounds and rhyming words",
     badge: "Sound Scholar",
-    image: "/quests/characters/echo_scribe.webp?v=watercolor5",
+    image: "/quests/characters/echo_scribe.webp?v=watercolor_v11",
   },
   {
     name: "Rune Archivist",
     desc: "Letter detective · Untangles puzzle letters and finds hidden words",
     badge: "Letter Seeker",
-    image: "/quests/characters/rune_archivist.webp?v=watercolor5",
+    image: "/quests/characters/rune_archivist.webp?v=watercolor_v11",
   },
   {
     name: "Story Navigator",
     desc: "Creative thinker · Enjoys great adventures, pictures, and tales",
     badge: "Story Weaver",
-    image: "/quests/characters/story_navigator.webp?v=watercolor5",
+    image: "/quests/characters/story_navigator.webp?v=watercolor_v11",
   },
 ];
 

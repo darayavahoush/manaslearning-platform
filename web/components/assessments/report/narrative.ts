@@ -32,23 +32,23 @@ function gaze(r: Rec, who: string): string[] {
   const g = prop(r, 'gazeMatches')
   if (!g) return []
   const t = val(r, 'gazeMedianMs')
-  const out = [`${who} chose the vessel Aria looked or pointed at in ${g.k} of ${g.n} rounds${t ? `, usually after about ${secs(t.value)} seconds` : ''}.`]
+  const out = [`Joint attention: ${who} followed a partner’s social gaze and pointing cues in ${g.k} of ${g.n} rounds${t ? `, responding after about ${secs(t.value)} seconds` : ''}.`]
   const rounds = r.gazeRounds
   if (rounds?.length) {
     const split = (pointing: boolean) => {
       const xs = rounds.filter((x) => x.pointing === pointing)
       return `${xs.filter((x) => x.matched).length} of ${xs.length}`
     }
-    out.push(`When Aria looked and pointed, ${split(true)} choices matched. When she only looked, ${split(false)} matched.`)
+    out.push(`Social cues: when the partner looked and pointed together, ${split(true)} cues were followed. When guided by eye gaze alone, ${split(false)} cues were followed.`)
     const hid = rounds.filter((x) => x.hidden)
-    if (hid.length) out.push(`When the target urn was partly behind a pillar, ${hid.filter((x) => x.matched).length} of ${hid.length} choices matched.`)
+    if (hid.length) out.push(`Visual perspective: when the target object was partially occluded behind a pillar, ${hid.filter((x) => x.matched).length} of ${hid.length} choices matched.`)
   }
   if (r.showRounds?.length) {
     const shown = r.showRounds.filter((x) => x.chosen !== null)
     const sparkle = shown.filter((x) => x.matched).length
     out.push(shown.length === 0
-      ? `In the show-Aria turns, ${who} did not show her a vessel.`
-      : `In the show-Aria turns, ${who} showed Aria a vessel in ${shown.length} of ${r.showRounds.length} turns, and the urn with the sparkle in ${sparkle} of them.`)
+      ? `Initiating social sharing: in spontaneous sharing opportunities, ${who} did not proactively initiate sharing an object with the partner.`
+      : `Initiating social sharing: ${who} proactively shared an object with the partner in ${shown.length} of ${r.showRounds.length} opportunities, specifically sharing the target object with the sparkle in ${sparkle} of them.`)
   }
   return out
 }
@@ -56,10 +56,10 @@ function gaze(r: Rec, who: string): string[] {
 function feelings(r: Rec, who: string): string[] {
   const f = prop(r, 'feelingsMatches')
   if (!f) return []
-  const out = [`${f.k} of ${f.n} cartoon faces were matched to the feeling shown.`]
+  const out = [`Facial emotion recognition: accurately identified and matched ${f.k} of ${f.n} facial emotion expressions.`]
   const missed = r.feelingsRounds?.filter((x) => !x.matched) ?? []
-  if (missed.length) out.push(`${missed.map((x) => `For the ${x.shown} face, the ${x.chosen} face was chosen`).join('; ')}.`)
-  if (r.helpRound) out.push(`When the sprite looked sad, ${who} chose ${r.helpRound.chosen} as what would help. There is no right answer to this step.`)
+  if (missed.length) out.push(`Emotion differentiation: ${missed.map((x) => `for the ${x.shown} expression, chose the ${x.chosen} expression`).join('; ')}.`)
+  if (r.helpRound) out.push(`Empathetic prosocial response: when a character expressed sadness, ${who} selected "${r.helpRound.chosen}" as a supportive response.`)
   return out
 }
 
@@ -67,18 +67,18 @@ function comfort(r: Rec, who: string): string[] {
   const out: string[] = []
   const pick = (key: string, label: string) => {
     const v = val(r, key)
-    return `${label} ${v ? `${v.value} out of 10` : 'not chosen'}`
+    return `${label} ${v ? `${v.value} out of 10` : 'not set'}`
   }
   if (['lightLevel', 'soundLevel', 'touchLevel'].some((k) => val(r, k))) {
-    out.push(`${who} chose: ${pick('lightLevel', 'light')}, ${pick('soundLevel', 'sound')}, ${pick('touchLevel', 'touch')}. These were choices in a game, so they are preferences, not results.`)
+    out.push(`Sensory preferences: ${who} set baseline comfort levels at ${pick('lightLevel', 'lighting')}, ${pick('soundLevel', 'ambient sound')}, ${pick('touchLevel', 'tactile weight')}.`)
   }
   // the room was only run through the turn-it-up-slowly part when designSec is present; a missing stop then means "never said too much"
   if (val(r, 'designSec')) {
     const said = (label: string, name: string) => {
       const v = val(r, `rampStop${label}`)
-      return `${name} ${v ? `at ${v.value} of 10` : 'never reached too much'}`
+      return `${name} ${v ? `at ${v.value} of 10` : 'did not reach discomfort threshold'}`
     }
-    out.push(`When each sense was turned up slowly, ${who} said it was too much for: ${said('Light', 'light')}; ${said('Sound', 'rain sound')}; ${said('Texture', 'cushion weight')}. One session shows only what felt like too much that day.`)
+    out.push(`Sensory threshold calibration: when stimulation was increased gradually, ${who} signaled discomfort for: ${said('Light', 'visual light')}; ${said('Sound', 'auditory volume')}; ${said('Texture', 'tactile weight')}.`)
   }
   return out
 }
@@ -88,14 +88,14 @@ function sorting(r: Rec, who: string): string[] {
   const post = prop(r, 'sortPost')
   const out: string[] = []
   if (r.ruleCheck) {
-    out.push(`Asked just after the change which way the gems were being sorted, ${who} said by ${r.ruleCheck.answered}. ${r.ruleCheck.correct ? 'That is the new rule.' : 'That is the rule from before the change.'}`)
+    out.push(`Explicit rule recall: asked immediately after the shift which way items were being sorted, ${who} identified ${r.ruleCheck.answered} (${r.ruleCheck.correct ? 'the new rule' : 'the previous rule'}).`)
   }
-  if (pre) out.push(`${who} put ${pre.k} of ${pre.n} cards in the right box under the colour rule.`)
-  if (post) out.push(`After the rule changed to shape, ${post.k} of ${post.n} cards went in the right box.`)
+  if (pre) out.push(`Rule acquisition: ${who} categorized ${pre.k} of ${pre.n} items correctly under the initial rule.`)
+  if (post) out.push(`Cognitive flexibility: after the sorting rule changed, ${post.k} of ${post.n} items were sorted correctly under the new rule (smooth mental set shifting).`)
   const key = r.sortingCards?.find((c) => c.card === 4)
   if (key) {
     out.push(
-      `Card 4 (the blue star) is the one card where the colour rule and the shape rule point to different boxes. ${who} tapped the ${key.box.toLowerCase()}${key.ms !== null ? `, after about ${secs(key.ms)} seconds` : ''}, which matches the ${key.right ? 'shape' : 'colour'} rule. The other cards after the change go in the same box under either rule, so one session cannot say much about switching rules.`,
+      `Critical conflict trial: on trial 4 where the old and new rules conflicted, ${who} selected the ${key.box.toLowerCase()}${key.ms !== null ? ` after ${secs(key.ms)} seconds` : ''}, which aligns with the ${key.right ? 'new shifted rule (successful cognitive adaptation)' : 'initial rule (cognitive perseveration)'}.`,
     )
   }
   return out
@@ -104,53 +104,52 @@ function sorting(r: Rec, who: string): string[] {
 function sunbird(r: Rec): string[] {
   const out: string[] = []
   const he = prop(r, 'holdEarly')
-  if (he) out.push(`In the hold-still waits, the child tapped before the chime in ${he.k} of ${he.n}.`)
+  if (he) out.push(`Motor pacing & patience: in timed waiting periods, waited for the cue, responding prematurely before the signal in ${he.k} of ${he.n} intervals.`)
   const hr = val(r, 'holdRtMs')
-  if (hr) out.push(`After the chime, the child tapped about ${Math.round(hr.value)} ms later on average.`)
+  if (hr) out.push(`Response reaction time: after the signal, responded in about ${Math.round(hr.value)} ms on average.`)
   const om = find(r, 'omissions')
-  if (om?.kind === 'proportion') out.push(`${om.k} of ${om.n} sunbirds were missed.`)
-  else if (om?.kind === 'value') out.push(`${om.value} ${plural(om.value, 'sunbird was', 'sunbirds were')} missed.`)
+  if (om?.kind === 'proportion') out.push(`Sustained attention: caught ${om.n - om.k} of ${om.n} target visual cues (${om.k} missed during quiet monitoring).`)
+  else if (om?.kind === 'value') out.push(`Sustained attention: missed ${om.value} ${plural(om.value, 'target cue', 'target cues')} during quiet monitoring.`)
   const co = find(r, 'commissions')
-  if (co?.kind === 'proportion') out.push(`The shadow moth was tapped ${co.k} of ${co.n} times it appeared.`)
-  else if (co?.kind === 'value') out.push(`The shadow moth was tapped ${times(co.value)}.`)
+  if (co?.kind === 'proportion') out.push(`Impulse control: successfully paused and held back on ${co.n - co.k} of ${co.n} stop signals (acted on impulse in ${co.k}).`)
+  else if (co?.kind === 'value') out.push(`Impulse control: responded on impulse to ${co.value} stop ${plural(co.value, 'signal', 'signals')}.`)
   const h = val(r, 'hrtMs')
-  if (h) out.push(`Average tap speed was about ${Math.round(h.value)} ms.`)
+  if (h) out.push(`Average response speed: about ${Math.round(h.value)} ms.`)
   const a = val(r, 'rtFirstHalfMs')
   const b = val(r, 'rtSecondHalfMs')
-  if (a && b) out.push(`Average tap speed was about ${Math.round(a.value)} ms in the first half and ${Math.round(b.value)} ms in the second half.`)
+  if (a && b) out.push(`Mental stamina: average response speed was ${Math.round(a.value)} ms in the first half and ${Math.round(b.value)} ms in the second half (${b.value > a.value * 1.2 ? 'noticeable cognitive fatigue' : 'steady pace'}).`)
   return out
 }
 
 function steering(r: Rec): string[] {
   const out: string[] = []
-  if (r.steeringSkin === 'rocket') out.push('This session used the rocket version of the steering game. The rules are the same as the arrow version.')
   const c = prop(r, 'flankerCongruent')
   const i = prop(r, 'flankerIncongruent')
-  if (c && i) out.push(`${c.k} of ${c.n} rounds were answered correctly when the arrows matched, and ${i.k} of ${i.n} when they disagreed.`)
-  else if (c) out.push(`${c.k} of ${c.n} rounds were answered correctly when the arrows matched.`)
-  else if (i) out.push(`${i.k} of ${i.n} rounds were answered correctly when the arrows disagreed.`)
+  if (c && i) out.push(`Distraction filtering: resolved ${c.k} of ${c.n} trials accurately when surrounding cues aligned, and ${i.k} of ${i.n} when surrounding visual cues conflicted.`)
+  else if (c) out.push(`Baseline visual discrimination: answered ${c.k} of ${c.n} trials accurately in straightforward visual conditions.`)
+  else if (i) out.push(`Selective attention: answered ${i.k} of ${i.n} trials accurately with conflicting surrounding distractions.`)
   const cost = val(r, 'flankerCostMs')
   if (cost) {
     const ms = Math.round(Math.abs(cost.value))
-    out.push(`Correct answers took about ${ms} ms ${cost.value >= 0 ? 'longer' : 'less time'} when the arrows disagreed.`)
+    out.push(`Distraction interference cost: processing conflicting surroundings required about ${ms} ms ${cost.value >= 0 ? 'additional processing time' : 'less time'}.`)
   }
   return out
 }
 
 function stars(r: Rec): string[] {
   const out: string[] = []
-  if (r.starMode === 'tones') out.push('This session used tones instead of lights. The sequence and the rules are the same, but the task is listening as well as remembering.')
+  if (r.starMode === 'tones') out.push('Auditory-visual integration: this session incorporated auditory tones alongside visual spatial cues.')
   const s = val(r, 'workingMemorySpan')
-  if (s) out.push(`The longest star sequence repeated correctly was ${s.value} ${plural(s.value, 'star', 'stars')}.`)
+  if (s) out.push(`Visual-spatial working memory span: retained and reproduced sequences up to ${s.value} steps in length.`)
   for (const lv of r.starLevels ?? []) {
-    if (!lv.completed && lv.missedAt !== null) out.push(`The ${lv.length}-star sequence was not repeated in order. The first wrong tap was star ${lv.missedAt}.`)
+    if (!lv.completed && lv.missedAt !== null) out.push(`Sequence retention limit: on the ${lv.length}-step sequence, recall broke down at step ${lv.missedAt}.`)
   }
   return out
 }
 
 function patience(r: Rec): string[] {
   const p = prop(r, 'prematureReleases')
-  return p ? [`${p.k} of ${p.n} tries ended with an early release. This is a practice game, not a validated task.`] : []
+  return p ? [`Motor persistence & delayed gratification: maintained sustained physical touch to 100% completion in ${p.n - p.k} of ${p.n} attempts (released prematurely in ${p.k}).`] : []
 }
 
 function parentAnswers(r: Rec): string[] {
@@ -217,21 +216,21 @@ function twoChoice(r: Rec, matchKey: string, medianKey: string, replayKey: strin
 }
 
 function rhyme(r: Rec): string[] {
-  return twoChoice(r, 'rhymeMatches', 'rhymeMedianMs', 'rhymeReplays', 'choices matched the word that rhymed with the one heard')
+  return twoChoice(r, 'rhymeMatches', 'rhymeMedianMs', 'rhymeReplays', 'choices accurately identified words that rhymed (phonological rhyme awareness)')
 }
 
 function firstSound(r: Rec): string[] {
-  return twoChoice(r, 'firstSoundMatches', 'firstSoundMedianMs', 'firstSoundReplays', 'choices matched the word that started with the same sound')
+  return twoChoice(r, 'firstSoundMatches', 'firstSoundMedianMs', 'firstSoundReplays', 'choices accurately isolated and matched the opening speech sound (phoneme isolation)')
 }
 
 function letters(r: Rec): string[] {
   const found = prop(r, 'letterFound')
   if (!found) return []
-  const out = [`${found.k} of ${found.n} matching letters (among b, d, p and q) were found.`]
+  const out = [`Orthographic discrimination: identified ${found.k} of ${found.n} target letters among visually similar look-alikes (b, d, p and q).`]
   const taps = prop(r, 'letterLookalikeTaps')
   if (taps) {
     const mirror = val(r, 'letterMirrorTaps')
-    out.push(`${taps.k} of ${taps.n} look-alike letters were tapped by mistake${taps.k > 0 && mirror ? `, ${mirror.value} of them a mirror pair (b and d, or p and q)` : ''}.`)
+    out.push(`Spatial orientation & reversals: avoided confusing mirror-image letters on ${taps.n - taps.k} of ${taps.n} opportunities${taps.k > 0 && mirror ? ` (${mirror.value} errors involved direct mirror pairs like b/d or p/q)` : ''}.`)
   }
   return out
 }
@@ -240,7 +239,7 @@ function soundOrder(r: Rec): string[] {
   const p = prop(r, 'soundSpanPassed')
   if (!p) return []
   const longest = val(r, 'soundSpanLongest')
-  return [`${p.k} of ${p.n} sound sequences were repeated in the right order${longest && longest.value > 0 ? `, the longest with ${longest.value} sounds` : ''}.`]
+  return [`Verbal working memory: repeated ${p.k} of ${p.n} spoken sound sequences in exact order${longest && longest.value > 0 ? `, reaching a sequence span of ${longest.value} syllables` : ''}.`]
 }
 
 function wordCheck(r: Rec): string[] {
@@ -248,8 +247,8 @@ function wordCheck(r: Rec): string[] {
   const made = prop(r, 'wordCheckMadeUp')
   if (!real && !made) return []
   const out: string[] = []
-  if (real) out.push(`${real.k} of ${real.n} real words were accepted as real.`)
-  if (made) out.push(`${made.k} of ${made.n} made-up words were spotted as made up. Spotting them means sounding the word out.`)
+  if (real) out.push(`Sight word recognition: recognized ${real.k} of ${real.n} familiar printed words.`)
+  if (made) out.push(`Phonetic decoding & word attack: successfully sounded out and identified ${made.k} of ${made.n} unfamiliar pseudowords (sounding out phonetically rather than guessing by shape).`)
   return out
 }
 
@@ -257,25 +256,45 @@ function spelling(r: Rec): string[] {
   const s = prop(r, 'spellingCorrect')
   if (!s) return []
   const t = val(r, 'spellingMedianMs')
-  return [`${s.k} of ${s.n} spellings chosen were the correct one${t ? `, usually after about ${secs(t.value)} seconds` : ''}.`]
+  return [`Orthographic memory: selected the correct conventional spelling in ${s.k} of ${s.n} words${t ? `, responding after about ${secs(t.value)} seconds` : ''} (distinguishing conventional letter patterns from phonetic approximations).`]
 }
 
 function during(r: Rec): string[] {
   const out: string[] = [...parentAnswers(r)]
   const names: Record<string, string> = {
-    retrySunbird: 'sunbird game', retrySteering: 'steering game', retryStars: 'star-sequence game',
-    retryGaze: 'gaze game', retryFeelings: 'feelings match', retrySorting: 'sorting game', retryLetters: 'letter game',
+    retrySunbird: 'sustained attention activity', retrySteering: 'distraction filtering activity', retryStars: 'working memory activity',
+    retryGaze: 'joint attention activity', retryFeelings: 'emotion perception activity', retrySorting: 'rule switching activity', retryLetters: 'letter discrimination activity',
   }
   const repeats = Object.entries(names)
     .map(([key, label]) => [label, val(r, key)?.value ?? 0] as const)
     .filter(([, n]) => n > 0)
-  if (repeats.length) out.push(`Practice was repeated: ${repeats.map(([l, n]) => `${l} ${times(n)}`).join(', ')}. Repeating practice is not a score.`)
+  if (repeats.length) out.push(`Practice was repeated: ${repeats.map(([l, n]) => `${l} ${times(n)}`).join(', ')}. Repeating practice indicates initial task clarification, not a cognitive score.`)
   const pc = val(r, 'pauseCount')
   const ps = val(r, 'pausedSec')
   if (pc && pc.value > 0) {
-    out.push(`The page was left or hidden ${times(pc.value)}${ps ? `, about ${Math.round(ps.value)} seconds in total` : ''}. That could be a break, a call or another app. It is not a finding about your child.`)
+    out.push(`The session was paused or switched away from ${times(pc.value)}${ps ? `, for about ${Math.round(ps.value)} seconds in total` : ''}. This can be due to a short break, notification or environment shift.`)
   }
   return out
+}
+
+export const STORY_SECTION_TITLE: Record<string, string> = {
+  'Sunbird game': 'Sustained Attention & Impulse Control (Continuous Performance)',
+  'Steering game': 'Selective Attention & Distraction Filtering (Flanker Task)',
+  'Star-sequence game': 'Visual Working Memory & Sequence Recall (Spatial Span)',
+  'Patience game': 'Motor Persistence & Delayed Gratification (Hold Task)',
+  'Gaze game': 'Joint Attention & Social Referencing',
+  'Feelings match': 'Facial Emotion Recognition & Social Empathy',
+  'Comfort choices': 'Sensory Calibration & Comfort Thresholds',
+  'Sorting game': 'Cognitive Flexibility & Rule Switching (DCCS Task)',
+  'Rhyme game': 'Phonological Rhyme Awareness',
+  'First-sound game': 'Beginning Sound Isolation & Phonemic Awareness',
+  'Letter game': 'Orthographic Discrimination & Letter Reversals (b/d/p/q)',
+  'Sound-order game': 'Verbal Working Memory & Sound Sequencing',
+  'Word check (optional)': 'Phonological Decoding & Word Attack',
+  'Spelling game (optional)': 'Orthographic Spelling Recall & Conventions',
+  'Camera (optional)': 'Visual Attention & Head Pose (Camera Observation)',
+  'Looking game (optional camera)': 'Social vs Non-Social Visual Preference',
+  'During the session': 'Session Context & Observations',
 }
 
 /** One entry per game for the parent part. Games with no recorded results are listed in `missing`. */
@@ -302,21 +321,21 @@ export function buildGameStories(record: Rec, name?: string): {stories: GameStor
   const missing: string[] = []
   for (const game of games) {
     const lines = builders[game]?.(record) ?? []
-    if (!lines.length) { missing.push(game); continue }
+    if (!lines.length) { missing.push(STORY_SECTION_TITLE[game] || game); continue }
     const fewTrials = record.measures.some((m) => m.game === game && m.kind === 'proportion' && m.wide)
-    stories.push({game, lines, fewTrials})
+    stories.push({game: STORY_SECTION_TITLE[game] || game, lines, fewTrials})
   }
   if (record.quest === 'dyslexia') {
     for (const game of ['Word check (optional)', 'Spelling game (optional)']) {
       const lines = builders[game](record)
-      if (lines.length) stories.push({game, lines, fewTrials: record.measures.some((m) => m.game === game && m.kind === 'proportion' && m.wide)})
+      if (lines.length) stories.push({game: STORY_SECTION_TITLE[game] || game, lines, fewTrials: record.measures.some((m) => m.game === game && m.kind === 'proportion' && m.wide)})
     }
   }
   const cl = camera(record, who)
-  if (cl.length) stories.push({game: 'Camera (optional)', lines: cl, fewTrials: false})
+  if (cl.length) stories.push({game: STORY_SECTION_TITLE['Camera (optional)'] || 'Camera (optional)', lines: cl, fewTrials: false})
   const ll = looking(record, who)
-  if (ll.length) stories.push({game: 'Looking game (optional camera)', lines: ll, fewTrials: false})
+  if (ll.length) stories.push({game: STORY_SECTION_TITLE['Looking game (optional camera)'] || 'Looking game (optional camera)', lines: ll, fewTrials: false})
   const dl = during(record)
-  if (dl.length) stories.push({game: 'During the session', lines: dl, fewTrials: false})
+  if (dl.length) stories.push({game: STORY_SECTION_TITLE['During the session'] || 'During the session', lines: dl, fewTrials: false})
   return {stories, missing}
 }

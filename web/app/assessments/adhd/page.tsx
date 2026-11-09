@@ -1574,25 +1574,49 @@ function McInner() {
           </div>
         )}
 
-        {/* 4. CHAPTER 2 STORY: THE SOLAR CHEVRONS (short, picture first) */}
+        {/* 4. CHAPTER 2 STORY: FOLLOW THE MIDDLE ARROW (clean, illustrated, byte-sized) */}
         {stage === 'flanker_story' && (
           <div className="rounded-3xl border border-[#D4A373]/40 bg-gradient-to-b from-[#181410]/75 via-[#221B14]/65 to-[#14100C]/85 backdrop-blur-md overflow-hidden shadow-2xl text-amber-50">
             <style>{CV_CSS}</style>
-            <div className="relative h-56 md:h-64 w-full overflow-hidden bg-[#1E1B4B]">
+            <div className="relative h-52 md:h-60 w-full overflow-hidden bg-[#1E1B4B]">
               <ChevronScene className="h-full w-full" />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-5">
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-black/40 px-3 py-1 rounded-full">
-                  Chapter 2: The Forest Canopy Trail
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-5">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-300 bg-black/50 border border-amber-400/30 px-3 py-1 rounded-full">
+                  Chapter 2 • Forest Canopy Trail
                 </span>
-                <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">The Solar Chevrons</h2>
+                <h2 className="font-patrick text-3xl md:text-4xl text-white font-bold mt-1">
+                  Follow the Middle Arrow! 🏹
+                </h2>
               </div>
             </div>
-            <div className="p-6 md:p-8 text-center">
-              <GuideChirpNote text="Splendid watching! Now we take to the forest canopy trail. Steer the way the big golden arrow points, and ignore the smaller side arrows!" />
-              <div className="flex items-center justify-center gap-4 mb-4">
-                <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="cv-float h-16 w-16 object-contain drop-shadow" />
-                <p className="text-left text-base md:text-lg font-bold text-amber-100 max-w-xs">Tap the paddle the big golden arrow points to!</p>
+            <div className="p-6 md:p-8 text-center max-w-2xl mx-auto">
+              {/* 3 Byte-sized visual steps for children */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-4">
+                <div className="rounded-2xl bg-amber-500/15 border border-amber-400/30 p-4 flex flex-col items-center text-center shadow-sm">
+                  <span className="text-3xl mb-1.5" aria-hidden="true">👀</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300">Step 1</span>
+                  <p className="text-sm font-bold text-amber-100 mt-1">Look at the middle arrow</p>
+                </div>
+                <div className="rounded-2xl bg-amber-500/15 border border-amber-400/30 p-4 flex flex-col items-center text-center shadow-sm">
+                  <span className="text-3xl mb-1.5" aria-hidden="true">🙈</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300">Step 2</span>
+                  <p className="text-sm font-bold text-amber-100 mt-1">Ignore the side arrows</p>
+                </div>
+                <div className="rounded-2xl bg-amber-500/15 border border-amber-400/30 p-4 flex flex-col items-center text-center shadow-sm">
+                  <span className="text-3xl mb-1.5" aria-hidden="true">👈 ⛵ 👉</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300">Step 3</span>
+                  <p className="text-sm font-bold text-amber-100 mt-1">Tap Left or Right</p>
+                </div>
               </div>
+
+              {/* Guide Chirp Friendly Tip */}
+              <div className="my-4 flex items-center justify-center gap-3.5 rounded-2xl bg-[#2A1D13]/90 border border-amber-400/40 p-4 shadow-md text-amber-100 backdrop-blur-sm">
+                <img src="/quests/adhd/guide_chirp.webp" alt="Guide Chirp" className="w-12 h-12 object-contain shrink-0 drop-shadow" />
+                <p className="text-sm sm:text-base font-bold text-amber-100 text-left">
+                  Steer the way the <span className="text-amber-300 underline underline-offset-4">big golden arrow</span> points! ⛵
+                </p>
+              </div>
+
               <button
                 type="button"
                 onClick={() => {
@@ -1606,9 +1630,9 @@ function McInner() {
                   setFlankerPhase(band.id === '4-5' || band.id === '6-8' ? 'demo1' : 'demo2')
                   setStage('flanker_game')
                 }}
-                className="rounded-full bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 px-12 py-5 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
+                className="mt-2 rounded-full bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 px-10 py-4 text-xl font-extrabold text-white shadow-xl hover:scale-105 active:scale-95 transition-all border-2 border-amber-300/40"
               >
-                Let’s practice →
+                Let’s practice! ⛵
               </button>
             </div>
           </div>

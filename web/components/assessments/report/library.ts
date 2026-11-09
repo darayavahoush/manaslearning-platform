@@ -45,9 +45,9 @@ export const REPORT_TEXT = {
   notDiagnosis:
     'This is not a diagnosis. One short play session cannot show whether a child has a learning or developmental difference. If you have concerns, please talk to a paediatrician, teacher or qualified clinician.',
   parentIntro:
-    'This part is written for you. It describes what happened in each game, using your child’s own numbers. Nothing here is compared with other children.',
+    'This section explains what was observed across each developmental activity and what it alludes to in everyday learning and focus. Nothing here is compared with other children.',
   statusHow:
-    'Each skill is read against what guessing would give and against how sure the numbers are after so few rounds. Nothing is compared with other children, because these games have no norms. A skill is only called a strength or a need when the numbers back it up.',
+    'Each skill is evaluated against chance guessing and statistical confidence intervals from this session. Nothing is compared with other children. An area is only identified as a strength or support area when the numbers reliably support it.',
   clinicianIntro:
     'This part is for a clinician. It holds every figure from the session with 95% intervals, the card-by-card sorting results where recorded, the testing conditions and the limits of the record. There are no norms or cut-offs, so no figure here says a result is typical or unusual.',
   questionsTitle: 'Questions you could bring to a clinician',

@@ -93,8 +93,8 @@ export function ParentSummary({record, name, roadmap}: {record: ReportRecord; na
         <h3 className="mt-5 text-lg font-bold text-teal-800">What this does not tell us</h3>
         <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-800">
           <li>It is one short session, so it is a snapshot of that day only.</li>
-          <li>Nothing here is compared with other children. “Went well” and “may need support” only mean how the games went against what guessing would give, and how sure the numbers are.</li>
-          <li>The games cannot show why something happened or whether a child has a difference or a condition.</li>
+          <li>Nothing here is compared with other children. “Went well” and “may need support” indicate how the activities went compared with chance guessing and statistical certainty.</li>
+          <li>The activities cannot show why something happened or diagnose a developmental condition.</li>
           {cameraUsed && <li>Camera numbers only describe where the head and eyes pointed. They do not show attention or interest.</li>}
         </ul>
 
@@ -110,7 +110,7 @@ export function ParentSummary({record, name, roadmap}: {record: ReportRecord; na
       </section>
 
       <details className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
-        <summary className="cursor-pointer text-lg font-bold text-teal-800">Game by game, in plain words</summary>
+        <summary className="cursor-pointer text-lg font-bold text-teal-800">Detailed developmental findings by activity</summary>
         <div className="mt-3"><ParentSection record={record} name={name} roadmap={roadmap} /></div>
       </details>
     </article>

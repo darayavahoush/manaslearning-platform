@@ -69,59 +69,76 @@ interface Skill {
 
 const SKILLS: Skill[] = [
   // attention quest
-  {key: 'omissions', quest: 'adhd', area: 'Noticing the sunbirds', good: 'low',
-    strong: 'Noticed nearly all of the sunbirds that appeared.', needs: 'Missed a good share of the sunbirds.',
-    evidence: (k, n) => `Noticed ${k} of ${n} sunbirds`},
-  {key: 'commissions', quest: 'adhd', area: 'Holding back from the shadow moth', good: 'low',
-    strong: 'Mostly held back from tapping the shadow moth.', needs: 'Often tapped when the shadow moth appeared.',
-    evidence: (k, n) => `Held back on ${k} of ${n} moths`},
-  {key: 'anticipatory', quest: 'adhd', area: 'Waiting for the right moment to tap', good: 'low',
-    strong: 'Rarely tapped too early or with nothing on screen.', needs: 'Often tapped before there was anything to tap.',
-    evidence: (k, n) => `Waited correctly on ${k} of ${n} moments`},
-  {key: 'flankerCongruent', quest: 'adhd', area: 'Steering when nothing distracts', good: 'high', chance: 0.5,
-    strong: 'Steered correctly almost every time when the arrows agreed.', needs: 'Made quite a few mistakes even when the arrows agreed.',
-    evidence: (k, n) => `${k} of ${n} correct`},
-  {key: 'flankerIncongruent', quest: 'adhd', area: 'Steering when the arrows disagree', good: 'high', chance: 0.5,
-    strong: 'Kept steering correctly even when the arrows disagreed.', needs: 'Found it hard to steer correctly when the arrows disagreed.',
-    evidence: (k, n) => `${k} of ${n} correct`},
+  {key: 'omissions', quest: 'adhd', area: 'Sustained attention & alertness', good: 'low',
+    strong: 'Maintained steady focus and caught target cues consistently over time.',
+    needs: 'Attention drifted during quiet stretches, missing target cues.',
+    evidence: (k, n) => `${k} of ${n} focus cues spotted`},
+  {key: 'commissions', quest: 'adhd', area: 'Impulse control & pausing', good: 'low',
+    strong: 'Showed strong motor control, pausing and holding back when a cue signaled to stop.',
+    needs: 'Acted quickly on impulse, finding it difficult to hold back before reacting.',
+    evidence: (k, n) => `Paused successfully on ${k} of ${n} stop signals`},
+  {key: 'anticipatory', quest: 'adhd', area: 'Patience & pacing', good: 'low',
+    strong: 'Demonstrated calm pacing, waiting patiently for cues rather than rushing ahead.',
+    needs: 'Showed motor restlessness, frequently acting ahead before cues appeared.',
+    evidence: (k, n) => `Waited patiently on ${k} of ${n} timed intervals`},
+  {key: 'flankerCongruent', quest: 'adhd', area: 'Visual processing in clear settings', good: 'high', chance: 0.5,
+    strong: 'Quickly and accurately processed directional cues in straightforward conditions.',
+    needs: 'Made errors even when visual directions were straightforward.',
+    evidence: (k, n) => `${k} of ${n} direct cues correct`},
+  {key: 'flankerIncongruent', quest: 'adhd', area: 'Filtering visual distractions', good: 'high', chance: 0.5,
+    strong: 'Filtered out conflicting surrounding distractions to stay focused on the main cue.',
+    needs: 'Found it hard to filter out conflicting visual distractions in the surroundings.',
+    evidence: (k, n) => `${k} of ${n} complex cues resolved accurately`},
   // social and sensory quest
-  {key: 'gazeMatches', quest: 'autism', area: 'Following where someone looks or points', good: 'high', chance: 1 / 3,
-    strong: 'Usually chose the vessel Aria looked or pointed at.', needs: 'Often chose a different vessel from the one Aria looked or pointed at.',
-    evidence: (k, n) => `${k} of ${n} choices matched`},
-  {key: 'feelingsMatches', quest: 'autism', area: 'Matching feelings to faces', good: 'high', chance: 1 / 3,
-    strong: 'Matched most of the cartoon faces to the feeling shown.', needs: 'Matched only some of the cartoon faces to the feeling shown.',
-    evidence: (k, n) => `${k} of ${n} faces matched`},
-  {key: 'sortPre', quest: 'autism', area: 'Sorting by the first rule', good: 'high', chance: 0.5,
-    strong: 'Sorted the gems correctly by the first rule.', needs: 'Found sorting by the first rule hard.',
-    evidence: (k, n) => `${k} of ${n} gems in the right box`},
-  {key: 'sortPost', quest: 'autism', area: 'Switching to a new rule', good: 'high', chance: 0.5,
-    strong: 'Switched to the new sorting rule and kept getting it right.', needs: 'Found it hard to switch to the new sorting rule.',
-    evidence: (k, n) => `${k} of ${n} gems in the right box after the change`},
+  {key: 'gazeMatches', quest: 'autism', area: 'Joint attention & social referencing', good: 'high', chance: 1 / 3,
+    strong: 'Naturally followed a partner’s social gaze and pointing cues to share visual focus.',
+    needs: 'Relied mostly on independent visual scanning rather than following a partner’s social cues.',
+    evidence: (k, n) => `${k} of ${n} social gaze cues followed`},
+  {key: 'feelingsMatches', quest: 'autism', area: 'Facial emotion recognition', good: 'high', chance: 1 / 3,
+    strong: 'Accurately recognized and matched core emotional expressions from facial cues.',
+    needs: 'Found it challenging to differentiate subtle emotional expressions from facial cues.',
+    evidence: (k, n) => `${k} of ${n} facial emotions identified`},
+  {key: 'sortPre', quest: 'autism', area: 'Rule learning & categorical organization', good: 'high', chance: 0.5,
+    strong: 'Quickly understood and followed a structured categorical rule.',
+    needs: 'Found following the initial categorical rule challenging.',
+    evidence: (k, n) => `${k} of ${n} items categorized accurately`},
+  {key: 'sortPost', quest: 'autism', area: 'Cognitive flexibility & routine adaptation', good: 'high', chance: 0.5,
+    strong: 'Smoothly shifted mental strategies when the rule changed, avoiding getting stuck.',
+    needs: 'Showed difficulty shifting gears, tending to stick to the old rule after it changed.',
+    evidence: (k, n) => `${k} of ${n} items correctly sorted after rule change`},
   // reading quest
-  {key: 'rhymeMatches', quest: 'dyslexia', group: 'sounds', area: 'Hearing which words rhyme', good: 'high', chance: 0.5,
-    strong: 'Heard which words rhyme with ease.', needs: 'Found it hard to tell which words rhyme.',
-    evidence: (k, n) => `${k} of ${n} rhymes matched`},
-  {key: 'firstSoundMatches', quest: 'dyslexia', group: 'sounds', area: 'Hearing the first sound of a word', good: 'high', chance: 0.5,
-    strong: 'Heard the first sound of words reliably.', needs: 'Found it hard to hear which words start with the same sound.',
-    evidence: (k, n) => `${k} of ${n} first sounds matched`},
-  {key: 'letterFound', quest: 'dyslexia', group: 'reading', area: 'Finding the right letter among look-alikes', good: 'high',
-    strong: 'Found the matching letter among b, d, p and q.', needs: 'Missed many of the matching letters among b, d, p and q.',
-    evidence: (k, n) => `${k} of ${n} matching letters found`},
-  {key: 'letterLookalikeTaps', quest: 'dyslexia', group: 'reading', area: 'Not tapping the look-alike letters', good: 'low',
-    strong: 'Rarely tapped a look-alike letter by mistake.', needs: 'Tapped look-alike letters by mistake quite often.',
-    evidence: (k, n) => `Left ${k} of ${n} look-alike letters alone`},
-  {key: 'soundSpanPassed', quest: 'dyslexia', group: 'sounds', area: 'Holding sounds in order', good: 'high',
-    strong: 'Repeated the made-up sounds back in the right order.', needs: 'Found it hard to repeat the made-up sounds in the right order.',
-    evidence: (k, n) => `${k} of ${n} sound sequences repeated`},
-  {key: 'wordCheckReal', quest: 'dyslexia', group: 'reading', area: 'Recognising real words', good: 'high', chance: 0.5,
-    strong: 'Recognised real words quickly and correctly.', needs: 'Called some real words made up.',
-    evidence: (k, n) => `${k} of ${n} real words accepted`},
-  {key: 'wordCheckMadeUp', quest: 'dyslexia', group: 'reading', area: 'Sounding out made-up words', good: 'high', chance: 0.5,
-    strong: 'Spotted the made-up words, which means sounding them out.', needs: 'Often took made-up words for real ones.',
-    evidence: (k, n) => `${k} of ${n} made-up words spotted`},
-  {key: 'spellingCorrect', quest: 'dyslexia', group: 'reading', area: 'Choosing the right spelling', good: 'high', chance: 0.5,
-    strong: 'Chose the correct spelling most of the time.', needs: 'Often chose a spelling that sounds right but is not.',
-    evidence: (k, n) => `${k} of ${n} spellings correct`},
+  {key: 'rhymeMatches', quest: 'dyslexia', group: 'sounds', area: 'Phonological rhyme awareness', good: 'high', chance: 0.5,
+    strong: 'Easily recognized rhyming sound patterns in spoken words without printed text.',
+    needs: 'Found it hard to distinguish rhyming sound patterns in spoken words.',
+    evidence: (k, n) => `${k} of ${n} spoken rhymes identified`},
+  {key: 'firstSoundMatches', quest: 'dyslexia', group: 'sounds', area: 'Beginning sound isolation', good: 'high', chance: 0.5,
+    strong: 'Reliably isolated the opening speech sound of spoken words (essential for phonics).',
+    needs: 'Found it challenging to isolate the opening speech sound of spoken words.',
+    evidence: (k, n) => `${k} of ${n} initial speech sounds isolated`},
+  {key: 'letterFound', quest: 'dyslexia', group: 'reading', area: 'Letter orientation & discrimination (b/d/p/q)', good: 'high',
+    strong: 'Accurately distinguished letter orientations among look-alikes like b, d, p and q.',
+    needs: 'Frequently missed matching letters among mirror-image look-alikes like b, d, p and q.',
+    evidence: (k, n) => `${k} of ${n} target letters identified`},
+  {key: 'letterLookalikeTaps', quest: 'dyslexia', group: 'reading', area: 'Resisting letter reversals', good: 'low',
+    strong: 'Rarely confused mirror-image letters like b, d, p and q.',
+    needs: 'Frequently mistook mirror-image letters for the target letter.',
+    evidence: (k, n) => `Avoided ${k} of ${n} mirror-image letter reversals`},
+  {key: 'soundSpanPassed', quest: 'dyslexia', group: 'sounds', area: 'Verbal working memory for sounds', good: 'high',
+    strong: 'Held spoken sound sequences in memory and repeated them in exact order.',
+    needs: 'Found it hard to hold and recall spoken sound sequences in order.',
+    evidence: (k, n) => `${k} of ${n} spoken sound sequences recalled`},
+  {key: 'wordCheckReal', quest: 'dyslexia', group: 'reading', area: 'Sight word recognition', good: 'high', chance: 0.5,
+    strong: 'Recognized familiar written words fluently and accurately.',
+    needs: 'Hesitated or misidentified common written words.',
+    evidence: (k, n) => `${k} of ${n} written words recognized`},
+  {key: 'wordCheckMadeUp', quest: 'dyslexia', group: 'reading', area: 'Phonetic sounding-out & decoding', good: 'high', chance: 0.5,
+    strong: 'Successfully sounded out unfamiliar words rather than guessing from overall shape.',
+    needs: 'Tended to guess words by shape instead of decoding their phonetic sounds.',
+    evidence: (k, n) => `${k} of ${n} unfamiliar words decoded`},
+  {key: 'spellingCorrect', quest: 'dyslexia', group: 'reading', area: 'Orthographic spelling recall', good: 'high', chance: 0.5,
+    strong: 'Recalled correct conventional spelling patterns rather than phonetic approximations.',
+    needs: 'Often chose spellings that sound phonetically plausible but violate conventional spelling.',
+    evidence: (k, n) => `${k} of ${n} spelling conventions correct`},
 ]
 
 const pc = (x: number) => `${Math.round(x * 100)}%`
@@ -190,15 +207,15 @@ export function buildChildStatus(record: ReportRecord & {parentCard?: {tired: st
     if (first && second) {
       const change = (second - first) / first
       if (change >= STATUS_RULES.paceSlowerBy) {
-        investigate.push({band: 'investigate', quest: 'adhd', area: 'Keeping the same pace',
-          text: 'Tapping got slower in the second half of the sunbird game. That is worth watching on another day.',
-          evidence: `Average tap speed ${Math.round(first)} ms in the first half and ${Math.round(second)} ms in the second half.`})
+        investigate.push({band: 'investigate', quest: 'adhd', area: 'Mental stamina & consistency',
+          text: 'Response speed slowed significantly in the second half, indicating cognitive fatigue during extended tasks.',
+          evidence: `Average response speed ${Math.round(first)} ms early on vs ${Math.round(second)} ms later in the session.`})
       } else if (Math.abs(change) <= STATUS_RULES.paceSteadyWithin) {
-        strengths.push({band: 'strength', quest: 'adhd', area: 'Keeping the same pace',
-          text: 'Kept a steady pace through the sunbird game.',
-          evidence: `Average tap speed ${Math.round(first)} ms in the first half and ${Math.round(second)} ms in the second half.`})
+        strengths.push({band: 'strength', quest: 'adhd', area: 'Mental stamina & consistency',
+          text: 'Maintained steady mental alertness and response speed throughout the task.',
+          evidence: `Average response speed ${Math.round(first)} ms early on vs ${Math.round(second)} ms later in the session.`})
       }
-      audit.push({area: 'Keeping the same pace', band: change >= STATUS_RULES.paceSlowerBy ? 'investigate' : Math.abs(change) <= STATUS_RULES.paceSteadyWithin ? 'strength' : 'investigate', figure: `${Math.round(first)} ms then ${Math.round(second)} ms`, reason: 'Second half compared with the first half of the same game.'})
+      audit.push({area: 'Mental stamina & consistency', band: change >= STATUS_RULES.paceSlowerBy ? 'investigate' : Math.abs(change) <= STATUS_RULES.paceSteadyWithin ? 'strength' : 'investigate', figure: `${Math.round(first)} ms then ${Math.round(second)} ms`, reason: 'Second half compared with the first half of the same task.'})
     }
   }
   // attention quest: how many star sequences were repeated, from the level-by-level record
@@ -206,11 +223,11 @@ export function buildChildStatus(record: ReportRecord & {parentCard?: {tired: st
     const total = record.starLevels.length
     const done = record.starLevels.filter((x) => x.completed).length
     const r = bandOf(done, total)
-    const figure = `${done} of ${total} star sequences repeated (${interval(r.lo, r.hi)})`
-    audit.push({area: 'Remembering a sequence of stars', band: r.band, figure, reason: r.why})
+    const figure = `${done} of ${total} multi-step sequences recalled (${interval(r.lo, r.hi)})`
+    audit.push({area: 'Visual working memory & sequence recall', band: r.band, figure, reason: r.why})
     const item: StatusItem = {
-      band: r.band, quest: 'adhd', area: 'Remembering a sequence of stars',
-      text: r.band === 'strength' ? 'Remembered the star sequences and repeated them back.' : r.band === 'support' ? 'Found it hard to repeat the star sequences back.' : `The session cannot say yet. ${r.why}`,
+      band: r.band, quest: 'adhd', area: 'Visual working memory & sequence recall',
+      text: r.band === 'strength' ? 'Held multi-step visual sequences in active memory and recalled them with high fidelity.' : r.band === 'support' ? 'Found it challenging to retain multi-step visual sequences as the sequence lengthened.' : `The session cannot say yet. ${r.why}`,
       evidence: `${figure}.`,
     }
     ;(r.band === 'strength' ? strengths : r.band === 'support' ? support : investigate).push(item)
@@ -219,43 +236,43 @@ export function buildChildStatus(record: ReportRecord & {parentCard?: {tired: st
   // things about the session that limit what it can say. These always go under "closer look".
   const pauses = valueOf(ms, 'pauseCount')
   if (pauses && pauses > 0) {
-    investigate.push({band: 'investigate', quest: record.quest, area: 'An interrupted session',
-      text: 'The page was left or hidden during play, so some results may not show how your child usually plays.',
-      evidence: `The page was left or hidden ${pauses} ${pauses === 1 ? 'time' : 'times'}.`})
+    investigate.push({band: 'investigate', quest: record.quest, area: 'Session continuity & distractions',
+      text: 'The screen was paused or navigated away from during play, so some measures may not reflect typical performance.',
+      evidence: `The session was paused or left ${pauses} ${pauses === 1 ? 'time' : 'times'}.`})
   }
   const repeats = ms.filter((m) => /^retry/.test(m.key) && m.kind === 'value' && m.value >= 2)
   if (repeats.length) {
-    investigate.push({band: 'investigate', quest: record.quest, area: 'Understanding the instructions',
-      text: 'Practice was repeated more than once in a game. It is worth checking that the instructions were clear before reading that game closely.',
+    investigate.push({band: 'investigate', quest: record.quest, area: 'Instruction comprehension',
+      text: 'Practice rounds were repeated multiple times, suggesting the child was still clarifying the instructions before starting.',
       evidence: repeats.map((m) => m.kind === 'value' ? `${m.label.replace('Times practice was repeated, ', '')}: ${m.value} times` : '').join('; ') + '.'})
   }
   const pcard = record.parentCard
   if (pcard?.tired === 'Quite a lot') {
-    investigate.push({band: 'investigate', quest: record.quest, area: 'A tired child',
-      text: 'You said your child seemed quite tired. Tiredness lowers results, so it is worth playing again when they are rested.', evidence: 'Parent answer.'})
+    investigate.push({band: 'investigate', quest: record.quest, area: 'Fatigue & energy levels',
+      text: 'You noted your child seemed quite tired. Fatigue directly affects attention and reaction speed, so a well-rested recheck is recommended.', evidence: 'Parent observation.'})
   }
   if (pcard?.likeHome === 'Not really like') {
-    investigate.push({band: 'investigate', quest: record.quest, area: 'Not like usual',
-      text: 'You said this was not much like how your child usually is. That is useful to tell a clinician.', evidence: 'Parent answer.'})
+    investigate.push({band: 'investigate', quest: record.quest, area: 'Typicality of behavior',
+      text: 'You noted this session was not typical of how your child usually is at home or school, which is important context for a clinician.', evidence: 'Parent observation.'})
   }
   if (pcard?.enjoyed === "Didn't enjoy it") {
-    investigate.push({band: 'investigate', quest: record.quest, area: 'Not enjoying the play',
-      text: 'You said your child did not enjoy it. A child who is not enjoying a game often does not show what they can do.', evidence: 'Parent answer.'})
+    investigate.push({band: 'investigate', quest: record.quest, area: 'Engagement & interest',
+      text: 'You noted your child did not enjoy the session. Low engagement often makes it difficult to demonstrate true capability.', evidence: 'Parent observation.'})
   }
   const present = new Set(ms.map((m) => m.game))
   const missing = (EXPECTED_GAMES[record.quest] as readonly string[]).filter((g) => !present.has(g))
   if (missing.length) {
-    investigate.push({band: 'investigate', quest: record.quest, area: 'Games with no results',
-      text: `No results were recorded for ${missing.join(', ')}, so nothing can be said about those yet.`, evidence: 'Not played or not enough data.'})
+    investigate.push({band: 'investigate', quest: record.quest, area: 'Unattempted activities',
+      text: `No data was recorded for ${missing.join(', ')}, so those developmental areas remain unobserved.`, evidence: 'Not completed or insufficient data.'})
   }
 
   // reading quest: word check and spelling are optional, so a missing one is a gap in the picture, not a result
   if (record.quest === 'dyslexia') {
     const skipped = [['Word check (optional)', 'Word check'], ['Spelling game (optional)', 'Spelling game']].filter(([g]) => !present.has(g)).map(([, n]) => n)
     if (skipped.length) {
-      investigate.push({band: 'investigate', quest: 'dyslexia', group: 'reading', area: 'Optional games not played',
-        text: `${skipped.join(' and ')} ${skipped.length > 1 ? 'were' : 'was'} not played. They are optional, so nothing is wrong, but reading and spelling are only partly covered. Playing ${skipped.length > 1 ? 'them' : 'it'} on another day would give a fuller picture.`,
-        evidence: 'Optional games, not played.'})
+      investigate.push({band: 'investigate', quest: 'dyslexia', group: 'reading', area: 'Optional reading modules not completed',
+        text: `${skipped.join(' and ')} ${skipped.length > 1 ? 'were' : 'was'} not completed. These are optional modules, so reading and spelling were only partly observed. Completing ${skipped.length > 1 ? 'them' : 'it'} on another day would give a more complete picture.`,
+        evidence: 'Optional modules not completed.'})
     }
   }
 
@@ -266,7 +283,12 @@ export function buildChildStatus(record: ReportRecord & {parentCard?: {tired: st
   const parts: string[] = []
   if (strengths.length) parts.push(`${pick(strengths)} went well`)
   if (support.length) parts.push(`${pick(support)} may need support`)
-  const investigateGames = investigate.filter((x) => !['An interrupted session', 'Understanding the instructions', 'A tired child', 'Not like usual', 'Not enjoying the play', 'Games with no results', 'Optional games not played'].includes(x.area))
+  const investigateGames = investigate.filter((x) => ![
+    'Session continuity & distractions', 'Instruction comprehension', 'Fatigue & energy levels',
+    'Typicality of behavior', 'Engagement & interest', 'Unattempted activities', 'Optional reading modules not completed',
+    'An interrupted session', 'Understanding the instructions', 'A tired child', 'Not like usual',
+    'Not enjoying the play', 'Games with no results', 'Optional games not played'
+  ].includes(x.area))
   if (investigateGames.length) parts.push(`${investigateGames.length === 1 ? 'one area needs' : `${investigateGames.length} areas need`} a closer look`)
   const headline = parts.length
     ? `In this session, ${parts.join('; ')}.`

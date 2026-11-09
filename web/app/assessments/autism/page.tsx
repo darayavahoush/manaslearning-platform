@@ -459,7 +459,7 @@ const GROVE_AFFINITIES = [
   {
     name: 'Grove Harmonizer',
     badge: 'Forest Friend',
-    image: '/quests/characters/grove_harmonizer.webp',
+    image: '/quests/characters/grove_harmonizer.webp?v=watercolor5',
     Svg: LeafGlyphSvg,
     AvatarSvg: GroveHarmonizerAvatarSvg,
     desc: 'Gentle & caring · Listens to the trees, plants, and friendly fireflies'
@@ -467,7 +467,7 @@ const GROVE_AFFINITIES = [
   {
     name: 'Crystal Alchemist',
     badge: 'Pattern Explorer',
-    image: '/quests/characters/crystal_alchemist.webp',
+    image: '/quests/characters/crystal_alchemist.webp?v=watercolor5',
     Svg: CrystalGlyphSvg,
     AvatarSvg: CrystalAlchemistAvatarSvg,
     desc: 'Curious & observant · Notices hidden clues and solves colorful puzzles'
@@ -475,7 +475,7 @@ const GROVE_AFFINITIES = [
   {
     name: 'Quiet Seeker',
     badge: 'Peaceful Observer',
-    image: '/quests/characters/quiet_seeker.webp',
+    image: '/quests/characters/quiet_seeker.webp?v=watercolor5',
     Svg: DoveGlyphSvg,
     AvatarSvg: QuietSeekerAvatarSvg,
     desc: 'Calm & thoughtful · Notices gentle details and understands friends quietly'

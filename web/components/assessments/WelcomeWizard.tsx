@@ -132,25 +132,22 @@ export default function WelcomeWizard(p: Props) {
                   on ? T.cardOn : T.cardOff
                 }`}
               >
-                {/* Top Avatar Illustration Window */}
-                <div className="relative mb-3 h-48 sm:h-56 w-full overflow-hidden rounded-2xl bg-gradient-to-b from-slate-100 to-slate-200/80 shadow-inner flex items-center justify-center">
+                {/* Top Avatar Illustration Window - Warm Watercolor Paper Studio Frame */}
+                <div className="relative mb-3 h-52 sm:h-60 w-full overflow-hidden rounded-2xl bg-[#FAF7F2] border border-[#EADBCC]/80 shadow-[inset_0_1px_4px_rgba(0,0,0,0.04)] flex items-center justify-center p-2">
                   {cls.image ? (
                     <img
                       src={cls.image}
                       alt={cls.name}
-                      className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                      className="h-full w-full object-contain object-center transition-transform duration-500 group-hover:scale-105 drop-shadow-xs"
                       loading="eager"
                     />
                   ) : AvatarComponent ? (
-                    <AvatarComponent className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    <AvatarComponent className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105" />
                   ) : Icon ? (
                     <div className={`rounded-2xl p-4 ${on ? T.iconOn : 'bg-white text-slate-700 shadow-sm'}`}>
                       <Icon className="h-12 w-12" />
                     </div>
                   ) : null}
-
-                  {/* Gentle gradient overlay at bottom of portrait for depth */}
-                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
 
                   {/* Persona Badge */}
                   {cls.badge && (
